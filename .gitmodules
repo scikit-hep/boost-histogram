@@ -1,0 +1,6 @@
+[submodule "pybind11"]
+	path = extern/pybind11
+	url = ../../pybind/pybind11.git
+[submodule "extern/boosthistogram"]
+	path = extern/histogram
+	url = ../../HDembinski/histogram.git
