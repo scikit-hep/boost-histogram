@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.12)
 
 project(histogram LANGUAGES CXX VERSION 0.1)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -29,14 +29,30 @@ find_package(Boost ${MIN_BOOST_VERSION} REQUIRED COMPONENTS iostreams serializat
 
 add_subdirectory(extern/pybind11)
 
+# This is completely optional and just adds hints to IDEs.
+file(GLOB_RECURSE BOOST_HIST_FILES "extern/histogram/include/*.hpp")
+
 pybind11_add_module(histogram SHARED
-    ../src/python/module.cpp
-    ../src/python/axis.cpp
-    ../src/python/histogram.cpp
+    src/getpython.hpp
+    src/module.cpp
+    src/axis.cpp
+    src/histogram.cpp
+    ${BOOST_HIST_FILES}
 )
+
+#pybind11_add_module(histogramboost SHARED
+#    src/python/axis.cpp
+#    src/python/histogram.cpp
+#    src/python/module.cpp
+#    src/python/serialization_suite.hpp
+#    src/python/utility.hpp
+#)
 
 target_link_libraries(histogram PUBLIC Boost::boost Boost::iostreams Boost::serialization)
 target_include_directories(histogram PUBLIC extern/histogram/include)
+
+#target_link_libraries(histogramboost PUBLIC Boost::boost Boost::iostreams Boost::serialization)
+#target_include_directories(histogramboost PUBLIC extern/histogram/include)
 
 
 # tests
