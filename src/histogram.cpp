@@ -16,13 +16,9 @@
 
 namespace bh = boost::histogram;
 
-void register_histogram() {
+using regular_histogram_t = bh::histogram<bh::storage_adaptor<std::vector<bh::axis::regular<>>>>;
+
+void register_histogram(py::module& m) {
     
-    py::class_<bh::histogram<>>(m, "histogram", "N-dimensional histogram for real-valued data.")
-        .def(py::init<const axes_type&>(), "axes"_a)
-    
-    .def("__len__", &bh::histogram<>::,
-         ":return: total number of bins, including under- and overflow")
-    ;
-    
+    py::class_<regular_histogram_t>(m, "regular_histogram", "N-dimensional histogram for real-valued data.");
 }
