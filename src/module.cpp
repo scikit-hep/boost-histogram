@@ -9,7 +9,7 @@
 void register_axis(py::module &);
 void register_histogram(py::module &);
 
-PYBIND11_MODULE(histogram, m) {
+PYBIND11_MODULE(hist, m) {
     register_axis(m);
     register_histogram(m);
 }
