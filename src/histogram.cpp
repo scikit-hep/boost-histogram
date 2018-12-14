@@ -5,6 +5,7 @@
 // or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #include "getpython.hpp"
+#include <pybind11/operators.h>
 
 #include "axis.hpp"
 
@@ -36,8 +37,38 @@ void register_histogram(py::module& m) {
     .def("reset", &regular_histogram_t::reset,
          "Reset bin counters to zero")
     
-    //.def("axis", py::overload_cast<int>(&regular_histogram_t::axis),
-    //     "Get N-th axis with runtime index")
+    .def(py::self + py::self)
+    .def(py::self == py::self)
+    .def(py::self != py::self)
+    .def(py::self *= double())
+    .def(py::self /= double())
+    
+    //.def("axis",
+    //     (regular_axis& (regular_histogram_t::*)(int))
+    //     &regular_histogram_t::axis,
+    // "Get N-th axis with runtime index")
+    
+    .def("fill", [](regular_histogram_t &self, py::array_t<double> data){
+        py::buffer_info data_buf = data.request();
+        if(self.rank() == 1 && data_buf.shape.size() == 1) {
+            double *ptr1 = (double *) data_buf.ptr;
+            for(size_t i = 0; i<data_buf.shape.at(0); i++)
+                self(ptr1[i]);
+        } else {
+            if(data_buf.ndim > 2)
+                throw std::runtime_error("max 2D array required");
+            else if(data_buf.ndim < 2 && self.rank() > 1)
+                throw std::runtime_error("2D array required for >1D histograms");
+            else if(data_buf.shape.at(0) != self.rank())
+                throw std::runtime_error("First dimension must match histogram");
+        
+            auto r = data.unchecked<2>();
+            
+            for(size_t i=0; i<r.shape(1); i++)
+                self(r(0, i), r(1, i));
+        }
+        
+    }, "Add data to histogram, diminsionality must match", "data"_a)
     
     .def("__call__", [](regular_histogram_t &self, py::args &args){
         size_t size = args.size();
