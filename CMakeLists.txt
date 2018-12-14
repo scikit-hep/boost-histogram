@@ -17,9 +17,11 @@ file(GLOB_RECURSE BOOST_HIST_FILES "extern/histogram/include/*.hpp")
 
 pybind11_add_module(hist SHARED
     src/getpython.hpp
+    src/axis.hpp
     src/module.cpp
     src/axis.cpp
     src/histogram.cpp
+    src/storage.cpp
     ${BOOST_HIST_FILES}
 )
 

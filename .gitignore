@@ -33,3 +33,7 @@
 
 # Build directories
 *build*
+
+# Python binary files
+*.pyc
+*__pycache__*
