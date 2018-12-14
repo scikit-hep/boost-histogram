@@ -7,6 +7,7 @@
 #include "getpython.hpp"
 
 #include <boost/histogram.hpp>
+#include <boost/histogram/storage_adaptor.hpp>
 
 #include <iostream>
 #include <sstream>

@@ -23,18 +23,19 @@
 
 namespace bh = boost::histogram;
 
-using regular_histogram_t = bh::histogram<regular_axes_storage, bh::default_storage>;
-
-void register_histogram(py::module& m) {
+template<typename A, typename S>
+void register_histogram_by_type(py::module& m, const char* name, const char* desc) {
     
-    py::class_<regular_histogram_t>(m, "regular_histogram", "N-dimensional histogram for real-valued data.")
-    .def(py::init<const regular_axes_storage &, bh::default_storage>(), "axes"_a, "storage"_a=bh::default_storage())
+    using histogram_t = bh::histogram<A, S>;
     
-    .def("rank", &regular_histogram_t::rank,
+    py::class_<histogram_t>(m, name, desc)
+    .def(py::init<const A&, S>(), "axes"_a, "storage"_a=S())
+    
+    .def("rank", &histogram_t::rank,
          "Number of axes (dimensions) of histogram" )
-    .def("size", &regular_histogram_t::size,
+    .def("size", &histogram_t::size,
          "Total number of bins in the histogram (including underflow/overflow)" )
-    .def("reset", &regular_histogram_t::reset,
+    .def("reset", &histogram_t::reset,
          "Reset bin counters to zero")
     
     .def(py::self + py::self)
@@ -48,10 +49,10 @@ void register_histogram(py::module& m) {
     //     &regular_histogram_t::axis,
     // "Get N-th axis with runtime index")
     
-    .def("fill", [](regular_histogram_t &self, py::array_t<double> data){
-        py::buffer_info data_buf = data.request();
+    .def("fill", [](histogram_t &self, py::array_t<double> &data){
+        py::buffer_info data_buf = data.request(); // TODO: make const?
         if(self.rank() == 1 && data_buf.shape.size() == 1) {
-            double *ptr1 = (double *) data_buf.ptr;
+            const double *ptr1 = (const double *) data_buf.ptr;
             for(size_t i = 0; i<data_buf.shape.at(0); i++)
                 self(ptr1[i]);
         } else {
@@ -70,7 +71,7 @@ void register_histogram(py::module& m) {
         
     }, "Add data to histogram, diminsionality must match", "data"_a)
     
-    .def("__call__", [](regular_histogram_t &self, py::args &args){
+    .def("__call__", [](histogram_t &self, py::args &args){
         size_t size = args.size();
         if(size == 1)
             self(py::cast<double>(args[0]));
@@ -81,7 +82,7 @@ void register_histogram(py::module& m) {
         },
         "Add a value to the historgram")
     
-    .def("at", [](regular_histogram_t &self, py::args &args){
+    .def("at", [](histogram_t &self, py::args &args){
         size_t size = args.size();
         if(size == 1)
             return self.at(py::cast<int>(args[0]));
@@ -92,7 +93,7 @@ void register_histogram(py::module& m) {
     },
          "Access bin counter at indices")
     
-    .def("__repr__", [](regular_histogram_t &self){
+    .def("__repr__", [](histogram_t &self){
         std::ostringstream out;
         out << self;
         return out.str();
@@ -100,4 +101,15 @@ void register_histogram(py::module& m) {
     
     
     ;
+}
+
+void register_histogram(py::module& m) {
+    register_histogram_by_type<regular_axes_storage, bh::default_storage>(m,
+        "regular_histogram",
+        "N-dimensional histogram for real-valued data.");
+    
+    register_histogram_by_type<regular_axes_storage, bh::weight_storage>(m,
+        "weighted_histogram",
+        "N-dimensional histogram for real-valued data with weights.");
+    
 }
