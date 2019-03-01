@@ -2,20 +2,22 @@ cmake_minimum_required(VERSION 3.12)
 
 project(histogram LANGUAGES CXX VERSION 0.1)
 
+# Boost histogram requires C++14
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-set(MIN_BOOST_VERSION 1.66)
+# Adding folders to keep the structure a bit nicer in IDE's
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-find_package(Boost ${MIN_BOOST_VERSION} REQUIRED COMPONENTS iostreams serialization)
-
+# Adding PyBind11 and setting up Python
 add_subdirectory(extern/pybind11)
 
-# This is completely optional and just adds hints to IDEs.
+# This is completely optional and just adds hints to IDEs - no affect on build at all.
 file(GLOB_RECURSE BOOST_HIST_FILES "extern/histogram/include/*.hpp")
 
-pybind11_add_module(hist SHARED
+# This is the Python module
+pybind11_add_module(boosthistogram SHARED
     src/getpython.hpp
     src/axis.hpp
     src/module.cpp
@@ -25,19 +27,38 @@ pybind11_add_module(hist SHARED
     ${BOOST_HIST_FILES}
 )
 
-target_link_libraries(hist PUBLIC Boost::boost Boost::iostreams Boost::serialization)
-target_include_directories(hist PUBLIC extern/histogram/include)
+# This makes IDE's like XCode mimic the Boost Histogram structure
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/extern/histogram/include PREFIX "Header Files" FILES ${BOOST_HIST_FILES})
 
-# tests
+# These are the Boost header-only libraries required by Boost::Histogram
+target_include_directories(boosthistogram PUBLIC
+    extern/assert/include
+    extern/callable_traits/include
+    extern/config/include
+    extern/container_hash/include
+    extern/core/include
+    extern/detail/include
+    extern/histogram/include
+    extern/integer/include
+    extern/iterator/include
+    extern/move/include
+    extern/mp11/include
+    extern/mpl/include
+    extern/preprocessor/include
+    extern/pybind11/include
+    extern/static_assert/include
+    extern/throw_exception/include
+    extern/type_index/include
+    extern/type_traits/include
+    extern/utility/include
+    extern/variant/include
+    )
+
+
+# Tests (Require pytest to be available)
 include(CTest)
 
-file(GLOB TEST_SOURCES test/*_test.py examples/*.py ${CMAKE_BINARY_DIR}/doc_test/*.py)
-foreach(SRC IN ITEMS ${TEST_SOURCES})
-if(SRC MATCHES "/([_a-zA-Z0-9]+)\\.py")
-  set(TESTNAME ${CMAKE_MATCH_1})
-  file(READ ${SRC} SRC_CONTENT)
-  add_test(${TESTNAME} ${PYTHON_EXECUTABLE} ${SRC})
-endif()
-endforeach()
+add_test(basic_import ${PYTHON_EXECUTABLE} -m pytest "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_basic_import.py")
+
 
 

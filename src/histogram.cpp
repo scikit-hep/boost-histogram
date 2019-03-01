@@ -10,8 +10,8 @@
 #include "axis.hpp"
 
 #include <boost/histogram.hpp>
-#include <boost/histogram/axis/ostream_operators.hpp>
-#include <boost/histogram/ostream_operators.hpp>
+#include <boost/histogram/axis/ostream.hpp>
+#include <boost/histogram/ostream.hpp>
 
 #include <cassert>
 #include <vector>
@@ -108,8 +108,8 @@ void register_histogram(py::module& m) {
         "regular_histogram",
         "N-dimensional histogram for real-valued data.");
     
-    register_histogram_by_type<regular_axes_storage, bh::weight_storage>(m,
-        "weighted_histogram",
-        "N-dimensional histogram for real-valued data with weights.");
+//    register_histogram_by_type<regular_axes_storage, bh::weight_storage>(m,
+//        "weighted_histogram",
+//        "N-dimensional histogram for real-valued data with weights.");
     
 }

@@ -8,7 +8,7 @@
 
 #include "axis.hpp"
 
-#include <boost/histogram/axis/ostream_operators.hpp>
+#include <boost/histogram/axis/ostream.hpp>
 #include <boost/histogram.hpp>
 
 #include <iostream>
