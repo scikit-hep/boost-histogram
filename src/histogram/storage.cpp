@@ -4,7 +4,7 @@
 // (See accompanying file LICENSE_1_0.txt
 // or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#include "getpython.hpp"
+#include <boost/histogram/python/pybind11.hpp>
 
 #include <boost/histogram.hpp>
 #include <boost/histogram/storage_adaptor.hpp>
@@ -22,7 +22,10 @@ void register_storage(py::module &m) {
     
     py::class_<bh::default_storage>(m, "default_storage", "Default adaptive storage")
     .def(py::init<>(), "Default constructor")
+    ;
     
+    py::class_<bh::storage_adaptor<std::vector<int>>>(m, "int_vector_storage", "Integers in vectors storage type")
+    .def(py::init<>(), "Default constructor")
     ;
     
 }

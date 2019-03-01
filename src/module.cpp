@@ -4,7 +4,8 @@
 // (See accompanying file LICENSE_1_0.txt
 // or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#include "getpython.hpp"
+#include <boost/histogram/python/pybind11.hpp>
+
 
 void register_axis(py::module &);
 void register_histogram(py::module &);

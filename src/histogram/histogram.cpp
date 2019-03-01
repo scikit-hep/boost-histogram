@@ -4,10 +4,10 @@
 // (See accompanying file LICENSE_1_0.txt
 // or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#include "getpython.hpp"
+#include <boost/histogram/python/pybind11.hpp>
 #include <pybind11/operators.h>
 
-#include "axis.hpp"
+#include <boost/histogram/python/axis.hpp>
 
 #include <boost/histogram.hpp>
 #include <boost/histogram/axis/ostream.hpp>

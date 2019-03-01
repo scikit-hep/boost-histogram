@@ -13,3 +13,5 @@ namespace bh = boost::histogram;
 using regular_axis = bh::axis::regular<>;
 using regular_axes = std::vector<regular_axis>;
 using regular_axes_storage = bh::storage_adaptor<regular_axes>;
+
+using int_vector_storage = bh::storage_adaptor<std::vector<int>>;
