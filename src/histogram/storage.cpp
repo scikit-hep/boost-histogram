@@ -6,6 +6,8 @@
 
 #include <boost/histogram/python/pybind11.hpp>
 
+#include <boost/histogram/python/storage.hpp>
+
 #include <boost/histogram.hpp>
 #include <boost/histogram/storage_adaptor.hpp>
 
@@ -24,8 +26,13 @@ void register_storage(py::module &m) {
     .def(py::init<>(), "Default constructor")
     ;
     
-    py::class_<bh::storage_adaptor<std::vector<int>>>(m, "int_vector_storage", "Integers in vectors storage type")
+    py::class_<vector_int_storage>(m, "vector_int_storage", "Integers in vectors storage type")
     .def(py::init<>(), "Default constructor")
     ;
+    
+    py::class_<bh::weight_storage>(m, "weight_storage", "Weighted storage type")
+    .def(py::init<>(), "Default constructor")
+    ;
+    
     
 }

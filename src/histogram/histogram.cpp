@@ -8,6 +8,7 @@
 #include <pybind11/operators.h>
 
 #include <boost/histogram/python/axis.hpp>
+#include <boost/histogram/python/storage.hpp>
 
 #include <boost/histogram.hpp>
 #include <boost/histogram/axis/ostream.hpp>
@@ -108,8 +109,12 @@ void register_histogram(py::module& m) {
         "regular_histogram",
         "N-dimensional histogram for real-valued data.");
     
-//    register_histogram_by_type<regular_axes_storage, bh::weight_storage>(m,
-//        "weighted_histogram",
-//        "N-dimensional histogram for real-valued data with weights.");
+    register_histogram_by_type<regular_axes_storage, vector_int_storage>(m,
+        "regular_int_histogram",
+        "N-dimensional histogram for int-valued data.");
+    
+    register_histogram_by_type<regular_axes_storage, bh::weight_storage>(m,
+        "weighted_histogram",
+        "N-dimensional histogram for real-valued data with weights.");
     
 }

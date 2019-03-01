@@ -20,16 +20,11 @@
 
 namespace bh = boost::histogram;
 
-using regular_axis = bh::axis::regular<>;
-using regular_axes = std::vector<regular_axis>;
-using regular_axes_storage = bh::storage_adaptor<regular_axes>;
-
 
 void register_axis(py::module &m) {
 
     py::class_<regular_axis>(m, "regular_axis")
-    .def(py::init<unsigned, double, double>(),
-         "n"_a, "start"_a, "stop"_a)
+    .def(py::init<unsigned, double, double>(), "n"_a, "start"_a, "stop"_a)
 
     ;
     
