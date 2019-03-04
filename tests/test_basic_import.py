@@ -1,5 +1,4 @@
-import boosthistogram
+import boosthistogram as bh
 
 def test_import():
-    assert boosthistogram
-
+    assert bh

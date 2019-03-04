@@ -22,14 +22,26 @@ namespace bh = boost::histogram;
 
 
 void register_axis(py::module &m) {
+    
+    py::module ax = m.def_submodule("axis");
 
-    py::class_<regular_axis>(m, "regular_axis")
+    py::class_<regular_axis>(ax, "regular")
     .def(py::init<unsigned, double, double>(), "n"_a, "start"_a, "stop"_a)
 
     ;
     
-    py::class_<regular_axes_storage>(m, "regular_axes_storage")
-    .def(py::init<regular_axes>(), "Vector of regular axes"_a)
+    py::class_<regular_axes>(ax, "regular_axes")
+    .def(py::init<std::vector<regular_axis>>(), "Vector of regular axes"_a)
+    
+    ;
+    
+    py::class_<regular_1D_axes>(ax, "regular_1D_axes")
+    .def(py::init<regular_1D_axes>(), "Vector of regular axes"_a)
+    
+    ;
+    
+    py::class_<regular_2D_axes>(ax, "regular_2D_axes")
+    .def(py::init<regular_2D_axes>(), "Vector of regular axes"_a)
     
     ;
 

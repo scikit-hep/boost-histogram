@@ -6,11 +6,13 @@
 
 #include <boost/histogram.hpp>
 
+#include <array>
 #include <vector>
 
 namespace bh = boost::histogram;
 
 using regular_axis = bh::axis::regular<>;
-using regular_axes = std::vector<regular_axis>;
-using regular_axes_storage = bh::storage_adaptor<regular_axes>;
 
+using regular_axes = bh::storage_adaptor<std::vector<regular_axis>>;
+using regular_1D_axes = bh::storage_adaptor<std::array<regular_axis, 1>>;
+using regular_2D_axes = bh::storage_adaptor<std::array<regular_axis, 2>>;

@@ -22,7 +22,7 @@ namespace bh = boost::histogram;
 
 void register_storage(py::module &m) {
     
-    py::class_<bh::default_storage>(m, "default_storage", "Default adaptive storage")
+    py::class_<bh::unlimited_storage<>>(m, "unlimited_storage", "Default adaptive storage")
     .def(py::init<>(), "Default constructor")
     ;
     

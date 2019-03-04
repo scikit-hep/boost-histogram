@@ -105,16 +105,24 @@ void register_histogram_by_type(py::module& m, const char* name, const char* des
 }
 
 void register_histogram(py::module& m) {
-    register_histogram_by_type<regular_axes_storage, bh::default_storage>(m,
-        "regular_histogram",
+    register_histogram_by_type<regular_axes, bh::default_storage>(m,
+        "unlimited_histogram",
         "N-dimensional histogram for real-valued data.");
     
-    register_histogram_by_type<regular_axes_storage, vector_int_storage>(m,
-        "regular_int_histogram",
+    register_histogram_by_type<regular_axes, vector_int_storage>(m,
+        "dense_int_histogram",
         "N-dimensional histogram for int-valued data.");
     
-    register_histogram_by_type<regular_axes_storage, bh::weight_storage>(m,
+    register_histogram_by_type<regular_axes, bh::weight_storage>(m,
         "weighted_histogram",
         "N-dimensional histogram for real-valued data with weights.");
+    
+    register_histogram_by_type<regular_1D_axes, vector_int_storage>(m,
+        "int_1d_histogram",
+        "1-dimensional histogram for int valued data.");
+    
+    register_histogram_by_type<regular_2D_axes, vector_int_storage>(m,
+        "int_2d_histogram",
+        "2-dimensional histogram for int valued data.");
     
 }

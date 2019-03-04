@@ -75,6 +75,7 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX "Source Files" FILES ${
 include(CTest)
 
 add_test(basic_import ${PYTHON_EXECUTABLE} -m pytest "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_basic_import.py")
+add_test(histogram_internal ${PYTHON_EXECUTABLE} -m pytest "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_histogram_internal.py")
 
 
 
