@@ -20,7 +20,6 @@
 
 namespace bh = boost::histogram;
 
-
 void register_axis(py::module &m) {
     
     py::module ax = m.def_submodule("axis");
@@ -35,14 +34,17 @@ void register_axis(py::module &m) {
     
     ;
     
+#ifndef BOOST_HISTOGRAM_PYTHON_SKIP_TUPLE
     py::class_<regular_1D_axes>(ax, "regular_1D_axes")
-    .def(py::init<regular_1D_axes>(), "Vector of regular axes"_a)
+    .def(py::init<regular_1D_axes>(), "Tuple of 1 regular axes"_a)
     
     ;
     
     py::class_<regular_2D_axes>(ax, "regular_2D_axes")
-    .def(py::init<regular_2D_axes>(), "Vector of regular axes"_a)
+    .def(py::init<regular_2D_axes>(), "Tuple of 2 regular axes"_a)
     
     ;
+    
+#endif
 
 }
