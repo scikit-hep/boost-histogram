@@ -33,17 +33,17 @@ set(BOOST_HIST_PY_SRC
     )
 
 # This is the Python module
-pybind11_add_module(boosthistogram SHARED
+pybind11_add_module(histogram SHARED
     ${BOOST_HIST_PY_HEADERS}
     ${BOOST_HIST_PY_SRC}
     ${BOOST_HIST_FILES}
 )
 
 # Add the include directory for boost/histogram/python
-target_include_directories(boosthistogram PRIVATE include)
+target_include_directories(histogram PRIVATE include)
 
 # These are the Boost header-only libraries required by Boost::Histogram
-target_include_directories(boosthistogram PUBLIC
+target_include_directories(histogram PUBLIC
     extern/assert/include
     extern/callable_traits/include
     extern/config/include
@@ -57,7 +57,6 @@ target_include_directories(boosthistogram PUBLIC
     extern/mp11/include
     extern/mpl/include
     extern/preprocessor/include
-    extern/pybind11/include
     extern/static_assert/include
     extern/throw_exception/include
     extern/type_index/include

@@ -1,4 +1,4 @@
-import boosthistogram as bh
+import histogram as bh
 import numpy as np
 
 

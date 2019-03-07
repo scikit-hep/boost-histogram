@@ -6,12 +6,11 @@
 
 #include <boost/histogram/python/pybind11.hpp>
 
-
 void register_axis(py::module &);
 void register_histogram(py::module &);
 void register_storage(py::module &);
 
-PYBIND11_MODULE(boosthistogram, m) {
+PYBIND11_MODULE(histogram, m) {
     register_storage(m);
     register_axis(m);
     register_histogram(m);

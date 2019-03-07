@@ -15,8 +15,6 @@
 namespace py = pybind11;
 using namespace pybind11::literals;
 
-#define BOOST_HISTOGRAM_PYTHON_SKIP_TUPLE 1
-
 // Register Boost::Variant as a variant
 namespace pybind11 { namespace detail {
     template <typename... Ts>

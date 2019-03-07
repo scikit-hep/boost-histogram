@@ -46,8 +46,7 @@ void register_histogram_by_type(py::module& m, const char* name, const char* des
     .def(py::self /= double())
     
    .def("axis",
-        //py::overload_cast<unsigned int>(&histogram_t::axis, py::const_),
-        (const regular_axis& (histogram_t::*)(unsigned int) const) &histogram_t::axis,
+        [](histogram_t &self, unsigned i){return self.axis(i);},
      "Get N-th axis with runtime index")
     
     .def("fill", [](histogram_t &self, py::array_t<double> &data){
@@ -84,14 +83,10 @@ void register_histogram_by_type(py::module& m, const char* name, const char* des
         "Add a value to the historgram")
     
     .def("at", [](histogram_t &self, py::args &args) {
-        size_t size = args.size();
-        if(size == 1)
-            return self.at(py::cast<int>(args[0]));
-        else if (size == 2)
-            return self.at(py::cast<int>(args[0]), py::cast<int>(args[1]));
-        else
-            throw py::index_error();
-    },
+        // Optimize for no dynamic?
+        auto int_args = py::cast<std::vector<int>>(args);
+        return self.at(int_args);
+        },
          "Access bin counter at indices")
     
     .def("__repr__", [](histogram_t &self){
@@ -117,7 +112,6 @@ void register_histogram(py::module& m) {
         "weighted_histogram",
         "N-dimensional histogram for real-valued data with weights.");
     
-#ifndef BOOST_HISTOGRAM_PYTHON_SKIP_TUPLE
     register_histogram_by_type<regular_1D_axes, vector_int_storage>(m,
         "int_1d_histogram",
         "1-dimensional histogram for int valued data.");
@@ -125,6 +119,5 @@ void register_histogram(py::module& m) {
     register_histogram_by_type<regular_2D_axes, vector_int_storage>(m,
         "int_2d_histogram",
         "2-dimensional histogram for int valued data.");
-#endif
     
 }

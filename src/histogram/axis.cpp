@@ -34,7 +34,6 @@ void register_axis(py::module &m) {
     
     ;
     
-#ifndef BOOST_HISTOGRAM_PYTHON_SKIP_TUPLE
     py::class_<regular_1D_axes>(ax, "regular_1D_axes")
     .def(py::init<regular_1D_axes>(), "Tuple of 1 regular axes"_a)
     
@@ -45,6 +44,5 @@ void register_axis(py::module &m) {
     
     ;
     
-#endif
 
 }
