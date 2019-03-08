@@ -22,15 +22,17 @@ namespace bh = boost::histogram;
 
 void register_storage(py::module &m) {
     
-    py::class_<bh::unlimited_storage<>>(m, "unlimited_storage", "Default adaptive storage")
+    py::module storage = m.def_submodule("storage");
+    
+    py::class_<bh::unlimited_storage<>>(storage, "unlimited", "Default adaptive storage")
     .def(py::init<>(), "Default constructor")
     ;
     
-    py::class_<vector_int_storage>(m, "vector_int_storage", "Integers in vectors storage type")
+    py::class_<vector_int_storage>(storage, "vector", "Integers in vectors storage type")
     .def(py::init<>(), "Default constructor")
     ;
     
-    py::class_<bh::weight_storage>(m, "weight_storage", "Weighted storage type")
+    py::class_<bh::weight_storage>(storage, "weight", "Weighted storage type")
     .def(py::init<>(), "Default constructor")
     ;
     

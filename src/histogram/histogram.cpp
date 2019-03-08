@@ -23,14 +23,36 @@
 #endif
 
 namespace bh = boost::histogram;
+using namespace boost::histogram::literals;
 
 template<typename A, typename S>
-void register_histogram_by_type(py::module& m, const char* name, const char* desc) {
+py::class_<bh::histogram<A, S>>&& register_histogram_by_type(py::module& m, const char* name, const char* desc) {
     
     using histogram_t = bh::histogram<A, S>;
+    // using in_storage_t = typename bh::histogram<A, S>::value_type; // No unlimited type
     
-    py::class_<histogram_t>(m, name, desc)
+    py::class_<histogram_t> hist(m, name, desc /*, py::buffer_protocol() */);
+    
+    hist
     .def(py::init<const A&, S>(), "axes"_a, "storage"_a=S())
+    
+    /*
+    .def_buffer([](histogram_t &h) -> py::buffer_info {
+        auto rank = h.rank();
+        auto rows = bh::axis::traits::extend(h.axis(0_c));
+        auto cols = bh::axis::traits::extend(h.axis(1_c));
+        
+        return py::buffer_info(
+                               &h[0],                                         // Pointer to buffer
+                               sizeof(in_storage_t),                          // Size of one scalar
+                               py::format_descriptor<in_storage_t>::format(), // Python struct-style format descriptor
+                               rank,                                          // Number of dimensions
+                               {rows, cols},                                  // Buffer dimensions
+                               { sizeof(in_storage_t),                        // Strides (in bytes) for each index
+                                 sizeof(in_storage_t) * rows}
+                               );
+    })
+    */
     
     .def("rank", &histogram_t::rank,
          "Number of axes (dimensions) of histogram" )
@@ -45,7 +67,7 @@ void register_histogram_by_type(py::module& m, const char* name, const char* des
     .def(py::self *= double())
     .def(py::self /= double())
     
-   .def("axis",
+    .def("axis",
         [](histogram_t &self, unsigned i){return self.axis(i);},
      "Get N-th axis with runtime index")
     
@@ -53,6 +75,7 @@ void register_histogram_by_type(py::module& m, const char* name, const char* des
         py::buffer_info data_buf = data.request(); // TODO: make const?
         if(self.rank() == 1 && data_buf.shape.size() == 1) {
             const double *ptr1 = (const double *) data_buf.ptr;
+            py::gil_scoped_release gil;
             for(size_t i = 0; i<data_buf.shape.at(0); i++)
                 self(ptr1[i]);
         } else {
@@ -65,6 +88,7 @@ void register_histogram_by_type(py::module& m, const char* name, const char* des
         
             auto r = data.unchecked<2>();
             
+            py::gil_scoped_release gil;
             for(size_t i=0; i<r.shape(1); i++)
                 self(r(0, i), r(1, i));
         }
@@ -95,29 +119,36 @@ void register_histogram_by_type(py::module& m, const char* name, const char* des
         return out.str();
     })
     
-    
     ;
+    
+    return std::move(hist);
 }
 
 void register_histogram(py::module& m) {
-    register_histogram_by_type<regular_axes, bh::default_storage>(m,
-        "unlimited_histogram",
+    py::module hist = m.def_submodule("hist");
+    
+    register_histogram_by_type<axes::regular, bh::default_storage>(hist,
+        "regular_unlimited",
         "N-dimensional histogram for real-valued data.");
     
-    register_histogram_by_type<regular_axes, vector_int_storage>(m,
-        "dense_int_histogram",
+    register_histogram_by_type<axes::regular, vector_int_storage>(hist,
+        "regular_int",
         "N-dimensional histogram for int-valued data.");
     
-    register_histogram_by_type<regular_axes, bh::weight_storage>(m,
-        "weighted_histogram",
+    register_histogram_by_type<axes::regular, bh::weight_storage>(hist,
+        "regular_weight",
         "N-dimensional histogram for real-valued data with weights.");
     
-    register_histogram_by_type<regular_1D_axes, vector_int_storage>(m,
-        "int_1d_histogram",
+    register_histogram_by_type<axes::any, vector_int_storage>(hist,
+        "any_int",
+        "N-dimensional histogram for int-valued data with any axis types.");
+    
+    register_histogram_by_type<axes::regular_1D, vector_int_storage>(hist,
+        "regular_int_1d",
         "1-dimensional histogram for int valued data.");
     
-    register_histogram_by_type<regular_2D_axes, vector_int_storage>(m,
-        "int_2d_histogram",
+    register_histogram_by_type<axes::regular_2D, vector_int_storage>(hist,
+        "regular_int_2d",
         "2-dimensional histogram for int valued data.");
     
 }

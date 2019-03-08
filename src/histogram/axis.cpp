@@ -24,24 +24,37 @@ void register_axis(py::module &m) {
     
     py::module ax = m.def_submodule("axis");
 
-    py::class_<regular_axis>(ax, "regular")
+    // Axis types
+    py::class_<axis::regular>(ax, "regular")
     .def(py::init<unsigned, double, double>(), "n"_a, "start"_a, "stop"_a)
-
     ;
     
-    py::class_<regular_axes>(ax, "regular_axes")
-    .def(py::init<std::vector<regular_axis>>(), "Vector of regular axes"_a)
-    
+    py::class_<axis::circular>(ax, "circular")
+    .def(py::init<unsigned, double, double>(), "n"_a, "start"_a, "stop"_a)
     ;
     
-    py::class_<regular_1D_axes>(ax, "regular_1D_axes")
-    .def(py::init<regular_1D_axes>(), "Tuple of 1 regular axes"_a)
-    
+    py::class_<axis::regular_log>(ax, "regular_log")
+    .def(py::init<unsigned, double, double>(), "n"_a, "start"_a, "stop"_a)
     ;
     
-    py::class_<regular_2D_axes>(ax, "regular_2D_axes")
-    .def(py::init<regular_2D_axes>(), "Tuple of 2 regular axes"_a)
+    py::class_<axis::regular_sqrt>(ax, "regular_sqrt")
+    .def(py::init<unsigned, double, double>(), "n"_a, "start"_a, "stop"_a)
+    ;
     
+    py::class_<axis::regular_pow>(ax, "regular_pow")
+    .def(py::init([](double pow, unsigned n, double start, double stop){
+        return new axis::regular_pow(bh::axis::transform::pow{pow}, n, start , stop);} ), "pow"_a, "n"_a, "start"_a, "stop"_a)
+    ;
+    
+    py::module axs = m.def_submodule("axes");
+    
+    // Containers of axes
+    py::class_<axes::regular>(axs, "regular")
+    .def(py::init<axes::regular>(), "Vector of regular axes"_a)
+    ;
+    
+    py::class_<axes::any>(axs, "any")
+    .def(py::init<axes::any>(), "Vector of any axes types"_a)
     ;
     
 

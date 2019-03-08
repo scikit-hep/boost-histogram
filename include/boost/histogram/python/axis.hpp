@@ -11,8 +11,31 @@
 
 namespace bh = boost::histogram;
 
-using regular_axis = bh::axis::regular<>;
+namespace axis {
 
-using regular_axes = bh::storage_adaptor<std::vector<regular_axis>>;
-using regular_1D_axes = std::tuple<regular_axis>;
-using regular_2D_axes = std::tuple<regular_axis, regular_axis>;
+// These match the Python names
+using regular = bh::axis::regular<>;
+using circular = bh::axis::circular<>;
+using regular_log = bh::axis::regular<double, bh::axis::transform::log>;
+using regular_sqrt = bh::axis::regular<double, bh::axis::transform::sqrt>;
+using regular_pow = bh::axis::regular<double, bh::axis::transform::pow>;
+
+} // namespace axis
+
+namespace axes {
+
+// The following list is all types supported
+using any = std::vector<bh::axis::variant<axis::regular,
+                                          axis::circular,
+                                          axis::regular_log,
+                                          axis::regular_pow,
+                                          axis::regular_sqrt>>;
+
+// Specialization for some speed improvement
+using regular = std::vector<axis::regular>;
+
+// Specializations for maximum speed!
+using regular_1D = std::tuple<axis::regular>;
+using regular_2D = std::tuple<axis::regular, axis::regular>;
+
+} // namespace axes
