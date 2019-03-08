@@ -1,193 +1,80 @@
-cmake_minimum_required (VERSION 3.2)
+cmake_minimum_required(VERSION 3.12)
 
-project(histogram CXX)
-list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
+project(histogram LANGUAGES CXX VERSION 0.1)
 
-set(CMAKE_CXX_STANDARD 11)
+# Boost histogram requires C++14
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-set(MIN_BOOST_VERSION 1.66)
+# Adding folders to keep the structure a bit nicer in IDE's
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-# setup build
-option(BUILD_BENCHMARKS "Build benchmarks" OFF)
-option(BUILD_SERIALIZATION "Build serialization code" ON)
-mark_as_advanced(BUILD_BENCHMARKS)
-mark_as_advanced(BUILD_SERIALIZATION)
+# Adding PyBind11 and setting up Python
+add_subdirectory(extern/pybind11)
 
-# set build type if none is specified
-set(default_build_type "RELEASE")
-if (EXISTS "${PROJECT_SOURCE_DIR}/../.git")
-  set(default_build_type "Debug")
-endif()
+# This is completely optional and just adds hints to IDEs - no affect on build at all.
+file(GLOB_RECURSE BOOST_HIST_FILES "extern/histogram/include/*.hpp")
 
-if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
-  set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
-      STRING "Choose the type of build." FORCE)
-  # Set the possible values of build type for cmake-gui
-  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
-    "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
-endif()
+# List the header files for the Python extension
+set(BOOST_HIST_PY_HEADERS
+    include/boost/histogram/python/axis.hpp
+    include/boost/histogram/python/pybind11.hpp
+    include/boost/histogram/python/storage.hpp
+)
 
-# set special compiler flags
-if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-  add_compile_options(-D_SCL_SECURE_NO_WARNINGS)
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  add_compile_options(-Wall -Wextra)
-  if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6)
-    # -fpermissive needed for cpp_int in gcc-6
-    # -Wno-noexcept-type to silence warnings related to Boost.Python
-    add_compile_options(-fpermissive -Wno-noexcept-type)
-  endif()
-elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  add_compile_options(-Wall -Wextra -D__STRICT_ANSI__)
-endif()
+# List the source files for the Python extension
+set(BOOST_HIST_PY_SRC
+     src/module.cpp
 
-if(BUILD_PYTHON)
-  # We need both find_packge(PythonInterp) and find_package(PythonLibs),
-  # but as of cmake-3.11.4, cmake is not able to find matching versions of
-  # libs and interpreter. So we just discover the python executable (can be
-  # overriden with -DPYTHON_EXECUTABLE=/path/to/python in the shell) and
-  # use Python facilities to find the correct libs and header paths.
-  if(NOT DEFINED PYTHON_EXECUTABLE)
-    find_package(PythonInterp REQUIRED)
-  endif()
+     src/histogram/axis.cpp
+     src/histogram/histogram.cpp
+     src/histogram/storage.cpp
+    )
 
-  execute_process(COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/get_python_include.py
-                  OUTPUT_VARIABLE PYTHON_INCLUDE)
+# This is the Python module
+pybind11_add_module(histogram SHARED
+    ${BOOST_HIST_PY_HEADERS}
+    ${BOOST_HIST_PY_SRC}
+    ${BOOST_HIST_FILES}
+)
 
-  execute_process(COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/get_python_library.py
-                  OUTPUT_VARIABLE PYTHON_LIBRARY)
+# Add the include directory for boost/histogram/python
+target_include_directories(histogram PRIVATE include)
 
-  message(STATUS "Python include: ${PYTHON_INCLUDE}")
-  message(STATUS "Python lib: ${PYTHON_LIBRARY}")
-  message(STATUS "Beware: Python lib MUST match what Boost.Python was compiled against")
-  include_directories(${PYTHON_INCLUDE})
+# These are the Boost header-only libraries required by Boost::Histogram
+target_include_directories(histogram PUBLIC
+    extern/assert/include
+    extern/callable_traits/include
+    extern/config/include
+    extern/container_hash/include
+    extern/core/include
+    extern/detail/include
+    extern/histogram/include
+    extern/integer/include
+    extern/iterator/include
+    extern/move/include
+    extern/mp11/include
+    extern/mpl/include
+    extern/preprocessor/include
+    extern/static_assert/include
+    extern/throw_exception/include
+    extern/type_index/include
+    extern/type_traits/include
+    extern/utility/include
+    extern/variant/include
+    )
 
-  find_package(Boost ${MIN_BOOST_VERSION} REQUIRED COMPONENTS iostreams serialization)
-  set(LIBRARIES ${Boost_LIBRARIES} ${PYTHON_LIBRARY})
+# This makes IDE's like XCode mimic the Boost Histogram structure
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/extern/histogram/include PREFIX "Header Files" FILES ${BOOST_HIST_FILES})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/include PREFIX "Header Files" FILES ${BOOST_HIST_PY_HEADERS})
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX "Source Files" FILES ${BOOST_HIST_PY_SRC})
 
-  find_library(Boost_PYTHON
-               NAMES boost_python boost_python${PYTHON_VERSION_MAJOR} boost_python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}
-               PATHS ${Boost_LIBRARY_DIRS}
-               NO_DEFAULT_PATH)
-  list(APPEND LIBRARIES ${Boost_PYTHON})
-  message(STATUS "Found boost_python: ${Boost_PYTHON}")
+# Tests (Require pytest to be available)
+include(CTest)
 
-  if(BUILD_NUMPY)
-    find_library(Boost_NUMPY
-                 NAMES boost_numpy boost_numpy${PYTHON_VERSION_MAJOR} boost_numpy${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}
-                 PATHS ${Boost_LIBRARY_DIRS}
-                 NO_DEFAULT_PATH)
-    message(STATUS "Found boost_numpy: ${Boost_NUMPY}")
-    add_definitions(-DHAVE_NUMPY)
-    list(APPEND LIBRARIES ${Boost_NUMPY})
-  endif()
+add_test(basic_import ${PYTHON_EXECUTABLE} -m pytest "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_basic_import.py")
+add_test(histogram_internal ${PYTHON_EXECUTABLE} -m pytest "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_histogram_internal.py")
 
-  add_library(histogram SHARED
-    ../src/python/module.cpp
-    ../src/python/axis.cpp
-    ../src/python/histogram.cpp
-  )
-  target_link_libraries(histogram PUBLIC ${LIBRARIES})
-  set_target_properties(histogram PROPERTIES PREFIX "" SUFFIX ".so")
-else()
-  # serialization only required for tests
-  if (BUILD_SERIALIZATION)
-    find_package(Boost ${MIN_BOOST_VERSION} REQUIRED serialization)
-  else ()
-    find_package(Boost ${MIN_BOOST_VERSION} REQUIRED)
-    add_definitions(-DBOOST_HISTOGRAM_NO_SERIALIZATION)
-  endif()
-  set(LIBRARIES ${Boost_LIBRARIES})
-endif()
 
-include_directories(../include ${Boost_INCLUDE_DIRS})
 
-if(CMAKE_BUILD_TYPE MATCHES coverage)
-  add_compile_options(-O0 -g)
-  set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} --coverage) # enable linker flags as well
-elseif(CMAKE_BUILD_TYPE MATCHES release)
-  add_definitions(-DBOOST_DISABLE_ASSERTS)
-endif()
-
-# checks
-if(BUILD_BENCHMARKS)
-  # find_package(benchmark)
-  add_executable(speed_cpp ../test/speed_cpp.cpp)
-  target_compile_options(speed_cpp PRIVATE -O3)
-  # target_link_libraries(speed_cpp -lbenchmark -lpthread)
-endif()
-
-# tests
-enable_testing()
-
-if(BUILD_PYTHON)
-  file(GLOB TEST_SOURCES ../test/*_test.py ../examples/*.py ${CMAKE_BINARY_DIR}/doc_test/*.py)
-  foreach(SRC IN ITEMS ${TEST_SOURCES})
-    if (SRC MATCHES "/([_a-zA-Z0-9]+)\\.py")
-      set(TESTNAME ${CMAKE_MATCH_1})
-      file(READ ${SRC} SRC_CONTENT)
-      if (BUILD_NUMPY OR
-          (NOT BUILD_NUMPY AND NOT SRC_CONTENT MATCHES "^import numpy|\nimport numpy"))
-        add_test(${TESTNAME} ${PYTHON_EXECUTABLE} ${SRC})
-      endif()
-    endif()
-  endforeach()
-endif()
-
-file(GLOB TEST_SOURCES ../test/*_test.cpp ../examples/*.cpp)
-foreach(SRC IN ITEMS ${TEST_SOURCES})
-  if(SRC MATCHES "/([_a-zA-Z0-9]+)\\.cpp")
-    set(BASENAME ${CMAKE_MATCH_1})
-    if (NOT BUILD_SERIALIZATION AND BASENAME MATCHES "serialization")
-      continue()
-    endif()
-    file(READ ${SRC} SRC_CONTENT)
-    if(SRC_CONTENT MATCHES "BOOST_PYTHON_MODULE\\(([a-z_]+)\\)")
-      if(BUILD_PYTHON)
-        add_library(${CMAKE_MATCH_1} SHARED ${SRC})
-        set_target_properties(${CMAKE_MATCH_1} PROPERTIES PREFIX "" SUFFIX ".so")
-        target_link_libraries(${CMAKE_MATCH_1} PUBLIC ${LIBRARIES})
-      endif()
-    else()
-      add_executable(${BASENAME} ${SRC})
-      if (SANITIZE)
-        target_compile_options(${BASENAME} PRIVATE -fsanitize=address,undefined)
-        target_link_libraries(${BASENAME} PUBLIC -lasan -lubsan ${LIBRARIES})
-      else()
-        target_link_libraries(${BASENAME} PUBLIC ${LIBRARIES})
-      endif()
-      if (BASENAME MATCHES "fail_")
-        if (DEFINED PYTHON_EXECUTABLE)
-          add_test(NAME ${BASENAME} COMMAND ${PYTHON_EXECUTABLE}
-                   ../test/pass_on_fail.py ${BASENAME})
-        endif()
-      else()
-        add_test(${BASENAME} ${BASENAME})
-      endif()
-    endif()
-  endif()
-endforeach()
-
-# for clang format and clang tidy
-file(GLOB_RECURSE
-     ALL_SOURCE_FILES
-     LIST_DIRECTORIES false
-     ../test/*_test.cpp ../include/*.hpp
-     )
-
-get_property(INCLUDE_DIRS DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
-set(TIDY_INCLUDE)
-foreach(x ${INCLUDE_DIRS})
-  LIST(APPEND TIDY_INCLUDE -I${x})
-endforeach()
-add_custom_target(
-  clang-tidy
-  COMMAND clang-tidy
-  ${ALL_SOURCE_FILES}
-  -checks=*,-*alpha*
-  --
-  -std=c++11
-  ${TIDY_INCLUDE}
-  )
