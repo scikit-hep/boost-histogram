@@ -11,6 +11,13 @@
 
 namespace bh = boost::histogram;
 
+// Register bh::axis::Variant as a variant for PyBind11
+namespace pybind11 { namespace detail {
+    template <typename... Ts>
+    struct type_caster<bh::axis::variant<Ts...>> : variant_caster<bh::axis::variant<Ts...>> {};
+}} // namespace pybind11::detail
+
+
 namespace axis {
 
 // These match the Python names
