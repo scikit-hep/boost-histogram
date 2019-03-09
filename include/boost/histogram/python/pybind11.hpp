@@ -10,13 +10,15 @@
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 
-#include <boost/variant.hpp>
+#include <boost/histogram/axis/variant.hpp>
 
 namespace py = pybind11;
 using namespace pybind11::literals;
 
+namespace bh = boost::histogram;
+
 // Register Boost::Variant as a variant
 namespace pybind11 { namespace detail {
     template <typename... Ts>
-    struct type_caster<boost::variant<Ts...>> : variant_caster<boost::variant<Ts...>> {};
+    struct type_caster<bh::axis::variant<Ts...>> : variant_caster<bh::axis::variant<Ts...>> {};
 }} // namespace pybind11::detail
