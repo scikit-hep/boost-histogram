@@ -9,6 +9,7 @@
 
 #include <boost/histogram/python/axis.hpp>
 #include <boost/histogram/python/storage.hpp>
+#include <boost/histogram/python/histogram.hpp>
 
 #include <boost/histogram.hpp>
 #include <boost/histogram/axis/ostream.hpp>
@@ -18,41 +19,20 @@
 #include <vector>
 #include <sstream>
 
-#ifndef BOOST_HISTOGRAM_AXIS_LIMIT
-#define BOOST_HISTOGRAM_AXIS_LIMIT 16
-#endif
-
 namespace bh = boost::histogram;
-using namespace boost::histogram::literals;
 
 template<typename A, typename S>
 py::class_<bh::histogram<A, S>>&& register_histogram_by_type(py::module& m, const char* name, const char* desc) {
     
     using histogram_t = bh::histogram<A, S>;
-    // using in_storage_t = typename bh::histogram<A, S>::value_type; // No unlimited type
-    
-    py::class_<histogram_t> hist(m, name, desc /*, py::buffer_protocol() */);
+   
+    py::class_<histogram_t> hist(m, name, desc, py::buffer_protocol());
     
     hist
     .def(py::init<const A&, S>(), "axes"_a, "storage"_a=S())
     
-    /*
-    .def_buffer([](histogram_t &h) -> py::buffer_info {
-        auto rank = h.rank();
-        auto rows = bh::axis::traits::extend(h.axis(0_c));
-        auto cols = bh::axis::traits::extend(h.axis(1_c));
-        
-        return py::buffer_info(
-                               &h[0],                                         // Pointer to buffer
-                               sizeof(in_storage_t),                          // Size of one scalar
-                               py::format_descriptor<in_storage_t>::format(), // Python struct-style format descriptor
-                               rank,                                          // Number of dimensions
-                               {rows, cols},                                  // Buffer dimensions
-                               { sizeof(in_storage_t),                        // Strides (in bytes) for each index
-                                 sizeof(in_storage_t) * rows}
-                               );
-    })
-    */
+    .def_buffer([](bh::histogram<A, S>& h) -> py::buffer_info
+        {return make_buffer(h);})
     
     .def("rank", &histogram_t::rank,
          "Number of axes (dimensions) of histogram" )

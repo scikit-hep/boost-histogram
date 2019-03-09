@@ -19,6 +19,7 @@ file(GLOB_RECURSE BOOST_HIST_FILES "extern/histogram/include/*.hpp")
 # List the header files for the Python extension
 set(BOOST_HIST_PY_HEADERS
     include/boost/histogram/python/axis.hpp
+    include/boost/histogram/python/histogram.hpp
     include/boost/histogram/python/pybind11.hpp
     include/boost/histogram/python/storage.hpp
 )

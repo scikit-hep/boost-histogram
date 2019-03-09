@@ -7,13 +7,12 @@ import numpy as np
 def test_1D_fill_unlimited():
     bins = 10
     ranges = (0, 1)
-
     vals = (.15, .25, .25)
-
     hist = bh.hist.regular_unlimited([
         bh.axis.regular(bins, *ranges)
         ])
     hist.fill(vals)
+
 
 methods = [
     bh.hist.regular_int,
