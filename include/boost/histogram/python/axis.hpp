@@ -22,6 +22,7 @@ namespace axis {
 
 // These match the Python names
 using regular = bh::axis::regular<>;
+using regular_noflow = bh::axis::regular<double, bh::use_default, bh::use_default, bh::axis::option::none_t>;
 using circular = bh::axis::circular<>;
 using regular_log = bh::axis::regular<double, bh::axis::transform::log>;
 using regular_sqrt = bh::axis::regular<double, bh::axis::transform::sqrt>;
@@ -33,6 +34,7 @@ namespace axes {
 
 // The following list is all types supported
 using any = std::vector<bh::axis::variant<axis::regular,
+                                          axis::regular_noflow,
                                           axis::circular,
                                           axis::regular_log,
                                           axis::regular_pow,
@@ -41,8 +43,15 @@ using any = std::vector<bh::axis::variant<axis::regular,
 // Specialization for some speed improvement
 using regular = std::vector<axis::regular>;
 
+// Specialization for some speed improvement
+using regular_noflow = std::vector<axis::regular_noflow>;
+    
 // Specializations for maximum speed!
 using regular_1D = std::tuple<axis::regular>;
 using regular_2D = std::tuple<axis::regular, axis::regular>;
-
+    
+using regular_noflow_1D = std::tuple<axis::regular_noflow>;
+using regular_noflow_2D = std::tuple<axis::regular_noflow, axis::regular_noflow>;
+    
+    
 } // namespace axes

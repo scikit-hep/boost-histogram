@@ -115,6 +115,10 @@ void register_histogram(py::module& m) {
         "regular_int",
         "N-dimensional histogram for int-valued data.");
     
+    register_histogram_by_type<axes::regular_noflow, vector_int_storage>(hist,
+        "regular_int_noflow",
+        "N-dimensional histogram for int-valued data.");
+    
     register_histogram_by_type<axes::regular, bh::weight_storage>(hist,
         "regular_weight",
         "N-dimensional histogram for real-valued data with weights.");
@@ -129,6 +133,14 @@ void register_histogram(py::module& m) {
     
     register_histogram_by_type<axes::regular_2D, vector_int_storage>(hist,
         "regular_int_2d",
+        "2-dimensional histogram for int valued data.");
+    
+    register_histogram_by_type<axes::regular_noflow_1D, vector_int_storage>(hist,
+        "regular_int_noflow_1d",
+        "1-dimensional histogram for int valued data.");
+    
+    register_histogram_by_type<axes::regular_noflow_2D, vector_int_storage>(hist,
+        "regular_int_noflow_2d",
         "2-dimensional histogram for int valued data.");
     
 }

@@ -29,6 +29,11 @@ void register_axis(py::module &m) {
     .def(py::init<unsigned, double, double>(), "n"_a, "start"_a, "stop"_a)
     ;
     
+    // Axis types
+    py::class_<axis::regular_noflow>(ax, "regular_noflow")
+    .def(py::init<unsigned, double, double>(), "n"_a, "start"_a, "stop"_a)
+    ;
+    
     py::class_<axis::circular>(ax, "circular")
     .def(py::init<unsigned, double, double>(), "n"_a, "start"_a, "stop"_a)
     ;
