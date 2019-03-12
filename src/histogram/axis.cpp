@@ -54,4 +54,8 @@ void register_axis(py::module &m) {
     py::class_<axis::variable>(ax, "variable")
     .def(py::init<std::vector<double>>(), "edges"_a)
     ;
+
+    py::class_<axis::integer>(ax, "integer")
+    .def(py::init<int, int>(), "min"_a, "max"_a)
+    ;
 }
