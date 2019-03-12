@@ -48,12 +48,15 @@ struct fill_helper {
       ++size;
   }
 
+  // keep function small to minimize code bloat, it is instantiated 32 times :(
+  // TODO: solve this more efficiently on the lower Boost::Histogram level
   template <class N>
   void operator()(N) {
     using namespace boost::mp11;
     // N is a compile-time number with N == arrs.size()
     mp_repeat<std::tuple<double>, N> tp;
-    py::gil_scoped_release gil; // HD: is this really safe?
+    // TODO: only release gil when storage is thread-safe
+    // py::gil_scoped_release gil;
     for (std::size_t i = 0; i < size; ++i) {
       mp_for_each<mp_iota<N>>([&](auto I) {
         // I is mp_size_t<0>, mp_size_t<1>, ..., mp_size_t<N-1>
@@ -77,7 +80,8 @@ struct fill_helper {
       const double* ptr;
       std::size_t size;
     };
-    py::gil_scoped_release gil; // HD: is this really safe?
+    // TODO: only release gil when storage is thread-safe
+    // py::gil_scoped_release gil;
     for (double xi : span{arrs.front().second, size})
       hist(xi); // throws invalid_argument if hist.rank() != 1 
   }
