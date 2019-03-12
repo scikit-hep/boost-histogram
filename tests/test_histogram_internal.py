@@ -11,7 +11,7 @@ def test_1D_fill_unlimited():
     hist = bh.hist.regular_unlimited([
         bh.axis.regular(bins, *ranges)
         ])
-    hist.fill(vals)
+    hist(vals)
 
 
 methods = [
@@ -29,7 +29,7 @@ def test_1D_fill_int(hist_func):
     hist = hist_func([
         bh.axis.regular(bins, *ranges)
         ])
-    hist.fill(vals)
+    hist(vals)
 
     assert [hist.at(i) for i in range(10)] == [0, 1, 2, 0, 0, 0, 0, 0, 0, 0]
 
@@ -44,7 +44,7 @@ def test_2D_fill_int(hist_func):
         bh.axis.regular(bins[0], *ranges[0]),
         bh.axis.regular(bins[1], *ranges[1]),
         ])
-    hist.fill(vals)
+    hist(*vals)
 
     H, *ledges = np.histogram2d(*vals, bins=bins, range=ranges)
 
