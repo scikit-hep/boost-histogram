@@ -50,4 +50,8 @@ void register_axis(py::module &m) {
     .def(py::init([](double pow, unsigned n, double start, double stop){
         return new axis::regular_pow(bh::axis::transform::pow{pow}, n, start , stop);} ), "pow"_a, "n"_a, "start"_a, "stop"_a)
     ;
+    
+    py::class_<axis::variable>(ax, "variable")
+    .def(py::init<std::vector<double>>(), "edges"_a)
+    ;
 }
