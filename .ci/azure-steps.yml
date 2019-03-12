@@ -1,0 +1,24 @@
+steps:
+
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '$(python.version)'
+    architecture: 'x64'
+
+- checkout: self
+  fetchDepth: 50
+  submodules: true
+
+- script: |
+    python -m pip install --upgrade pip
+    python -m pip install --upgrade pytest
+    python -m pip install numpy
+  displayName: 'Install dependencies'
+
+- script: |
+    python -m pip install --verbose -e .
+  displayName: 'Build and install package'
+
+- script: |
+    python -m pytest tests
+  displayName: 'Test with pytest'
