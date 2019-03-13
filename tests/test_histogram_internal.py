@@ -62,4 +62,5 @@ def test_edges_histogram():
     vals = (13,15,24,29)
     hist(vals)
 
-    assert np.all(hist == [0,0,2,2,0,0])
+    bins = np.asarray(hist)
+    assert np.all(bins == [0,0,2,2,0])
