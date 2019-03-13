@@ -60,6 +60,6 @@ def test_edges_histogram():
         ])
 
     vals = (13,15,24,29)
-    hist.fill(vals)
+    hist(vals)
 
     assert np.all(hist == [0,0,2,2,0,0])
