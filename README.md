@@ -12,9 +12,28 @@ Python bindings for [Boost::Histogram][], a C++14 library. This should become on
 [Boost::Histogram]:  https://www.boost.org/doc/libs/develop/libs/histogram/doc/html/index.html 
 [fastest libraries]: https://iscinumpy.gitlab.io/post/histogram-speeds-in-python/
 
+
+## Installation
+
+This library is under development, but you can install directly from github if you would like. You need a C++14 compiler and Python 2.7--3.7.
+All the normal best-practices for Python apply; you should be in a virtual environment, otherwise add `--user`, etc.
+
+```bash
+python -m pip install git+https://github.com/scikit-hep/boost-histogram.git@develop
+```
+
+
 ## Developing
 
-This repository has dependencies in submodules. Check out the repository like this.
+This repository has dependencies in submodules. Check out the repository like this:
+
+```bash
+git clone --recursive https://github.com/scikit-hep/boost-histogram.git
+cd boost-histogram
+```
+
+
+<details><summary>Faster version (click to expand)</summary>
 
 ```bash
 git clone https://github.com/scikit-hep/boost-histogram.git
@@ -22,7 +41,9 @@ cd boost-histogram
 git submodule update --init --depth 10
 ```
 
-Make a build directory and run CMake.
+</details>
+
+Make a build directory and run CMake. If you have a specific Python you want to use, add `-DPYTHON_EXECUTABLE=$(which python)` or similar to the CMake line.
 
 ```bash
 mkdir build
@@ -31,7 +52,7 @@ cmake ..
 make -j4
 ```
 
-Run the unit tests (requires pytest and numpy).
+Run the unit tests (requires pytest and numpy). Use `ctest` or `make test`, like this:
 
 ```bash
 make test
