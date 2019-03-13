@@ -1,0 +1,30 @@
+steps:
+
+- checkout: self
+  fetchDepth: 50
+  submodules: true
+
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '$(python.version)'
+    architecture: 'x64'
+
+- script: |
+    python -m pip install --upgrade pip
+    python -m pip install --upgrade pytest
+    python -m pip install numpy
+  displayName: 'Install dependencies'
+
+- task: CMake@1
+  inputs:
+    cmakeArgs: .. -DCMAKE_BUILD_TYPE=Debug
+  displayName: 'Configure'
+
+- script: cmake --build . -j
+  displayName: 'Build'
+  workingDirectory: build
+
+- script: ctest --output-on-failure -C Debug
+  displayName: 'Test'
+  workingDirectory: build
+

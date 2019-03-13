@@ -46,6 +46,6 @@ def test_2D_fill_int(hist_func):
         ])
     hist(*vals)
 
-    H, *ledges = np.histogram2d(*vals, bins=bins, range=ranges)
+    H = np.histogram2d(*vals, bins=bins, range=ranges)[0]
 
     assert [hist.at(i // 10, i % 10) for i in range(100)] == [H[i // 10, i % 10] for i in range(100)]

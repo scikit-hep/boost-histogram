@@ -71,11 +71,12 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/extern/histogram/include PREFIX "H
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/include PREFIX "Header Files" FILES ${BOOST_HIST_PY_HEADERS})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX "Source Files" FILES ${BOOST_HIST_PY_SRC})
 
+# Adding warnings (will cause errors except in MSVC, since PyBind11 might cause a few there - add /WX if you want to try)
 target_compile_options(histogram PRIVATE
                        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
                            -Wall -Wextra -Werror -pedantic-errors -Wconversion -Wsign-conversion>
                        $<$<CXX_COMPILER_ID:MSVC>:
-                           /WX /W4>)
+                           /W4>)
 
 # Tests (Require pytest to be available)
 include(CTest)
