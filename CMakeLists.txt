@@ -78,7 +78,7 @@ target_compile_options(histogram PRIVATE
                        $<$<CXX_COMPILER_ID:MSVC>:
                            /W4>)
 
-# Tests (Require pytest to be available)
+# Tests (Requires pytest to be available to run)
 include(CTest)
 
 if(BUILD_TESTING)

@@ -16,7 +16,7 @@ def test_1D_fill_unlimited():
 
 methods = [
     bh.hist.regular_int,
-    bh.hist.any_int
+    bh.hist.any_int,
 ]
 
 @pytest.mark.parametrize("hist_func", methods + [bh.hist.regular_int_1d])
@@ -31,7 +31,9 @@ def test_1D_fill_int(hist_func):
         ])
     hist(vals)
 
-    assert [hist.at(i) for i in range(10)] == [0, 1, 2, 0, 0, 0, 0, 0, 0, 0]
+    H =  np.array([0, 1, 2, 0, 0, 0, 0, 0, 0, 0])
+
+    assert np.all(np.asarray(hist)[1:-1] == H)
 
 @pytest.mark.parametrize("hist_func", methods + [bh.hist.regular_int_2d])
 def test_2D_fill_int(hist_func):
@@ -48,4 +50,17 @@ def test_2D_fill_int(hist_func):
 
     H = np.histogram2d(*vals, bins=bins, range=ranges)[0]
 
-    assert [hist.at(i // 10, i % 10) for i in range(100)] == [H[i // 10, i % 10] for i in range(100)]
+    assert np.all(np.asarray(hist)[1:-1,1:-1] == H)
+
+
+def test_edges_histogram():
+    edges = (1, 12, 22, 79)
+    hist = bh.hist.any_int([
+        bh.axis.variable(edges)
+        ])
+
+    vals = (13,15,24,29)
+    hist(vals)
+
+    bins = np.asarray(hist)
+    assert np.all(bins == [0,0,2,2,0])

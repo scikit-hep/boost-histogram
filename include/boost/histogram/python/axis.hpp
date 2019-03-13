@@ -27,6 +27,8 @@ using circular = bh::axis::circular<>;
 using regular_log = bh::axis::regular<double, bh::axis::transform::log>;
 using regular_sqrt = bh::axis::regular<double, bh::axis::transform::sqrt>;
 using regular_pow = bh::axis::regular<double, bh::axis::transform::pow>;
+    
+using variable = bh::axis::variable<double>;
 
 } // namespace axis
 
@@ -38,7 +40,8 @@ using any = std::vector<bh::axis::variant<axis::regular,
                                           axis::circular,
                                           axis::regular_log,
                                           axis::regular_pow,
-                                          axis::regular_sqrt>>;
+                                          axis::regular_sqrt,
+                                          axis::variable>>;
 
 // Specialization for some speed improvement
 using regular = std::vector<axis::regular>;
