@@ -92,7 +92,7 @@ struct fill_helper {
 };
 
 template<typename A, typename S>
-py::class_<bh::histogram<A, S>>&& register_histogram_by_type(py::module& m, const char* name, const char* desc) {
+py::class_<bh::histogram<A, S>> register_histogram_by_type(py::module& m, const char* name, const char* desc) {
     
     using histogram_t = bh::histogram<A, S>;
    
@@ -142,7 +142,7 @@ py::class_<bh::histogram<A, S>>&& register_histogram_by_type(py::module& m, cons
     
     ;
     
-    return std::move(hist);
+    return hist;
 }
 
 void register_histogram(py::module& m) {

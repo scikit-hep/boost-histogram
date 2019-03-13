@@ -29,6 +29,7 @@ using regular_sqrt = bh::axis::regular<double, bh::axis::transform::sqrt>;
 using regular_pow = bh::axis::regular<double, bh::axis::transform::pow>;
 using variable = bh::axis::variable<>;
 using integer = bh::axis::integer<>;
+using category_str = bh::axis::category<std::string>;
 
 } // namespace axis
 
@@ -42,7 +43,8 @@ using any = std::vector<bh::axis::variant<axis::regular,
                                           axis::regular_pow,
                                           axis::regular_sqrt,
                                           axis::variable,
-                                          axis::integer
+                                          axis::integer,
+                                          axis::category_str
                                           >>;
 
 // Specialization for some speed improvement

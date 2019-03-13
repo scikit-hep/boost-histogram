@@ -64,3 +64,34 @@ def test_edges_histogram():
 
     bins = np.asarray(hist)
     assert np.all(bins == [0,0,2,2,0])
+
+def test_int_histogram():
+    hist = bh.hist.any_int([
+        bh.axis.integer(3,7)
+        ])
+
+    vals = (1,2,3,4,5,6,7,8,9)
+    hist(vals)
+
+    bins = np.asarray(hist)
+    assert np.all(bins == [2,1,1,1,1,3])
+
+
+def test_str_categories_histogram():
+    hist = bh.hist.any_int([
+        bh.axis.category_str(["a", "b", "c"])
+        ])
+
+    vals = ['a', 'b', 'b', 'c']
+    # Can't fill yet
+
+@pytest.mark.parametrize("axis", [
+    bh.axis.regular,
+    bh.axis.regular_noflow,
+    bh.axis.circular,
+    bh.axis.regular_log,
+    bh.axis.regular_sqrt,
+])
+def test_regular_axis_repr(axis):
+    ax = axis(2,3,4)
+    assert 'object at' not in repr(ax)
