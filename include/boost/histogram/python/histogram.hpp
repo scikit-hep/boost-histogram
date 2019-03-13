@@ -43,6 +43,6 @@ py::buffer_info make_buffer(bh::histogram<A, S>& h) {
 
 /// Unlimited storage does not support buffer access
 template<typename A>
-py::buffer_info make_buffer(bh::histogram<A, bh::default_storage>& h) {
+py::buffer_info make_buffer(bh::histogram<A, bh::default_storage>&) {
     return py::buffer_info();
 };

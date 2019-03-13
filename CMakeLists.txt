@@ -44,7 +44,7 @@ pybind11_add_module(histogram SHARED
 target_include_directories(histogram PRIVATE include)
 
 # These are the Boost header-only libraries required by Boost::Histogram
-target_include_directories(histogram PUBLIC
+target_include_directories(histogram SYSTEM PUBLIC
     extern/assert/include
     extern/callable_traits/include
     extern/config/include
@@ -71,11 +71,19 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/extern/histogram/include PREFIX "H
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/include PREFIX "Header Files" FILES ${BOOST_HIST_PY_HEADERS})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX "Source Files" FILES ${BOOST_HIST_PY_SRC})
 
+target_compile_options(histogram PRIVATE
+                       $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
+                           -Wall -Wextra -Werror -pedantic-errors -Wconversion -Wsign-conversion>
+                       $<$<CXX_COMPILER_ID:MSVC>:
+                           /WX /W4>)
+
 # Tests (Require pytest to be available)
 include(CTest)
 
-add_test(basic_import ${PYTHON_EXECUTABLE} -m pytest "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_basic_import.py")
-add_test(histogram_internal ${PYTHON_EXECUTABLE} -m pytest "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_histogram_internal.py")
+if(BUILD_TESTING)
+    add_test(basic_import ${PYTHON_EXECUTABLE} -m pytest "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_basic_import.py")
+    add_test(histogram_internal ${PYTHON_EXECUTABLE} -m pytest "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_histogram_internal.py")
+endif()
 
 
 

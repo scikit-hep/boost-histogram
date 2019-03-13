@@ -28,21 +28,21 @@ namespace bh = boost::histogram;
 template <class Histogram>
 struct fill_helper {
   fill_helper(Histogram& h, py::args args) : hist(h) {
-    auto dim = args.size();
+    size_t dim = args.size();
     if (dim == 0)
       throw std::invalid_argument("at least one argument required");
 
     arrs.reserve(dim);
-    for (std::size_t i = 0; i < dim; ++i) {
+    for (size_t i = 0; i < dim; ++i) {
       auto a = py::cast<py::array_t<double>>(args[i]);
       if (a.ndim() > 1)
         throw std::invalid_argument("array dim must be 0 or 1");
       arrs.emplace_back(a, a.data());
     }
 
-    size = arrs[0].first.size();
-    for (std::size_t i = 1; i < dim; ++i)
-      if (arrs[i].first.size() != size)
+    size = (size_t) arrs[0].first.size();
+    for (size_t i = 1; i < dim; ++i)
+      if (arrs[i].first.size() != (ssize_t) size)
         throw std::invalid_argument("arrays must have same length");
     if (size == 0) // handle scalars by setting size to 1
       ++size;
@@ -88,7 +88,7 @@ struct fill_helper {
 
   Histogram& hist;
   std::vector<std::pair<py::array_t<double>, const double*>> arrs;
-  std::size_t size;
+  size_t size;
 };
 
 template<typename A, typename S>
