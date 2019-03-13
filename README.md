@@ -1,6 +1,6 @@
 # boost-histogram for Python
 
-[![Gitter][gitter-badge]][[gitter-link]
+[![Gitter][gitter-badge]][gitter-link]
 [![Build Status][azure-badge]][azure-link]
 
 Python bindings for [Boost::Histogram][], a C++14 library. This should become one of the [fastest libraries][] for histogramming, while still providing the power of a full histogram object.
