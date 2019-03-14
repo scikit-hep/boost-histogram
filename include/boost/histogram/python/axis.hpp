@@ -4,6 +4,8 @@
 // (See accompanying file LICENSE_1_0.txt
 // or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+#pragma once
+
 #include <boost/histogram.hpp>
 
 #include <tuple>
@@ -27,8 +29,9 @@ using circular = bh::axis::circular<>;
 using regular_log = bh::axis::regular<double, bh::axis::transform::log>;
 using regular_sqrt = bh::axis::regular<double, bh::axis::transform::sqrt>;
 using regular_pow = bh::axis::regular<double, bh::axis::transform::pow>;
-    
-using variable = bh::axis::variable<double>;
+using variable = bh::axis::variable<>;
+using integer = bh::axis::integer<>;
+using category_str = bh::axis::category<std::string>;
 
 } // namespace axis
 
@@ -41,7 +44,10 @@ using any = std::vector<bh::axis::variant<axis::regular,
                                           axis::regular_log,
                                           axis::regular_pow,
                                           axis::regular_sqrt,
-                                          axis::variable>>;
+                                          axis::variable,
+                                          axis::integer,
+                                          axis::category_str
+                                          >>;
 
 // Specialization for some speed improvement
 using regular = std::vector<axis::regular>;

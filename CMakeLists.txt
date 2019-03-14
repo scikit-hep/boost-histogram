@@ -15,23 +15,16 @@ add_subdirectory(extern/pybind11)
 
 # This is completely optional and just adds hints to IDEs - no affect on build at all.
 file(GLOB_RECURSE BOOST_HIST_FILES "extern/histogram/include/*.hpp")
-
-# List the header files for the Python extension
-set(BOOST_HIST_PY_HEADERS
-    include/boost/histogram/python/axis.hpp
-    include/boost/histogram/python/histogram.hpp
-    include/boost/histogram/python/pybind11.hpp
-    include/boost/histogram/python/storage.hpp
-)
+file(GLOB_RECURSE BOOST_HIST_PY_HEADERS "include/*.hpp")
 
 # List the source files for the Python extension
-set(BOOST_HIST_PY_SRC
-     src/module.cpp
-
-     src/histogram/axis.cpp
-     src/histogram/histogram.cpp
-     src/histogram/storage.cpp
+# On some backends (like make), this will regenerate if a file was added/removed
+file(GLOB_RECURSE
+    BOOST_HIST_PY_SRC
+    CONFIGURE_DEPENDS
+    src/*.cpp
     )
+
 
 # This is the Python module
 pybind11_add_module(histogram SHARED
@@ -82,8 +75,18 @@ target_compile_options(histogram PRIVATE
 include(CTest)
 
 if(BUILD_TESTING)
-    add_test(basic_import ${PYTHON_EXECUTABLE} -m pytest "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_basic_import.py")
-    add_test(histogram_internal ${PYTHON_EXECUTABLE} -m pytest "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_histogram_internal.py")
+    # Look for all the tests
+    file(GLOB
+        BOOST_HIST_PY_TESTS
+        CONFIGURE_DEPENDS
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_*.py"
+        )
+
+    # Add each test
+    foreach(TEST_FILE IN LISTS BOOST_HIST_PY_TESTS)
+        get_filename_component(TEST_NAME "${TEST_FILE}" NAME_WE)
+        add_test(${TEST_NAME} ${PYTHON_EXECUTABLE} -m pytest "${TEST_FILE}")
+    endforeach()
 endif()
 
 
