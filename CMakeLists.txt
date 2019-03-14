@@ -71,6 +71,11 @@ target_compile_options(histogram PRIVATE
                        $<$<CXX_COMPILER_ID:MSVC>:
                            /W4>)
 
+set(BOOST_HISTOGRAM_DETAIL_AXES_LIMIT "" CACHE STRING "Set the maximum number of axis in a histogram (affects compile time and size)")
+if(NOT "${BOOST_HISTOGRAM_DETAIL_AXES_LIMIT}" STREQUAL "")
+    target_compile_definitions(histogram PRIVATE BOOST_HISTOGRAM_DETAIL_AXES_LIMIT=${BOOST_HISTOGRAM_DETAIL_AXES_LIMIT})
+endif()
+
 # Tests (Requires pytest to be available to run)
 include(CTest)
 
