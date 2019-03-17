@@ -50,3 +50,12 @@ def test_axis_circular():
 def test_regular_axis_repr(axis):
     ax = axis(2,3,4)
     assert 'object at' not in repr(ax)
+
+    ax = axis(7,2,4, label='This')
+    assert 'This' in repr(ax)
+    assert ax.label == 'This'
+
+    ax.label = 'That'
+    ax = axis(7,2,4, label='That')
+    assert 'That' in repr(ax)
+    assert ax.label == 'That'

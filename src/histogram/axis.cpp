@@ -47,6 +47,10 @@ py::class_<A> register_axis_by_type(py::module& m, const char* name, const char*
     .def("extent", [](const A& self){return bh::axis::traits::extend(self);},
          "Retuns the number of bins, including over- or underflow")
     .def_static("options", &A::options, "Return the options associated to the axis")
+    .def_property("label",
+                  [](const A& self){return self.metadata();},
+                  [](A& self, std::string label){self.metadata() = label;},
+                  "Set the axis label")
     ;
     
     
@@ -67,39 +71,40 @@ void register_axis(py::module &m) {
     
 
     register_axis_by_type<axis::regular>(ax, "regular", "Evenly spaced bins")
-    .def(py::init<unsigned, double, double>(), "n"_a, "start"_a, "stop"_a)
+    .def(py::init<unsigned, double, double, std::string>(), "n"_a, "start"_a, "stop"_a, "label"_a = "")
     ;
     
     register_axis_by_type<axis::regular_noflow>(ax, "regular_noflow", "Evenly spaced bins without over/under flow")
-    .def(py::init<unsigned, double, double>(), "n"_a, "start"_a, "stop"_a)
+    .def(py::init<unsigned, double, double, std::string>(), "n"_a, "start"_a, "stop"_a, "label"_a = "")
     ;
     
     register_axis_by_type<axis::circular>(ax, "circular", "Evenly spaced bins with wraparound")
-    .def(py::init<unsigned, double, double>(), "n"_a, "start"_a, "stop"_a)
+    .def(py::init<unsigned, double, double, std::string>(), "n"_a, "start"_a, "stop"_a, "label"_a = "")
     ;
     
     register_axis_by_type<axis::regular_log>(ax, "regular_log", "Evenly spaced bins in log10")
-    .def(py::init<unsigned, double, double>(), "n"_a, "start"_a, "stop"_a)
+    .def(py::init<unsigned, double, double, std::string>(), "n"_a, "start"_a, "stop"_a, "label"_a = "")
     ;
     
     register_axis_by_type<axis::regular_sqrt>(ax, "regular_sqrt", "Evenly spaced bins in sqrt")
-    .def(py::init<unsigned, double, double>(), "n"_a, "start"_a, "stop"_a)
+    .def(py::init<unsigned, double, double, std::string>(), "n"_a, "start"_a, "stop"_a, "label"_a = "")
     ;
     
     register_axis_by_type<axis::regular_pow>(ax, "regular_pow", "Evenly spaced bins in a power")
-    .def(py::init([](double pow, unsigned n, double start, double stop){
-        return new axis::regular_pow(bh::axis::transform::pow{pow}, n, start , stop);} ), "pow"_a, "n"_a, "start"_a, "stop"_a)
+    .def(py::init([](double pow, unsigned n, double start, double stop, std::string label){
+        return new axis::regular_pow(bh::axis::transform::pow{pow}, n, start , stop, label);} ),
+         "pow"_a, "n"_a, "start"_a, "stop"_a, "label"_a = "")
     ;
     
     register_axis_by_type<axis::variable>(ax, "variable", "Unevenly spaced bins")
-    .def(py::init<std::vector<double>>(), "edges"_a)
+    .def(py::init<std::vector<double>, std::string>(), "edges"_a, "label"_a = "")
     ;
 
     register_axis_by_type<axis::integer>(ax, "integer", "Contigious integers")
-    .def(py::init<int, int>(), "min"_a, "max"_a)
+    .def(py::init<int, int, std::string>(), "min"_a, "max"_a, "label"_a = "")
     ;
 
     register_axis_by_type<axis::category_str, std::string>(ax, "category_str", "Text label bins")
-    .def(py::init<std::vector<std::string>>(), "labels"_a)
+    .def(py::init<std::vector<std::string>, std::string>(), "labels"_a, "label"_a = "")
     ;
 }
