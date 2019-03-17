@@ -35,10 +35,13 @@ def test_1D_fill_int(hist_func):
 
     assert np.all(np.asarray(hist)[1:-1] == H)
 
+    assert hist.axis(0).size() == bins
+    assert hist.axis(0).extent() == bins + 2
+
 @pytest.mark.parametrize("hist_func", methods + [bh.hist.regular_int_2d])
 def test_2D_fill_int(hist_func):
-    bins = (10, 10)
-    ranges = ((0, 1), (0, 1))
+    bins = (10, 15)
+    ranges = ((0, 3), (0, 2))
 
     vals = ((.15, .25, .25), (.35, .45, .45))
 
@@ -51,6 +54,12 @@ def test_2D_fill_int(hist_func):
     H = np.histogram2d(*vals, bins=bins, range=ranges)[0]
 
     assert np.all(np.asarray(hist)[1:-1,1:-1] == H)
+
+    assert hist.axis(0).size() == bins[0]
+    assert hist.axis(0).extent() == bins[0] + 2
+
+    assert hist.axis(1).size() == bins[1]
+    assert hist.axis(1).extent() == bins[1] + 2
 
 
 def test_edges_histogram():
@@ -85,13 +94,3 @@ def test_str_categories_histogram():
     vals = ['a', 'b', 'b', 'c']
     # Can't fill yet
 
-@pytest.mark.parametrize("axis", [
-    bh.axis.regular,
-    bh.axis.regular_noflow,
-    bh.axis.circular,
-    bh.axis.regular_log,
-    bh.axis.regular_sqrt,
-])
-def test_regular_axis_repr(axis):
-    ax = axis(2,3,4)
-    assert 'object at' not in repr(ax)

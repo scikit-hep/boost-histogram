@@ -5,10 +5,14 @@
 
 #include <boost/histogram/python/pybind11.hpp>
 
+#include <pybind11/operators.h>
+
 #include <boost/histogram/python/axis.hpp>
 
 #include <boost/histogram/axis/ostream.hpp>
 #include <boost/histogram.hpp>
+
+#include <boost/histogram/axis/traits.hpp>
 
 #include <iostream>
 #include <sstream>
@@ -20,9 +24,11 @@
 namespace bh = boost::histogram;
 
 /// Add helpers common to all axis types
-template<typename A>
+template<typename A, typename R=int>
 py::class_<A> register_axis_by_type(py::module& m, const char* name, const char* desc) {
     py::class_<A> axis(m, name, desc);
+    
+    // using value_type = decltype(A::value(1.0));
     
     axis
     .def("__repr__", [](A &self){
@@ -30,7 +36,19 @@ py::class_<A> register_axis_by_type(py::module& m, const char* name, const char*
         out << self;
         return out.str();
     })
+    
+    .def(py::self == py::self)
+    .def(py::self != py::self)
+    
+    .def("index", &A::index, "The index at a point on the axis", "x"_a)
+    .def("bin", &A::bin, "The bin contents", "idx"_a)
+    .def("value", &A::value, "The value for a fractional bin in the axis", "i"_a)
+    .def("size", &A::size, "Returns the number of bins, without over- or underflow")
+    .def("extent", [](const A& self){return bh::axis::traits::extend(self);},
+         "Retuns the number of bins, including over- or underflow")
+    .def_static("options", &A::options, "Return the options associated to the axis")
     ;
+    
     
     return axis;
 }
@@ -38,6 +56,15 @@ py::class_<A> register_axis_by_type(py::module& m, const char* name, const char*
 void register_axis(py::module &m) {
     
     py::module ax = m.def_submodule("axis");
+    
+    py::module opt = ax.def_submodule("options");
+    
+    opt.attr("none") =      (unsigned) bh::axis::option::none;
+    opt.attr("underflow") = (unsigned) bh::axis::option::underflow;
+    opt.attr("overflow") =  (unsigned) bh::axis::option::overflow;
+    opt.attr("circular") =  (unsigned) bh::axis::option::circular;
+    opt.attr("growth") =    (unsigned) bh::axis::option::growth;
+    
 
     register_axis_by_type<axis::regular>(ax, "regular", "Evenly spaced bins")
     .def(py::init<unsigned, double, double>(), "n"_a, "start"_a, "stop"_a)
@@ -72,7 +99,7 @@ void register_axis(py::module &m) {
     .def(py::init<int, int>(), "min"_a, "max"_a)
     ;
 
-    register_axis_by_type<axis::category_str>(ax, "category_str", "Text label bins")
+    register_axis_by_type<axis::category_str, std::string>(ax, "category_str", "Text label bins")
     .def(py::init<std::vector<std::string>>(), "labels"_a)
     ;
 }
