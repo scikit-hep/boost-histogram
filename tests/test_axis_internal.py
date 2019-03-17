@@ -1,4 +1,5 @@
 import pytest
+from pytest import approx
 
 import histogram as bh
 import numpy as np
@@ -16,6 +17,11 @@ def test_axis_regular(axtype):
     assert 10 == ax.index(23)
 
     assert 10 == ax.size()
+
+    assert ax.bin(3).lower() == approx(.3)
+    assert ax.bin(3).upper() == approx(.4)
+    assert ax.bin(3).width() == approx(.1)
+    assert ax.bin(3).center() == approx(.35)
 
 def test_axis_regular_extents():
     ax = bh.axis.regular(10,0,1)

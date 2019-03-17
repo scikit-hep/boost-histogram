@@ -21,6 +21,8 @@
 #include <utility>
 #include <vector>
 
+using namespace std::literals;
+
 namespace bh = boost::histogram;
 
 /// Add helpers common to all axis types
@@ -51,11 +53,34 @@ py::class_<A> register_axis_by_type(py::module& m, const char* name, const char*
                   [](const A& self){return self.metadata();},
                   [](A& self, std::string label){self.metadata() = label;},
                   "Set the axis label")
-    ;
     
+    ;
     
     return axis;
 }
+
+
+/// Add helpers common to all types with a range of values
+template<typename A, typename R=int>
+py::class_<A> register_axis_iv_by_type(py::module& m, const char* name) {
+    using A_iv = bh::axis::interval_view<A>;
+    py::class_<A_iv> axis_iv = py::class_<A_iv>(m, name, "Lightweight bin view");
+
+    axis_iv
+    .def("upper", &A_iv::upper)
+    .def("lower", &A_iv::lower)
+    .def("center", &A_iv::center)
+    .def("width", &A_iv::width)
+    .def(py::self == py::self)
+    .def(py::self != py::self)
+    .def("__repr__", [](const A_iv& self){
+        return "<bin ["s + std::to_string(self.lower()) + ", "s + std::to_string(self.upper()) + "]>"s;
+    })
+    ;
+
+    return axis_iv;
+}
+
 
 void register_axis(py::module &m) {
     
@@ -73,38 +98,55 @@ void register_axis(py::module &m) {
     register_axis_by_type<axis::regular>(ax, "regular", "Evenly spaced bins")
     .def(py::init<unsigned, double, double, std::string>(), "n"_a, "start"_a, "stop"_a, "label"_a = "")
     ;
-    
+    register_axis_iv_by_type<axis::regular>(ax, "_regular_internal_view");
+
+
     register_axis_by_type<axis::regular_noflow>(ax, "regular_noflow", "Evenly spaced bins without over/under flow")
     .def(py::init<unsigned, double, double, std::string>(), "n"_a, "start"_a, "stop"_a, "label"_a = "")
     ;
-    
+    register_axis_iv_by_type<axis::regular_noflow>(ax, "_regular_noflow_internal_view");
+
+
     register_axis_by_type<axis::circular>(ax, "circular", "Evenly spaced bins with wraparound")
     .def(py::init<unsigned, double, double, std::string>(), "n"_a, "start"_a, "stop"_a, "label"_a = "")
     ;
-    
+    register_axis_iv_by_type<axis::circular>(ax, "_circular_internal_view");
+
+
     register_axis_by_type<axis::regular_log>(ax, "regular_log", "Evenly spaced bins in log10")
     .def(py::init<unsigned, double, double, std::string>(), "n"_a, "start"_a, "stop"_a, "label"_a = "")
     ;
-    
+    register_axis_iv_by_type<axis::regular_log>(ax, "_regular_log_internal_view");
+
+
     register_axis_by_type<axis::regular_sqrt>(ax, "regular_sqrt", "Evenly spaced bins in sqrt")
     .def(py::init<unsigned, double, double, std::string>(), "n"_a, "start"_a, "stop"_a, "label"_a = "")
     ;
-    
+    register_axis_iv_by_type<axis::regular_sqrt>(ax, "_regular_sqrt_internal_view");
+
+
     register_axis_by_type<axis::regular_pow>(ax, "regular_pow", "Evenly spaced bins in a power")
     .def(py::init([](double pow, unsigned n, double start, double stop, std::string label){
         return new axis::regular_pow(bh::axis::transform::pow{pow}, n, start , stop, label);} ),
          "pow"_a, "n"_a, "start"_a, "stop"_a, "label"_a = "")
     ;
-    
+    register_axis_iv_by_type<axis::regular_pow>(ax, "_regular_pow_internal_view");
+
+
     register_axis_by_type<axis::variable>(ax, "variable", "Unevenly spaced bins")
     .def(py::init<std::vector<double>, std::string>(), "edges"_a, "label"_a = "")
     ;
+    register_axis_iv_by_type<axis::variable>(ax, "_variable_internal_view");
+
 
     register_axis_by_type<axis::integer>(ax, "integer", "Contigious integers")
     .def(py::init<int, int, std::string>(), "min"_a, "max"_a, "label"_a = "")
     ;
+    register_axis_iv_by_type<axis::integer>(ax, "_integer_internal_view");
+
 
     register_axis_by_type<axis::category_str, std::string>(ax, "category_str", "Text label bins")
     .def(py::init<std::vector<std::string>, std::string>(), "labels"_a, "label"_a = "")
     ;
+    // TODO: internal views are not supported. Therefore, bins should be removed form non-numerical axis
 }
