@@ -6,8 +6,11 @@ import numpy as np
 
 
 @pytest.mark.parametrize("axtype", [bh.axis.regular, bh.axis.regular_noflow])
-def test_axis_regular(axtype):
-    ax = axtype(10, 0, 1)
+@pytest.mark.parametrize("function", [lambda x: x,
+                                       lambda x: bh.make_histogram(x).axis(0),
+                                       ])
+def test_axis_regular(axtype, function):
+    ax = function(axtype(10, 0, 1))
 
     assert 3 == ax.index(.34)
     assert 2 == ax.index(.26)
