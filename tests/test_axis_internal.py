@@ -68,3 +68,9 @@ def test_regular_axis_repr(axis):
     ax = axis(7,2,4, label='That')
     assert 'That' in repr(ax)
     assert ax.label == 'That'
+
+def test_cat_str():
+    ax = bh.axis.category_str(["a", "b", "c"])
+    assert ax.bin(0) == "a"
+    assert ax.bin(1) == "b"
+    assert ax.bin(2) == "c"
