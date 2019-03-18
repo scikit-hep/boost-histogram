@@ -43,7 +43,6 @@ py::class_<A> register_axis_by_type(py::module& m, const char* name, const char*
     .def(py::self != py::self)
     
     .def("index", &A::index, "The index at a point on the axis", "x"_a)
-    .def("bin", &A::bin, "The bin contents", "idx"_a)
     .def("value", &A::value, "The value for a fractional bin in the axis", "i"_a)
     .def("size", &A::size, "Returns the number of bins, without over- or underflow")
     .def("extent", [](const A& self){return bh::axis::traits::extend(self);},
@@ -56,9 +55,16 @@ py::class_<A> register_axis_by_type(py::module& m, const char* name, const char*
     
     ;
     
+    // This could be a constexpr if, but no cost for being runtime (since pybind config runs once)
+    if(std::is_same<A, axis::category_str>::value) {
+        axis.def("bin", &A::bin, "The bin name", "idx"_a);
+    } else {
+        axis.def("bin", &A::bin, "The bin details (center, lower, upper)", "idx"_a, py::keep_alive<0, 1>());
+    }
+
+
     return axis;
 }
-
 
 /// Add helpers common to all types with a range of values
 template<typename A, typename R=int>

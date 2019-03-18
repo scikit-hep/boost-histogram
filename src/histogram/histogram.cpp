@@ -197,7 +197,5 @@ void register_histogram(py::module& m) {
     // register_histogram_by_type<axes::any, bh::weighted_profile_storage>(hist,
     //    "any_weighted_profile",
     //    "N-dimensional histogram for weighted and sampled data with any axis types.");
-    
-    
 
 }
