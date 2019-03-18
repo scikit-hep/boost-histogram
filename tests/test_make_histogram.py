@@ -49,5 +49,5 @@ def test_make_any_hist(storage):
 
 def test_make_any_hist_storage():
 
-    assert int == type(bh.make_histogram(bh.axis.regular(5,1,2), storage=bh.storage.dense_int()).at(0))
+    assert float != type(bh.make_histogram(bh.axis.regular(5,1,2), storage=bh.storage.dense_int()).at(0))
     assert float == type(bh.make_histogram(bh.axis.regular(5,1,2), storage=bh.storage.dense_double()).at(0))

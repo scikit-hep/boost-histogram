@@ -54,7 +54,8 @@ py::class_<bh::histogram<A, S>> register_histogram_by_type(py::module& m, const 
 
     .def("axis",
         [](histogram_t &self, unsigned i){return self.axis(i);},
-     "Get N-th axis with runtime index")
+     "Get N-th axis with runtime index",
+         py::return_value_policy::move)
 
     // generic fill for 1 to N args
     .def("__call__",
