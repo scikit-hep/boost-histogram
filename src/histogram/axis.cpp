@@ -29,19 +29,19 @@ namespace bh = boost::histogram;
 template<typename A, typename R=int>
 py::class_<A> register_axis_by_type(py::module& m, const char* name, const char* desc) {
     py::class_<A> axis(m, name, desc);
-    
+
     // using value_type = decltype(A::value(1.0));
-    
+
     axis
     .def("__repr__", [](A &self){
         std::ostringstream out;
         out << self;
         return out.str();
     })
-    
+
     .def(py::self == py::self)
     .def(py::self != py::self)
-    
+
     .def("index", &A::index, "The index at a point on the axis", "x"_a)
     .def("value", &A::value, "The value for a fractional bin in the axis", "i"_a)
     .def("size", &A::size, "Returns the number of bins, without over- or underflow")
@@ -52,11 +52,14 @@ py::class_<A> register_axis_by_type(py::module& m, const char* name, const char*
                   [](const A& self){return self.metadata();},
                   [](A& self, std::string label){self.metadata() = label;},
                   "Set the axis label")
-    
+
     ;
-    
+
+    // We only need keepalive if this is a reference.
+    using Result = decltype(std::declval<A>().bin(std::declval<int>()));
+
     // This could be a constexpr if, but no cost for being runtime (since pybind config runs once)
-    if(std::is_same<A, axis::category_str>::value) {
+    if(std::is_reference<Result>::value) {
         axis.def("bin", &A::bin, "The bin name", "idx"_a);
     } else {
         axis.def("bin", &A::bin, "The bin details (center, lower, upper)", "idx"_a, py::keep_alive<0, 1>());
@@ -89,17 +92,17 @@ py::class_<A> register_axis_iv_by_type(py::module& m, const char* name) {
 
 
 void register_axis(py::module &m) {
-    
+
     py::module ax = m.def_submodule("axis");
-    
+
     py::module opt = ax.def_submodule("options");
-    
+
     opt.attr("none") =      (unsigned) bh::axis::option::none;
     opt.attr("underflow") = (unsigned) bh::axis::option::underflow;
     opt.attr("overflow") =  (unsigned) bh::axis::option::overflow;
     opt.attr("circular") =  (unsigned) bh::axis::option::circular;
     opt.attr("growth") =    (unsigned) bh::axis::option::growth;
-    
+
 
     register_axis_by_type<axis::regular>(ax, "regular", "Evenly spaced bins")
     .def(py::init<unsigned, double, double, std::string>(), "n"_a, "start"_a, "stop"_a, "label"_a = "")
@@ -154,5 +157,4 @@ void register_axis(py::module &m) {
     register_axis_by_type<axis::category_str, std::string>(ax, "category_str", "Text label bins")
     .def(py::init<std::vector<std::string>, std::string>(), "labels"_a, "label"_a = "")
     ;
-    // TODO: internal views are not supported. Therefore, bins should be removed form non-numerical axis
 }

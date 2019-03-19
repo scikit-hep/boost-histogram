@@ -52,3 +52,29 @@ void register_storage(py::module &m) {
     ;
 
 }
+
+any_storage_variant extract_storage(py::kwargs kwargs) {
+    if(kwargs.contains("storage")) {
+        try {
+            return py::cast<dense_int_storage>(kwargs["storage"]);
+        } catch(const py::cast_error&) {}
+
+        try {
+            return py::cast<dense_double_storage>(kwargs["storage"]);
+        } catch(const py::cast_error&) {}
+
+        try {
+            return py::cast<bh::unlimited_storage<>>(kwargs["storage"]);
+        } catch(const py::cast_error&) {}
+
+        try {
+            return py::cast<bh::weight_storage>(kwargs["storage"]);
+        } catch(const py::cast_error&) {}
+
+        throw std::runtime_error("Storage type not supported");
+
+    } else {
+        // Default storage if not is specified
+        return dense_int_storage();
+    }
+}

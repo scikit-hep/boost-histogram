@@ -86,11 +86,11 @@ void register_histogram(py::module& m) {
 
     // Fast specializations: Fixed number of axis (may be removed if above versions are fast enough)
     // Mostly targeting histogram styles supported by numpy for these max performance versions.
-    
+
     register_histogram_by_type<axes::regular_1D, dense_int_storage>(hist,
          "regular_int_1d",
          "1-dimensional histogram for int valued data.");
-    
+
     m.def("make_histogram", [](axis::regular& ax1, dense_int_storage){
         return bh::make_histogram_with(dense_int_storage(), ax1);
     }, "axis"_a, "storage"_a=dense_int_storage(), "Make a 1D histogram of integers");
@@ -99,7 +99,7 @@ void register_histogram(py::module& m) {
     register_histogram_by_type<axes::regular_2D, dense_int_storage>(hist,
         "regular_int_2d",
         "2-dimensional histogram for int valued data.");
-    
+
     m.def("make_histogram", [](axis::regular& ax1, axis::regular& ax2, dense_int_storage){
         return bh::make_histogram_with(dense_int_storage(), ax1, ax2);
     }, "axis1"_a, "axis2"_a, "storage"_a=dense_int_storage(), "Make a 2D histogram of integers");
@@ -108,7 +108,7 @@ void register_histogram(py::module& m) {
     register_histogram_by_type<axes::regular_noflow_1D, dense_int_storage>(hist,
         "regular_int_noflow_1d",
         "1-dimensional histogram for int valued data.");
-    
+
     m.def("make_histogram", [](axis::regular_noflow& ax1, dense_int_storage){
         return bh::make_histogram_with(dense_int_storage(), ax1);
     }, "axis"_a, "storage"_a=dense_int_storage(), "Make a 1D histogram of integers without overflow");
@@ -124,25 +124,25 @@ void register_histogram(py::module& m) {
 
 
     // Fast specializations - uniform types
-    
+
     register_histogram_by_type<axes::regular, bh::unlimited_storage<>>(hist,
         "regular_unlimited",
         "N-dimensional histogram for real-valued data.");
-    
+
     register_histogram_by_type<axes::regular, dense_int_storage>(hist,
         "regular_int",
         "N-dimensional histogram for int-valued data.");
-    
+
     register_histogram_by_type<axes::regular_noflow, dense_int_storage>(hist,
         "regular_int_noflow",
         "N-dimensional histogram for int-valued data.");
-    
+
     // Completely general histograms
 
     register_histogram_by_type<axes::any, dense_int_storage>(hist,
         "any_int",
         "N-dimensional histogram for int-valued data with any axis types.");
-    
+
     register_histogram_by_type<axes::any, dense_double_storage>(hist,
         "any_double",
         "N-dimensional histogram for real-valued data with weights with any axis types.");
@@ -155,41 +155,23 @@ void register_histogram(py::module& m) {
         "any_weight",
         "N-dimensional histogram for weighted data with any axis types.");
 
-    m.def("make_histogram", [](py::args args, py::kwargs kwargs)
-          -> bh::axis::variant<bh::histogram<axes::any, dense_int_storage>,
-                               bh::histogram<axes::any, dense_double_storage>,
-                               bh::histogram<axes::any, bh::unlimited_storage<>>,
-                               bh::histogram<axes::any, bh::weight_storage>>
-    {
-        axes::any values = py::cast<axes::any>(args);
-        
-        if(kwargs.contains("storage")) {
-            try {
-                py::cast<dense_int_storage>(kwargs["storage"]);
-                return bh::make_histogram_with(dense_int_storage(), values);
-            } catch(const py::cast_error&) {}
-            
-            try {
-                py::cast<dense_double_storage>(kwargs["storage"]);
-                return bh::make_histogram_with(dense_double_storage(), values);
-            } catch(const py::cast_error&) {}
-            
-            try {
-                py::cast<bh::unlimited_storage<>>(kwargs["storage"]);
-                return bh::make_histogram_with(bh::unlimited_storage<>(), values);
-            } catch(const py::cast_error&) {}
-            
-            try {
-                py::cast<bh::weight_storage>(kwargs["storage"]);
-                return bh::make_histogram_with(bh::weight_storage(), values);
-            } catch(const py::cast_error&) {}
-            
-            throw std::runtime_error("Storage type not supported");
-        }
+    using hist_variant = bh::axis::variant<
+        bh::histogram<axes::any, dense_int_storage>,
+        bh::histogram<axes::any, dense_double_storage>,
+        bh::histogram<axes::any, bh::unlimited_storage<>>,
+        bh::histogram<axes::any, bh::weight_storage>>;
 
-        return bh::make_histogram_with(dense_int_storage(), values);
+    m.def("make_histogram", [](py::args args, py::kwargs kwargs) -> hist_variant {
+        axes::any values = py::cast<axes::any>(args);
+        auto storage_union = extract_storage(kwargs);
+
+        return bh::axis::visit([&values](auto&& storage) -> hist_variant {
+            return bh::make_histogram_with(storage, values);
+        },
+        storage_union);
+
     }, "Make any histogram");
-    
+
     // register_histogram_by_type<axes::any, bh::profile_storage>(hist,
     //    "any_profile",
     //    "N-dimensional histogram for sampled data with any axis types.");
@@ -199,3 +181,4 @@ void register_histogram(py::module& m) {
     //    "N-dimensional histogram for weighted and sampled data with any axis types.");
 
 }
+
