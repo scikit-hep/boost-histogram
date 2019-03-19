@@ -56,7 +56,8 @@ py::class_<A> register_axis_by_type(py::module& m, const char* name, const char*
     ;
     
     // This could be a constexpr if, but no cost for being runtime (since pybind config runs once)
-    if(std::is_same<A, axis::category_str>::value) {
+    using Result = decltype(std::declval<A>().bin(std::declval<int>())) ;
+    if(std::is_reference<Result>::value) {
         axis.def("bin", &A::bin, "The bin name", "idx"_a);
     } else {
         axis.def("bin", &A::bin, "The bin details (center, lower, upper)", "idx"_a, py::keep_alive<0, 1>());
@@ -154,5 +155,4 @@ void register_axis(py::module &m) {
     register_axis_by_type<axis::category_str, std::string>(ax, "category_str", "Text label bins")
     .def(py::init<std::vector<std::string>, std::string>(), "labels"_a, "label"_a = "")
     ;
-    // TODO: internal views are not supported. Therefore, bins should be removed form non-numerical axis
 }
