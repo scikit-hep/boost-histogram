@@ -9,5 +9,7 @@
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 
+#include <boost/variant.hpp>
+
 namespace py = pybind11;
 using namespace pybind11::literals;
