@@ -35,6 +35,22 @@ def test_axis_regular_extents():
     assert 10 == ax.extent()
     assert ax.options() == bh.axis.options.none
 
+def test_axis_growth():
+    ax = bh.axis.regular_growth(10,0,1)
+    ax.index(.7)
+    ax.index(1.2)
+    assert ax.size() == 10
+    assert ax.update(1.2) == (12,-3)
+    assert ax.size() == 13
+
+def test_axis_growth_cat():
+    ax = bh.axis.category_str_growth(["This"])
+    assert ax.size() == 1
+    ax.update("That")
+    assert ax.size() == 2
+    assert ax.bin(0) == "This"
+    assert ax.bin(1) == "That"
+
 @pytest.mark.parametrize("offset", [-1,0,1,2])
 def test_axis_circular_offset(offset):
     ax = bh.axis.circular(10, 0, 1)

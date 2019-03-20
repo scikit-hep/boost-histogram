@@ -63,6 +63,7 @@ py::class_<A> register_axis_by_type(py::module& m, const char* name, const char*
     .def("size", &A::size, "Returns the number of bins, without over- or underflow")
     .def("extent", [](const A& self){return bh::axis::traits::extend(self);},
          "Retuns the number of bins, including over- or underflow")
+    .def("update", &A::update, "Bin and add a value if allowed", "i"_a)
     .def_static("options", &A::options, "Return the options associated to the axis")
     .def_property("label",
                   [](const A& self){return self.metadata();},
@@ -127,6 +128,12 @@ void register_axis(py::module &m) {
     register_axis_iv_by_type<axis::regular_noflow>(ax, "_regular_noflow_internal_view");
 
 
+    register_axis_by_type<axis::regular_growth>(ax, "regular_growth", "Evenly spaced bins that grow as needed")
+    .def(py::init<unsigned, double, double, std::string>(), "n"_a, "start"_a, "stop"_a, "label"_a = "")
+    ;
+    register_axis_iv_by_type<axis::regular_growth>(ax, "_regular_growth_internal_view");
+
+
     register_axis_by_type<axis::circular>(ax, "circular", "Evenly spaced bins with wraparound")
     .def(py::init<unsigned, double, double, std::string>(), "n"_a, "start"_a, "stop"_a, "label"_a = "")
     ;
@@ -168,4 +175,9 @@ void register_axis(py::module &m) {
     register_axis_by_type<axis::category_str, std::string>(ax, "category_str", "Text label bins")
     .def(py::init<std::vector<std::string>, std::string>(), "labels"_a, "label"_a = "")
     ;
+    
+    register_axis_by_type<axis::category_str_growth, std::string>(ax, "category_str_growth", "Text label bins")
+    .def(py::init<std::vector<std::string>, std::string>(), "labels"_a, "label"_a = "")
+    ;
+    
 }
