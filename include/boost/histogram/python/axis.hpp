@@ -47,7 +47,10 @@ using any = std::vector<bh::axis::variant<axis::regular,
                                           axis::regular_sqrt,
                                           axis::variable,
                                           axis::integer,
-                                          axis::category_str
+                                          axis::category_str // ,
+                                          // TODO: Find out why the following two axes can't be included
+                                          // axis::regular_growth,
+                                          // axis::category_str_growth 
                                           >>;
 
 // Specialization for some speed improvement
