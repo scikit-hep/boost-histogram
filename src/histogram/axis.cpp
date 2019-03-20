@@ -5,6 +5,7 @@
 
 #include <boost/histogram/python/pybind11.hpp>
 
+#include <pybind11/numpy.h>
 #include <pybind11/operators.h>
 
 #include <boost/histogram/python/axis.hpp>
@@ -25,6 +26,23 @@ using namespace std::literals;
 
 namespace bh = boost::histogram;
 
+/// Add items to an axis where the axis values are continious
+template<typename A, typename B>
+void add_to_axis(B&& axis, std::false_type) {
+    axis.def("bin", &A::bin, "The bin details (center, lower, upper)", "idx"_a, py::keep_alive<0, 1>());
+    axis.def("index", py::vectorize(&A::index), "The index at a point(s) on the axis", "x"_a);
+    axis.def("value", py::vectorize(&A::value), "The value(s) for a fractional bin(s) in the axis", "i"_a);
+}
+
+/// Add items to an axis where the axis values are not continious (categories of strings, for example)
+template<typename A, typename B>
+void add_to_axis(B&& axis, std::true_type) {
+    axis.def("bin", &A::bin, "The bin name", "idx"_a);
+    // Not that these really just don't work with string labels; they would work for numerical labels.
+    axis.def("index", &A::index, "The index at a point on the axis", "x"_a);
+    axis.def("value", &A::value, "The value for a fractional bin in the axis", "i"_a);
+}
+
 /// Add helpers common to all axis types
 template<typename A, typename R=int>
 py::class_<A> register_axis_by_type(py::module& m, const char* name, const char* desc) {
@@ -42,8 +60,6 @@ py::class_<A> register_axis_by_type(py::module& m, const char* name, const char*
     .def(py::self == py::self)
     .def(py::self != py::self)
 
-    .def("index", &A::index, "The index at a point on the axis", "x"_a)
-    .def("value", &A::value, "The value for a fractional bin in the axis", "i"_a)
     .def("size", &A::size, "Returns the number of bins, without over- or underflow")
     .def("extent", [](const A& self){return bh::axis::traits::extend(self);},
          "Retuns the number of bins, including over- or underflow")
@@ -58,13 +74,8 @@ py::class_<A> register_axis_by_type(py::module& m, const char* name, const char*
     // We only need keepalive if this is a reference.
     using Result = decltype(std::declval<A>().bin(std::declval<int>()));
 
-    // This could be a constexpr if, but no cost for being runtime (since pybind config runs once)
-    if(std::is_reference<Result>::value) {
-        axis.def("bin", &A::bin, "The bin name", "idx"_a);
-    } else {
-        axis.def("bin", &A::bin, "The bin details (center, lower, upper)", "idx"_a, py::keep_alive<0, 1>());
-    }
-
+    // This is a replacement for constexpr if
+    add_to_axis<A>(axis, std::integral_constant<bool, std::is_reference<Result>::value>{});
 
     return axis;
 }
