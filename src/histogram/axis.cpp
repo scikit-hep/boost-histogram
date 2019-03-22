@@ -178,6 +178,8 @@ void register_axis(py::module &m) {
     
     register_axis_by_type<axis::category_str_growth, std::string>(ax, "category_str_growth", "Text label bins")
     .def(py::init<std::vector<std::string>, std::string>(), "labels"_a, "label"_a = "")
+    // Add way to allow empty list of strings
+    .def(py::init<>())
     ;
     
 }
