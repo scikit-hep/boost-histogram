@@ -24,6 +24,7 @@ namespace axis {
 // These match the Python names
 using regular = bh::axis::regular<>;
 using regular_noflow = bh::axis::regular<double, bh::use_default, bh::use_default, bh::axis::option::none_t>;
+using regular_growth = bh::axis::regular<double, bh::use_default, bh::use_default, bh::axis::option::growth_t>;
 using circular = bh::axis::circular<>;
 using regular_log = bh::axis::regular<double, bh::axis::transform::log>;
 using regular_sqrt = bh::axis::regular<double, bh::axis::transform::sqrt>;
@@ -31,6 +32,7 @@ using regular_pow = bh::axis::regular<double, bh::axis::transform::pow>;
 using variable = bh::axis::variable<>;
 using integer = bh::axis::integer<>;
 using category_str = bh::axis::category<std::string>;
+using category_str_growth = bh::axis::category<std::string, std::string, bh::axis::option::growth_t>;
 
 } // namespace axis
 
@@ -39,13 +41,15 @@ namespace axes {
 // The following list is all types supported
 using any = std::vector<bh::axis::variant<axis::regular,
                                           axis::regular_noflow,
+                                          axis::regular_growth,
                                           axis::circular,
                                           axis::regular_log,
                                           axis::regular_pow,
                                           axis::regular_sqrt,
                                           axis::variable,
                                           axis::integer,
-                                          axis::category_str
+                                          axis::category_str,
+                                          axis::category_str_growth
                                           >>;
 
 // Specialization for some speed improvement

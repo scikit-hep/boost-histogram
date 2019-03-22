@@ -94,3 +94,11 @@ def test_str_categories_histogram():
     vals = ['a', 'b', 'b', 'c']
     # Can't fill yet
 
+def test_growing_histogram():
+    hist = bh.hist.any_int([
+        bh.axis.regular_growth(10,0,1)
+        ])
+
+    hist(1.45)
+
+    assert hist.size() == 15
