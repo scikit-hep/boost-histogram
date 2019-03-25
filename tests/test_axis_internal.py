@@ -38,16 +38,19 @@ def test_axis_regular_extents():
     assert ax.options() == bh.axis.options.none
     assert 11 == len(ax.edges())
     assert 11 == len(ax.edges(True))
+    assert 10 == len(ax.centers())
 
 def test_axis_growth():
     ax = bh.axis.regular_growth(10,0,1)
     ax.index(.7)
     ax.index(1.2)
     assert ax.size() == 10
+    assert len(ax.centers()) == 10
     assert len(ax.edges()) == 11
     assert ax.update(1.2) == (12,-3)
     assert ax.size() == 13
     assert len(ax.edges()) == 14
+    assert len(ax.centers()) == 13
 
 def test_axis_growth_cat():
     ax = bh.axis.category_str_growth(["This"])

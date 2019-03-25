@@ -33,23 +33,37 @@ void add_to_axis(B&& axis, std::false_type) {
     axis.def("index", py::vectorize(&A::index), "The index at a point(s) on the axis", "x"_a);
     axis.def("value", py::vectorize(&A::value), "The value(s) for a fractional bin(s) in the axis", "i"_a);
 
-    axis.def("edges", [](const A& ax, bool overflow){
-        std::vector<double> edges;
-        edges.reserve((unsigned) ax.size() + 3); // might be 1 instead of 3, but doesn't hurt
+    axis.def("edges", [](const A& ax, bool flow){
+        bool overflow = flow && (bh::axis::traits::options(ax) & bh::axis::option::underflow);
+        bool underflow = flow && (bh::axis::traits::options(ax) & bh::axis::option::overflow);
+        
+        py::array_t<double> edges((unsigned) ax.size() + 1u + overflow + underflow);
+        
+        if(underflow)
+            edges.mutable_at(0) = ax.bin(-1).lower();
 
-        if(overflow && (bh::axis::traits::options(ax) & bh::axis::option::underflow))
-            edges.push_back(ax.bin(-1).lower());
+        edges.mutable_at(0 + underflow) = ax.bin(0).lower();
+        
+        std::transform(ax.begin(), ax.end(), edges.mutable_data() + 1 + underflow,
+                       [](const auto& bin){return bin.upper();});
 
-        edges.push_back(ax.bin(0).lower());
-        for(const auto& val : ax) {
-            edges.push_back(val.upper());
-        }
-
-        if(overflow && (bh::axis::traits::options(ax) & bh::axis::option::overflow))
-            edges.push_back(ax.bin(ax.size()).upper());
+        if(overflow)
+            edges.mutable_at(edges.size() - 1) = ax.bin(ax.size()).upper();
 
         return edges;
-    }, "overflow"_a = false, "The bin edges (length: bins + 1)");
+        
+    }, "flow"_a = false, "The bin edges (length: bins + 1) (include over/underflow if flow=True)");
+    
+    axis.def("centers", [](const A& ax){
+        py::array_t<double> centers((unsigned) ax.size());
+        //std::vector<double> centers;
+        //centers.reserve((unsigned) ax.size());
+        //for(const auto& val : ax) {
+            //centers.push_back(val.center());
+        //}
+        std::transform(ax.begin(), ax.end(), centers.mutable_data(), [](const auto& bin){return bin.center();});
+        return centers;
+    }, "Return the bin centers");
 }
 
 /// Add items to an axis where the axis values are not continious (categories of strings, for example)
