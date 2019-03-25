@@ -43,20 +43,34 @@ py::array_t<double> axis_to_edges(const A& ax, bool flow) {
     return edges;
 }
 
+/*
+struct metadata_t {
+    std::string label;
+    metadata_t() = default;
+    metadata_t(std::string txt) : label(txt) {}
+    operator const char*() const {return label.c_str();}
+};
+inline std::ostream& operator<< (std::ostream& out, const metadata_t& meta) {
+    return out << meta.label;
+}
+*/
+
+using metadata_t = std::string;
+
 namespace axis {
 
 // These match the Python names
-using regular = bh::axis::regular<>;
-using regular_noflow = bh::axis::regular<double, bh::use_default, bh::use_default, bh::axis::option::none_t>;
-using regular_growth = bh::axis::regular<double, bh::use_default, bh::use_default, bh::axis::option::growth_t>;
-using circular = bh::axis::circular<>;
-using regular_log = bh::axis::regular<double, bh::axis::transform::log>;
-using regular_sqrt = bh::axis::regular<double, bh::axis::transform::sqrt>;
-using regular_pow = bh::axis::regular<double, bh::axis::transform::pow>;
-using variable = bh::axis::variable<>;
-using integer = bh::axis::integer<>;
-using category_str = bh::axis::category<std::string>;
-using category_str_growth = bh::axis::category<std::string, std::string, bh::axis::option::growth_t>;
+using regular = bh::axis::regular<double, bh::use_default, metadata_t>;
+using regular_noflow = bh::axis::regular<double, bh::use_default, metadata_t, bh::axis::option::none_t>;
+using regular_growth = bh::axis::regular<double, bh::use_default, metadata_t, bh::axis::option::growth_t>;
+using circular = bh::axis::circular<double, metadata_t>;
+using regular_log = bh::axis::regular<double, bh::axis::transform::log, metadata_t>;
+using regular_sqrt = bh::axis::regular<double, bh::axis::transform::sqrt, metadata_t>;
+using regular_pow = bh::axis::regular<double, bh::axis::transform::pow, metadata_t>;
+using variable = bh::axis::variable<double, metadata_t>;
+using integer = bh::axis::integer<int, metadata_t>;
+using category_str = bh::axis::category<std::string, metadata_t>;
+using category_str_growth = bh::axis::category<std::string, metadata_t, bh::axis::option::growth_t>;
 
 } // namespace axis
 
