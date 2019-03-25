@@ -32,6 +32,24 @@ void add_to_axis(B&& axis, std::false_type) {
     axis.def("bin", &A::bin, "The bin details (center, lower, upper)", "idx"_a, py::keep_alive<0, 1>());
     axis.def("index", py::vectorize(&A::index), "The index at a point(s) on the axis", "x"_a);
     axis.def("value", py::vectorize(&A::value), "The value(s) for a fractional bin(s) in the axis", "i"_a);
+
+    axis.def("edges", [](const A& ax, bool overflow){
+        std::vector<double> edges;
+        edges.reserve((unsigned) ax.size() + 3); // might be 1 instead of 3, but doesn't hurt
+
+        if(overflow && (bh::axis::traits::options(ax) & bh::axis::option::underflow))
+            edges.push_back(ax.bin(-1).lower());
+
+        edges.push_back(ax.bin(0).lower());
+        for(const auto& val : ax) {
+            edges.push_back(val.upper());
+        }
+
+        if(overflow && (bh::axis::traits::options(ax) & bh::axis::option::overflow))
+            edges.push_back(ax.bin(ax.size()).upper());
+
+        return edges;
+    }, "overflow"_a = false, "The bin edges (length: bins + 1)");
 }
 
 /// Add items to an axis where the axis values are not continious (categories of strings, for example)
@@ -76,7 +94,7 @@ py::class_<A> register_axis_by_type(py::module& m, const char* name, const char*
     using Result = decltype(std::declval<A>().bin(std::declval<int>()));
 
     // This is a replacement for constexpr if
-    add_to_axis<A>(axis, std::integral_constant<bool, std::is_reference<Result>::value>{});
+    add_to_axis<A>(axis, std::integral_constant<bool, std::is_reference<Result>::value || std::is_integral<Result>::value>{});
 
     return axis;
 }
@@ -175,11 +193,11 @@ void register_axis(py::module &m) {
     register_axis_by_type<axis::category_str, std::string>(ax, "category_str", "Text label bins")
     .def(py::init<std::vector<std::string>, std::string>(), "labels"_a, "label"_a = "")
     ;
-    
+
     register_axis_by_type<axis::category_str_growth, std::string>(ax, "category_str_growth", "Text label bins")
     .def(py::init<std::vector<std::string>, std::string>(), "labels"_a, "label"_a = "")
     // Add way to allow empty list of strings
     .def(py::init<>())
     ;
-    
+
 }

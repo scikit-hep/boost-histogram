@@ -47,6 +47,7 @@ struct fill_helper {
     void operator()(N) {
         using namespace boost::mp11;
         // N is a compile-time number with N == arrs.size()
+        // Type: tuple<double, ..., double> (N times)
         mp_repeat<std::tuple<double>, N> tp;
         // TODO: only release gil when storage is thread-safe
         // py::gil_scoped_release gil;

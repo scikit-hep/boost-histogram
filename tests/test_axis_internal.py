@@ -29,19 +29,25 @@ def test_axis_regular(axtype, function):
 def test_axis_regular_extents():
     ax = bh.axis.regular(10,0,1)
     assert 12 == ax.extent()
+    assert 11 == len(ax.edges())
+    assert 13 == len(ax.edges(True))
     assert ax.options() == bh.axis.options.underflow | bh.axis.options.overflow
 
     ax = bh.axis.regular_noflow(10,0,1)
     assert 10 == ax.extent()
     assert ax.options() == bh.axis.options.none
+    assert 11 == len(ax.edges())
+    assert 11 == len(ax.edges(True))
 
 def test_axis_growth():
     ax = bh.axis.regular_growth(10,0,1)
     ax.index(.7)
     ax.index(1.2)
     assert ax.size() == 10
+    assert len(ax.edges()) == 11
     assert ax.update(1.2) == (12,-3)
     assert ax.size() == 13
+    assert len(ax.edges()) == 14
 
 def test_axis_growth_cat():
     ax = bh.axis.category_str_growth(["This"])
@@ -54,6 +60,7 @@ def test_axis_growth_cat():
 @pytest.mark.parametrize("offset", [-1,0,1,2])
 def test_axis_circular_offset(offset):
     ax = bh.axis.circular(10, 0, 1)
+    assert 11 == len(ax.edges())
 
     assert 3 == ax.index(.34 + offset)
     assert 2 == ax.index(.26 + offset)
