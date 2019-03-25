@@ -102,3 +102,39 @@ def test_growing_histogram():
     hist(1.45)
 
     assert hist.size() == 15
+
+def test_numpy_flow():
+    h = bh.hist.regular_int_2d([bh.axis.regular(10,0,1), bh.axis.regular(5,0,1)])
+
+    for i in range(10):
+        for j in range(5):
+            x,y = h.axis(0).bin(i).center(), h.axis(1).bin(j).center()
+            v = i + j*10 + 1;
+            h([x]*v,[y]*v)
+
+    flow_true = h.to_numpy(True)[0][1:-1, 1:-1]
+    flow_false = h.to_numpy(False)[0]
+
+    assert np.all(flow_true == flow_false)
+
+def test_numpy_compare():
+    h = bh.hist.regular_int_2d([bh.axis.regular(10,0,1), bh.axis.regular(5,0,1)])
+
+    xs = []
+    ys = []
+    for i in range(10):
+        for j in range(5):
+            x,y = h.axis(0).bin(i).center(), h.axis(1).bin(j).center()
+            v = i + j*10 + 1;
+            xs += [x]*v
+            ys += [y]*v
+
+    h(xs, ys)
+
+    H, E1, E2 = h.to_numpy()
+
+    nH, nE1, nE2 = np.histogram2d(xs, ys, bins=(10,5), range=((0,1),(0,1)))
+
+    assert np.all(H == nH)
+    assert np.allclose(E1, nE1)
+    assert np.allclose(E2, nE2)

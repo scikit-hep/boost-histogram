@@ -37,7 +37,7 @@ py::class_<bh::histogram<A, S>> register_histogram_by_type(py::module& m, const 
     .def(py::init<const A&, S>(), "axes"_a, "storage"_a=S())
 
     .def_buffer([](bh::histogram<A, S>& h) -> py::buffer_info
-        {return make_buffer(h);})
+        {return make_buffer(h, true);})
 
     .def("rank", &histogram_t::rank,
          "Number of axes (dimensions) of histogram" )
@@ -51,6 +51,23 @@ py::class_<bh::histogram<A, S>> register_histogram_by_type(py::module& m, const 
     .def(py::self != py::self)
     .def(py::self *= double())
     .def(py::self /= double())
+
+    .def("to_numpy", [](histogram_t& h, bool flow){
+        py::list listing;
+
+        // Add the histogram as the first argument
+        py::array arr(make_buffer(h, flow));
+        listing.append(arr);
+
+        // Add the axis edges
+        for(unsigned i=0; i<h.rank(); i++) {
+            const auto& ax = h.axis(i);
+            listing.append(axis_to_edges(ax, flow));
+        }
+
+        return py::cast<py::tuple>(listing);
+    },
+         "flow"_a = false, "convert to a numpy style tuple of returns")
 
     .def("axis",
         [](histogram_t &self, unsigned i){return self.axis(i);},

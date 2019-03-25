@@ -7,17 +7,41 @@
 
 #include <boost/histogram.hpp>
 
+#include <boost/histogram/python/pybind11.hpp>
+
 #include <tuple>
 #include <vector>
 
 namespace bh = boost::histogram;
 
-// Register bh::axis::variant as a variant for PyBind11
+/// Register bh::axis::variant as a variant for PyBind11
 namespace pybind11 { namespace detail {
     template <typename... Ts>
     struct type_caster<bh::axis::variant<Ts...>> : variant_caster<bh::axis::variant<Ts...>> {};
 }} // namespace pybind11::detail
 
+
+/// Utility to concer an axis to edges array
+template<typename A>
+py::array_t<double> axis_to_edges(const A& ax, bool flow) {
+    bool overflow = flow && (bh::axis::traits::options(ax) & bh::axis::option::underflow);
+    bool underflow = flow && (bh::axis::traits::options(ax) & bh::axis::option::overflow);
+
+    py::array_t<double> edges((unsigned) ax.size() + 1u + overflow + underflow);
+
+    if(underflow)
+        edges.mutable_at(0) = ax.bin(-1).lower();
+
+    edges.mutable_at(0 + underflow) = ax.bin(0).lower();
+
+    std::transform(ax.begin(), ax.end(), edges.mutable_data() + 1 + underflow,
+                   [](const auto& bin){return bin.upper();});
+
+    if(overflow)
+        edges.mutable_at(edges.size() - 1) = ax.bin(ax.size()).upper();
+
+    return edges;
+}
 
 namespace axis {
 
@@ -57,13 +81,13 @@ using regular = std::vector<axis::regular>;
 
 // Specialization for some speed improvement
 using regular_noflow = std::vector<axis::regular_noflow>;
-    
+
 // Specializations for maximum speed!
 using regular_1D = std::tuple<axis::regular>;
 using regular_2D = std::tuple<axis::regular, axis::regular>;
-    
+
 using regular_noflow_1D = std::tuple<axis::regular_noflow>;
 using regular_noflow_2D = std::tuple<axis::regular_noflow, axis::regular_noflow>;
-    
-    
+
+
 } // namespace axes
