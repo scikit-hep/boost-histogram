@@ -49,8 +49,9 @@ struct fill_helper {
         // N is a compile-time number with N == arrs.size()
         // Type: tuple<double, ..., double> (N times)
         mp_repeat<std::tuple<double>, N> tp;
-        // TODO: only release gil when storage is thread-safe
-        // py::gil_scoped_release gil;
+        // Note that splitting and filling from multiple threads is only supported with atomics
+        py::gil_scoped_release gil;
+        
         for (std::size_t i = 0; i < (std::size_t) size; ++i) {
             mp_for_each<mp_iota<N>>([&](auto I) {
                 // I is mp_size_t<0>, mp_size_t<1>, ..., mp_size_t<N-1>

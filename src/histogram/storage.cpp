@@ -33,6 +33,10 @@ void register_storage(py::module &m) {
     .def(py::init<>())
     ;
 
+    py::class_<dense_atomic_int_storage>(storage, "dense_atomic_int", "Threadsafe (not growing axis) integer storage")
+    .def(py::init<>())
+    ;
+
     // Default storages
 
     py::class_<bh::unlimited_storage<>>(storage, "unlimited", "Pptimized for unweighted histograms, adaptive")
@@ -54,6 +58,7 @@ void register_storage(py::module &m) {
 }
 
 any_storage_variant extract_storage(py::kwargs kwargs) {
+
     if(kwargs.contains("storage")) {
         try {
             return py::cast<dense_int_storage>(kwargs["storage"]);
@@ -69,6 +74,10 @@ any_storage_variant extract_storage(py::kwargs kwargs) {
 
         try {
             return py::cast<bh::weight_storage>(kwargs["storage"]);
+        } catch(const py::cast_error&) {}
+
+        try {
+            return py::cast<dense_atomic_int_storage>(kwargs["storage"]);
         } catch(const py::cast_error&) {}
 
         throw std::runtime_error("Storage type not supported");

@@ -49,8 +49,9 @@ py::class_<bh::histogram<A, S>> register_histogram_by_type(py::module& m, const 
     .def(py::self + py::self)
     .def(py::self == py::self)
     .def(py::self != py::self)
-    .def(py::self *= double())
-    .def(py::self /= double())
+    // fail on atomics
+    // .def(py::self *= double())
+    // .def(py::self /= double())
 
     .def("to_numpy", [](histogram_t& h, bool flow){
         py::list listing;
@@ -159,6 +160,10 @@ void register_histogram(py::module& m) {
     register_histogram_by_type<axes::any, dense_int_storage>(hist,
         "any_int",
         "N-dimensional histogram for int-valued data with any axis types.");
+    
+    register_histogram_by_type<axes::any, dense_atomic_int_storage>(hist,
+        "any_atomic_int",
+        "N-dimensional histogram for int-valued data with any axis types (threadsafe).");
 
     register_histogram_by_type<axes::any, dense_double_storage>(hist,
         "any_double",
