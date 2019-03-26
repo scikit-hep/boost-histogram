@@ -64,12 +64,23 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/extern/histogram/include PREFIX "H
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/include PREFIX "Header Files" FILES ${BOOST_HIST_PY_HEADERS})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX "Source Files" FILES ${BOOST_HIST_PY_SRC})
 
-# Adding warnings (will cause errors except in MSVC, since PyBind11 might cause a few there - add /WX if you want to try)
+# Cause warnings to be errors (not recommended for MSVC, since PyBind11 might cause a few there - add /WX if you want to try)
+option(BOOST_HISTOGRAM_ERRORS "Make warnings errors (for CI mostly)")
+
+# Adding warnings
 target_compile_options(histogram PRIVATE
                        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
-                           -Wall -Wextra -Werror -pedantic-errors -Wconversion -Wsign-conversion>
+                           -Wall -Wextra -pedantic-errors -Wconversion -Wsign-conversion>
                        $<$<CXX_COMPILER_ID:MSVC>:
                            /W4>)
+if(BOOST_HISTOGRAM_ERRORS)
+    target_compile_options(histogram PRIVATE
+        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
+            -Werror>
+        $<$<CXX_COMPILER_ID:MSVC>:
+            /WE>)
+endif()
+
 
 set(BOOST_HISTOGRAM_DETAIL_AXES_LIMIT "" CACHE STRING "Set the maximum number of axis in a histogram (affects compile time and size)")
 if(NOT "${BOOST_HISTOGRAM_DETAIL_AXES_LIMIT}" STREQUAL "")

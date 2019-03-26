@@ -98,7 +98,7 @@ py::class_<A> register_axis_by_type(py::module& m, const char* name, const char*
 
 /// Add helpers common to all types with a range of values
 template<typename A, typename R=int>
-py::class_<A> register_axis_iv_by_type(py::module& m, const char* name) {
+py::class_<bh::axis::interval_view<A>> register_axis_iv_by_type(py::module& m, const char* name) {
     using A_iv = bh::axis::interval_view<A>;
     py::class_<A_iv> axis_iv = py::class_<A_iv>(m, name, "Lightweight bin view");
 
