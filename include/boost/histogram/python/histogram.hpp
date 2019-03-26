@@ -39,7 +39,7 @@ py::buffer_info make_buffer(bh::histogram<A, S>& h, bool flow) {
     }
 
     return py::buffer_info(
-                           &(*h.begin()) + start,                     // Pointer to buffer
+                           &(*h.begin()) + start,                         // Pointer to buffer
                            sizeof(in_storage_t),                          // Size of one scalar
                            py::format_descriptor<in_storage_t>::format(), // Python struct-style format descriptor
                            rank,                                          // Number of dimensions

@@ -172,18 +172,12 @@ void register_histogram(py::module& m) {
         "any_weight",
         "N-dimensional histogram for weighted data with any axis types.");
 
-    using hist_variant = bh::axis::variant<
-        bh::histogram<axes::any, dense_int_storage>,
-        bh::histogram<axes::any, dense_double_storage>,
-        bh::histogram<axes::any, bh::unlimited_storage<>>,
-        bh::histogram<axes::any, bh::weight_storage>>;
-
-    m.def("make_histogram", [](py::args args, py::kwargs kwargs) -> hist_variant {
+    m.def("make_histogram", [](py::args args, py::kwargs kwargs) -> py::object {
         axes::any values = py::cast<axes::any>(args);
         auto storage_union = extract_storage(kwargs);
 
-        return bh::axis::visit([&values](auto&& storage) -> hist_variant {
-            return bh::make_histogram_with(storage, values);
+        return bh::axis::visit([&values](auto&& storage) -> py::object {
+            return py::cast(bh::make_histogram_with(storage, values));
         },
         storage_union);
 

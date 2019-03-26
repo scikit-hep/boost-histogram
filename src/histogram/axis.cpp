@@ -81,7 +81,7 @@ py::class_<A> register_axis_by_type(py::module& m, const char* name, const char*
     .def("update", &A::update, "Bin and add a value if allowed", "i"_a)
     .def_static("options", &A::options, "Return the options associated to the axis")
     .def_property("label",
-                  [](const A& self){return self.metadata();},
+                  [](const A& self){return std::string(self.metadata());},
                   [](A& self, std::string label){self.metadata() = label;},
                   "Set the axis label")
 
@@ -98,7 +98,7 @@ py::class_<A> register_axis_by_type(py::module& m, const char* name, const char*
 
 /// Add helpers common to all types with a range of values
 template<typename A, typename R=int>
-py::class_<A> register_axis_iv_by_type(py::module& m, const char* name) {
+py::class_<bh::axis::interval_view<A>> register_axis_iv_by_type(py::module& m, const char* name) {
     using A_iv = bh::axis::interval_view<A>;
     py::class_<A_iv> axis_iv = py::class_<A_iv>(m, name, "Lightweight bin view");
 
@@ -131,44 +131,46 @@ void register_axis(py::module &m) {
     opt.attr("growth") =    (unsigned) bh::axis::option::growth;
 
 
+    using metadata_t = std::string;
+    
     register_axis_by_type<axis::regular>(ax, "regular", "Evenly spaced bins")
-    .def(py::init<unsigned, double, double, std::string>(), "n"_a, "start"_a, "stop"_a, "label"_a = "")
+    .def(py::init<unsigned, double, double, metadata_t>(), "n"_a, "start"_a, "stop"_a, "label"_a = "")
     ;
     register_axis_iv_by_type<axis::regular>(ax, "_regular_internal_view");
 
 
     register_axis_by_type<axis::regular_noflow>(ax, "regular_noflow", "Evenly spaced bins without over/under flow")
-    .def(py::init<unsigned, double, double, std::string>(), "n"_a, "start"_a, "stop"_a, "label"_a = "")
+    .def(py::init<unsigned, double, double, metadata_t>(), "n"_a, "start"_a, "stop"_a, "label"_a = "")
     ;
     register_axis_iv_by_type<axis::regular_noflow>(ax, "_regular_noflow_internal_view");
 
 
     register_axis_by_type<axis::regular_growth>(ax, "regular_growth", "Evenly spaced bins that grow as needed")
-    .def(py::init<unsigned, double, double, std::string>(), "n"_a, "start"_a, "stop"_a, "label"_a = "")
+    .def(py::init<unsigned, double, double, metadata_t>(), "n"_a, "start"_a, "stop"_a, "label"_a = "")
     ;
     register_axis_iv_by_type<axis::regular_growth>(ax, "_regular_growth_internal_view");
 
 
     register_axis_by_type<axis::circular>(ax, "circular", "Evenly spaced bins with wraparound")
-    .def(py::init<unsigned, double, double, std::string>(), "n"_a, "start"_a, "stop"_a, "label"_a = "")
+    .def(py::init<unsigned, double, double, metadata_t>(), "n"_a, "start"_a, "stop"_a, "label"_a = "")
     ;
     register_axis_iv_by_type<axis::circular>(ax, "_circular_internal_view");
 
 
     register_axis_by_type<axis::regular_log>(ax, "regular_log", "Evenly spaced bins in log10")
-    .def(py::init<unsigned, double, double, std::string>(), "n"_a, "start"_a, "stop"_a, "label"_a = "")
+    .def(py::init<unsigned, double, double, metadata_t>(), "n"_a, "start"_a, "stop"_a, "label"_a = "")
     ;
     register_axis_iv_by_type<axis::regular_log>(ax, "_regular_log_internal_view");
 
 
     register_axis_by_type<axis::regular_sqrt>(ax, "regular_sqrt", "Evenly spaced bins in sqrt")
-    .def(py::init<unsigned, double, double, std::string>(), "n"_a, "start"_a, "stop"_a, "label"_a = "")
+    .def(py::init<unsigned, double, double, metadata_t>(), "n"_a, "start"_a, "stop"_a, "label"_a = "")
     ;
     register_axis_iv_by_type<axis::regular_sqrt>(ax, "_regular_sqrt_internal_view");
 
 
     register_axis_by_type<axis::regular_pow>(ax, "regular_pow", "Evenly spaced bins in a power")
-    .def(py::init([](double pow, unsigned n, double start, double stop, std::string label){
+    .def(py::init([](double pow, unsigned n, double start, double stop, metadata_t label){
         return new axis::regular_pow(bh::axis::transform::pow{pow}, n, start , stop, label);} ),
          "pow"_a, "n"_a, "start"_a, "stop"_a, "label"_a = "")
     ;
@@ -176,23 +178,23 @@ void register_axis(py::module &m) {
 
 
     register_axis_by_type<axis::variable>(ax, "variable", "Unevenly spaced bins")
-    .def(py::init<std::vector<double>, std::string>(), "edges"_a, "label"_a = "")
+    .def(py::init<std::vector<double>, metadata_t>(), "edges"_a, "label"_a = "")
     ;
     register_axis_iv_by_type<axis::variable>(ax, "_variable_internal_view");
 
 
     register_axis_by_type<axis::integer>(ax, "integer", "Contigious integers")
-    .def(py::init<int, int, std::string>(), "min"_a, "max"_a, "label"_a = "")
+    .def(py::init<int, int, metadata_t>(), "min"_a, "max"_a, "label"_a = "")
     ;
     register_axis_iv_by_type<axis::integer>(ax, "_integer_internal_view");
 
 
     register_axis_by_type<axis::category_str, std::string>(ax, "category_str", "Text label bins")
-    .def(py::init<std::vector<std::string>, std::string>(), "labels"_a, "label"_a = "")
+    .def(py::init<std::vector<std::string>, metadata_t>(), "labels"_a, "label"_a = "")
     ;
 
     register_axis_by_type<axis::category_str_growth, std::string>(ax, "category_str_growth", "Text label bins")
-    .def(py::init<std::vector<std::string>, std::string>(), "labels"_a, "label"_a = "")
+    .def(py::init<std::vector<std::string>, metadata_t>(), "labels"_a, "label"_a = "")
     // Add way to allow empty list of strings
     .def(py::init<>())
     ;
