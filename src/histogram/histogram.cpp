@@ -87,7 +87,7 @@ py::class_<bh::histogram<A, S>> register_histogram_by_type(py::module& m, const 
         },
          "Access bin counter at indices")
 
-    .def("__repr__", [](histogram_t &self){
+    .def("__repr__", [](const histogram_t &self){
         std::ostringstream out;
         out << self;
         return out.str();
