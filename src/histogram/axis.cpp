@@ -81,8 +81,8 @@ py::class_<A> register_axis_by_type(py::module& m, const char* name, const char*
     .def("update", &A::update, "Bin and add a value if allowed", "i"_a)
     .def_static("options", &A::options, "Return the options associated to the axis")
     .def_property("label",
-                  [](const A& self){return std::string(self.metadata());},
-                  [](A& self, std::string label){self.metadata() = label;},
+                  [](const A& self){return self.metadata();},
+                  [](A& self, metadata_t label){self.metadata() = label;},
                   "Set the axis label")
 
     ;
@@ -129,9 +129,7 @@ void register_axis(py::module &m) {
     opt.attr("overflow") =  (unsigned) bh::axis::option::overflow;
     opt.attr("circular") =  (unsigned) bh::axis::option::circular;
     opt.attr("growth") =    (unsigned) bh::axis::option::growth;
-
-
-    using metadata_t = std::string;
+    
     
     register_axis_by_type<axis::regular>(ax, "regular", "Evenly spaced bins")
     .def(py::init<unsigned, double, double, metadata_t>(), "n"_a, "start"_a, "stop"_a, "label"_a = "")
