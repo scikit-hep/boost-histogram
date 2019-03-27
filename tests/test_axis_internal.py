@@ -76,14 +76,15 @@ def test_axis_circular():
     assert .1 == ax.value(1)
     assert ax.options() == bh.axis.options.circular | bh.axis.options.overflow
 
-
-@pytest.mark.parametrize("axis", [
+normal_axs = [
     bh.axis.regular,
     bh.axis.regular_noflow,
     bh.axis.circular,
     bh.axis.regular_log,
     bh.axis.regular_sqrt,
-])
+]
+
+@pytest.mark.parametrize("axis", normal_axs)
 def test_regular_axis_repr(axis):
     ax = axis(2,3,4)
     assert 'object at' not in repr(ax)
@@ -96,6 +97,13 @@ def test_regular_axis_repr(axis):
     ax = axis(7,2,4, label='That')
     assert 'That' in repr(ax)
     assert ax.label == 'That'
+
+@pytest.mark.parametrize("axis", normal_axs)
+def test_any_label(axis):
+    ax = axis(2,3,4, label={"one": "1"})
+    assert ax.label == {"one": "1"}
+    ax.label = 64
+    assert ax.label == 64
 
 def test_cat_str():
     ax = bh.axis.category_str(["a", "b", "c"])

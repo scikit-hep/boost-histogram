@@ -43,19 +43,7 @@ py::array_t<double> axis_to_edges(const A& ax, bool flow) {
     return edges;
 }
 
-/*
-struct metadata_t {
-    std::string label;
-    metadata_t() = default;
-    metadata_t(std::string txt) : label(txt) {}
-    operator const char*() const {return label.c_str();}
-};
-inline std::ostream& operator<< (std::ostream& out, const metadata_t& meta) {
-    return out << meta.label;
-}
-*/
-
-using metadata_t = std::string;
+using metadata_t = py::object;
 
 namespace axis {
 
