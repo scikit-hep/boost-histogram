@@ -49,6 +49,7 @@ struct fill_helper {
         // N is a compile-time number with N == arrs.size()
         // Type: tuple<double, ..., double> (N times)
         mp_repeat<std::tuple<double>, N> tp;
+        
         // Note that splitting and filling from multiple threads is only supported with atomics
         py::gil_scoped_release gil;
         
@@ -75,8 +76,10 @@ struct fill_helper {
             const double* ptr;
             std::size_t size;
         };
-        // TODO: only release gil when storage is thread-safe
-        // py::gil_scoped_release gil;
+        
+        // Note that splitting and filling from multiple threads is only supported with atomics
+        py::gil_scoped_release gil;
+        
         for (double xi : span{arrs.front().second, (std::size_t) size})
             hist(xi); // throws invalid_argument if hist.rank() != 1
     }

@@ -36,17 +36,26 @@ public:
     }
 };
 
+namespace storage {
 
-using dense_int_storage = bh::dense_storage<uint64_t>;
-using dense_atomic_int_storage = bh::dense_storage<copyable_atomic<uint64_t>>;
-using dense_double_storage = bh::dense_storage<double>;
-
-using any_storage_variant = bh::axis::variant<
-    dense_atomic_int_storage,
-    dense_int_storage,
-    dense_double_storage,
-    bh::unlimited_storage<>,
-    bh::weight_storage
+// Names match Python names
+using dense_int = bh::dense_storage<uint64_t>;
+using dense_atomic_int = bh::dense_storage<copyable_atomic<uint64_t>>;
+using dense_double = bh::dense_storage<double>;
+using unlimited = bh::unlimited_storage<>;
+using weight = bh::weight_storage;
+using profile = bh::profile_storage;
+using weighted_profile = bh::weighted_profile_storage;
+    
+// Some types not yet suppored (mostly due to fill not accepting weight and sample yet)
+using any_variant = bh::axis::variant<
+    dense_atomic_int,
+    dense_int,
+    dense_double,
+    unlimited,
+    weight
 >;
 
-any_storage_variant extract_storage(py::kwargs kwargs);
+}  // namespace storage
+    
+storage::any_variant extract_storage(py::kwargs kwargs);
