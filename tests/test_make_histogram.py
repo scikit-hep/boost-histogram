@@ -57,8 +57,8 @@ def test_make_any_hist_storage():
     assert float == type(bh.make_histogram(bh.axis.regular(5,1,2), storage=bh.storage.dense_double()).at(0))
 
 def test_issue_axis_bin_swan():
-    hist = bh.make_histogram(bh.axis.regular_sqrt(10,0,10, label='x'),
-                             bh.axis.circular(10,0,1, label='y'))
+    hist = bh.make_histogram(bh.axis.regular_sqrt(10,0,10, metadata='x'),
+                             bh.axis.circular(10,0,1, metadata='y'))
 
     b = hist.axis(1).bin(1)
     assert repr(b) == '<bin [0.100000, 0.200000]>'
