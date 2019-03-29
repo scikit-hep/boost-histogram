@@ -66,10 +66,10 @@ counts = hist.view()
     * `bh.storage.profile`: WIP
     * `bh.storage.weighted_profile`: WIP
 * Accumulators
-    `bh.accumulator.weighted_sum`: Tracks a weighted sum and variance
-    `bh.accumulator.weighted_mean`: Tracks a weighted sum, mean, and variance (West's incremental algorithm)
-    `bh.accumulator.sum`: High accuracy sum (Neumaier)
-    `bh.accumulator.mean`: Running count, mean, and variance (Welfords's incremental algorithm)
+    * `bh.accumulator.weighted_sum`: Tracks a weighted sum and variance
+    * `bh.accumulator.weighted_mean`: Tracks a weighted sum, mean, and variance (West's incremental algorithm)
+    * `bh.accumulator.sum`: High accuracy sum (Neumaier)
+    * `bh.accumulator.mean`: Running count, mean, and variance (Welfords's incremental algorithm)
 * Histogram operations
     * `(a, b, ...)`: Fill with arrays or single values
     * `+`: Add two histograms
