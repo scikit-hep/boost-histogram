@@ -11,7 +11,6 @@
 #include <cstdint>
 #include <atomic>
 
-namespace bh = boost::histogram;
 
 /*
  std::atomic has deleted copy ctor, we need to wrap it in a type with a

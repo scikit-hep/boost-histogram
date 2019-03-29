@@ -11,8 +11,6 @@
 
 #include <vector>
 
-namespace bh = boost::histogram;
-
 
 template<typename T>
 struct remove_atomic {

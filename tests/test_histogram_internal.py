@@ -117,6 +117,15 @@ def test_numpy_flow():
 
     assert np.all(flow_true == flow_false)
 
+    view_flow_true = h.view(flow=True)
+    view_flow_false = h.view(flow=False)
+    view_flow_default = h.view()
+
+    assert np.all(view_flow_true[1:-1, 1:-1] == view_flow_false)
+    assert np.all(view_flow_default == view_flow_false)
+
+
+
 def test_numpy_compare():
     h = bh.hist.regular_int_2d([bh.axis.regular(10,0,1), bh.axis.regular(5,0,1)])
 

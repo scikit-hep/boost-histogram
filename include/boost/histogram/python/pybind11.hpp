@@ -9,7 +9,21 @@
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 
-#include <boost/variant.hpp>
+#include <functional>
+#include <type_traits>
 
 namespace py = pybind11;
-using namespace pybind11::literals;
+using namespace pybind11::literals; // For ""_a syntax
+
+namespace boost { namespace histogram {}}
+namespace bh = boost::histogram;
+
+/// Static if standin: define a method if expression is true
+template<typename T, typename... Args>
+void def_optionally(T&& module, std::true_type, Args&&... expression) {
+    module.def(std::forward<Args...>(expression...));
+}
+
+/// Static if standin: Do nothing if compile time expression is false
+template<typename T, typename... Args>
+void def_optionally(T&&, std::false_type, Args&&...) {}

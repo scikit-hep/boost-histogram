@@ -24,7 +24,6 @@
 
 using namespace std::literals;
 
-namespace bh = boost::histogram;
 
 /// Add items to an axis where the axis values are continious
 template<typename A, typename B>
@@ -39,11 +38,6 @@ void add_to_axis(B&& axis, std::false_type) {
 
     axis.def("centers", [](const A& ax){
         py::array_t<double> centers((unsigned) ax.size());
-        //std::vector<double> centers;
-        //centers.reserve((unsigned) ax.size());
-        //for(const auto& val : ax) {
-            //centers.push_back(val.center());
-        //}
         std::transform(ax.begin(), ax.end(), centers.mutable_data(), [](const auto& bin){return bin.center();});
         return centers;
     }, "Return the bin centers");

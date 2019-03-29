@@ -17,7 +17,6 @@
 #include <utility>
 #include <vector>
 
-namespace bh = boost::histogram;
 
 void register_storage(py::module &m) {
 
@@ -39,7 +38,7 @@ void register_storage(py::module &m) {
 
     // Default storages
 
-    py::class_<storage::unlimited>(storage, "unlimited", "Pptimized for unweighted histograms, adaptive")
+    py::class_<storage::unlimited>(storage, "unlimited", "Optimized for unweighted histograms, adaptive")
     .def(py::init<>())
     ;
 

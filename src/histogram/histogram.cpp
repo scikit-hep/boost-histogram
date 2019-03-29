@@ -23,8 +23,6 @@
 #include <tuple>
 #include <cmath>
 
-namespace bh = boost::histogram;
-
 
 template<typename A, typename S>
 py::class_<bh::histogram<A, S>> register_histogram_by_type(py::module& m, const char* name, const char* desc) {
@@ -49,11 +47,13 @@ py::class_<bh::histogram<A, S>> register_histogram_by_type(py::module& m, const 
     .def(py::self + py::self)
     .def(py::self == py::self)
     .def(py::self != py::self)
-    // fail on atomics
-    // .def(py::self *= double())
-    // .def(py::self /= double())
+    ;
 
-    .def("to_numpy", [](histogram_t& h, bool flow){
+    // Atomics for example do not support these operations
+    def_optionally(hist, bh::detail::has_operator_rmul<histogram_t, double>{}, py::self *= double());
+    def_optionally(hist, bh::detail::has_operator_rdiv<histogram_t, double>{}, py::self /= double());
+
+    hist.def("to_numpy", [](histogram_t& h, bool flow){
         py::list listing;
 
         // Add the histogram as the first argument
@@ -70,9 +70,14 @@ py::class_<bh::histogram<A, S>> register_histogram_by_type(py::module& m, const 
     },
          "flow"_a = false, "convert to a numpy style tuple of returns")
 
+    .def("view", [](histogram_t& h, bool flow){
+        return py::array(make_buffer(h, flow));
+    }, "flow"_a = false,
+         "Return a view into the data, optionally with overflow turned on")
+    
     .def("axis",
         [](histogram_t &self, unsigned i){return self.axis(i);},
-     "Get N-th axis with runtime index",
+     "Get N-th axis with runtime index", "i"_a,
          py::return_value_policy::move)
 
     // generic fill for 1 to N args

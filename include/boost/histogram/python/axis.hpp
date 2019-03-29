@@ -12,7 +12,6 @@
 #include <tuple>
 #include <vector>
 
-namespace bh = boost::histogram;
 
 /// Register bh::axis::variant as a variant for PyBind11
 namespace pybind11 { namespace detail {

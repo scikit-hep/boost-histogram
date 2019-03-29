@@ -16,8 +16,6 @@
 #include <tuple>
 #include <cmath>
 
-namespace bh = boost::histogram;
-
 template <class Histogram>
 struct fill_helper {
     fill_helper(Histogram& h, py::args args) : hist(h) {
