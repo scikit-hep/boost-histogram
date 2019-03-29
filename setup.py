@@ -11,7 +11,8 @@ ext_modules = [
         ['src/module.cpp',
          'src/histogram/axis.cpp',
          'src/histogram/histogram.cpp',
-         'src/histogram/storage.cpp'
+         'src/histogram/storage.cpp',
+         'src/histogram/accumulators.cpp',
         ],
         include_dirs=[
             'include',
