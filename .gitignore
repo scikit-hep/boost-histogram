@@ -37,4 +37,6 @@
 # Python binary files
 *.pyc
 *__pycache__*
+*.env
+*.egg-info
 .ipynb_checkpoints

@@ -1,7 +1,7 @@
 import pytest
 
 import numpy as np
-import histogram as bh
+import boost.histogram as bh
 
 from concurrent.futures import ThreadPoolExecutor
 from functools import reduce
