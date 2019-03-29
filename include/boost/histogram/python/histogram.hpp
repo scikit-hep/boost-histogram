@@ -11,7 +11,17 @@
 
 #include <vector>
 
-namespace bh = boost::histogram;
+
+template<typename T>
+struct remove_atomic {
+    using type = T;
+};
+
+template<>
+struct remove_atomic<copyable_atomic<uint64_t>> {
+    using type = std::uint64_t;
+};
+
 
 /// Build and return a buffer over the current data.
 /// Could be optimized using array and maximum number of dims.
@@ -19,6 +29,7 @@ namespace bh = boost::histogram;
 template<typename A, typename S>
 py::buffer_info make_buffer(bh::histogram<A, S>& h, bool flow) {
     using in_storage_t = typename bh::histogram<A, S>::value_type;
+    using in_storage_value_t = typename remove_atomic<in_storage_t>::type;
 
     auto rank = h.rank();
     std::vector<ssize_t> diminsions, strides;
@@ -41,7 +52,7 @@ py::buffer_info make_buffer(bh::histogram<A, S>& h, bool flow) {
     return py::buffer_info(
                            &(*h.begin()) + start,                         // Pointer to buffer
                            sizeof(in_storage_t),                          // Size of one scalar
-                           py::format_descriptor<in_storage_t>::format(), // Python struct-style format descriptor
+                           py::format_descriptor<in_storage_value_t>::format(), // Python struct-style format descriptor
                            rank,                                          // Number of dimensions
                            diminsions,                                    // Buffer dimensions
                            strides                                        // Strides (in bytes) for each index

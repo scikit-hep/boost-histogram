@@ -23,8 +23,6 @@
 #include <tuple>
 #include <cmath>
 
-namespace bh = boost::histogram;
-
 
 template<typename A, typename S>
 py::class_<bh::histogram<A, S>> register_histogram_by_type(py::module& m, const char* name, const char* desc) {
@@ -49,10 +47,13 @@ py::class_<bh::histogram<A, S>> register_histogram_by_type(py::module& m, const 
     .def(py::self + py::self)
     .def(py::self == py::self)
     .def(py::self != py::self)
-    .def(py::self *= double())
-    .def(py::self /= double())
+    ;
 
-    .def("to_numpy", [](histogram_t& h, bool flow){
+    // Atomics for example do not support these operations
+    def_optionally(hist, bh::detail::has_operator_rmul<histogram_t, double>{}, py::self *= double());
+    def_optionally(hist, bh::detail::has_operator_rdiv<histogram_t, double>{}, py::self /= double());
+
+    hist.def("to_numpy", [](histogram_t& h, bool flow){
         py::list listing;
 
         // Add the histogram as the first argument
@@ -69,9 +70,14 @@ py::class_<bh::histogram<A, S>> register_histogram_by_type(py::module& m, const 
     },
          "flow"_a = false, "convert to a numpy style tuple of returns")
 
+    .def("view", [](histogram_t& h, bool flow){
+        return py::array(make_buffer(h, flow));
+    }, "flow"_a = false,
+         "Return a view into the data, optionally with overflow turned on")
+    
     .def("axis",
         [](histogram_t &self, unsigned i){return self.axis(i);},
-     "Get N-th axis with runtime index",
+     "Get N-th axis with runtime index", "i"_a,
          py::return_value_policy::move)
 
     // generic fill for 1 to N args
@@ -104,71 +110,83 @@ void register_histogram(py::module& m) {
     // Fast specializations: Fixed number of axis (may be removed if above versions are fast enough)
     // Mostly targeting histogram styles supported by numpy for these max performance versions.
 
-    register_histogram_by_type<axes::regular_1D, dense_int_storage>(hist,
+    register_histogram_by_type<axes::regular_1D, storage::int_>(hist,
          "regular_int_1d",
          "1-dimensional histogram for int valued data.");
 
-    m.def("make_histogram", [](axis::regular& ax1, dense_int_storage){
-        return bh::make_histogram_with(dense_int_storage(), ax1);
-    }, "axis"_a, "storage"_a=dense_int_storage(), "Make a 1D histogram of integers");
+    m.def("make_histogram", [](axis::regular& ax1, storage::int_){
+        return bh::make_histogram_with(storage::int_(), ax1);
+    }, "axis"_a, "storage"_a=storage::int_(), "Make a 1D histogram of integers");
 
 
-    register_histogram_by_type<axes::regular_2D, dense_int_storage>(hist,
+    register_histogram_by_type<axes::regular_1D, storage::atomic_int>(hist,
+        "regular_atomic_int_1d",
+        "1-dimensional histogram for int valued data (atomic).");
+    
+    m.def("make_histogram", [](axis::regular& ax1, storage::atomic_int){
+        return bh::make_histogram_with(storage::atomic_int(), ax1);
+    }, "axis"_a, "storage"_a=storage::atomic_int(), "Make a 1D histogram of atomic integers");
+    
+    register_histogram_by_type<axes::regular_2D, storage::int_>(hist,
         "regular_int_2d",
         "2-dimensional histogram for int valued data.");
 
-    m.def("make_histogram", [](axis::regular& ax1, axis::regular& ax2, dense_int_storage){
-        return bh::make_histogram_with(dense_int_storage(), ax1, ax2);
-    }, "axis1"_a, "axis2"_a, "storage"_a=dense_int_storage(), "Make a 2D histogram of integers");
+    m.def("make_histogram", [](axis::regular& ax1, axis::regular& ax2, storage::int_){
+        return bh::make_histogram_with(storage::int_(), ax1, ax2);
+    }, "axis1"_a, "axis2"_a, "storage"_a=storage::int_(), "Make a 2D histogram of integers");
 
 
-    register_histogram_by_type<axes::regular_noflow_1D, dense_int_storage>(hist,
+    register_histogram_by_type<axes::regular_noflow_1D, storage::int_>(hist,
         "regular_int_noflow_1d",
         "1-dimensional histogram for int valued data.");
 
-    m.def("make_histogram", [](axis::regular_noflow& ax1, dense_int_storage){
-        return bh::make_histogram_with(dense_int_storage(), ax1);
-    }, "axis"_a, "storage"_a=dense_int_storage(), "Make a 1D histogram of integers without overflow");
+    m.def("make_histogram", [](axis::regular_noflow& ax1, storage::int_){
+        return bh::make_histogram_with(storage::int_(), ax1);
+    }, "axis"_a, "storage"_a=storage::int_(), "Make a 1D histogram of integers without overflow");
 
 
-    register_histogram_by_type<axes::regular_noflow_2D, dense_int_storage>(hist,
+    register_histogram_by_type<axes::regular_noflow_2D, storage::int_>(hist,
         "regular_int_noflow_2d",
         "2-dimensional histogram for int valued data.");
 
-    m.def("make_histogram", [](axis::regular_noflow& ax1, axis::regular_noflow& ax2, dense_int_storage){
-        return bh::make_histogram_with(dense_int_storage(), ax1, ax2);
-    }, "axis1"_a, "axis2"_a, "storage"_a=dense_int_storage(), "Make a 2D histogram of integers without overflow");
+    m.def("make_histogram", [](axis::regular_noflow& ax1, axis::regular_noflow& ax2, storage::int_){
+        return bh::make_histogram_with(storage::int_(), ax1, ax2);
+    }, "axis1"_a, "axis2"_a, "storage"_a=storage::int_(), "Make a 2D histogram of integers without overflow");
 
 
     // Fast specializations - uniform types
 
-    register_histogram_by_type<axes::regular, bh::unlimited_storage<>>(hist,
+    register_histogram_by_type<axes::regular, storage::unlimited>(hist,
         "regular_unlimited",
         "N-dimensional histogram for real-valued data.");
 
-    register_histogram_by_type<axes::regular, dense_int_storage>(hist,
+    register_histogram_by_type<axes::regular, storage::int_>(hist,
         "regular_int",
         "N-dimensional histogram for int-valued data.");
 
-    register_histogram_by_type<axes::regular_noflow, dense_int_storage>(hist,
+    register_histogram_by_type<axes::regular_noflow, storage::int_>(hist,
         "regular_int_noflow",
         "N-dimensional histogram for int-valued data.");
 
     // Completely general histograms
 
-    register_histogram_by_type<axes::any, dense_int_storage>(hist,
+    register_histogram_by_type<axes::any, storage::int_>(hist,
         "any_int",
         "N-dimensional histogram for int-valued data with any axis types.");
+    
+    register_histogram_by_type<axes::any, storage::atomic_int>(hist,
+        "any_atomic_int",
+        "N-dimensional histogram for int-valued data with any axis types (threadsafe).");
 
-    register_histogram_by_type<axes::any, dense_double_storage>(hist,
+    register_histogram_by_type<axes::any, storage::double_>(hist,
         "any_double",
         "N-dimensional histogram for real-valued data with weights with any axis types.");
 
-    register_histogram_by_type<axes::any, bh::unlimited_storage<>>(hist,
+    register_histogram_by_type<axes::any, storage::unlimited>(hist,
         "any_unlimited",
         "N-dimensional histogram for unlimited size data with any axis types.");
 
-    register_histogram_by_type<axes::any, bh::weight_storage>(hist,
+    register_histogram_by_type<axes::any, storage::weight>(hist,
         "any_weight",
         "N-dimensional histogram for weighted data with any axis types.");
 

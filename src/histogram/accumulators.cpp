@@ -13,7 +13,6 @@
 #include <boost/histogram/accumulators/sum.hpp>
 #include <boost/histogram/accumulators/ostream.hpp>
 
-namespace bh = boost::histogram;
 
 void register_accumulators(py::module &m) {
     

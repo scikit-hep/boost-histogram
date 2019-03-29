@@ -12,7 +12,7 @@ steps:
 - script: |
     python -m pip install --upgrade pip
     python -m pip install --upgrade pytest
-    python -m pip install numpy
+    python -m pip install numpy 'futures; python_version<"3.4"'
   displayName: 'Install dependencies'
 
 - task: CMake@1
