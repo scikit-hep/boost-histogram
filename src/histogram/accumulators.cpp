@@ -18,7 +18,6 @@ void register_accumulators(py::module &m) {
     
     py::module accumulator = m.def_submodule("accumulator");
 
-
     using weighted_sum = bh::accumulators::weighted_sum<double>;
     
     py::class_<weighted_sum>(accumulator, "weighted_sum")
@@ -45,11 +44,7 @@ void register_accumulators(py::module &m) {
             return self.value(); 
         }), "values"_a, "variances"_a)
     
-        .def("__repr__", [](const weighted_sum& self){
-            std::ostringstream out;
-            out << self;
-            return out.str();
-        })
+        .def("__repr__", shift_to_string<weighted_sum>())
     ;
 
     using weighted_mean = bh::accumulators::weighted_mean<double>;
@@ -78,11 +73,8 @@ void register_accumulators(py::module &m) {
            return self.value();
        }), "weight"_a, "value"_a)
 
-      .def("__repr__", [](const weighted_mean& self){
-          std::ostringstream out;
-          out << self;
-          return out.str();
-      })
+      .def("__repr__", shift_to_string<weighted_mean>())
+    
       ;
 
     
@@ -107,11 +99,7 @@ void register_accumulators(py::module &m) {
             return self.value();
         }), "value"_a)
     
-        .def("__repr__", [](const mean& self){
-            std::ostringstream out;
-            out << self;
-            return out.str();
-        })
+        .def("__repr__", shift_to_string<mean>())
     ;
     
     using sum = bh::accumulators::sum<double>;
@@ -135,11 +123,7 @@ void register_accumulators(py::module &m) {
         .def_property_readonly("small", &sum::small)
         .def_property_readonly("large", &sum::large)
     
-        .def("__repr__", [](const sum& self){
-            std::ostringstream out;
-            out << self;
-            return out.str();
-        })
+        .def("__repr__", shift_to_string<sum>())
     ;
 
 }

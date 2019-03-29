@@ -60,11 +60,7 @@ py::class_<A> register_axis_by_type(py::module& m, const char* name, const char*
     // using value_type = decltype(A::value(1.0));
 
     axis
-    .def("__repr__", [](A &self){
-        std::ostringstream out;
-        out << self;
-        return out.str();
-    })
+    .def("__repr__", shift_to_string<A>())
 
     .def(py::self == py::self)
     .def(py::self != py::self)
