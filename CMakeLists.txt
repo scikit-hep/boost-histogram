@@ -87,6 +87,13 @@ if(NOT "${BOOST_HISTOGRAM_DETAIL_AXES_LIMIT}" STREQUAL "")
     target_compile_definitions(histogram PRIVATE BOOST_HISTOGRAM_DETAIL_AXES_LIMIT=${BOOST_HISTOGRAM_DETAIL_AXES_LIMIT})
 endif()
 
+# Make the output be in boost/...
+set_property(TARGET histogram PROPERTY LIBRARY_OUTPUT_DIRECTORY "boost")
+configure_file(
+    "boost/__init__.py"
+    "${CMAKE_CURRENT_BINARY_DIR}/boost/__init__.py"
+    COPYONLY)
+
 # Tests (Requires pytest to be available to run)
 include(CTest)
 

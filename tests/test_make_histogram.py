@@ -2,7 +2,7 @@ import pytest
 from pytest import approx
 import math
 
-import histogram as bh
+import boost.histogram as bh
 
 @pytest.mark.parametrize("axis,extent", ((bh.axis.regular, 2),
                                          (bh.axis.regular_noflow, 0)))

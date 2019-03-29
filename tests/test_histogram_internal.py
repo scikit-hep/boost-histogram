@@ -1,6 +1,6 @@
 import pytest
 
-import histogram as bh
+import boost.histogram as bh
 import numpy as np
 
 

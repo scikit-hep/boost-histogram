@@ -2,12 +2,13 @@ from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
 import sys
 import setuptools
+from setuptools import find_packages
 
 __version__ = '0.0.1'
 
 ext_modules = [
     Extension(
-        'histogram',
+        'boost.histogram',
         ['src/module.cpp',
          'src/histogram/axis.cpp',
          'src/histogram/histogram.cpp',
@@ -96,7 +97,7 @@ extras = {
 }
 
 setup(
-    name='histogram',
+    name='boost-histogram',
     version=__version__,
     author='Henry Schreiner',
     author_email='hschrein@cern.ch',
@@ -104,6 +105,7 @@ setup(
     description='The Boost::Histogram Python wrapper.',
     long_description='',
     ext_modules=ext_modules,
+    packages=find_packages(),
     cmdclass={'build_ext': BuildExt},
     zip_safe=False,
     install_requires=['numpy'],
