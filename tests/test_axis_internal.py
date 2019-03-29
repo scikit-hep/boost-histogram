@@ -89,21 +89,21 @@ def test_regular_axis_repr(axis):
     ax = axis(2,3,4)
     assert 'object at' not in repr(ax)
 
-    ax = axis(7,2,4, label='This')
+    ax = axis(7,2,4, metadata='This')
     assert 'This' in repr(ax)
-    assert ax.label == 'This'
+    assert ax.metadata == 'This'
 
-    ax.label = 'That'
-    ax = axis(7,2,4, label='That')
+    ax.metadata = 'That'
+    ax = axis(7,2,4, metadata='That')
     assert 'That' in repr(ax)
-    assert ax.label == 'That'
+    assert ax.metadata == 'That'
 
 @pytest.mark.parametrize("axis", normal_axs)
-def test_any_label(axis):
-    ax = axis(2,3,4, label={"one": "1"})
-    assert ax.label == {"one": "1"}
-    ax.label = 64
-    assert ax.label == 64
+def test_any_metadata(axis):
+    ax = axis(2,3,4, metadata={"one": "1"})
+    assert ax.metadata == {"one": "1"}
+    ax.metadata = 64
+    assert ax.metadata == 64
 
 def test_cat_str():
     ax = bh.axis.category_str(["a", "b", "c"])
