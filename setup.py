@@ -102,5 +102,5 @@ setup(
     ext_modules=ext_modules,
     cmdclass={'build_ext': BuildExt},
     zip_safe=False,
-    tests_require=['pytest', 'numpy']
+    tests_require=['pytest', 'numpy', 'futures; python_version < "3"']
 )

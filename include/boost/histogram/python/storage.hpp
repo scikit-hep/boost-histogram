@@ -38,9 +38,9 @@ public:
 namespace storage {
 
 // Names match Python names
-using dense_int = bh::dense_storage<uint64_t>;
-using dense_atomic_int = bh::dense_storage<copyable_atomic<uint64_t>>;
-using dense_double = bh::dense_storage<double>;
+using int_ = bh::dense_storage<uint64_t>;
+using atomic_int = bh::dense_storage<copyable_atomic<uint64_t>>;
+using double_ = bh::dense_storage<double>;
 using unlimited = bh::unlimited_storage<>;
 using weight = bh::weight_storage;
 using profile = bh::profile_storage;
@@ -48,9 +48,9 @@ using weighted_profile = bh::weighted_profile_storage;
     
 // Some types not yet suppored (mostly due to fill not accepting weight and sample yet)
 using any_variant = bh::axis::variant<
-    dense_atomic_int,
-    dense_int,
-    dense_double,
+    atomic_int,
+    int_,
+    double_,
     unlimited,
     weight
 >;

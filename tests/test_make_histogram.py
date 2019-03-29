@@ -30,8 +30,8 @@ def test_make_regular_2D(axis, extent):
     assert hist.axis(1).bin(1).center() == approx(2.5)
 
 
-@pytest.mark.parametrize("storage", (bh.storage.dense_int(),
-                                     bh.storage.dense_double(),
+@pytest.mark.parametrize("storage", (bh.storage.int(),
+                                     bh.storage.double(),
                                      bh.storage.unlimited(),
                                      bh.storage.weight()))
 def test_make_any_hist(storage):
@@ -53,8 +53,8 @@ def test_make_any_hist(storage):
 
 def test_make_any_hist_storage():
 
-    assert float != type(bh.make_histogram(bh.axis.regular(5,1,2), storage=bh.storage.dense_int()).at(0))
-    assert float == type(bh.make_histogram(bh.axis.regular(5,1,2), storage=bh.storage.dense_double()).at(0))
+    assert float != type(bh.make_histogram(bh.axis.regular(5,1,2), storage=bh.storage.int()).at(0))
+    assert float == type(bh.make_histogram(bh.axis.regular(5,1,2), storage=bh.storage.double()).at(0))
 
 def test_issue_axis_bin_swan():
     hist = bh.make_histogram(bh.axis.regular_sqrt(10,0,10, metadata='x'),

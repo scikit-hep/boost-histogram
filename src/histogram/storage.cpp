@@ -24,15 +24,15 @@ void register_storage(py::module &m) {
 
     // Fast storages
 
-    py::class_<storage::dense_int>(storage, "dense_int", "Integers in vectors storage type")
+    py::class_<storage::int_>(storage, "int", "Integers in vectors storage type")
     .def(py::init<>())
     ;
 
-    py::class_<storage::dense_double>(storage, "dense_double", "Weighted storage without variance type (fast but simple)")
+    py::class_<storage::double_>(storage, "double", "Weighted storage without variance type (fast but simple)")
     .def(py::init<>())
     ;
 
-    py::class_<storage::dense_atomic_int>(storage, "dense_atomic_int", "Threadsafe (not growing axis) integer storage")
+    py::class_<storage::atomic_int>(storage, "atomic_int", "Threadsafe (not growing axis) integer storage")
     .def(py::init<>())
     ;
 
@@ -60,11 +60,11 @@ storage::any_variant extract_storage(py::kwargs kwargs) {
 
     if(kwargs.contains("storage")) {
         try {
-            return py::cast<storage::dense_int>(kwargs["storage"]);
+            return py::cast<storage::int_>(kwargs["storage"]);
         } catch(const py::cast_error&) {}
 
         try {
-            return py::cast<storage::dense_double>(kwargs["storage"]);
+            return py::cast<storage::double_>(kwargs["storage"]);
         } catch(const py::cast_error&) {}
 
         try {
@@ -76,13 +76,13 @@ storage::any_variant extract_storage(py::kwargs kwargs) {
         } catch(const py::cast_error&) {}
 
         try {
-            return py::cast<storage::dense_atomic_int>(kwargs["storage"]);
+            return py::cast<storage::atomic_int>(kwargs["storage"]);
         } catch(const py::cast_error&) {}
 
         throw std::runtime_error("Storage type not supported");
 
     } else {
         // Default storage if not is specified
-        return storage::dense_int();
+        return storage::int_();
     }
 }
