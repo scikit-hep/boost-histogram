@@ -91,6 +91,10 @@ class BuildExt(build_ext):
             ext.extra_compile_args = opts
         build_ext.build_extensions(self)
 
+extras = {
+    'test': ['pytest', 'numpy', 'futures; python_version < "3"']
+}
+
 setup(
     name='histogram',
     version=__version__,
@@ -102,5 +106,7 @@ setup(
     ext_modules=ext_modules,
     cmdclass={'build_ext': BuildExt},
     zip_safe=False,
-    tests_require=['pytest', 'numpy', 'futures; python_version < "3"']
+    install_requires=['numpy'],
+    tests_require=extras['test'],
+    extras_require=extras
 )
