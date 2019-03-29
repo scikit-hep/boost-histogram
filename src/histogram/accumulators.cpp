@@ -36,11 +36,21 @@ void register_accumulators(py::module &m) {
         .def(py::self == py::self)
         .def(py::self != py::self)
     
+        .def("__call__", py::vectorize([](weighted_sum& self, double value){
+            self += value;
+            return self.value();
+        }), "values"_a)
+    
+        .def("__call__", py::vectorize([](weighted_sum& self, double value, double variance){
+            self += weighted_sum(value, variance);
+            return self.value(); 
+        }), "values"_a, "variances"_a)
+    
         .def("__repr__", [](const weighted_sum& self){
-                std::ostringstream out;
-                out << self;
-                return out.str();
-            })
+            std::ostringstream out;
+            out << self;
+            return out.str();
+        })
     ;
 
     using weighted_mean = bh::accumulators::weighted_mean<double>;
@@ -60,15 +70,21 @@ void register_accumulators(py::module &m) {
         .def(py::self == py::self)
         .def(py::self != py::self)
     
-        .def("__call__", py::overload_cast<const double&>(&weighted_mean::operator()), "x"_a)
-        .def("__call__", py::overload_cast<const double&, const double&>(&weighted_mean::operator()), "w"_a, "x"_a)
+        .def("__call__", py::vectorize([](weighted_mean& self, double value){
+            self(value);
+            return self.value();
+        }), "value"_a)
+       .def("__call__", py::vectorize([](weighted_mean& self, double weight, double value){
+           self(weight, value);
+           return self.value();
+       }), "weight"_a, "value"_a)
 
-        .def("__repr__", [](const weighted_mean& self){
-            std::ostringstream out;
-            out << self;
-            return out.str();
-        })
-    ;
+      .def("__repr__", [](const weighted_mean& self){
+          std::ostringstream out;
+          out << self;
+          return out.str();
+      })
+      ;
 
     
     using mean = bh::accumulators::mean<double>;
@@ -76,7 +92,7 @@ void register_accumulators(py::module &m) {
     py::class_<mean>(accumulator, "mean")
         .def(py::init<>())
         .def(py::init<std::size_t, const double&, const double&>(),
-             "n"_a, "mean"_a, "variance"_a)
+             "value"_a, "mean"_a, "variance"_a)
     
         .def_property_readonly("count", &mean::count)
         .def_property_readonly("variance", &mean::variance)
@@ -87,7 +103,10 @@ void register_accumulators(py::module &m) {
         .def(py::self == py::self)
         .def(py::self != py::self)
     
-        .def("__call__", py::overload_cast<const double&>(&mean::operator()), "x"_a)
+        .def("__call__", py::vectorize([](mean& self, double value){
+            self(value);
+            return self.value();
+        }), "value"_a)
     
         .def("__repr__", [](const mean& self){
             std::ostringstream out;
@@ -108,6 +127,11 @@ void register_accumulators(py::module &m) {
         .def(py::self *= double())
         .def(py::self == py::self)
         .def(py::self != py::self)
+    
+        .def("__call__", py::vectorize([](sum& self, double value){
+            self += value;
+            return (double) self;
+        }), "value"_a)
     
         .def_property_readonly("small", &sum::small)
         .def_property_readonly("large", &sum::large)
