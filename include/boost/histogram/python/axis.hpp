@@ -56,6 +56,8 @@ using regular_sqrt = bh::axis::regular<double, bh::axis::transform::sqrt, metada
 using regular_pow = bh::axis::regular<double, bh::axis::transform::pow, metadata_t>;
 using variable = bh::axis::variable<double, metadata_t>;
 using integer = bh::axis::integer<int, metadata_t>;
+using category_int = bh::axis::category<int, metadata_t>;
+using category_int_growth = bh::axis::category<int, metadata_t, bh::axis::option::growth_t>;
 using category_str = bh::axis::category<std::string, metadata_t>;
 using category_str_growth = bh::axis::category<std::string, metadata_t, bh::axis::option::growth_t>;
 
@@ -73,6 +75,8 @@ using any = std::vector<bh::axis::variant<axis::regular,
                                           axis::regular_sqrt,
                                           axis::variable,
                                           axis::integer,
+                                          axis::category_int,
+                                          axis::category_int_growth,
                                           axis::category_str,
                                           axis::category_str_growth
                                           >>;
