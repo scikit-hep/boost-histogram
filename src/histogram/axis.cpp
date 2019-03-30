@@ -141,6 +141,9 @@ void register_axis(py::module &m) {
 
     register_axis_by_type<axis::circular>(ax, "circular", "Evenly spaced bins with wraparound")
     .def(py::init<unsigned, double, double, metadata_t>(), "n"_a, "start"_a, "stop"_a, "metadata"_a = py::str())
+    .def(py::init([](unsigned n, double stop, metadata_t metadata){
+        return new axis::circular{n, 0.0, stop, metadata};
+    }), "n"_a, "stop"_a, "metadata"_a = py::str())
     ;
     register_axis_iv_by_type<axis::circular>(ax, "_circular_internal_view");
 
@@ -184,6 +187,7 @@ void register_axis(py::module &m) {
 
     register_axis_by_type<axis::category_int_growth, std::string>(ax, "category_int_growth", "Text label bins")
     .def(py::init<std::vector<int>, metadata_t>(), "labels"_a, "metadata"_a = py::str())
+    .def(py::init<>())
     ;
 
 
