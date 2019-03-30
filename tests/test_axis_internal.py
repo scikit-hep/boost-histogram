@@ -110,3 +110,13 @@ def test_cat_str():
     assert ax.bin(0) == "a"
     assert ax.bin(1) == "b"
     assert ax.bin(2) == "c"
+
+    assert ax.index("b") == 1
+
+def test_cat_int():
+    ax = bh.axis.category_int([1,2,3])
+    assert ax.bin(0) == 1
+    assert ax.bin(1) == 2
+    assert ax.bin(2) == 3
+
+    assert ax.index(2) == 1

@@ -13,6 +13,7 @@
 
 #include <boost/histogram.hpp>
 #include <boost/histogram/axis/ostream.hpp>
+#include <boost/histogram/algorithm/sum.hpp>
 #include <boost/histogram/ostream.hpp>
 
 #include <boost/mp11.hpp>
@@ -94,6 +95,10 @@ py::class_<bh::histogram<A, S>> register_histogram_by_type(py::module& m, const 
          "Access bin counter at indices")
 
     .def("__repr__", shift_to_string<histogram_t>())
+    
+    .def("sum", [](const histogram_t &self) {
+        return bh::algorithm::sum(self);
+    })
 
     ;
 

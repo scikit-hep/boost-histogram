@@ -55,8 +55,10 @@ counts = hist.view()
     * `bh.axis.regular_pow(power, n, start, stop)`: Regularly spaced value to some `power`
     * `bh.axis.integer(start, stop)`: Special high-speed version of `regular` for evenly spaced bins of width 1
     * `bh.axis.variable([start, edge1, edge2, ..., stop])`: Uneven bin spacing
+    * `bh.axis.category_int([1, 2, ...])`: Integer bins
+    * `bh.axis.category_int_growth([1, 2, ...])`: Integer bins where new items are added automatically
     * `bh.axis.category_str(["item1", "item2", ...])`: String bins
-    * `bh.axis.category_str_growth(["item1", "item2", ...])`: String bins where new items automatically get added
+    * `bh.axis.category_str_growth(["item1", "item2", ...])`: String bins where new items are added automatically
 * Many storage types
     * `bh.storage.int`: 64 bit unsigned integers for high performance and useful view access
     * `bh.storage.double`: Doubles for weighted values
@@ -83,6 +85,7 @@ counts = hist.view()
     * `np.asarray(...)`: Get a view on the bin contents with under/overflow bins
     * `.axis(i)`: Get the `i`th axis
     * `.at(i, j, ...)`: Get the bin contents as a location 
+    * `.sum()`: The total count of all bins
 * Details
     * Use `bh.make_histogram(..., storage=...)` to make a histogram (there are several different types) 
     * Several common combinations are optimized, such as 1 or 2D regular axes + int storage

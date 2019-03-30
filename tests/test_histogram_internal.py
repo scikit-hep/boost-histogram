@@ -147,3 +147,14 @@ def test_numpy_compare():
     assert np.all(H == nH)
     assert np.allclose(E1, nE1)
     assert np.allclose(E2, nE2)
+
+def test_int_cat_hist():
+    h = bh.hist.any_int([bh.axis.category_int([1,2,3])])
+
+    h(1)
+    h(2)
+    h(2.2)
+    h(3)
+
+    assert np.all(h.view() == [1,2,1])
+    assert h.sum() == 4
