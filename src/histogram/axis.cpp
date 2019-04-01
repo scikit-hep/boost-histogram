@@ -10,6 +10,7 @@
 #include <pybind11/eval.h>
 
 #include <boost/histogram/python/axis.hpp>
+#include <boost/histogram/python/pickle.hpp>
 
 #include <boost/histogram/axis/ostream.hpp>
 #include <boost/histogram.hpp>
@@ -95,6 +96,8 @@ py::class_<A> register_axis_by_type(py::module& m, Args&&... args) {
 
     // This is a replacement for constexpr if
     add_to_axis<A>(axis, std::integral_constant<bool, std::is_reference<Result>::value || std::is_integral<Result>::value>{});
+
+    axis.def(make_pickle<A>());
 
     return axis;
 }

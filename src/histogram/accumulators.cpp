@@ -6,6 +6,8 @@
 #include <boost/histogram/python/pybind11.hpp>
 #include <pybind11/operators.h>
 
+#include <boost/histogram/python/pickle.hpp>
+
 #include <boost/histogram.hpp>
 #include <boost/histogram/accumulators/weighted_sum.hpp>
 #include <boost/histogram/accumulators/weighted_mean.hpp>
@@ -45,6 +47,8 @@ void register_accumulators(py::module &m) {
         }), "values"_a, "variances"_a)
     
         .def("__repr__", shift_to_string<weighted_sum>())
+    
+        .def(make_pickle<weighted_sum>())
     ;
 
     using weighted_mean = bh::accumulators::weighted_mean<double>;
@@ -75,6 +79,7 @@ void register_accumulators(py::module &m) {
 
       .def("__repr__", shift_to_string<weighted_mean>())
     
+      .def(make_pickle<weighted_mean>())
       ;
 
     
@@ -100,6 +105,8 @@ void register_accumulators(py::module &m) {
         }), "value"_a)
     
         .def("__repr__", shift_to_string<mean>())
+    
+        .def(make_pickle<mean>())
     ;
     
     using sum = bh::accumulators::sum<double>;
@@ -124,6 +131,8 @@ void register_accumulators(py::module &m) {
         .def_property_readonly("large", &sum::large)
     
         .def("__repr__", shift_to_string<sum>())
+    
+        .def(make_pickle<sum>())
     ;
 
 }
