@@ -75,7 +75,7 @@ option(BOOST_HISTOGRAM_ERRORS "Make warnings errors (for CI mostly)")
 # Adding warnings
 target_compile_options(histogram PRIVATE
                        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
-                           -Wall -Wextra -pedantic-errors -Wconversion -Wsign-conversion>
+                           -Wall -Wextra -pedantic-errors -Wconversion -Wsign-conversion -Wno-return-std-move>
                        $<$<CXX_COMPILER_ID:MSVC>:
                            /W4>)
 if(BOOST_HISTOGRAM_ERRORS)

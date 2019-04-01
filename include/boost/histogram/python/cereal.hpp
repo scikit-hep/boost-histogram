@@ -31,6 +31,9 @@
 #include <cereal/types/boost_variant.hpp>
 #include <cereal/types/vector.hpp>
 
+// Non-portable across endianess
+#include <cereal/archives/binary.hpp>
+
 //#include <boost/serialization/array.hpp>
 //#include <boost/serialization/map.hpp>
 //#include <boost/serialization/nvp.hpp>
@@ -41,13 +44,26 @@
 #include <tuple>
 #include <type_traits>
 
-namespace std {
-template <class Archive, class... Ts>
-void serialize(Archive& ar, tuple<Ts...>& t, unsigned /* version */) {
-  ::boost::mp11::tuple_for_each(
-      t, [&ar](auto& x) { ar& cereal::make_nvp("item", x); });
+/// Pickle a Boost::Histogram serializable object and 0+ python objects
+template<typename T, typename... Args>
+py::tuple pickle_totuple(const T &p, Args&&... args){
+    std::stringstream data;
+    cereal::BinaryOutputArchive archive( data );
+    archive(p);
+    return py::make_tuple(py::bytes(data.str()), std::forward<Args>(args)...);
 }
-} // namespace std
+
+/// Convert the first element in a tuple to a Boost::Histogram object
+template<typename T>
+T pickle_fromtuple(py::tuple t){
+    std::stringstream data;
+    data << py::cast<std::string>(t[0]);
+    cereal::BinaryInputArchive archive( data );
+    T p;
+    archive(p);
+    return p;
+}
+
 
 namespace boost {
 namespace histogram {
@@ -112,7 +128,7 @@ template <class Archive>
 void regular<T, Tr, M, O>::serialize(Archive& ar, unsigned /* version */) {
   ar& cereal::make_nvp("transform", static_cast<transform_type&>(*this));
   ar& cereal::make_nvp("size", size_meta_.first());
-  ar& cereal::make_nvp("meta", size_meta_.second());  // Python stores metadata seperately
+  // ar& cereal::make_nvp("meta", size_meta_.second());  // Python stores metadata seperately
   ar& cereal::make_nvp("min", min_);
   ar& cereal::make_nvp("delta", delta_);
 }
@@ -121,7 +137,7 @@ template <class T, class M, class O>
 template <class Archive>
 void integer<T, M, O>::serialize(Archive& ar, unsigned /* version */) {
   ar& cereal::make_nvp("size", size_meta_.first());
-  ar& cereal::make_nvp("meta", size_meta_.second());
+  //ar& cereal::make_nvp("meta", size_meta_.second());
   ar& cereal::make_nvp("min", min_);
 }
 
@@ -129,14 +145,14 @@ template <class T, class M, class O, class A>
 template <class Archive>
 void variable<T, M, O, A>::serialize(Archive& ar, unsigned /* version */) {
   ar& cereal::make_nvp("seq", vec_meta_.first());
-  ar& cereal::make_nvp("meta", vec_meta_.second());
+  //ar& cereal::make_nvp("meta", vec_meta_.second());
 }
 
 template <class T, class M, class O, class A>
 template <class Archive>
 void category<T, M, O, A>::serialize(Archive& ar, unsigned /* version */) {
   ar& cereal::make_nvp("seq", vec_meta_.first());
-  ar& cereal::make_nvp("meta", vec_meta_.second());
+  //ar& cereal::make_nvp("meta", vec_meta_.second());
 }
 
 template <class... Ts>

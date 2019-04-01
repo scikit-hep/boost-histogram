@@ -14,7 +14,6 @@
 #include <boost/histogram/accumulators/ostream.hpp>
 
 #include <boost/histogram/python/cereal.hpp>
-#include <cereal/archives/binary.hpp>
 
 
 void register_accumulators(py::module &m) {
@@ -49,21 +48,8 @@ void register_accumulators(py::module &m) {
     
         .def("__repr__", shift_to_string<weighted_sum>())
     
-        .def(py::pickle(
-         [](const weighted_sum &p){
-             std::stringstream data;
-             cereal::BinaryOutputArchive archive( data );
-             archive(p);
-             return py::make_tuple(py::bytes(data.str()));
-             },
-         [](py::tuple t){
-             std::stringstream data;
-             data << py::cast<std::string>(t[0]);
-             cereal::BinaryInputArchive archive( data );
-             weighted_sum p;
-             archive(p);
-             return p;
-         }))
+        .def(py::pickle([](const weighted_sum &p){return pickle_totuple(p);},
+                        [](py::tuple t){return pickle_fromtuple<weighted_sum>(t);}))
     ;
 
     using weighted_mean = bh::accumulators::weighted_mean<double>;
@@ -94,6 +80,8 @@ void register_accumulators(py::module &m) {
 
       .def("__repr__", shift_to_string<weighted_mean>())
     
+      .def(py::pickle([](const weighted_mean &p){return pickle_totuple(p);},
+                      [](py::tuple t){return pickle_fromtuple<weighted_mean>(t);}))
       ;
 
     
@@ -119,6 +107,9 @@ void register_accumulators(py::module &m) {
         }), "value"_a)
     
         .def("__repr__", shift_to_string<mean>())
+    
+        .def(py::pickle([](const mean &p){return pickle_totuple(p);},
+                        [](py::tuple t){return pickle_fromtuple<mean>(t);}))
     ;
     
     using sum = bh::accumulators::sum<double>;
@@ -143,6 +134,9 @@ void register_accumulators(py::module &m) {
         .def_property_readonly("large", &sum::large)
     
         .def("__repr__", shift_to_string<sum>())
+    
+        .def(py::pickle([](const sum &p){return pickle_totuple(p);},
+                        [](py::tuple t){return pickle_fromtuple<sum>(t);}))
     ;
 
 }

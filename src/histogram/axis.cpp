@@ -15,9 +15,6 @@
 #include <boost/histogram/axis/ostream.hpp>
 #include <boost/histogram.hpp>
 
-// Non-portable across endianess
-#include <cereal/archives/binary.hpp>
-
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
@@ -77,28 +74,14 @@ py::class_<A> register_axis_by_type(py::module& m, const char* name, const char*
                   [](const A& self){return self.metadata();},
                   [](A& self, metadata_t label){self.metadata() = label;},
                   "Set the axis label")
-
+     .def(py::pickle([](const A &p){return pickle_totuple(p, p.metadata());},
+                     [](py::tuple t){
+                         auto&& p = pickle_fromtuple<A>(t);
+                         p.metadata() = t[1];
+                         return p;
+                     }))
     ;
-    /*
-    axis.def(py::pickle(
-        [](const A &p){
-            std::stringstream data;
-            {
-                cereal::BinaryOutputArchive archive( data );
-                archive(p);
-            }
-            return py::make_tuple(data.str());
-        },
-        [](py::tuple t){
-            std::stringstream data;
-            data << py::cast<std::string>(t[0]);
-            cereal::BinaryInputArchive archive( data );
-            A* p = new A();
-            archive(&p);
-            return p;
-        }));
-     */
-
+    
     // We only need keepalive if this is a reference.
     using Result = decltype(std::declval<A>().bin(std::declval<int>()));
 
