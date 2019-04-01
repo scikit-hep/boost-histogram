@@ -58,3 +58,6 @@
 [submodule "extern/utility"]
 	path = extern/utility
 	url = ../../boostorg/utility.git
+[submodule "extern/cereal"]
+	path = extern/cereal
+	url = ../../USCiLab/cereal.git

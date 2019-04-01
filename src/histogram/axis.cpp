@@ -9,11 +9,14 @@
 #include <pybind11/operators.h>
 
 #include <boost/histogram/python/axis.hpp>
+#include <boost/histogram/python/cereal.hpp>
 
+#include <boost/histogram/axis/traits.hpp>
 #include <boost/histogram/axis/ostream.hpp>
 #include <boost/histogram.hpp>
 
-#include <boost/histogram/axis/traits.hpp>
+// Non-portable across endianess
+#include <cereal/archives/binary.hpp>
 
 #include <iostream>
 #include <sstream>
@@ -76,6 +79,25 @@ py::class_<A> register_axis_by_type(py::module& m, const char* name, const char*
                   "Set the axis label")
 
     ;
+    /*
+    axis.def(py::pickle(
+        [](const A &p){
+            std::stringstream data;
+            {
+                cereal::BinaryOutputArchive archive( data );
+                archive(p);
+            }
+            return py::make_tuple(data.str());
+        },
+        [](py::tuple t){
+            std::stringstream data;
+            data << py::cast<std::string>(t[0]);
+            cereal::BinaryInputArchive archive( data );
+            A* p = new A();
+            archive(&p);
+            return p;
+        }));
+     */
 
     // We only need keepalive if this is a reference.
     using Result = decltype(std::declval<A>().bin(std::declval<int>()));

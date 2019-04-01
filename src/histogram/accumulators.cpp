@@ -13,6 +13,9 @@
 #include <boost/histogram/accumulators/sum.hpp>
 #include <boost/histogram/accumulators/ostream.hpp>
 
+#include <boost/histogram/python/cereal.hpp>
+#include <cereal/archives/binary.hpp>
+
 
 void register_accumulators(py::module &m) {
     
@@ -45,6 +48,22 @@ void register_accumulators(py::module &m) {
         }), "values"_a, "variances"_a)
     
         .def("__repr__", shift_to_string<weighted_sum>())
+    
+        .def(py::pickle(
+         [](const weighted_sum &p){
+             std::stringstream data;
+             cereal::BinaryOutputArchive archive( data );
+             archive(p);
+             return py::make_tuple(py::bytes(data.str()));
+             },
+         [](py::tuple t){
+             std::stringstream data;
+             data << py::cast<std::string>(t[0]);
+             cereal::BinaryInputArchive archive( data );
+             weighted_sum p;
+             archive(p);
+             return p;
+         }))
     ;
 
     using weighted_mean = bh::accumulators::weighted_mean<double>;

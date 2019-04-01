@@ -59,6 +59,11 @@ target_include_directories(histogram SYSTEM PUBLIC
     extern/variant/include
     )
 
+# This is the Cereal heaader-only library required for serialization
+target_include_directories(histogram SYSTEM PUBLIC
+    extern/cereal/include
+    )
+
 # This makes IDE's like XCode mimic the Boost Histogram structure
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/extern/histogram/include PREFIX "Header Files" FILES ${BOOST_HIST_FILES})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/include PREFIX "Header Files" FILES ${BOOST_HIST_PY_HEADERS})
@@ -81,6 +86,9 @@ if(BOOST_HISTOGRAM_ERRORS)
             /WE>)
 endif()
 
+target_compile_options(histogram PRIVATE
+                       $<$<CXX_COMPILER_ID:AppleClang>:
+                           -ftemplate-backtrace-limit=0>)
 
 set(BOOST_HISTOGRAM_DETAIL_AXES_LIMIT "" CACHE STRING "Set the maximum number of axis in a histogram (affects compile time and size)")
 if(NOT "${BOOST_HISTOGRAM_DETAIL_AXES_LIMIT}" STREQUAL "")

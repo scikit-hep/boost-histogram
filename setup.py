@@ -37,6 +37,7 @@ ext_modules = [
             'extern/type_traits/include',
             'extern/utility/include',
             'extern/variant/include',
+            'extern/cereal/include',
         ],
         language='c++'
     ),
