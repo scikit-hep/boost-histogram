@@ -15,6 +15,7 @@
 #include <boost/histogram/axis/ostream.hpp>
 #include <boost/histogram/algorithm/sum.hpp>
 #include <boost/histogram/ostream.hpp>
+#include <boost/histogram/algorithm/project.hpp>
 
 #include <boost/mp11.hpp>
 
@@ -108,7 +109,32 @@ py::class_<bh::histogram<A, S>> register_histogram_by_type(py::module& m, const 
     .def("sum", [](const histogram_t &self) {
         return bh::algorithm::sum(self);
     })
-
+    
+    /* Broken: Does not work if any string axes present (even just in variant)
+    .def("rebin", [](const histogram_t &self, unsigned axis, unsigned merge){
+        return bh::algorithm::reduce(self, bh::algorithm::rebin(axis, merge));
+    }, "axis"_a, "merge"_a, "Rebin by merging bins. You must select an axis.")
+    
+    .def("shrink", [](const histogram_t &self, unsigned axis, double lower, double upper){
+        return bh::algorithm::reduce(self, bh::algorithm::shrink(axis, lower, upper));
+    }, "axis"_a, "lower"_a, "upper"_a, "Shrink an axis. You must select an axis.")
+    
+    .def("shrink_and_rebin", [](const histogram_t &self, unsigned axis, double lower, double upper, unsigned merge){
+        return bh::algorithm::reduce(self, bh::algorithm::shrink_and_rebin(axis, lower, upper, merge));
+    }, "axis"_a, "lower"_a, "upper"_a, "merge"_a, "Shrink an axis and rebin. You must select an axis.")
+    */
+    
+    /* Broken: Requires non static axes
+    .def("project", [](const histogram_t &self, unsigned value){
+        std::vector<unsigned> values = {value};
+        return bh::algorithm::project(self, values);
+    }, "value"_a, "Project out an axes from the histogram")
+    
+    .def("project", [](const histogram_t &self, const std::vector<unsigned> &values){
+        return bh::algorithm::project(self, values);
+    }, "values"_a, "Project out a list of axes from the histogram")
+    */
+    
     ;
 
     return hist;
@@ -147,7 +173,7 @@ void register_histogram(py::module& m) {
 
 
     register_histogram_by_type<axes::regular_noflow_1D, storage::int_>(hist,
-        "regular_int_noflow_1d",
+        "regular_noflow_int_1d",
         "1-dimensional histogram for int valued data.");
 
     m.def("make_histogram", [](axis::regular_noflow& ax1, storage::int_){
@@ -156,7 +182,7 @@ void register_histogram(py::module& m) {
 
 
     register_histogram_by_type<axes::regular_noflow_2D, storage::int_>(hist,
-        "regular_int_noflow_2d",
+        "regular_noflow_int_2d",
         "2-dimensional histogram for int valued data.");
 
     m.def("make_histogram", [](axis::regular_noflow& ax1, axis::regular_noflow& ax2, storage::int_){
@@ -175,7 +201,7 @@ void register_histogram(py::module& m) {
         "N-dimensional histogram for int-valued data.");
 
     register_histogram_by_type<axes::regular_noflow, storage::int_>(hist,
-        "regular_int_noflow",
+        "regular_noflow_int",
         "N-dimensional histogram for int-valued data.");
 
     // Completely general histograms
