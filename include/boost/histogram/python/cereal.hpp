@@ -191,7 +191,7 @@ template <class Archive, class T>
 void serialize(Archive& ar, storage_adaptor<T>& s, unsigned /* version */) {
   ar& cereal::make_nvp("impl", static_cast<detail::storage_adaptor_impl<T>&>(s));
 }
-
+    
 template <class A>
 template <class Archive>
 void unlimited_storage<A>::serialize(Archive& ar, unsigned /* version */) {
@@ -209,8 +209,8 @@ void unlimited_storage<A>::serialize(Archive& ar, unsigned /* version */) {
     ar& cereal::make_nvp("type", buffer.type);
     ar& cereal::make_nvp("size", buffer.size);
   }
-  buffer.apply([this, &ar](auto* tp) {
-    using T = detail::remove_cvref_t<decltype(*tp)>;
+  buffer.apply([this, &ar](auto*) {
+    // using T = detail::remove_cvref_t<decltype(*tp)>;
     ar& cereal::make_nvp("buffer", buffer);
         //cereal::binary_data(reinterpret_cast<T*>(buffer.ptr), buffer.size));
   });

@@ -8,6 +8,7 @@ except ImportError:
 
 import boost.histogram as bh
 
+
 class TestAccumulator:
     def test_sum(self):
         orig = bh.accumulator.sum(12)
@@ -70,3 +71,15 @@ def test_metadata_any(axis, args):
     assert new == orig
 
 
+def test_storage_int():
+    storage = bh.storage.int()
+    storage.push_back(1)
+    storage.push_back(3)
+    storage.push_back(2)
+
+    assert storage[0] == 1
+    assert storage[1] == 3
+    assert storage[2] == 2
+
+    # new = loads(dumps(storage))
+    # assert storage == new
