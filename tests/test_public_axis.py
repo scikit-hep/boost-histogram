@@ -18,7 +18,8 @@ ABC = abc.ABCMeta('ABC', (object,), {'__slots__': ()})
 # regular(..., noflow=True) -> regular_noflow(...)
 # label -> metadata
 # regular_pow(n,start,stop,power) +> regular_pow(power,n,start,stop)
-# len(ax) -> ax.size() # also .extent()
+# len(ax) -> ax.size(flow=False)
+# ax.extent() -> ax.size(flow=True)
 # ax[i] -> ax.bin(i) # (.lower() and .upper() instead of [0] and [1]) (may return)
 # Circular is very different (Boost::Histogram change)
 # Variable and category take an array/list now
@@ -108,7 +109,7 @@ class TestRegular(Axis):
         # assert len(a) == 4
 
         assert a.size() == 4
-        assert a.extent() == 6
+        assert a.size(flow=True) == 6
 
     def test_repr(self):
         ax = regular(4, 1.1, 2.2)
@@ -264,9 +265,9 @@ class TestCircular(Axis):
 
     def test_len(self):
         assert circular(4, 1.0).size() == 4
-        assert circular(4, 1.0).extent() == 5
+        assert circular(4, 1.0).size(flow=True) == 5
         assert circular(4, 0.0, 1.0).size() == 4
-        assert circular(4, 0.0, 1.0).extent() == 5
+        assert circular(4, 0.0, 1.0).size(flow=True) == 5
 
     def test_repr(self):
         ax = circular(4, 1.1, 2.2)
@@ -360,7 +361,7 @@ class TestVariable(Axis):
 
     def test_len(self):
         assert variable([-0.1, 0.2, 0.3]).size() == 2
-        assert variable([-0.1, 0.2, 0.3]).extent() == 4
+        assert variable([-0.1, 0.2, 0.3]).size(flow=True) == 4
 
     def test_repr(self):
         ax = variable([-0.1, 0.2])
@@ -434,7 +435,7 @@ class TestCategory(Axis):
 
     def test_len(self):
         assert category([1,2,3]).size() == 3
-        assert category([1,2,3]).extent() == 4
+        assert category([1,2,3]).size(flow=True) == 4
 
     def test_repr(self):
         ax = category([1,2,3])

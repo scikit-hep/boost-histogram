@@ -11,7 +11,7 @@ def test_make_regular_1D(axis, extent):
 
     assert hist.rank() == 1
     assert hist.axis(0).size() == 3
-    assert hist.axis(0).extent() == 3 + extent
+    assert hist.axis(0).size(flow=True) == 3 + extent
     assert hist.axis(0).bin(1).center() == approx(3.5)
 
 @pytest.mark.parametrize("axis,extent", ((bh.axis.regular, 2),
@@ -22,11 +22,11 @@ def test_make_regular_2D(axis, extent):
 
     assert hist.rank() == 2
     assert hist.axis(0).size() == 3
-    assert hist.axis(0).extent() == 3 + extent
+    assert hist.axis(0).size(flow=True) == 3 + extent
     assert hist.axis(0).bin(1).center() == approx(3.5)
 
     assert hist.axis(1).size() == 5
-    assert hist.axis(1).extent() == 5 + extent
+    assert hist.axis(1).size(flow=True) == 5 + extent
     assert hist.axis(1).bin(1).center() == approx(2.5)
 
 
@@ -42,13 +42,13 @@ def test_make_any_hist(storage):
 
     assert hist.rank() == 3
     assert hist.axis(0).size() == 5
-    assert hist.axis(0).extent() == 7
+    assert hist.axis(0).size(flow=True) == 7
     assert hist.axis(0).bin(1).center() == approx(1.3)
     assert hist.axis(1).size() == 6
-    assert hist.axis(1).extent() == 6
+    assert hist.axis(1).size(flow=True) == 6
     assert hist.axis(1).bin(1).center() == approx(2.25)
     assert hist.axis(2).size() == 8
-    assert hist.axis(2).extent() == 9
+    assert hist.axis(2).size(flow=True) == 9
     assert hist.axis(2).bin(1).center() == approx(3.1875)
 
 def test_make_any_hist_storage():

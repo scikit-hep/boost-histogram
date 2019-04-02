@@ -28,13 +28,13 @@ def test_axis_regular(axtype, function):
 
 def test_axis_regular_extents():
     ax = bh.axis.regular(10,0,1)
-    assert 12 == ax.extent()
+    assert 12 == ax.size(flow=True)
     assert 11 == len(ax.edges())
     assert 13 == len(ax.edges(True))
     assert ax.options() == bh.axis.options.underflow | bh.axis.options.overflow
 
     ax = bh.axis.regular_noflow(10,0,1)
-    assert 10 == ax.extent()
+    assert 10 == ax.size(flow=True)
     assert ax.options() == bh.axis.options.none
     assert 11 == len(ax.edges())
     assert 11 == len(ax.edges(True))

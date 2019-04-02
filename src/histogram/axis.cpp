@@ -72,9 +72,13 @@ py::class_<A> register_axis_by_type(py::module& m, const char* name, const char*
     .def(py::self == py::self)
     .def(py::self != py::self)
 
-    .def("size", &A::size, "Returns the number of bins, without over- or underflow")
-    .def("extent", [](const A& self){return bh::axis::traits::extent(self);},
-         "Retuns the number of bins, including over- or underflow")
+    .def("size", [](const A& self, bool flow){
+        if(flow)
+            return bh::axis::traits::extent(self);
+        else
+            return self.size();
+    } , "flow"_a=false, "Returns the number of bins, without over- or underflow unless flow=True")
+
     .def("update", &A::update, "Bin and add a value if allowed", "i"_a)
     .def_static("options", &A::options, "Return the options associated to the axis")
     .def_property("metadata",

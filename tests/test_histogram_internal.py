@@ -36,7 +36,7 @@ def test_1D_fill_int(hist_func):
     assert np.all(np.asarray(hist)[1:-1] == H)
 
     assert hist.axis(0).size() == bins
-    assert hist.axis(0).extent() == bins + 2
+    assert hist.axis(0).size(flow=True) == bins + 2
 
 @pytest.mark.parametrize("hist_func", methods + [bh.hist.regular_int_2d])
 def test_2D_fill_int(hist_func):
@@ -56,10 +56,10 @@ def test_2D_fill_int(hist_func):
     assert np.all(np.asarray(hist)[1:-1,1:-1] == H)
 
     assert hist.axis(0).size() == bins[0]
-    assert hist.axis(0).extent() == bins[0] + 2
+    assert hist.axis(0).size(flow=True) == bins[0] + 2
 
     assert hist.axis(1).size() == bins[1]
-    assert hist.axis(1).extent() == bins[1] + 2
+    assert hist.axis(1).size(flow=True) == bins[1] + 2
 
 
 def test_edges_histogram():

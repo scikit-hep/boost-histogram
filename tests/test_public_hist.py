@@ -14,8 +14,7 @@ import numpy as np
 
 # histogram -> boost.histogram
 # histogram -> make_histogram
-# dim -> rank()
-# ax.shape -> ax.extent()
+# .dim -> .rank()
 
 def test_init():
     histogram()
@@ -39,7 +38,7 @@ def test_init():
     h = histogram(integer(-1, 2))
     assert h.rank() == 1
     assert h.axis(0) == integer(-1, 2)
-    assert h.axis(0).extent() == 5
+    assert h.axis(0).size(flow=True) == 5
     assert h.axis(0).size() == 3
     assert h != histogram(regular(1, -1, 1))
     assert h != histogram(integer(-1, 1, metadata="ia"))
@@ -70,7 +69,7 @@ def test_fill_int_1d():
     for x in (-10, -1, -1, 0, 1, 1, 1, 10):
         h(x)
     assert h.sum() == 8
-    assert h.axis(0).extent() == 5
+    assert h.axis(0).size(flow=True) == 5
 
     with pytest.raises(TypeError):
         h.at(0, foo=None)
@@ -103,7 +102,7 @@ def test_fill_1d(flow):
         h(x)
 
     assert h.sum() == {False: 6, True: 8}[flow]
-    assert h.axis(0).extent() == {False: 3, True: 5}[flow]
+    assert h.axis(0).size(flow=True) == {False: 3, True: 5}[flow]
 
     with pytest.raises(TypeError):
         h.at(0, foo=None)
@@ -327,15 +326,15 @@ def test_pickle_0():
                   regular_noflow(20, 0.0, 20.0),
                   variable([0.0, 1.0, 2.0]),
                   circular(4, metadata='pa'))
-    for i in range(a.axis(0).extent()):
+    for i in range(a.axis(0).size(flow=True)):
         a(i, 0, 0, 0, 0)
-        for j in range(a.axis(1).extent()):
+        for j in range(a.axis(1).size(flow=True)):
             a(i, j, 0, 0, 0)
-            for k in range(a.axis(2).extent()):
+            for k in range(a.axis(2).size(flow=True)):
                 a(i, j, k, 0, 0)
-                for l in range(a.axis(3).extent()):
+                for l in range(a.axis(3).size(flow=True)):
                     a(i, j, k, l, 0)
-                    for m in range(a.axis(4).extent()):
+                    for m in range(a.axis(4).size(flow=True)):
                         a(i, j, k, l, m * 0.5 * pi)
 
     io = BytesIO()
@@ -361,13 +360,13 @@ def test_pickle_1():
                   regular_noflow(4, 0.0, 4.0),
                   variable([0.0, 1.0, 2.0]))
 
-    for i in range(a.axis(0).extent()):
+    for i in range(a.axis(0).size(flow=True)):
         a(i, 0, 0, 0, weight=3)
-        for j in range(a.axis(1).extent()):
+        for j in range(a.axis(1).size(flow=True)):
             a(i, j, 0, 0, weight=10)
-            for k in range(a.axis(2).extent()):
+            for k in range(a.axis(2).size(flow=True)):
                 a(i, j, k, 0, weight=2)
-                for l in range(a.axis(3).extent()):
+                for l in range(a.axis(3).size(flow=True)):
                     a(i, j, k, l, weight=5)
 
     io = BytesIO()
@@ -429,17 +428,17 @@ def test_numpy_conversion_2():
                   integer_noflow(0, 3),
                   integer_noflow(0, 4))
     r = np.zeros((2, 3, 4), dtype=np.int8)
-    for i in range(a.axis(0).extent()):
-        for j in range(a.axis(1).extent()):
-            for k in range(a.axis(2).extent()):
+    for i in range(a.axis(0).size(flow=True)):
+        for j in range(a.axis(1).size(flow=True)):
+            for k in range(a.axis(2).size(flow=True)):
                 for m in range(i + j + k):
                     a(i, j, k)
                 r[i, j, k] = i + j + k
 
     d = np.zeros((2, 3, 4), dtype=np.int8)
-    for i in range(a.axis(0).extent()):
-        for j in range(a.axis(1).extent()):
-            for k in range(a.axis(2).extent()):
+    for i in range(a.axis(0).size(flow=True)):
+        for j in range(a.axis(1).size(flow=True)):
+            for k in range(a.axis(2).size(flow=True)):
                 d[i, j, k] = a.at(i, j, k)
 
     assert np.all(d == r)
@@ -456,9 +455,9 @@ def test_numpy_conversion_3():
                   integer(0, 3),
                   integer(0, 4))
     r = np.zeros((2, 4, 5, 6))
-    for i in range(a.axis(0).extent()):
-        for j in range(a.axis(1).extent()):
-            for k in range(a.axis(2).extent()):
+    for i in range(a.axis(0).size(flow=True)):
+        for j in range(a.axis(1).size(flow=True)):
+            for k in range(a.axis(2).size(flow=True)):
                 a(i, j, k, weight=i + j + k)
                 r[0, i, j, k] = i + j + k
                 r[1, i, j, k] = (i + j + k)**2
@@ -466,9 +465,9 @@ def test_numpy_conversion_3():
     v = np.asarray(a)  # a view
 
     c2 = np.zeros((2, 4, 5, 6))
-    for i in range(a.axis(0).extent()):
-        for j in range(a.axis(1).extent()):
-            for k in range(a.axis(2).extent()):
+    for i in range(a.axis(0).size(flow=True)):
+        for j in range(a.axis(1).size(flow=True)):
+            for k in range(a.axis(2).size(flow=True)):
                 c2[0, i, j, k] = a.at(i, j, k)
 
     assert np.all(c == c2)
