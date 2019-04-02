@@ -52,7 +52,10 @@ py::class_<bh::histogram<A, S>> register_histogram_by_type(py::module& m, const 
 
     // Atomics for example do not support these operations
     def_optionally(hist, bh::detail::has_operator_rmul<histogram_t, double>{}, py::self *= double());
+    def_optionally(hist, bh::detail::has_operator_rmul<histogram_t, double>{}, py::self * double());
+    def_optionally(hist, bh::detail::has_operator_rmul<histogram_t, double>{}, double() * py::self);
     def_optionally(hist, bh::detail::has_operator_rdiv<histogram_t, double>{}, py::self /= double());
+    def_optionally(hist, bh::detail::has_operator_rdiv<histogram_t, double>{}, py::self / double());
 
     hist.def("to_numpy", [](histogram_t& h, bool flow){
         py::list listing;
@@ -77,7 +80,13 @@ py::class_<bh::histogram<A, S>> register_histogram_by_type(py::module& m, const 
          "Return a view into the data, optionally with overflow turned on")
     
     .def("axis",
-        [](histogram_t &self, unsigned i){return self.axis(i);},
+        [](histogram_t &self, int i){
+            unsigned ii = i < 0 ? self.rank() - (unsigned) std::abs(i) : (unsigned) i;
+            if(ii < self.rank())
+                return self.axis(ii);
+            else
+                throw std::out_of_range("The axis value must be less than the rank");
+        },
      "Get N-th axis with runtime index", "i"_a,
          py::return_value_policy::move)
 

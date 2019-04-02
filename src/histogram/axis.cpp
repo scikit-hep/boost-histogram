@@ -25,10 +25,14 @@
 using namespace std::literals;
 
 
+
 /// Add items to an axis where the axis values are continious
 template<typename A, typename B>
 void add_to_axis(B&& axis, std::false_type) {
     axis.def("bin", &A::bin, "The bin details (center, lower, upper)", "idx"_a, py::keep_alive<0, 1>());
+    axis.def("bins", [](const A& self, bool flow){
+        return axis_to_bins(self, flow);
+    }, "flow"_a=false, py::keep_alive<0, 1>());
     axis.def("index", py::vectorize(&A::index), "The index at a point(s) on the axis", "x"_a);
     axis.def("value", py::vectorize(&A::value), "The value(s) for a fractional bin(s) in the axis", "i"_a);
 
@@ -47,6 +51,9 @@ void add_to_axis(B&& axis, std::false_type) {
 template<typename A, typename B>
 void add_to_axis(B&& axis, std::true_type) {
     axis.def("bin", &A::bin, "The bin name", "idx"_a);
+    axis.def("bins", [](const A& self, bool flow){
+        return axis_to_bins(self, flow);
+    }, "flow"_a=false);
     // Not that these really just don't work with string labels; they would work for numerical labels.
     axis.def("index", &A::index, "The index at a point on the axis", "x"_a);
     axis.def("value", &A::value, "The value for a fractional bin in the axis", "i"_a);
@@ -179,6 +186,15 @@ void register_axis(py::module &m) {
     ;
     register_axis_iv_by_type<axis::integer>(ax, "_integer_internal_view");
 
+    register_axis_by_type<axis::integer_noflow>(ax, "integer_noflow", "Contigious integers with no under/overflow")
+    .def(py::init<int, int, metadata_t>(), "min"_a, "max"_a, "metadata"_a = py::str())
+    ;
+    register_axis_iv_by_type<axis::integer_noflow>(ax, "_integer_noflow_internal_view");
+    
+    register_axis_by_type<axis::integer_growth>(ax, "integer_growth", "Contigious integers with growth")
+    .def(py::init<int, int, metadata_t>(), "min"_a, "max"_a, "metadata"_a = py::str())
+    ;
+    register_axis_iv_by_type<axis::integer_growth>(ax, "_integer_integer_growth_internal_view");
 
     register_axis_by_type<axis::category_int, int>(ax, "category_int", "Text label bins")
     .def(py::init<std::vector<int>, metadata_t>(), "labels"_a, "metadata"_a = py::str())

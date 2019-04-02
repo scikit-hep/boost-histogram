@@ -42,6 +42,20 @@ py::array_t<double> axis_to_edges(const A& ax, bool flow) {
     return edges;
 }
 
+template<typename A>
+decltype(auto) axis_to_bins(const A& self, bool flow) {
+    std::vector<bh::detail::remove_cvref_t<decltype(self.bin(0))>> out;
+    bool overflow = flow && (bh::axis::traits::options(self) & bh::axis::option::underflow);
+    bool underflow = flow && (bh::axis::traits::options(self) & bh::axis::option::overflow);
+    
+    out.reserve((size_t) bh::axis::traits::extent(self));
+    
+    for(int i = 0 - underflow ; i<self.size() + overflow; i++)
+        out.emplace_back(self.bin(i));
+        
+    return out;
+}
+
 using metadata_t = py::object;
 
 namespace axis {
@@ -56,6 +70,8 @@ using regular_sqrt = bh::axis::regular<double, bh::axis::transform::sqrt, metada
 using regular_pow = bh::axis::regular<double, bh::axis::transform::pow, metadata_t>;
 using variable = bh::axis::variable<double, metadata_t>;
 using integer = bh::axis::integer<int, metadata_t>;
+using integer_noflow = bh::axis::integer<int, metadata_t, bh::axis::option::none_t>;
+using integer_growth = bh::axis::integer<int, metadata_t, bh::axis::option::growth_t>;
 using category_int = bh::axis::category<int, metadata_t>;
 using category_int_growth = bh::axis::category<int, metadata_t, bh::axis::option::growth_t>;
 using category_str = bh::axis::category<std::string, metadata_t>;
@@ -75,6 +91,8 @@ using any = std::vector<bh::axis::variant<axis::regular,
                                           axis::regular_sqrt,
                                           axis::variable,
                                           axis::integer,
+                                          axis::integer_noflow,
+                                          axis::integer_growth,
                                           axis::category_int,
                                           axis::category_int_growth,
                                           axis::category_str,
