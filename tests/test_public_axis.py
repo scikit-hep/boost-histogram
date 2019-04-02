@@ -5,6 +5,7 @@ from boost.histogram.axis import (regular, regular_noflow,
                                   regular_log, regular_sqrt,
                                   regular_pow, circular,
                                   variable, integer,
+                                  integer_noflow, integer_growth,
                                   category_int as category)
 
 import numpy as np
@@ -17,7 +18,6 @@ ABC = abc.ABCMeta('ABC', (object,), {'__slots__': ()})
 # histogram -> boost.histogram
 # regular(..., noflow=True) -> regular_noflow(...)
 # label -> metadata
-# regular_pow(n,start,stop,power) +> regular_pow(power,n,start,stop)
 # len(ax) -> ax.size(flow=False)
 # ax.extent() -> ax.size(flow=True)
 # ax[i] -> ax.bin(i) # (.lower() and .upper() instead of [0] and [1]) (may return)
@@ -62,7 +62,7 @@ class TestRegular(Axis):
         regular_noflow(1, 1.0, 2.0, metadata="ra")
         regular_log(1, 1.0, 2.0)
         regular_sqrt(1, 1.0, 2.0)
-        regular_pow(1.5, 1, 1.0, 2.0)
+        regular_pow(1, 1.0, 2.0, 1.5)
 
         with pytest.raises(TypeError):
             regular()
@@ -130,7 +130,7 @@ class TestRegular(Axis):
         ax = regular_sqrt(3, 1.1, 2.2)
         assert repr(ax) == 'regular_sqrt(3, 1.1, 2.2, options=underflow | overflow)'
 
-        ax = regular_pow(0.5, 4, 1.1, 2.2)
+        ax = regular_pow(4, 1.1, 2.2, 0.5)
         assert repr(ax) == 'regular_pow(4, 1.1, 2.2, options=underflow | overflow, power=0.5)'
 
 
@@ -212,7 +212,7 @@ class TestRegular(Axis):
         assert a.bin(1).upper() == approx(1e2)
 
     def test_pow_transform(self):
-        a = regular_pow(0.5, 2, 1.0, 9.0)
+        a = regular_pow(2, 1.0, 9.0, power=0.5)
 
         assert a.index(-1) == 2
         assert a.index(0.99) == -1
@@ -412,6 +412,79 @@ class TestVariable(Axis):
         assert a.index(0.3) == 2
         assert a.index(0.31) == 2
         assert a.index(10) == 2
+
+class TestInteger:
+
+    def test_init(self):
+        integer(-1, 2)
+        integer_noflow(-1, 2)
+        integer_growth(-1, 2)
+        with pytest.raises(TypeError):
+            integer()
+        with pytest.raises(TypeError):
+            integer(1)
+        with pytest.raises(TypeError):
+            integer("1", 2)
+        with pytest.raises(ValueError):
+            integer(2, -1)
+
+        # CLASSIC: Used to fail
+        integer(1, 2, 3)
+
+        assert integer(-1, 2) == integer(-1, 2)
+        assert integer(-1, 2) != integer(-1, 2, metadata="Other")
+        assert integer_noflow(-1, 2) != integer(-1, 2)
+
+    def test_len(self):
+        assert integer(-1, 3).size() ==  4
+        assert integer(-1, 3).size(flow=True) ==  6
+        assert integer_noflow(-1, 3).size() ==  4
+        assert integer_noflow(-1, 3).size(flow=True) ==  4
+        assert integer_growth(-1, 3).size() ==  4
+        assert integer_growth(-1, 3).size(flow=True) ==  4
+
+    def test_repr(self):
+        a = integer(-1, 1)
+        assert repr(a) == 'integer(-1, 1, options=underflow | overflow)'
+
+        a = integer(-1, 1, metadata="hi")
+        assert repr(a) == 'integer(-1, 1, metadata="hi", options=underflow | overflow)'
+
+        a = integer_noflow(-1, 1)
+        assert repr(a) == 'integer(-1, 1, options=none)'
+
+        a = integer_growth(-1, 1)
+        assert repr(a) == 'integer(-1, 1, options=growth)'
+
+    def test_label(self):
+        a = integer(-1, 2, metadata="foo")
+        assert a.metadata == "foo"
+        a.metadata = "bar"
+        assert a.metadata == "bar"
+
+    def test_getitem(self):
+        v = [-1, 0, 1, 2, 3]
+        a = integer(-1, 3)
+        for i in range(5):
+            assert a.bin(i) == v[i]
+        assert a.bin(-1) == -2 ** 31
+        assert a.bin(5) == 2 ** 31 - 1
+
+    def test_iter(self):
+        v = np.array([-1, 0, 1, 2])
+        a = integer(-1, 3)
+        assert (a.bins() == v).all()
+
+    def test_index(self):
+        a = integer(-1, 3)
+        assert a.index(-3) == -1
+        assert a.index(-2) == -1
+        assert a.index(-1) == 0
+        assert a.index(0) == 1
+        assert a.index(1) == 2
+        assert a.index(2) == 3
+        assert a.index(3) == 4
+        assert a.index(4) == 4
 
 
 class TestCategory(Axis):

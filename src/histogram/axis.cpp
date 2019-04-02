@@ -172,9 +172,9 @@ void register_axis(py::module &m) {
 
 
     register_axis_by_type<axis::regular_pow>(ax, "regular_pow", "Evenly spaced bins in a power")
-    .def(py::init([](double pow, unsigned n, double start, double stop, metadata_t metadata){
+    .def(py::init([](unsigned n, double start, double stop, double pow, metadata_t metadata){
         return new axis::regular_pow(bh::axis::transform::pow{pow}, n, start, stop, metadata);} ),
-         "pow"_a, "n"_a, "start"_a, "stop"_a, "metadata"_a = py::str())
+         "n"_a, "start"_a, "stop"_a, "power"_a, "metadata"_a = py::str())
     ;
     register_axis_iv_by_type<axis::regular_pow>(ax, "_regular_pow_internal_view");
 
