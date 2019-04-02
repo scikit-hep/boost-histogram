@@ -52,13 +52,30 @@ counts = hist.view()
     * `bh.axis.circular(n, start, stop)`: Value outside the range wrap into the range
     * `bh.axis.regular_log(n, start, stop)`: Regularly spaced values in log 10 scale
     * `bh.axis.regular_sqrt(n, start, stop)`: Regularly spaced value in sqrt scale
-    * `bh.axis.regular_pow(power, n, start, stop)`: Regularly spaced value to some `power`
+    * `bh.axis.regular_pow(n, start, stop, power)`: Regularly spaced value to some `power`
     * `bh.axis.integer(start, stop)`: Special high-speed version of `regular` for evenly spaced bins of width 1
+    * `bh.axis.integer_noflow(start, stop)`: `integer`, but with no under/overflow bins
+    * `bh.axis.integer_growth(start, stop)`: `integer`, but will grow if new values are added
     * `bh.axis.variable([start, edge1, edge2, ..., stop])`: Uneven bin spacing
     * `bh.axis.category_int([1, 2, ...])`: Integer bins
     * `bh.axis.category_int_growth([1, 2, ...])`: Integer bins where new items are added automatically
     * `bh.axis.category_str(["item1", "item2", ...])`: String bins
     * `bh.axis.category_str_growth(["item1", "item2", ...])`: String bins where new items are added automatically
+* Axis features:
+    * `.bin(i)`: The bin or a bin view for continuous axis types
+        * `.lower()`: The lower value
+        * `.upper()`: The upper value
+        * `.center()`: The center value
+        * `.width()`: The bin width
+    * `.bins()`: A list of bins or bin views
+    * `.size()`: The number of bins (not including under/overflow)
+    * `.size(flow=True)`: The number of bins (including under/overflow)
+    * `.options()`: The options set on the axis (`bh.axis.options` bitfields)
+    * `.edges(flow=False)`: The N+1 bin edges (if continuous)
+    * `.centers(flow=False)`: The N bin centers (if continuous)
+    * `.update(value)`: Grow an axis to include `value` if needed and able
+    * `.index(values)`: The index at a point (or points) on the axis
+    * `.value(index)`: The value for a fractional bin in the axis
 * Many storage types
     * `bh.storage.int`: 64 bit unsigned integers for high performance and useful view access
     * `bh.storage.double`: Doubles for weighted values
@@ -76,10 +93,10 @@ counts = hist.view()
     * `(a, b, ...)`: Fill with arrays or single values
     * `+`: Add two histograms
     * `.rank()`: The number of dimensions
-    * `.size()`: The number of bins (including under/overflow)
+    * `.size()`: The number of bins (include under/overflow bins)
     * `.reset()`: Set counters to 0
-    * `*=`: Multiply by a scaler (not all storages)
-    * `/=`: Divide by a scaler (not all storages)
+    * `*=`: Multiply by a scaler (not all storages) (`hist * scalar` and `scalar * hist` supported too)
+    * `/=`: Divide by a scaler (not all storages) (`hist / scalar` supported too)
     * `.to_numpy(flow=False)`: Convert to a numpy style tuple (with or without under/overflow bins)
     * `.view(flow=False)`: Get a view on the bin contents (with or without under/overflow bins)
     * `np.asarray(...)`: Get a view on the bin contents with under/overflow bins
