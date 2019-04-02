@@ -25,10 +25,14 @@
 using namespace std::literals;
 
 
+
 /// Add items to an axis where the axis values are continious
 template<typename A, typename B>
 void add_to_axis(B&& axis, std::false_type) {
     axis.def("bin", &A::bin, "The bin details (center, lower, upper)", "idx"_a, py::keep_alive<0, 1>());
+    axis.def("bins", [](const A& self, bool flow){
+        return axis_to_bins(self, flow);
+    }, "flow"_a=false, py::keep_alive<0, 1>());
     axis.def("index", py::vectorize(&A::index), "The index at a point(s) on the axis", "x"_a);
     axis.def("value", py::vectorize(&A::value), "The value(s) for a fractional bin(s) in the axis", "i"_a);
 
@@ -47,6 +51,9 @@ void add_to_axis(B&& axis, std::false_type) {
 template<typename A, typename B>
 void add_to_axis(B&& axis, std::true_type) {
     axis.def("bin", &A::bin, "The bin name", "idx"_a);
+    axis.def("bins", [](const A& self, bool flow){
+        return axis_to_bins(self, flow);
+    }, "flow"_a=false);
     // Not that these really just don't work with string labels; they would work for numerical labels.
     axis.def("index", &A::index, "The index at a point on the axis", "x"_a);
     axis.def("value", &A::value, "The value for a fractional bin in the axis", "i"_a);
@@ -65,9 +72,13 @@ py::class_<A> register_axis_by_type(py::module& m, const char* name, const char*
     .def(py::self == py::self)
     .def(py::self != py::self)
 
-    .def("size", &A::size, "Returns the number of bins, without over- or underflow")
-    .def("extent", [](const A& self){return bh::axis::traits::extent(self);},
-         "Retuns the number of bins, including over- or underflow")
+    .def("size", [](const A& self, bool flow){
+        if(flow)
+            return bh::axis::traits::extent(self);
+        else
+            return self.size();
+    } , "flow"_a=false, "Returns the number of bins, without over- or underflow unless flow=True")
+
     .def("update", &A::update, "Bin and add a value if allowed", "i"_a)
     .def_static("options", &A::options, "Return the options associated to the axis")
     .def_property("metadata",
@@ -141,6 +152,9 @@ void register_axis(py::module &m) {
 
     register_axis_by_type<axis::circular>(ax, "circular", "Evenly spaced bins with wraparound")
     .def(py::init<unsigned, double, double, metadata_t>(), "n"_a, "start"_a, "stop"_a, "metadata"_a = py::str())
+    .def(py::init([](unsigned n, double stop, metadata_t metadata){
+        return new axis::circular{n, 0.0, stop, metadata};
+    }), "n"_a, "stop"_a, "metadata"_a = py::str())
     ;
     register_axis_iv_by_type<axis::circular>(ax, "_circular_internal_view");
 
@@ -158,9 +172,9 @@ void register_axis(py::module &m) {
 
 
     register_axis_by_type<axis::regular_pow>(ax, "regular_pow", "Evenly spaced bins in a power")
-    .def(py::init([](double pow, unsigned n, double start, double stop, metadata_t metadata){
+    .def(py::init([](unsigned n, double start, double stop, double pow, metadata_t metadata){
         return new axis::regular_pow(bh::axis::transform::pow{pow}, n, start, stop, metadata);} ),
-         "pow"_a, "n"_a, "start"_a, "stop"_a, "metadata"_a = py::str())
+         "n"_a, "start"_a, "stop"_a, "power"_a, "metadata"_a = py::str())
     ;
     register_axis_iv_by_type<axis::regular_pow>(ax, "_regular_pow_internal_view");
 
@@ -176,6 +190,15 @@ void register_axis(py::module &m) {
     ;
     register_axis_iv_by_type<axis::integer>(ax, "_integer_internal_view");
 
+    register_axis_by_type<axis::integer_noflow>(ax, "integer_noflow", "Contigious integers with no under/overflow")
+    .def(py::init<int, int, metadata_t>(), "min"_a, "max"_a, "metadata"_a = py::str())
+    ;
+    register_axis_iv_by_type<axis::integer_noflow>(ax, "_integer_noflow_internal_view");
+    
+    register_axis_by_type<axis::integer_growth>(ax, "integer_growth", "Contigious integers with growth")
+    .def(py::init<int, int, metadata_t>(), "min"_a, "max"_a, "metadata"_a = py::str())
+    ;
+    register_axis_iv_by_type<axis::integer_growth>(ax, "_integer_integer_growth_internal_view");
 
     register_axis_by_type<axis::category_int, int>(ax, "category_int", "Text label bins")
     .def(py::init<std::vector<int>, metadata_t>(), "labels"_a, "metadata"_a = py::str())
@@ -184,6 +207,7 @@ void register_axis(py::module &m) {
 
     register_axis_by_type<axis::category_int_growth, std::string>(ax, "category_int_growth", "Text label bins")
     .def(py::init<std::vector<int>, metadata_t>(), "labels"_a, "metadata"_a = py::str())
+    .def(py::init<>())
     ;
 
 
