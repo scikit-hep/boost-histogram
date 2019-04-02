@@ -95,6 +95,14 @@ print_timer(setup_1d,
     'hist = bh.hist.regular_noflow_int_1d([bh.axis.regular_noflow(bins, *ranges)]); hist(vals)',
     name='Regular', storage='int 1D', fill='', flow='no', base=base)
 
+print_timer(setup_1d,
+    'hist = bh.hist.regular_atomic_int([bh.axis.regular(bins, *ranges)]); hist(vals)',
+    name='Regular', storage='aint', fill='', flow='yes', base=base)
+
+print_timer(setup_1d,
+    'hist = bh.hist.regular_atomic_int([bh.axis.regular(bins, *ranges)]); hist.mtfill(4,vals)',
+    name='Regular', storage='aint', fill='4', flow='yes', base=base)
+
 
 print()
 print("### 2D, 10 runs each")
@@ -129,4 +137,12 @@ print_timer(setup_2d,
 print_timer(setup_2d,
     'hist = bh.hist.regular_noflow_int_2d([bh.axis.regular_noflow(bins[0], *ranges[0]), bh.axis.regular_noflow(bins[1], *ranges[1])]); hist(*vals)',
     name='Regular', storage='int 2D', fill='', flow='no', base=base)
+
+print_timer(setup_2d,
+    'hist = bh.hist.regular_atomic_int([bh.axis.regular(bins[0], *ranges[0]), bh.axis.regular(bins[1], *ranges[1])]); hist(*vals)',
+    name='Regular', storage='aint', fill='', flow='yes', base=base)
+
+print_timer(setup_2d,
+    'hist = bh.hist.regular_atomic_int([bh.axis.regular(bins[0], *ranges[0]), bh.axis.regular(bins[1], *ranges[1])]); hist.mtfill(4, *vals)',
+    name='Regular', storage='aint', fill='4', flow='yes', base=base)
 

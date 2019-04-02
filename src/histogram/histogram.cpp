@@ -140,6 +140,15 @@ py::class_<bh::histogram<A, S>> register_histogram_by_type(py::module& m, const 
     return hist;
 }
 
+template<typename A, typename S>
+void add_mt_fill(py::class_<bh::histogram<A, S>>& hist) {
+    using histogram_t = bh::histogram<A, S>;
+    hist.def("mtfill", [](histogram_t &self, size_t threads, py::args args) {
+        boost::mp11::mp_with_index<BOOST_HISTOGRAM_DETAIL_AXES_LIMIT>(args.size(), fill_helper_mt<histogram_t>(self, args, threads));
+    }, "threads"_a, "Insert data into histogram, in some number of threads (0 for default)")
+    ;
+}
+
 void register_histogram(py::module& m) {
     py::module hist = m.def_submodule("hist");
 
@@ -155,9 +164,10 @@ void register_histogram(py::module& m) {
     }, "axis"_a, "storage"_a=storage::int_(), "Make a 1D histogram of integers");
 
 
-    register_histogram_by_type<axes::regular_1D, storage::atomic_int>(hist,
+    auto regular_atomic_int_1d = register_histogram_by_type<axes::regular_1D, storage::atomic_int>(hist,
         "regular_atomic_int_1d",
         "1-dimensional histogram for int valued data (atomic).");
+    add_mt_fill(regular_atomic_int_1d);
     
     m.def("make_histogram", [](axis::regular_uoflow& ax1, storage::atomic_int){
         return bh::make_histogram_with(storage::atomic_int(), ax1);
@@ -199,6 +209,11 @@ void register_histogram(py::module& m) {
     register_histogram_by_type<axes::regular, storage::int_>(hist,
         "regular_int",
         "N-dimensional histogram for int-valued data.");
+    
+    auto regular_atomic_int = register_histogram_by_type<axes::regular, storage::atomic_int>(hist,
+        "regular_atomic_int",
+        "N-dimensional histogram for atomic int-valued data.");
+    add_mt_fill(regular_atomic_int);
 
     register_histogram_by_type<axes::regular_noflow, storage::int_>(hist,
         "regular_noflow_int",
@@ -210,9 +225,10 @@ void register_histogram(py::module& m) {
         "any_int",
         "N-dimensional histogram for int-valued data with any axis types.");
     
-    register_histogram_by_type<axes::any, storage::atomic_int>(hist,
+    auto any_atomic_int = register_histogram_by_type<axes::any, storage::atomic_int>(hist,
         "any_atomic_int",
         "N-dimensional histogram for int-valued data with any axis types (threadsafe).");
+    add_mt_fill(any_atomic_int);
 
     register_histogram_by_type<axes::any, storage::double_>(hist,
         "any_double",
