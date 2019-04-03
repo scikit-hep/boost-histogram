@@ -51,6 +51,9 @@ def print_timer(setup, statement, name, storage, fill, flow, base=None, n=10):
                             time=time, speedup=speedup))
     return time
 
+import multiprocessing
+count = multiprocessing.cpu_count()
+fill = str(count)
 
 
 table_header = '| Type  | Storage | Fill | Flow |    Time   | Speedup |'
@@ -100,8 +103,8 @@ print_timer(setup_1d,
     name='Regular', storage='aint', fill='', flow='yes', base=base)
 
 print_timer(setup_1d,
-    'hist = bh.hist.regular_atomic_int([bh.axis.regular(bins, *ranges)]); hist.mtfill(4,vals)',
-    name='Regular', storage='aint', fill='4', flow='yes', base=base)
+    'hist = bh.hist.regular_atomic_int([bh.axis.regular(bins, *ranges)]); hist.mtfill('+fill+',vals)',
+    name='Regular', storage='aint', fill=fill, flow='yes', base=base)
 
 
 print()
@@ -143,6 +146,6 @@ print_timer(setup_2d,
     name='Regular', storage='aint', fill='', flow='yes', base=base)
 
 print_timer(setup_2d,
-    'hist = bh.hist.regular_atomic_int([bh.axis.regular(bins[0], *ranges[0]), bh.axis.regular(bins[1], *ranges[1])]); hist.mtfill(4, *vals)',
-    name='Regular', storage='aint', fill='4', flow='yes', base=base)
+    'hist = bh.hist.regular_atomic_int([bh.axis.regular(bins[0], *ranges[0]), bh.axis.regular(bins[1], *ranges[1])]); hist.mtfill('+fill+', *vals)',
+    name='Regular', storage='aint', fill=fill, flow='yes', base=base)
 

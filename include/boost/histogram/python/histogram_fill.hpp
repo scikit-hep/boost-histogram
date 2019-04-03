@@ -19,7 +19,7 @@
 #include <thread>
 
 template <class Histogram>
-struct fill_helper {
+struct [[gnu::visibility("hidden")]] fill_helper {
     fill_helper(Histogram& h, py::args args) : hist(h) {
         size_t dim = args.size();
         if (dim == 0)
@@ -91,7 +91,7 @@ struct fill_helper {
 
 
 template <class Histogram>
-struct fill_helper_mt {
+struct [[gnu::visibility("hidden")]] fill_helper_mt {
     fill_helper_mt(Histogram& h, py::args args, size_t threads) : hist(h) , threads_(threads){
         size_t dim = args.size();
         if (dim == 0)
@@ -177,6 +177,7 @@ struct fill_helper_mt {
                 for (double xi : span{arrs.front().second + start, arrs.front().second + stop})
                     hist(xi); // throws invalid_argument if hist.rank() != 1
             });
+
         }
         
         for(auto& thread : threadpool)
