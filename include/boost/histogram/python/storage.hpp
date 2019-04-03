@@ -7,33 +7,12 @@
 
 #include <boost/histogram/python/pybind11.hpp>
 
+#include <boost/histogram/python/copyable_atomic.hpp>
+
 #include <boost/histogram.hpp>
+
 #include <cstdint>
-#include <atomic>
 
-
-/*
- std::atomic has deleted copy ctor, we need to wrap it in a type with a
- potentially unsafe copy ctor. It can be used in a thread-safe way if
- it is not in a growing axis type.
- */
-template <typename T>
-class copyable_atomic : public std::atomic<T> {
-public:
-    using std::atomic<T>::atomic;
-    
-    // zero-initialize the atomic T
-    copyable_atomic() noexcept : std::atomic<T>(T()) {}
-    
-    // this is potentially not thread-safe, see below
-    copyable_atomic(const copyable_atomic& rhs) : std::atomic<T>() { this->operator=(rhs); }
-    
-    // this is potentially not thread-safe, see below
-    copyable_atomic& operator=(const copyable_atomic& rhs) {
-        if (this != &rhs) { std::atomic<T>::store(rhs.load()); }
-        return *this;
-    }
-};
 
 namespace storage {
 

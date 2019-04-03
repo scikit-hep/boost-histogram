@@ -48,3 +48,16 @@ def test_atomic_builtin(threads):
     hist_atomic2.mtfill(threads, vals)
 
     assert_array_equal(hist_atomic1, hist_atomic2)
+
+
+@pytest.mark.parametrize("threads", [1,2,4,7])
+def test_threaded_builtin(threads):
+    hist_atomic1 = bh.make_histogram(bh.axis.regular(1000,0,1))
+    hist_atomic2 = bh.make_histogram(bh.axis.regular(1000,0,1))
+
+    vals = np.random.rand(10000)
+
+    hist_atomic1(vals)
+    hist_atomic2.threaded_fill(threads, vals)
+
+    assert_array_equal(hist_atomic1, hist_atomic2)

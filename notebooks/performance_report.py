@@ -1,5 +1,6 @@
 import boost.histogram as bh
 from timeit import timeit
+import math
 
 print("Welcome to boost-histogram's performance report")
 
@@ -44,7 +45,7 @@ def timer(setup, statement, n=10):
     return t
 
 def print_timer(setup, statement, name, storage, fill, flow, base=None, n=10):
-    time = timer(setup, statement, n)
+    time = timer(setup, statement.format(fill=fill), n)
     speedup = 1 if base is None else base/time
     print(table_line.format(name=name, storage=storage,
                             fill=fill, flow=flow,
@@ -52,9 +53,8 @@ def print_timer(setup, statement, name, storage, fill, flow, base=None, n=10):
     return time
 
 import multiprocessing
-count = multiprocessing.cpu_count()
-fill = str(count)
-
+c = multiprocessing.cpu_count()
+counts = [c//2**x for x in reversed(range(int(math.log2(c)+1)))]
 
 table_header = '| Type  | Storage | Fill | Flow |    Time   | Speedup |'
 table_spacer = '|-------|---------|------|------|-----------|---------|'
@@ -102,9 +102,16 @@ print_timer(setup_1d,
     'hist = bh.hist.regular_atomic_int([bh.axis.regular(bins, *ranges)]); hist(vals)',
     name='Regular', storage='aint', fill='', flow='yes', base=base)
 
-print_timer(setup_1d,
-    'hist = bh.hist.regular_atomic_int([bh.axis.regular(bins, *ranges)]); hist.mtfill('+fill+',vals)',
-    name='Regular', storage='aint', fill=fill, flow='yes', base=base)
+for fill in counts:
+    print_timer(setup_1d,
+        'hist = bh.hist.regular_atomic_int([bh.axis.regular(bins, *ranges)]); hist.mtfill({fill},vals)',
+        name='Regular', storage='aint', fill=fill, flow='yes', base=base)
+
+for fill in counts:
+    print_timer(setup_1d,
+        'hist = bh.hist.regular_int([bh.axis.regular(bins, *ranges)]); hist.threaded_fill({fill},vals)',
+        name='Regular', storage='int', fill=fill, flow='yes', base=base)
+
 
 
 print()
@@ -145,7 +152,12 @@ print_timer(setup_2d,
     'hist = bh.hist.regular_atomic_int([bh.axis.regular(bins[0], *ranges[0]), bh.axis.regular(bins[1], *ranges[1])]); hist(*vals)',
     name='Regular', storage='aint', fill='', flow='yes', base=base)
 
-print_timer(setup_2d,
-    'hist = bh.hist.regular_atomic_int([bh.axis.regular(bins[0], *ranges[0]), bh.axis.regular(bins[1], *ranges[1])]); hist.mtfill('+fill+', *vals)',
-    name='Regular', storage='aint', fill=fill, flow='yes', base=base)
+for fill in counts:
+    print_timer(setup_2d,
+        'hist = bh.hist.regular_atomic_int([bh.axis.regular(bins[0], *ranges[0]), bh.axis.regular(bins[1], *ranges[1])]); hist.mtfill({fill}, *vals)',
+        name='Regular', storage='aint', fill=fill, flow='yes', base=base)
 
+for fill in counts:
+    print_timer(setup_2d,
+        'hist = bh.hist.regular_int([bh.axis.regular(bins[0], *ranges[0]), bh.axis.regular(bins[1], *ranges[1])]); hist.threaded_fill({fill}, *vals)',
+        name='Regular', storage='int', fill=fill, flow='yes', base=base)
