@@ -151,7 +151,7 @@ py::class_<bh::histogram<A, S>> register_histogram_by_type(py::module& m, const 
 template<typename A, typename S>
 void add_atomic_fill(py::class_<bh::histogram<A, S>>& hist) {
     using histogram_t = bh::histogram<A, S>;
-    hist.def("mtfill", [](histogram_t &self, size_t threads, py::args args) {
+    hist.def("atomic_fill", [](histogram_t &self, size_t threads, py::args args) {
         boost::mp11::mp_with_index<BOOST_HISTOGRAM_DETAIL_AXES_LIMIT>(args.size(), fill_helper_atomic<histogram_t>(self, args, threads));
     }, "threads"_a, "Insert data into histogram, in some number of threads (0 for default)")
     ;

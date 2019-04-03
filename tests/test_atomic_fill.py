@@ -45,7 +45,7 @@ def test_atomic_builtin(threads):
     vals = np.random.rand(10000)
 
     hist_atomic1(vals)
-    hist_atomic2.mtfill(threads, vals)
+    hist_atomic2.atomic_fill(threads, vals)
 
     assert_array_equal(hist_atomic1, hist_atomic2)
 
