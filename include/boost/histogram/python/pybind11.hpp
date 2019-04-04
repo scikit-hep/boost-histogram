@@ -3,6 +3,8 @@
 // Distributed under the 3-Clause BSD License.  See accompanying
 // file LICENSE or https://github.com/scikit-hep/boost-histogram for details.
 
+// This file must be the first include
+
 #pragma once
 
 #include <pybind11/pybind11.h>
@@ -12,6 +14,11 @@
 #include <functional>
 #include <type_traits>
 #include <sstream>
+
+// Allow command line overide
+#ifndef BOOST_HISTOGRAM_DETAIL_AXES_LIMIT
+#define BOOST_HISTOGRAM_DETAIL_AXES_LIMIT 16
+#endif
 
 namespace py = pybind11;
 using namespace pybind11::literals; // For ""_a syntax

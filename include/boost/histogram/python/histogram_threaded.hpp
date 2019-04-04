@@ -84,9 +84,6 @@ struct [[gnu::visibility("hidden")]] fill_helper_threaded {
         }
         
         for(auto& hp : histpool)
-            hp.wait();
-        
-        for(auto& hp : histpool)
             hist += hp.get();
         
         for(auto& t : threadpool)
@@ -132,9 +129,6 @@ struct [[gnu::visibility("hidden")]] fill_helper_threaded {
             histpool.push_back(task.get_future());
             threadpool.emplace_back(std::move(task));
         }
-        
-        for(auto& hp : histpool)
-            hp.wait();
         
         for(auto& hp : histpool)
             hist += hp.get();
