@@ -3,6 +3,7 @@ from pytest import approx
 
 import boost.histogram as bh
 import numpy as np
+from numpy.testing import assert_array_equal
 
 
 @pytest.mark.parametrize("axtype", [bh.axis.regular, bh.axis.regular_noflow])
@@ -68,7 +69,7 @@ def test_axis_circular_offset(offset):
     assert 3 == ax.index(.34 + offset)
     assert 2 == ax.index(.26 + offset)
 
-    assert np.all([2,3] == ax.index([.26 + offset, .34 + offset]))
+    assert_array_equal([2,3], ax.index([.26 + offset, .34 + offset]))
 
 def test_axis_circular():
     ax = bh.axis.circular(10, 0, 1)

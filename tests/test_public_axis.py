@@ -9,6 +9,7 @@ from boost.histogram.axis import (regular, regular_noflow,
                                   category_int as category)
 
 import numpy as np
+from numpy.testing import assert_array_equal, assert_allclose
 
 import abc
 
@@ -309,10 +310,10 @@ class TestCircular(Axis):
              1.0 + 2.0 * np.pi])
 
         a = circular(4, 1, 1+np.pi*2)
-        assert np.all(a.edges() == v)
+        assert_array_equal(a.edges(), v)
 
         c = (v[:-1] + v[1:])/2
-        assert np.all(a.centers() == approx(c))
+        assert_allclose(a.centers(), c)
 
     def test_index(self):
         a = circular(4, 1, 1+np.pi*2)

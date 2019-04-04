@@ -2,6 +2,7 @@ import pytest
 
 import boost.histogram as bh
 import numpy as np
+from numpy.testing import assert_array_equal, assert_allclose
 
 
 def test_1D_fill_unlimited():
@@ -33,7 +34,8 @@ def test_1D_fill_int(hist_func):
 
     H =  np.array([0, 1, 2, 0, 0, 0, 0, 0, 0, 0])
 
-    assert np.all(np.asarray(hist)[1:-1] == H)
+    assert_array_equal(np.asarray(hist)[1:-1], H)
+    assert_array_equal(hist.view(flow=False), H)
 
     assert hist.axis(0).size() == bins
     assert hist.axis(0).size(flow=True) == bins + 2
@@ -53,7 +55,8 @@ def test_2D_fill_int(hist_func):
 
     H = np.histogram2d(*vals, bins=bins, range=ranges)[0]
 
-    assert np.all(np.asarray(hist)[1:-1,1:-1] == H)
+    assert_array_equal(np.asarray(hist)[1:-1, 1:-1], H)
+    assert_array_equal(hist.view(flow=False), H)
 
     assert hist.axis(0).size() == bins[0]
     assert hist.axis(0).size(flow=True) == bins[0] + 2
@@ -72,7 +75,9 @@ def test_edges_histogram():
     hist(vals)
 
     bins = np.asarray(hist)
-    assert np.all(bins == [0,0,2,2,0])
+    assert_array_equal(bins, [0,0,2,2,0])
+    assert_array_equal(hist.view(flow=True), [0,0,2,2,0])
+    assert_array_equal(hist.view(flow=False), [0,2,2])
 
 def test_int_histogram():
     hist = bh.hist.any_int([
@@ -83,7 +88,8 @@ def test_int_histogram():
     hist(vals)
 
     bins = np.asarray(hist)
-    assert np.all(bins == [2,1,1,1,1,3])
+    assert_array_equal(bins, [2,1,1,1,1,3])
+    assert_array_equal(hist.view(flow=True), [2,1,1,1,1,3])
 
 
 def test_str_categories_histogram():
@@ -115,14 +121,14 @@ def test_numpy_flow():
     flow_true = h.to_numpy(True)[0][1:-1, 1:-1]
     flow_false = h.to_numpy(False)[0]
 
-    assert np.all(flow_true == flow_false)
+    assert_array_equal(flow_true, flow_false)
 
     view_flow_true = h.view(flow=True)
     view_flow_false = h.view(flow=False)
     view_flow_default = h.view()
 
-    assert np.all(view_flow_true[1:-1, 1:-1] == view_flow_false)
-    assert np.all(view_flow_default == view_flow_false)
+    assert_array_equal(view_flow_true[1:-1, 1:-1], view_flow_false)
+    assert_array_equal(view_flow_default, view_flow_false)
 
 
 
@@ -144,9 +150,9 @@ def test_numpy_compare():
 
     nH, nE1, nE2 = np.histogram2d(xs, ys, bins=(10,5), range=((0,1),(0,1)))
 
-    assert np.all(H == nH)
-    assert np.allclose(E1, nE1)
-    assert np.allclose(E2, nE2)
+    assert_array_equal(H, nH)
+    assert_allclose(E1, nE1)
+    assert_allclose(E2, nE2)
 
 def test_int_cat_hist():
     h = bh.hist.any_int([bh.axis.category_int([1,2,3])])
@@ -156,5 +162,5 @@ def test_int_cat_hist():
     h(2.2)
     h(3)
 
-    assert np.all(h.view() == [1,2,1])
+    assert_array_equal(h.view(), [1,2,1])
     assert h.sum() == 4

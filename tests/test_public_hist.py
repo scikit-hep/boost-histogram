@@ -11,6 +11,7 @@ from boost.histogram.axis import (regular, regular_noflow,
                                   category_int as category)
 
 import numpy as np
+from numpy.testing import assert_array_equal
 
 # histogram -> boost.histogram
 # histogram -> make_histogram
@@ -395,22 +396,22 @@ def test_numpy_conversion_0():
 
     for t in (c, v):
         assert t.dtype == np.uint64 # CLASSIC: np.uint8
-        assert np.all(t == np.array((1, 5, 0)))
+        assert_array_equal(t, (1, 5, 0))
 
     for i in range(10):
         a(2)
     # copy does not change, but view does
-    assert np.all(c == np.array((1, 5, 0)))
-    assert np.all(v == np.array((1, 5, 10)))
+    assert_array_equal(c, (1, 5, 0))
+    assert_array_equal(v, (1, 5, 10))
 
     for i in range(255):
         a(1)
     c = np.array(a)
 
     assert c.dtype == np.uint64 # CLASSIC: np.uint16
-    assert np.all(c == np.array((1, 260, 10)))
+    assert_array_equal(c, (1, 260, 10))
     # view does not follow underlying switch in word size
-    # assert not np.all(c == v)
+    # assert not np.all(c, v)
 
 @pytest.mark.skip(message="Requires weighted fills / type")
 def test_numpy_conversion_1():
@@ -420,8 +421,8 @@ def test_numpy_conversion_1():
     c = np.array(a)  # a copy
     v = np.asarray(a)  # a view
     assert c.dtype == np.float64
-    assert np.all(c == np.array(((0, 30, 0, 0, 0), (0, 90, 0, 0, 0))))
-    assert np.all(v == c)
+    assert_array_equal(c, np.array(((0, 30, 0, 0, 0), (0, 90, 0, 0, 0))))
+    assert_array_equal(v, c)
 
 def test_numpy_conversion_2():
     a = histogram(integer_noflow(0, 2),
@@ -441,13 +442,13 @@ def test_numpy_conversion_2():
             for k in range(a.axis(2).size(flow=True)):
                 d[i, j, k] = a.at(i, j, k)
 
-    assert np.all(d == r)
+    assert_array_equal(d, r)
 
     c = np.array(a)  # a copy
     v = np.asarray(a)  # a view
 
-    assert np.all(c == r)
-    assert np.all(v == r)
+    assert_array_equal(c, r)
+    assert_array_equal(v, r)
 
 @pytest.mark.skip(message="Requires weighted fills / type")
 def test_numpy_conversion_3():
@@ -470,9 +471,9 @@ def test_numpy_conversion_3():
             for k in range(a.axis(2).size(flow=True)):
                 c2[0, i, j, k] = a.at(i, j, k)
 
-    assert np.all(c == c2)
-    assert np.all(c == r)
-    assert np.all(v == r)
+    assert_array_equal(c, c2)
+    assert_array_equal(c, r)
+    assert_array_equal(v, r)
 
 def test_numpy_conversion_4():
     a = histogram(integer_noflow(0, 2),
@@ -517,16 +518,16 @@ def test_numpy_conversion_6():
     b = regular(2, 0, 2)
     c = variable([0, 1, 2])
     ref = np.array((0., 1., 2.))
-    assert np.all(a.bins() == [0, 1])
-    assert np.all(b.edges() == ref)
-    assert np.all(c.edges() == ref)
+    assert_array_equal(a.bins(), [0, 1])
+    assert_array_equal(b.edges(), ref)
+    assert_array_equal(c.edges(), ref)
 
     d = circular(4, 0, 2*np.pi)
     ref = np.array((0., 0.5 * np.pi, np.pi, 1.5 * np.pi, 2.0 * np.pi))
-    assert np.all(d.edges() == ref)
+    assert_array_equal(d.edges(), ref)
     e = category([1, 2])
     ref = np.array((1, 2))
-    assert np.all(e.bins() == ref)
+    assert_array_equal(e.bins(), ref)
 
 
 def test_fill_with_numpy_array_0():
