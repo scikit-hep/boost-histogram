@@ -10,6 +10,18 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Adding folders to keep the structure a bit nicer in IDE's
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+
+# This is a standard recipe for setting a default build type
+set(default_build_type "Release")
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
+  set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
+      STRING "Choose the type of build." FORCE)
+  # Set the possible values of build type for cmake-gui
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+    "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+endif()
+
 # Adding PyBind11 and setting up Python
 add_subdirectory(extern/pybind11)
 
@@ -64,21 +76,25 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/extern/histogram/include PREFIX "H
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/include PREFIX "Header Files" FILES ${BOOST_HIST_PY_HEADERS})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX "Source Files" FILES ${BOOST_HIST_PY_SRC})
 
-# Cause warnings to be errors (not recommended for MSVC, since PyBind11 might cause a few there - add /WX if you want to try)
+# Cause warnings to be errors (not recommended for MSVC, since PyBind11 might cause a few there)
 option(BOOST_HISTOGRAM_ERRORS "Make warnings errors (for CI mostly)")
 
 # Adding warnings
-target_compile_options(histogram PRIVATE
-                       $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
-                           -Wall -Wextra -pedantic-errors -Wconversion -Wsign-conversion>
-                       $<$<CXX_COMPILER_ID:MSVC>:
-                           /W4>)
-if(BOOST_HISTOGRAM_ERRORS)
-    target_compile_options(histogram PRIVATE
-        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
-            -Werror>
-        $<$<CXX_COMPILER_ID:MSVC>:
-            /WE>)
+if("${CMAKE_COMPILER_ID}" MATCHES "CLANG" OR  "${CMAKE_COMPILER_ID}" MATCHES "GNU")
+    target_compile_options(histogram PRIVATE -Wall -Wextra -pedantic-errors -Wconversion -Wsign-conversion)
+    if(BOOST_HISTOGRAM_ERRORS)
+        target_compile_options(histogram PRIVATE -Werror)
+    endif()
+elseif("${CMAKE_COMPILER_ID}" MATCHES "MSVC")
+    target_compile_options(histogram PRIVATE /W4)
+    if(BOOST_HISTOGRAM_ERRORS)
+        target_compile_options(histogram PRIVATE /WE)
+    endif()
+endif()
+
+# Hide an error from PyBind11 (will be fixed upstream hopefully)
+if("${CMAKE_COMPILER_ID}" MATCHES "CLANG")
+     target_compile_options(histogram PRIVATE -Wno-return-std-move)
 endif()
 
 

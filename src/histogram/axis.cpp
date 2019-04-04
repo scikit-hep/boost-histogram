@@ -24,7 +24,8 @@
 
 using namespace std::literals;
 
-
+// Base classes to allow type checking in Python
+struct regular_base {};
 
 /// Add items to an axis where the axis values are continious
 template<typename A, typename B>
@@ -60,9 +61,9 @@ void add_to_axis(B&& axis, std::true_type) {
 }
 
 /// Add helpers common to all axis types
-template<typename A, typename R=int>
-py::class_<A> register_axis_by_type(py::module& m, const char* name, const char* desc) {
-    py::class_<A> axis(m, name, desc);
+template<typename A, typename... Args>
+py::class_<A> register_axis_by_type(py::module& m, Args&&... args) {
+    py::class_<A> axis(m, std::forward<Args>(args)...);
 
     // using value_type = decltype(A::value(1.0));
 
@@ -98,7 +99,7 @@ py::class_<A> register_axis_by_type(py::module& m, const char* name, const char*
 }
 
 /// Add helpers common to all types with a range of values
-template<typename A, typename R=int>
+template<typename A>
 py::class_<bh::axis::interval_view<A>> register_axis_iv_by_type(py::module& m, const char* name) {
     using A_iv = bh::axis::interval_view<A>;
     py::class_<A_iv> axis_iv = py::class_<A_iv>(m, name, "Lightweight bin view");
@@ -131,26 +132,27 @@ void register_axis(py::module &m) {
     opt.attr("circular") =  (unsigned) bh::axis::option::circular;
     opt.attr("growth") =    (unsigned) bh::axis::option::growth;
     
+    py::class_<regular_base> py_regular_base(m, "regular_base", "Regular base for others");
     
-    register_axis_by_type<axis::regular>(ax, "regular", "Evenly spaced bins")
+    register_axis_by_type<axis::regular>(ax, "regular", "Evenly spaced bins", py_regular_base)
     .def(py::init<unsigned, double, double, metadata_t>(), "n"_a, "start"_a, "stop"_a, "metadata"_a = py::str())
     ;
     register_axis_iv_by_type<axis::regular>(ax, "_regular_internal_view");
 
 
-    register_axis_by_type<axis::regular_noflow>(ax, "regular_noflow", "Evenly spaced bins without over/under flow")
+    register_axis_by_type<axis::regular_noflow>(ax, "regular_noflow", "Evenly spaced bins without over/under flow", py_regular_base)
     .def(py::init<unsigned, double, double, metadata_t>(), "n"_a, "start"_a, "stop"_a, "metadata"_a = py::str())
     ;
     register_axis_iv_by_type<axis::regular_noflow>(ax, "_regular_noflow_internal_view");
 
 
-    register_axis_by_type<axis::regular_growth>(ax, "regular_growth", "Evenly spaced bins that grow as needed")
+    register_axis_by_type<axis::regular_growth>(ax, "regular_growth", "Evenly spaced bins that grow as needed", py_regular_base)
     .def(py::init<unsigned, double, double, metadata_t>(), "n"_a, "start"_a, "stop"_a, "metadata"_a = py::str())
     ;
     register_axis_iv_by_type<axis::regular_growth>(ax, "_regular_growth_internal_view");
 
 
-    register_axis_by_type<axis::circular>(ax, "circular", "Evenly spaced bins with wraparound")
+    register_axis_by_type<axis::circular>(ax, "circular", "Evenly spaced bins with wraparound", py_regular_base)
     .def(py::init<unsigned, double, double, metadata_t>(), "n"_a, "start"_a, "stop"_a, "metadata"_a = py::str())
     .def(py::init([](unsigned n, double stop, metadata_t metadata){
         return new axis::circular{n, 0.0, stop, metadata};
@@ -159,19 +161,19 @@ void register_axis(py::module &m) {
     register_axis_iv_by_type<axis::circular>(ax, "_circular_internal_view");
 
 
-    register_axis_by_type<axis::regular_log>(ax, "regular_log", "Evenly spaced bins in log10")
+    register_axis_by_type<axis::regular_log>(ax, "regular_log", "Evenly spaced bins in log10", py_regular_base)
     .def(py::init<unsigned, double, double, metadata_t>(), "n"_a, "start"_a, "stop"_a, "metadata"_a = py::str())
     ;
     register_axis_iv_by_type<axis::regular_log>(ax, "_regular_log_internal_view");
 
 
-    register_axis_by_type<axis::regular_sqrt>(ax, "regular_sqrt", "Evenly spaced bins in sqrt")
+    register_axis_by_type<axis::regular_sqrt>(ax, "regular_sqrt", "Evenly spaced bins in sqrt", py_regular_base)
     .def(py::init<unsigned, double, double, metadata_t>(), "n"_a, "start"_a, "stop"_a, "metadata"_a = py::str())
     ;
     register_axis_iv_by_type<axis::regular_sqrt>(ax, "_regular_sqrt_internal_view");
 
 
-    register_axis_by_type<axis::regular_pow>(ax, "regular_pow", "Evenly spaced bins in a power")
+    register_axis_by_type<axis::regular_pow>(ax, "regular_pow", "Evenly spaced bins in a power", py_regular_base)
     .def(py::init([](unsigned n, double start, double stop, double pow, metadata_t metadata){
         return new axis::regular_pow(bh::axis::transform::pow{pow}, n, start, stop, metadata);} ),
          "n"_a, "start"_a, "stop"_a, "power"_a, "metadata"_a = py::str())
@@ -200,23 +202,23 @@ void register_axis(py::module &m) {
     ;
     register_axis_iv_by_type<axis::integer_growth>(ax, "_integer_integer_growth_internal_view");
 
-    register_axis_by_type<axis::category_int, int>(ax, "category_int", "Text label bins")
+    register_axis_by_type<axis::category_int>(ax, "category_int", "Text label bins")
     .def(py::init<std::vector<int>, metadata_t>(), "labels"_a, "metadata"_a = py::str())
     ;
 
 
-    register_axis_by_type<axis::category_int_growth, std::string>(ax, "category_int_growth", "Text label bins")
+    register_axis_by_type<axis::category_int_growth>(ax, "category_int_growth", "Text label bins")
     .def(py::init<std::vector<int>, metadata_t>(), "labels"_a, "metadata"_a = py::str())
     .def(py::init<>())
     ;
 
 
-    register_axis_by_type<axis::category_str, std::string>(ax, "category_str", "Text label bins")
+    register_axis_by_type<axis::category_str>(ax, "category_str", "Text label bins")
     .def(py::init<std::vector<std::string>, metadata_t>(), "labels"_a, "metadata"_a = py::str())
     ;
 
 
-    register_axis_by_type<axis::category_str_growth, std::string>(ax, "category_str_growth", "Text label bins")
+    register_axis_by_type<axis::category_str_growth>(ax, "category_str_growth", "Text label bins")
     .def(py::init<std::vector<std::string>, metadata_t>(), "labels"_a, "metadata"_a = py::str())
     // Add way to allow empty list of strings
     .def(py::init<>())
