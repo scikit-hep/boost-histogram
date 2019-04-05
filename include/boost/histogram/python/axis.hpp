@@ -69,7 +69,7 @@ using regular_log = bh::axis::regular<double, bh::axis::transform::log, metadata
 using regular_sqrt = bh::axis::regular<double, bh::axis::transform::sqrt, metadata_t>;
 using regular_pow = bh::axis::regular<double, bh::axis::transform::pow, metadata_t>;
 using variable = bh::axis::variable<double, metadata_t>;
-using integer = bh::axis::integer<int, metadata_t>;
+using integer_uoflow = bh::axis::integer<int, metadata_t>;
 using integer_noflow = bh::axis::integer<int, metadata_t, bh::axis::option::none_t>;
 using integer_growth = bh::axis::integer<int, metadata_t, bh::axis::option::growth_t>;
 using category_int = bh::axis::category<int, metadata_t>;
@@ -90,7 +90,7 @@ using any = std::vector<bh::axis::variant<axis::regular_uoflow,
                                           axis::regular_pow,
                                           axis::regular_sqrt,
                                           axis::variable,
-                                          axis::integer,
+                                          axis::integer_uoflow,
                                           axis::integer_noflow,
                                           axis::integer_growth,
                                           axis::category_int,

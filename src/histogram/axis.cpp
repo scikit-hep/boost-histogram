@@ -206,10 +206,10 @@ void register_axis(py::module &m) {
     register_axis_iv_by_type<axis::variable>(ax, "_variable_internal_view");
 
 
-    register_axis_by_type<axis::integer>(ax, "integer", "Contigious integers")
+    register_axis_by_type<axis::integer_uoflow>(ax, "integer_uoflow", "Contigious integers")
     .def(py::init<int, int, metadata_t>(), "min"_a, "max"_a, "metadata"_a = py::str())
     ;
-    register_axis_iv_by_type<axis::integer>(ax, "_integer_internal_view");
+    register_axis_iv_by_type<axis::integer_uoflow>(ax, "_integer_internal_view");
 
     register_axis_by_type<axis::integer_noflow>(ax, "integer_noflow", "Contigious integers with no under/overflow")
     .def(py::init<int, int, metadata_t>(), "min"_a, "max"_a, "metadata"_a = py::str())

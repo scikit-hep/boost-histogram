@@ -4,7 +4,7 @@ from pytest import approx
 from boost.histogram.axis import (regular_uoflow, regular_noflow,
                                   regular_log, regular_sqrt,
                                   regular_pow, circular,
-                                  variable, integer,
+                                  variable, integer_uoflow,
                                   integer_noflow, integer_growth,
                                   category_int as category)
 
@@ -418,38 +418,38 @@ class TestVariable(Axis):
 class TestInteger:
 
     def test_init(self):
-        integer(-1, 2)
+        integer_uoflow(-1, 2)
         integer_noflow(-1, 2)
         integer_growth(-1, 2)
         with pytest.raises(TypeError):
-            integer()
+            integer_uoflow()
         with pytest.raises(TypeError):
-            integer(1)
+            integer_uoflow(1)
         with pytest.raises(TypeError):
-            integer("1", 2)
+            integer_uoflow("1", 2)
         with pytest.raises(ValueError):
-            integer(2, -1)
+            integer_uoflow(2, -1)
 
         # CLASSIC: Used to fail
-        integer(1, 2, 3)
+        integer_uoflow(1, 2, 3)
 
-        assert integer(-1, 2) == integer(-1, 2)
-        assert integer(-1, 2) != integer(-1, 2, metadata="Other")
-        assert integer_noflow(-1, 2) != integer(-1, 2)
+        assert integer_uoflow(-1, 2) == integer_uoflow(-1, 2)
+        assert integer_uoflow(-1, 2) != integer_uoflow(-1, 2, metadata="Other")
+        assert integer_noflow(-1, 2) != integer_uoflow(-1, 2)
 
     def test_len(self):
-        assert integer(-1, 3).size() ==  4
-        assert integer(-1, 3).size(flow=True) ==  6
+        assert integer_uoflow(-1, 3).size() ==  4
+        assert integer_uoflow(-1, 3).size(flow=True) ==  6
         assert integer_noflow(-1, 3).size() ==  4
         assert integer_noflow(-1, 3).size(flow=True) ==  4
         assert integer_growth(-1, 3).size() ==  4
         assert integer_growth(-1, 3).size(flow=True) ==  4
 
     def test_repr(self):
-        a = integer(-1, 1)
+        a = integer_uoflow(-1, 1)
         assert repr(a) == 'integer(-1, 1, options=underflow | overflow)'
 
-        a = integer(-1, 1, metadata="hi")
+        a = integer_uoflow(-1, 1, metadata="hi")
         assert repr(a) == 'integer(-1, 1, metadata="hi", options=underflow | overflow)'
 
         a = integer_noflow(-1, 1)
@@ -459,14 +459,14 @@ class TestInteger:
         assert repr(a) == 'integer(-1, 1, options=growth)'
 
     def test_label(self):
-        a = integer(-1, 2, metadata="foo")
+        a = integer_uoflow(-1, 2, metadata="foo")
         assert a.metadata == "foo"
         a.metadata = "bar"
         assert a.metadata == "bar"
 
     def test_getitem(self):
         v = [-1, 0, 1, 2, 3]
-        a = integer(-1, 3)
+        a = integer_uoflow(-1, 3)
         for i in range(5):
             assert a.bin(i) == v[i]
         assert a.bin(-1) == -2 ** 31
@@ -474,11 +474,11 @@ class TestInteger:
 
     def test_iter(self):
         v = np.array([-1, 0, 1, 2])
-        a = integer(-1, 3)
+        a = integer_uoflow(-1, 3)
         assert (a.bins() == v).all()
 
     def test_index(self):
-        a = integer(-1, 3)
+        a = integer_uoflow(-1, 3)
         assert a.index(-3) == -1
         assert a.index(-2) == -1
         assert a.index(-1) == 0

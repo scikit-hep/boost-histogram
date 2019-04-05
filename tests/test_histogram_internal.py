@@ -81,7 +81,7 @@ def test_edges_histogram():
 
 def test_int_histogram():
     hist = bh.hist.any_int([
-        bh.axis.integer(3,7)
+        bh.axis.integer_uoflow(3,7)
         ])
 
     vals = (1,2,3,4,5,6,7,8,9)
