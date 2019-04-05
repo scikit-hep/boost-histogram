@@ -10,7 +10,7 @@ def test_1D_fill_unlimited():
     ranges = (0, 1)
     vals = (.15, .25, .25)
     hist = bh.hist.regular_unlimited([
-        bh.axis.regular(bins, *ranges)
+        bh.axis.regular_uoflow(bins, *ranges)
         ])
     hist(vals)
 
@@ -28,7 +28,7 @@ def test_1D_fill_int(hist_func):
     vals = (.15, .25, .25)
 
     hist = hist_func([
-        bh.axis.regular(bins, *ranges)
+        bh.axis.regular_uoflow(bins, *ranges)
         ])
     hist(vals)
 
@@ -48,8 +48,8 @@ def test_2D_fill_int(hist_func):
     vals = ((.15, .25, .25), (.35, .45, .45))
 
     hist = hist_func([
-        bh.axis.regular(bins[0], *ranges[0]),
-        bh.axis.regular(bins[1], *ranges[1]),
+        bh.axis.regular_uoflow(bins[0], *ranges[0]),
+        bh.axis.regular_uoflow(bins[1], *ranges[1]),
         ])
     hist(*vals)
 
@@ -110,7 +110,7 @@ def test_growing_histogram():
     assert hist.size() == 15
 
 def test_numpy_flow():
-    h = bh.hist.regular_int_2d([bh.axis.regular(10,0,1), bh.axis.regular(5,0,1)])
+    h = bh.hist.regular_int_2d([bh.axis.regular_uoflow(10,0,1), bh.axis.regular_uoflow(5,0,1)])
 
     for i in range(10):
         for j in range(5):
@@ -133,7 +133,7 @@ def test_numpy_flow():
 
 
 def test_numpy_compare():
-    h = bh.hist.regular_int_2d([bh.axis.regular(10,0,1), bh.axis.regular(5,0,1)])
+    h = bh.hist.regular_int_2d([bh.axis.regular_uoflow(10,0,1), bh.axis.regular_uoflow(5,0,1)])
 
     xs = []
     ys = []

@@ -4,7 +4,7 @@ import math
 
 import boost.histogram as bh
 
-@pytest.mark.parametrize("axis,extent", ((bh.axis.regular, 2),
+@pytest.mark.parametrize("axis,extent", ((bh.axis.regular_uoflow, 2),
                                          (bh.axis.regular_noflow, 0)))
 def test_make_regular_1D(axis, extent):
     hist = bh.make_histogram(axis(3,2,5))
@@ -14,7 +14,7 @@ def test_make_regular_1D(axis, extent):
     assert hist.axis(0).size(flow=True) == 3 + extent
     assert hist.axis(0).bin(1).center() == approx(3.5)
 
-@pytest.mark.parametrize("axis,extent", ((bh.axis.regular, 2),
+@pytest.mark.parametrize("axis,extent", ((bh.axis.regular_uoflow, 2),
                                          (bh.axis.regular_noflow, 0)))
 def test_make_regular_2D(axis, extent):
     hist = bh.make_histogram(axis(3,2,5),
@@ -35,7 +35,7 @@ def test_make_regular_2D(axis, extent):
                                      bh.storage.unlimited(),
                                      bh.storage.weight()))
 def test_make_any_hist(storage):
-    hist = bh.make_histogram(bh.axis.regular(5,1,2),
+    hist = bh.make_histogram(bh.axis.regular_uoflow(5,1,2),
                              bh.axis.regular_noflow(6,2,3),
                              bh.axis.circular(8,3,4),
                              storage=storage)
@@ -53,8 +53,8 @@ def test_make_any_hist(storage):
 
 def test_make_any_hist_storage():
 
-    assert float != type(bh.make_histogram(bh.axis.regular(5,1,2), storage=bh.storage.int()).at(0))
-    assert float == type(bh.make_histogram(bh.axis.regular(5,1,2), storage=bh.storage.double()).at(0))
+    assert float != type(bh.make_histogram(bh.axis.regular_uoflow(5,1,2), storage=bh.storage.int()).at(0))
+    assert float == type(bh.make_histogram(bh.axis.regular_uoflow(5,1,2), storage=bh.storage.double()).at(0))
 
 def test_issue_axis_bin_swan():
     hist = bh.make_histogram(bh.axis.regular_sqrt(10,0,10, metadata='x'),

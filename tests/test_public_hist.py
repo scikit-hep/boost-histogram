@@ -3,7 +3,7 @@ from pytest import approx
 
 
 from boost.histogram import make_histogram as histogram
-from boost.histogram.axis import (regular, regular_noflow,
+from boost.histogram.axis import (regular_uoflow, regular_noflow,
                                   regular_log, regular_sqrt,
                                   regular_pow, circular,
                                   variable, integer,
@@ -27,9 +27,9 @@ def test_init():
     with pytest.raises(RuntimeError):
         histogram([])
     with pytest.raises(RuntimeError):
-        histogram(regular)
+        histogram(regular_uoflow)
     with pytest.raises(TypeError):
-        histogram(regular())
+        histogram(regular_uoflow())
     with pytest.raises(RuntimeError):
         histogram([integer(-1, 1)])
      # TODO: Should fail
@@ -41,7 +41,7 @@ def test_init():
     assert h.axis(0) == integer(-1, 2)
     assert h.axis(0).size(flow=True) == 5
     assert h.axis(0).size() == 3
-    assert h != histogram(regular(1, -1, 1))
+    assert h != histogram(regular_uoflow(1, -1, 1))
     assert h != histogram(integer(-1, 1, metadata="ia"))
 
 
@@ -94,7 +94,7 @@ def test_fill_int_1d():
 
 @pytest.mark.parametrize("flow", [True, False])
 def test_fill_1d(flow):
-    h = histogram(regular(3, -1, 2) if flow else regular_noflow(3, -1, 2))
+    h = histogram(regular_uoflow(3, -1, 2) if flow else regular_noflow(3, -1, 2))
     with pytest.raises(ValueError):
         h()
     with pytest.raises(ValueError):
@@ -145,7 +145,7 @@ def test_growth():
 @pytest.mark.parametrize("flow", [True, False])
 def test_fill_2d(flow):
     h = histogram((integer if flow else integer_noflow)(-1, 2),
-                  (regular if flow else regular_noflow)(4, -2, 2))
+                  (regular_uoflow if flow else regular_noflow)(4, -2, 2))
     h(-1, -2)
     h(-1, -1)
     h(0, 0)
@@ -175,7 +175,7 @@ def test_fill_2d(flow):
 @pytest.mark.parametrize("flow", [True, False])
 def test_add_2d(flow):
     h = histogram((integer if flow else integer_noflow)(-1, 2),
-                  (regular if flow else regular_noflow)(4, -2, 2))
+                  (regular_uoflow if flow else regular_noflow)(4, -2, 2))
     h(-1, -2)
     h(-1, -1)
     h(0, 0)
@@ -198,7 +198,7 @@ def test_add_2d(flow):
 
 def test_add_2d_bad():
     a = histogram(integer(-1, 1))
-    b = histogram(regular(3, -1, 1))
+    b = histogram(regular_uoflow(3, -1, 1))
 
     with pytest.raises(TypeError):
         a += b
@@ -209,7 +209,7 @@ def test_add_2d_bad():
 @pytest.mark.parametrize("flow", [True, False])
 def test_add_2d_w(flow):
     h = histogram((integer if flow else integer_noflow)(-1, 2),
-                  (regular if flow else regular_noflow)(4, -2, 2))
+                  (regular_uoflow if flow else regular_noflow)(4, -2, 2))
     h(-1, -2)
     h(-1, -1)
     h(0, 0)
@@ -225,7 +225,7 @@ def test_add_2d_w(flow):
          [0, 0, 0, 0, 0, 0]]
 
     h2 = histogram((integer if flow else integer_noflow)(-1, 2),
-                  (regular if flow else regular_noflow)(4, -2, 2))
+                  (regular_uoflow if flow else regular_noflow)(4, -2, 2))
     h2(0, 0, weight=0)
 
     h2 += h
@@ -238,7 +238,7 @@ def test_add_2d_w(flow):
             assert h.at(i, j) == 2 * m[i][j]
 
 def test_repr():
-    h = histogram(regular(10, 0, 1), integer(0, 1))
+    h = histogram(regular_uoflow(10, 0, 1), integer(0, 1))
     hr = repr(h)
     assert hr == '''histogram(
   regular(10, 0, 1, options=underflow | overflow),
@@ -246,7 +246,7 @@ def test_repr():
 )'''
 
 def test_axis():
-    axes = (regular(10, 0, 1), integer(0, 1))
+    axes = (regular_uoflow(10, 0, 1), integer(0, 1))
     h = histogram(*axes)
     for i, a in enumerate(axes):
         assert h.axis(i) == a
@@ -260,11 +260,11 @@ def test_axis():
 # CLASSIC: This used to only fail when accessing, now fails in creation
 def test_overflow():
     with pytest.raises(RuntimeError):
-        h = histogram(*[regular(1, 0, 1) for i in range(50)])
+        h = histogram(*[regular_uoflow(1, 0, 1) for i in range(50)])
 
 
 def test_out_of_range():
-    h = histogram(regular(3, 0, 1))
+    h = histogram(regular_uoflow(3, 0, 1))
     h(-1)
     h(2)
     assert h.at(-1) == 1
@@ -290,7 +290,7 @@ def test_operators():
     assert h.at(1) == 0
     assert (h + h).at(0) == (h * 2).at(0)
     assert (h + h).at(0) == (2 * h).at(0)
-    h2 = histogram(regular(2, 0, 2))
+    h2 = histogram(regular_uoflow(2, 0, 2))
     with pytest.raises(TypeError):
         h + h2
 
@@ -515,7 +515,7 @@ def test_numpy_conversion_5():
 
 def test_numpy_conversion_6():
     a = integer(0, 2)
-    b = regular(2, 0, 2)
+    b = regular_uoflow(2, 0, 2)
     c = variable([0, 1, 2])
     ref = np.array((0., 1., 2.))
     assert_array_equal(a.bins(), [0, 1])

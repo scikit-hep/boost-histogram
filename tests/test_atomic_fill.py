@@ -8,8 +8,8 @@ from functools import reduce
 from operator import add
 
 def test_make_regular_1D():
-    hist_linear = bh.make_histogram(bh.axis.regular(1000,0,1))
-    hist_atomic = bh.make_histogram(bh.axis.regular(1000,0,1),
+    hist_linear = bh.make_histogram(bh.axis.regular_uoflow(1000,0,1))
+    hist_atomic = bh.make_histogram(bh.axis.regular_uoflow(1000,0,1),
                                     storage=bh.storage.atomic_int())
 
     vals = np.random.rand(10000)
@@ -20,8 +20,8 @@ def test_make_regular_1D():
     assert np.all(np.asarray(hist_linear) == np.asarray(hist_atomic))
 
 def test_atomic_fill_1D():
-    hist_linear = bh.make_histogram(bh.axis.regular(1000,0,1))
-    hist_atomic = bh.make_histogram(bh.axis.regular(1000,0,1),
+    hist_linear = bh.make_histogram(bh.axis.regular_uoflow(1000,0,1))
+    hist_atomic = bh.make_histogram(bh.axis.regular_uoflow(1000,0,1),
                                     storage=bh.storage.atomic_int())
 
     vals = np.random.rand(10000)

@@ -120,6 +120,8 @@ py::class_<bh::axis::interval_view<A>> register_axis_iv_by_type(py::module& m, c
     return axis_iv;
 }
 
+struct regular_type {};
+
 
 void register_axis(py::module &m) {
 
@@ -132,14 +134,12 @@ void register_axis(py::module &m) {
     opt.attr("overflow") =  (unsigned) bh::axis::option::overflow;
     opt.attr("circular") =  (unsigned) bh::axis::option::circular;
     opt.attr("growth") =    (unsigned) bh::axis::option::growth;
+    
 
-    py::class_<regular_base> py_regular_base(ax, "regular_base", "Regular base for others");
-
-
-    ax.def("_make_regular",
-        [](py::object, unsigned n, double start, double stop, metadata_t metadata, bool flow, bool growth) -> py::object {
+    ax.def("make_regular",
+        [](unsigned n, double start, double stop, metadata_t metadata, bool flow, bool growth) -> py::object {
             if(flow && ! growth) {
-                return py::cast(axis::regular(n, start, stop, metadata));
+                return py::cast(axis::regular_uoflow(n, start, stop, metadata));
             } else if (!flow && growth) {
                 return py::cast(axis::regular_growth(n, start, stop, metadata));
             } else if (!flow && !growth) {
@@ -148,18 +148,15 @@ void register_axis(py::module &m) {
                 throw std::runtime_error("Cannot make axis with both flow and growth options");
             }
         },
-       "cls"_a, "n"_a, "start"_a, "stop"_a, "metadata"_a = py::str(), "flow"_a = false, "growth"_a = false,
+       "n"_a, "start"_a, "stop"_a, "metadata"_a = py::str(), "flow"_a = false, "growth"_a = false,
        "Make a regular axis with nice keyword arguments for flow and growth");
 
-    // Hack for the fact we can't set a __new__ direcly in pybind11.
-    py_regular_base.attr("__new__") = ax.attr("_make_regular");
 
-
-    register_axis_by_type<axis::regular>(ax, "regular", "Evenly spaced bins")
+    register_axis_by_type<axis::regular_uoflow>(ax, "regular_uoflow", "Evenly spaced bins")
     .def(py::init<unsigned, double, double, metadata_t>(), "n"_a, "start"_a, "stop"_a, "metadata"_a = py::str())
     ;
 
-    register_axis_iv_by_type<axis::regular>(ax, "_regular_internal_view");
+    register_axis_iv_by_type<axis::regular_uoflow>(ax, "_regular_internal_view");
 
 
     register_axis_by_type<axis::regular_noflow>(ax, "regular_noflow", "Evenly spaced bins without over/under flow")
