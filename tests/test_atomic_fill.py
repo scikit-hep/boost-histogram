@@ -37,9 +37,9 @@ def test_atomic_fill_1D():
 
 @pytest.mark.parametrize("threads", [1,2,4,7])
 def test_atomic_builtin(threads):
-    hist_atomic1 = bh.make_histogram(bh.axis.regular(1000,0,1),
+    hist_atomic1 = bh.make_histogram(bh.axis.regular_uoflow(1000,0,1),
                                      storage=bh.storage.atomic_int())
-    hist_atomic2 = bh.make_histogram(bh.axis.regular(1000,0,1),
+    hist_atomic2 = bh.make_histogram(bh.axis.regular_uoflow(1000,0,1),
                                      storage=bh.storage.atomic_int())
 
     vals = np.random.rand(10000)
@@ -52,8 +52,8 @@ def test_atomic_builtin(threads):
 
 @pytest.mark.parametrize("threads", [1,2,4,7])
 def test_threaded_builtin(threads):
-    hist_atomic1 = bh.make_histogram(bh.axis.regular(1000,0,1))
-    hist_atomic2 = bh.make_histogram(bh.axis.regular(1000,0,1))
+    hist_atomic1 = bh.make_histogram(bh.axis.regular_uoflow(1000,0,1))
+    hist_atomic2 = bh.make_histogram(bh.axis.regular_uoflow(1000,0,1))
 
     vals = np.random.rand(10000)
 
