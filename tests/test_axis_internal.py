@@ -6,11 +6,11 @@ import numpy as np
 from numpy.testing import assert_array_equal
 
 
-@pytest.mark.parametrize("axtype", [bh.axis.regular, bh.axis.regular_noflow])
+@pytest.mark.parametrize("axtype", [bh.axis.regular_uoflow, bh.axis.regular_noflow])
 @pytest.mark.parametrize("function", [lambda x: x,
                                        lambda x: bh.make_histogram(x).axis(0),
                                        ])
-def test_axis_regular(axtype, function):
+def test_axis_regular_uoflow(axtype, function):
     ax = function(axtype(10, 0, 1))
 
     assert 3 == ax.index(.34)
@@ -28,7 +28,7 @@ def test_axis_regular(axtype, function):
     assert ax.bin(3).center() == approx(.35)
 
 def test_axis_regular_extents():
-    ax = bh.axis.regular(10,0,1)
+    ax = bh.axis.regular_uoflow(10,0,1)
     assert 12 == ax.size(flow=True)
     assert 11 == len(ax.edges())
     assert 13 == len(ax.edges(True))
@@ -78,7 +78,7 @@ def test_axis_circular():
     assert ax.options() == bh.axis.options.circular | bh.axis.options.overflow
 
 normal_axs = [
-    bh.axis.regular,
+    bh.axis.regular_uoflow,
     bh.axis.regular_noflow,
     bh.axis.circular,
     bh.axis.regular_log,

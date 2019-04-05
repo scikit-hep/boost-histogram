@@ -25,7 +25,7 @@ def compare_1d(n, distrib):
         t = timer() - t
         best_numpy = min(t, best_numpy)
 
-        h = histogram(regular(100, 0, 1))
+        h = histogram(regular_uoflow(100, 0, 1))
         t = timer()
         h.fill(r)
         t = timer() - t
@@ -51,7 +51,7 @@ def compare_2d(n, distrib):
         t = timer() - t
         best_numpy = min(t, best_numpy)
 
-        h = histogram(regular(100, 0, 1), regular(100, 0, 1))
+        h = histogram(regular_uoflow(100, 0, 1), regular_uoflow(100, 0, 1))
         t = timer()
         h.fill(r[0], r[1])
         t = timer() - t
@@ -79,9 +79,9 @@ def compare_3d(n, distrib):
         t = timer() - t
         best_numpy = min(t, best_numpy)
 
-        h = histogram(regular(100, 0, 1),
-                      regular(100, 0, 1),
-                      regular(100, 0, 1))
+        h = histogram(regular_uoflow(100, 0, 1),
+                      regular_uoflow(100, 0, 1),
+                      regular_uoflow(100, 0, 1))
         t = timer()
         h.fill(r[0], r[1], r[2])
         t = timer() - t
@@ -113,12 +113,12 @@ def compare_6d(n, distrib):
         t = timer() - t
         best_numpy = min(t, best_numpy)
 
-        h = histogram(regular(10, 0, 1),
-                      regular(10, 0, 1),
-                      regular(10, 0, 1),
-                      regular(10, 0, 1),
-                      regular(10, 0, 1),
-                      regular(10, 0, 1))
+        h = histogram(regular_uoflow(10, 0, 1),
+                      regular_uoflow(10, 0, 1),
+                      regular_uoflow(10, 0, 1),
+                      regular_uoflow(10, 0, 1),
+                      regular_uoflow(10, 0, 1),
+                      regular_uoflow(10, 0, 1))
         t = timer()
         h.fill(r[0], r[1], r[2], r[3], r[4], r[5])
         t = timer() - t

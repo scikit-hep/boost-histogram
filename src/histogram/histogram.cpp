@@ -124,7 +124,7 @@ void register_histogram(py::module& m) {
          "regular_int_1d",
          "1-dimensional histogram for int valued data.");
 
-    m.def("make_histogram", [](axis::regular& ax1, storage::int_){
+    m.def("make_histogram", [](axis::regular_uoflow& ax1, storage::int_){
         return bh::make_histogram_with(storage::int_(), ax1);
     }, "axis"_a, "storage"_a=storage::int_(), "Make a 1D histogram of integers");
 
@@ -133,7 +133,7 @@ void register_histogram(py::module& m) {
         "regular_atomic_int_1d",
         "1-dimensional histogram for int valued data (atomic).");
     
-    m.def("make_histogram", [](axis::regular& ax1, storage::atomic_int){
+    m.def("make_histogram", [](axis::regular_uoflow& ax1, storage::atomic_int){
         return bh::make_histogram_with(storage::atomic_int(), ax1);
     }, "axis"_a, "storage"_a=storage::atomic_int(), "Make a 1D histogram of atomic integers");
     
@@ -141,7 +141,7 @@ void register_histogram(py::module& m) {
         "regular_int_2d",
         "2-dimensional histogram for int valued data.");
 
-    m.def("make_histogram", [](axis::regular& ax1, axis::regular& ax2, storage::int_){
+    m.def("make_histogram", [](axis::regular_uoflow& ax1, axis::regular_uoflow& ax2, storage::int_){
         return bh::make_histogram_with(storage::int_(), ax1, ax2);
     }, "axis1"_a, "axis2"_a, "storage"_a=storage::int_(), "Make a 2D histogram of integers");
 

@@ -1,10 +1,10 @@
 import pytest
 from pytest import approx
 
-from boost.histogram.axis import (regular, regular_noflow,
+from boost.histogram.axis import (regular_uoflow, regular_noflow,
                                   regular_log, regular_sqrt,
                                   regular_pow, circular,
-                                  variable, integer,
+                                  variable, integer_uoflow,
                                   integer_noflow, integer_growth,
                                   category_int as category)
 
@@ -17,6 +17,7 @@ import abc
 ABC = abc.ABCMeta('ABC', (object,), {'__slots__': ()})
 
 # histogram -> boost.histogram
+# regular(..., noflow=False) -> regular_ouflow(...)
 # regular(..., noflow=True) -> regular_noflow(...)
 # label -> metadata
 # len(ax) -> ax.size(flow=False)
@@ -57,8 +58,8 @@ class TestRegular(Axis):
 
     def test_init(self):
         # Should not throw
-        regular(1, 1.0, 2.0)
-        regular(1, 1.0, 2.0, metadata="ra")
+        regular_uoflow(1, 1.0, 2.0)
+        regular_uoflow(1, 1.0, 2.0, metadata="ra")
         regular_noflow(1, 1.0, 2.0)
         regular_noflow(1, 1.0, 2.0, metadata="ra")
         regular_log(1, 1.0, 2.0)
@@ -66,46 +67,46 @@ class TestRegular(Axis):
         regular_pow(1, 1.0, 2.0, 1.5)
 
         with pytest.raises(TypeError):
-            regular()
+            regular_uoflow()
         with pytest.raises(TypeError):
-            regular()
+            regular_uoflow()
         with pytest.raises(TypeError):
-            regular(1)
+            regular_uoflow(1)
         with pytest.raises(TypeError):
-            regular(1, 1.0)
+            regular_uoflow(1, 1.0)
         with pytest.raises(ValueError):
-            regular(0, 1.0, 2.0)
+            regular_uoflow(0, 1.0, 2.0)
         with pytest.raises(TypeError):
-            regular("1", 1.0, 2.0)
+            regular_uoflow("1", 1.0, 2.0)
         with pytest.raises(Exception):
-            regular(-1, 1.0, 2.0)
+            regular_uoflow(-1, 1.0, 2.0)
         # CLASSIC
         #with pytest.raises(ValueError):
-        regular(1, 2.0, 1.0)
+        regular_uoflow(1, 2.0, 1.0)
 
         with pytest.raises(ValueError):
-            regular(1, 1.0, 1.0)
+            regular_uoflow(1, 1.0, 1.0)
 
         # CLASSIC: this was not allowed. Now it is.
         # with pytest.raises(TypeError):
-        regular(1, 1.0, 2.0, metadata=0)
+        regular_uoflow(1, 1.0, 2.0, metadata=0)
 
 
 
         with pytest.raises(TypeError):
-            regular(1, 1.0, 2.0, bad_keyword="ra")
+            regular_uoflow(1, 1.0, 2.0, bad_keyword="ra")
         with pytest.raises(TypeError):
             regular_pow(1, 1.0, 2.0)
 
-        a = regular(4, 1.0, 2.0)
-        assert a == regular(4, 1.0, 2.0)
-        assert a != regular(3, 1.0, 2.0)
-        assert a != regular(4, 1.1, 2.0)
-        assert a != regular(4, 1.0, 2.1)
+        a = regular_uoflow(4, 1.0, 2.0)
+        assert a == regular_uoflow(4, 1.0, 2.0)
+        assert a != regular_uoflow(3, 1.0, 2.0)
+        assert a != regular_uoflow(4, 1.1, 2.0)
+        assert a != regular_uoflow(4, 1.0, 2.1)
 
 
     def test_len(self):
-        a = regular(4, 1.0, 2.0)
+        a = regular_uoflow(4, 1.0, 2.0)
         # CLASSIC: Not explicit
         # assert len(a) == 4
 
@@ -113,10 +114,10 @@ class TestRegular(Axis):
         assert a.size(flow=True) == 6
 
     def test_repr(self):
-        ax = regular(4, 1.1, 2.2)
+        ax = regular_uoflow(4, 1.1, 2.2)
         assert repr(ax) == "regular(4, 1.1, 2.2, options=underflow | overflow)"
 
-        ax = regular(4, 1.1, 2.2, metadata='ra')
+        ax = regular_uoflow(4, 1.1, 2.2, metadata='ra')
         assert repr(ax) == 'regular(4, 1.1, 2.2, metadata="ra", options=underflow | overflow)'
 
         ax = regular_noflow(4, 1.1, 2.2)
@@ -137,7 +138,7 @@ class TestRegular(Axis):
 
     def test_getitem(self):
         v = [1.0, 1.25, 1.5, 1.75, 2.0]
-        a = regular(4, 1.0, 2.0)
+        a = regular_uoflow(4, 1.0, 2.0)
         for i in range(4):
             a.bin(i).lower() == approx(v[i])
             a.bin(i).upper() == approx(v[i+1])
@@ -157,14 +158,14 @@ class TestRegular(Axis):
 
     def test_iter(self):
         v = np.array([1.0, 1.25, 1.5, 1.75, 2.0])
-        a = regular(4, 1.0, 2.0)
+        a = regular_uoflow(4, 1.0, 2.0)
         assert np.all(a.edges() == v)
 
         c = (v[:-1] + v[1:])/2
         assert np.all(a.centers() == approx(c))
 
     def test_index(self):
-        a = regular(4, 1.0, 2.0)
+        a = regular_uoflow(4, 1.0, 2.0)
 
         assert a.index(-1) == -1
         assert a.index(0.99) == -1
@@ -180,7 +181,7 @@ class TestRegular(Axis):
         assert a.index(20) == 4
 
     def test_reversed_index(self):
-        a = regular(4, 2.0, 1.0)
+        a = regular_uoflow(4, 2.0, 1.0)
 
         assert a.index(-1) == 4
         assert a.index(0.99) == 4
@@ -417,38 +418,38 @@ class TestVariable(Axis):
 class TestInteger:
 
     def test_init(self):
-        integer(-1, 2)
+        integer_uoflow(-1, 2)
         integer_noflow(-1, 2)
         integer_growth(-1, 2)
         with pytest.raises(TypeError):
-            integer()
+            integer_uoflow()
         with pytest.raises(TypeError):
-            integer(1)
+            integer_uoflow(1)
         with pytest.raises(TypeError):
-            integer("1", 2)
+            integer_uoflow("1", 2)
         with pytest.raises(ValueError):
-            integer(2, -1)
+            integer_uoflow(2, -1)
 
         # CLASSIC: Used to fail
-        integer(1, 2, 3)
+        integer_uoflow(1, 2, 3)
 
-        assert integer(-1, 2) == integer(-1, 2)
-        assert integer(-1, 2) != integer(-1, 2, metadata="Other")
-        assert integer_noflow(-1, 2) != integer(-1, 2)
+        assert integer_uoflow(-1, 2) == integer_uoflow(-1, 2)
+        assert integer_uoflow(-1, 2) != integer_uoflow(-1, 2, metadata="Other")
+        assert integer_noflow(-1, 2) != integer_uoflow(-1, 2)
 
     def test_len(self):
-        assert integer(-1, 3).size() ==  4
-        assert integer(-1, 3).size(flow=True) ==  6
+        assert integer_uoflow(-1, 3).size() ==  4
+        assert integer_uoflow(-1, 3).size(flow=True) ==  6
         assert integer_noflow(-1, 3).size() ==  4
         assert integer_noflow(-1, 3).size(flow=True) ==  4
         assert integer_growth(-1, 3).size() ==  4
         assert integer_growth(-1, 3).size(flow=True) ==  4
 
     def test_repr(self):
-        a = integer(-1, 1)
+        a = integer_uoflow(-1, 1)
         assert repr(a) == 'integer(-1, 1, options=underflow | overflow)'
 
-        a = integer(-1, 1, metadata="hi")
+        a = integer_uoflow(-1, 1, metadata="hi")
         assert repr(a) == 'integer(-1, 1, metadata="hi", options=underflow | overflow)'
 
         a = integer_noflow(-1, 1)
@@ -458,14 +459,14 @@ class TestInteger:
         assert repr(a) == 'integer(-1, 1, options=growth)'
 
     def test_label(self):
-        a = integer(-1, 2, metadata="foo")
+        a = integer_uoflow(-1, 2, metadata="foo")
         assert a.metadata == "foo"
         a.metadata = "bar"
         assert a.metadata == "bar"
 
     def test_getitem(self):
         v = [-1, 0, 1, 2, 3]
-        a = integer(-1, 3)
+        a = integer_uoflow(-1, 3)
         for i in range(5):
             assert a.bin(i) == v[i]
         assert a.bin(-1) == -2 ** 31
@@ -473,11 +474,11 @@ class TestInteger:
 
     def test_iter(self):
         v = np.array([-1, 0, 1, 2])
-        a = integer(-1, 3)
+        a = integer_uoflow(-1, 3)
         assert (a.bins() == v).all()
 
     def test_index(self):
-        a = integer(-1, 3)
+        a = integer_uoflow(-1, 3)
         assert a.index(-3) == -1
         assert a.index(-2) == -1
         assert a.index(-1) == 0

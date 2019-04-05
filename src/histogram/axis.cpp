@@ -7,6 +7,7 @@
 
 #include <pybind11/numpy.h>
 #include <pybind11/operators.h>
+#include <pybind11/eval.h>
 
 #include <boost/histogram/python/axis.hpp>
 
@@ -24,7 +25,8 @@
 
 using namespace std::literals;
 
-
+// Base classes to allow type checking in Python
+struct regular_base {};
 
 /// Add items to an axis where the axis values are continious
 template<typename A, typename B>
@@ -60,9 +62,9 @@ void add_to_axis(B&& axis, std::true_type) {
 }
 
 /// Add helpers common to all axis types
-template<typename A, typename R=int>
-py::class_<A> register_axis_by_type(py::module& m, const char* name, const char* desc) {
-    py::class_<A> axis(m, name, desc);
+template<typename A, typename... Args>
+py::class_<A> register_axis_by_type(py::module& m, Args&&... args) {
+    py::class_<A> axis(m, std::forward<Args>(args)...);
 
     // using value_type = decltype(A::value(1.0));
 
@@ -98,7 +100,7 @@ py::class_<A> register_axis_by_type(py::module& m, const char* name, const char*
 }
 
 /// Add helpers common to all types with a range of values
-template<typename A, typename R=int>
+template<typename A>
 py::class_<bh::axis::interval_view<A>> register_axis_iv_by_type(py::module& m, const char* name) {
     using A_iv = bh::axis::interval_view<A>;
     py::class_<A_iv> axis_iv = py::class_<A_iv>(m, name, "Lightweight bin view");
@@ -118,6 +120,8 @@ py::class_<bh::axis::interval_view<A>> register_axis_iv_by_type(py::module& m, c
     return axis_iv;
 }
 
+struct regular_type {};
+
 
 void register_axis(py::module &m) {
 
@@ -131,11 +135,28 @@ void register_axis(py::module &m) {
     opt.attr("circular") =  (unsigned) bh::axis::option::circular;
     opt.attr("growth") =    (unsigned) bh::axis::option::growth;
     
-    
-    register_axis_by_type<axis::regular>(ax, "regular", "Evenly spaced bins")
+
+    ax.def("make_regular",
+        [](unsigned n, double start, double stop, metadata_t metadata, bool flow, bool growth) -> py::object {
+            if(flow && ! growth) {
+                return py::cast(axis::regular_uoflow(n, start, stop, metadata));
+            } else if (!flow && growth) {
+                return py::cast(axis::regular_growth(n, start, stop, metadata));
+            } else if (!flow && !growth) {
+                return py::cast(axis::regular_noflow(n, start, stop, metadata));
+            } else {
+                throw std::runtime_error("Cannot make axis with both flow and growth options");
+            }
+        },
+       "n"_a, "start"_a, "stop"_a, "metadata"_a = py::str(), "flow"_a = false, "growth"_a = false,
+       "Make a regular axis with nice keyword arguments for flow and growth");
+
+
+    register_axis_by_type<axis::regular_uoflow>(ax, "regular_uoflow", "Evenly spaced bins")
     .def(py::init<unsigned, double, double, metadata_t>(), "n"_a, "start"_a, "stop"_a, "metadata"_a = py::str())
     ;
-    register_axis_iv_by_type<axis::regular>(ax, "_regular_internal_view");
+
+    register_axis_iv_by_type<axis::regular_uoflow>(ax, "_regular_internal_view");
 
 
     register_axis_by_type<axis::regular_noflow>(ax, "regular_noflow", "Evenly spaced bins without over/under flow")
@@ -185,38 +206,38 @@ void register_axis(py::module &m) {
     register_axis_iv_by_type<axis::variable>(ax, "_variable_internal_view");
 
 
-    register_axis_by_type<axis::integer>(ax, "integer", "Contigious integers")
+    register_axis_by_type<axis::integer_uoflow>(ax, "integer_uoflow", "Contigious integers")
     .def(py::init<int, int, metadata_t>(), "min"_a, "max"_a, "metadata"_a = py::str())
     ;
-    register_axis_iv_by_type<axis::integer>(ax, "_integer_internal_view");
+    register_axis_iv_by_type<axis::integer_uoflow>(ax, "_integer_internal_view");
 
     register_axis_by_type<axis::integer_noflow>(ax, "integer_noflow", "Contigious integers with no under/overflow")
     .def(py::init<int, int, metadata_t>(), "min"_a, "max"_a, "metadata"_a = py::str())
     ;
     register_axis_iv_by_type<axis::integer_noflow>(ax, "_integer_noflow_internal_view");
-    
+
     register_axis_by_type<axis::integer_growth>(ax, "integer_growth", "Contigious integers with growth")
     .def(py::init<int, int, metadata_t>(), "min"_a, "max"_a, "metadata"_a = py::str())
     ;
     register_axis_iv_by_type<axis::integer_growth>(ax, "_integer_integer_growth_internal_view");
 
-    register_axis_by_type<axis::category_int, int>(ax, "category_int", "Text label bins")
+    register_axis_by_type<axis::category_int>(ax, "category_int", "Text label bins")
     .def(py::init<std::vector<int>, metadata_t>(), "labels"_a, "metadata"_a = py::str())
     ;
 
 
-    register_axis_by_type<axis::category_int_growth, std::string>(ax, "category_int_growth", "Text label bins")
+    register_axis_by_type<axis::category_int_growth>(ax, "category_int_growth", "Text label bins")
     .def(py::init<std::vector<int>, metadata_t>(), "labels"_a, "metadata"_a = py::str())
     .def(py::init<>())
     ;
 
 
-    register_axis_by_type<axis::category_str, std::string>(ax, "category_str", "Text label bins")
+    register_axis_by_type<axis::category_str>(ax, "category_str", "Text label bins")
     .def(py::init<std::vector<std::string>, metadata_t>(), "labels"_a, "metadata"_a = py::str())
     ;
 
 
-    register_axis_by_type<axis::category_str_growth, std::string>(ax, "category_str_growth", "Text label bins")
+    register_axis_by_type<axis::category_str_growth>(ax, "category_str_growth", "Text label bins")
     .def(py::init<std::vector<std::string>, metadata_t>(), "labels"_a, "metadata"_a = py::str())
     // Add way to allow empty list of strings
     .def(py::init<>())
