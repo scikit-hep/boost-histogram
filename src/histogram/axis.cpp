@@ -132,10 +132,10 @@ void register_axis(py::module &m) {
     opt.attr("overflow") =  (unsigned) bh::axis::option::overflow;
     opt.attr("circular") =  (unsigned) bh::axis::option::circular;
     opt.attr("growth") =    (unsigned) bh::axis::option::growth;
-    
+
     py::class_<regular_base> py_regular_base(ax, "regular_base", "Regular base for others");
-    
-    
+
+
     ax.def("_make_regular",
         [](py::object, unsigned n, double start, double stop, metadata_t metadata, bool flow, bool growth) -> py::object {
             if(flow && ! growth) {
@@ -150,29 +150,31 @@ void register_axis(py::module &m) {
         },
        "cls"_a, "n"_a, "start"_a, "stop"_a, "metadata"_a = py::str(), "flow"_a = false, "growth"_a = false,
        "Make a regular axis with nice keyword arguments for flow and growth");
-    
+
     // Hack for the fact we can't set a __new__ direcly in pybind11.
     py_regular_base.attr("__new__") = ax.attr("_make_regular");
-    
-    register_axis_by_type<axis::regular>(ax, "regular", "Evenly spaced bins", py_regular_base)
+
+
+    register_axis_by_type<axis::regular>(ax, "regular", "Evenly spaced bins")
     .def(py::init<unsigned, double, double, metadata_t>(), "n"_a, "start"_a, "stop"_a, "metadata"_a = py::str())
     ;
+
     register_axis_iv_by_type<axis::regular>(ax, "_regular_internal_view");
 
 
-    register_axis_by_type<axis::regular_noflow>(ax, "regular_noflow", "Evenly spaced bins without over/under flow", py_regular_base)
+    register_axis_by_type<axis::regular_noflow>(ax, "regular_noflow", "Evenly spaced bins without over/under flow")
     .def(py::init<unsigned, double, double, metadata_t>(), "n"_a, "start"_a, "stop"_a, "metadata"_a = py::str())
     ;
     register_axis_iv_by_type<axis::regular_noflow>(ax, "_regular_noflow_internal_view");
 
 
-    register_axis_by_type<axis::regular_growth>(ax, "regular_growth", "Evenly spaced bins that grow as needed", py_regular_base)
+    register_axis_by_type<axis::regular_growth>(ax, "regular_growth", "Evenly spaced bins that grow as needed")
     .def(py::init<unsigned, double, double, metadata_t>(), "n"_a, "start"_a, "stop"_a, "metadata"_a = py::str())
     ;
     register_axis_iv_by_type<axis::regular_growth>(ax, "_regular_growth_internal_view");
 
 
-    register_axis_by_type<axis::circular>(ax, "circular", "Evenly spaced bins with wraparound", py_regular_base)
+    register_axis_by_type<axis::circular>(ax, "circular", "Evenly spaced bins with wraparound")
     .def(py::init<unsigned, double, double, metadata_t>(), "n"_a, "start"_a, "stop"_a, "metadata"_a = py::str())
     .def(py::init([](unsigned n, double stop, metadata_t metadata){
         return new axis::circular{n, 0.0, stop, metadata};
@@ -181,19 +183,19 @@ void register_axis(py::module &m) {
     register_axis_iv_by_type<axis::circular>(ax, "_circular_internal_view");
 
 
-    register_axis_by_type<axis::regular_log>(ax, "regular_log", "Evenly spaced bins in log10", py_regular_base)
+    register_axis_by_type<axis::regular_log>(ax, "regular_log", "Evenly spaced bins in log10")
     .def(py::init<unsigned, double, double, metadata_t>(), "n"_a, "start"_a, "stop"_a, "metadata"_a = py::str())
     ;
     register_axis_iv_by_type<axis::regular_log>(ax, "_regular_log_internal_view");
 
 
-    register_axis_by_type<axis::regular_sqrt>(ax, "regular_sqrt", "Evenly spaced bins in sqrt", py_regular_base)
+    register_axis_by_type<axis::regular_sqrt>(ax, "regular_sqrt", "Evenly spaced bins in sqrt")
     .def(py::init<unsigned, double, double, metadata_t>(), "n"_a, "start"_a, "stop"_a, "metadata"_a = py::str())
     ;
     register_axis_iv_by_type<axis::regular_sqrt>(ax, "_regular_sqrt_internal_view");
 
 
-    register_axis_by_type<axis::regular_pow>(ax, "regular_pow", "Evenly spaced bins in a power", py_regular_base)
+    register_axis_by_type<axis::regular_pow>(ax, "regular_pow", "Evenly spaced bins in a power")
     .def(py::init([](unsigned n, double start, double stop, double pow, metadata_t metadata){
         return new axis::regular_pow(bh::axis::transform::pow{pow}, n, start, stop, metadata);} ),
          "n"_a, "start"_a, "stop"_a, "power"_a, "metadata"_a = py::str())
@@ -216,7 +218,7 @@ void register_axis(py::module &m) {
     .def(py::init<int, int, metadata_t>(), "min"_a, "max"_a, "metadata"_a = py::str())
     ;
     register_axis_iv_by_type<axis::integer_noflow>(ax, "_integer_noflow_internal_view");
-    
+
     register_axis_by_type<axis::integer_growth>(ax, "integer_growth", "Contigious integers with growth")
     .def(py::init<int, int, metadata_t>(), "min"_a, "max"_a, "metadata"_a = py::str())
     ;
