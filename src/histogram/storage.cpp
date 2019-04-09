@@ -59,27 +59,18 @@ void register_storage(py::module &m) {
 storage::any_variant extract_storage(py::kwargs kwargs) {
 
     if(kwargs.contains("storage")) {
-        try {
+        if(py::isinstance<storage::int_>(kwargs["storage"]))
             return py::cast<storage::int_>(kwargs["storage"]);
-        } catch(const py::cast_error&) {}
-
-        try {
+        else if(py::isinstance<storage::double_>(kwargs["storage"]))
             return py::cast<storage::double_>(kwargs["storage"]);
-        } catch(const py::cast_error&) {}
-
-        try {
+        else if(py::isinstance<storage::unlimited>(kwargs["storage"]))
             return py::cast<storage::unlimited>(kwargs["storage"]);
-        } catch(const py::cast_error&) {}
-
-        try {
+        else if(py::isinstance<storage::weight>(kwargs["storage"]))
             return py::cast<storage::weight>(kwargs["storage"]);
-        } catch(const py::cast_error&) {}
-
-        try {
+        else if(py::isinstance<storage::atomic_int>(kwargs["storage"]))
             return py::cast<storage::atomic_int>(kwargs["storage"]);
-        } catch(const py::cast_error&) {}
-
-        throw std::runtime_error("Storage type not supported");
+        else
+            throw std::runtime_error("Storage type not supported");
 
     } else {
         // Default storage if not is specified

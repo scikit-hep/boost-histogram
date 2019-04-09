@@ -11,6 +11,8 @@
 
 #include <boost/histogram.hpp>
 
+#include <boost/variant.hpp>
+
 #include <cstdint>
 
 
@@ -26,7 +28,7 @@ using profile = bh::profile_storage;
 using weighted_profile = bh::weighted_profile_storage;
     
 // Some types not yet suppored (mostly due to fill not accepting weight and sample yet)
-using any_variant = bh::axis::variant<
+using any_variant = boost::variant<
     atomic_int,
     int_,
     double_,
