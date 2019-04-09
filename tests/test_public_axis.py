@@ -1,7 +1,8 @@
 import pytest
 from pytest import approx
 
-from boost.histogram.axis import (regular_uoflow, regular_noflow,
+from boost.histogram.axis import (regular, regular_growth,
+                                  regular_uoflow, regular_noflow,
                                   regular_log, regular_sqrt,
                                   regular_pow, circular,
                                   variable, integer_uoflow,
@@ -55,6 +56,16 @@ class Axis(ABC):
 
 
 class TestRegular(Axis):
+
+    def test_shortcut(self):
+        assert isinstance(regular(1,2,3), regular_uoflow)
+        assert isinstance(regular(1,2,3), regular)
+
+        assert isinstance(regular(1,2,3, flow=False), regular_noflow)
+        assert isinstance(regular(1,2,3, flow=False), regular)
+
+        assert isinstance(regular(1,2,3, growth=True), regular_growth)
+        assert isinstance(regular(1,2,3, growth=True), regular)
 
     def test_init(self):
         # Should not throw

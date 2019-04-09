@@ -2,13 +2,14 @@ import pytest
 from pytest import approx
 
 
-from boost.histogram import make_histogram as histogram
+from boost.histogram import histogram
 from boost.histogram.axis import (regular_uoflow, regular_noflow,
                                   regular_log, regular_sqrt,
                                   regular_pow, circular,
                                   variable, integer_uoflow,
                                   integer_noflow, integer_growth,
                                   category_int as category)
+import boost.histogram as bh
 
 import numpy as np
 from numpy.testing import assert_array_equal
@@ -63,6 +64,9 @@ def test_copy():
 def test_fill_int_1d():
 
     h = histogram(integer_uoflow(-1, 2))
+    assert isinstance(h, bh.hist.any_int)
+    assert isinstance(h, histogram)
+
     with pytest.raises(ValueError):
         h()
     with pytest.raises(ValueError):
@@ -176,6 +180,8 @@ def test_fill_2d(flow):
 def test_add_2d(flow):
     h = histogram((integer_uoflow if flow else integer_noflow)(-1, 2),
                   (regular_uoflow if flow else regular_noflow)(4, -2, 2))
+    assert isinstance(h, histogram)
+
     h(-1, -2)
     h(-1, -1)
     h(0, 0)
@@ -360,6 +366,8 @@ def test_pickle_1():
                   integer_uoflow(0, 3, metadata='ia'),
                   regular_noflow(4, 0.0, 4.0),
                   variable([0.0, 1.0, 2.0]))
+    assert isinstance(h, bh.hist.any_int)
+    assert isinstance(h, histogram)
 
     for i in range(a.axis(0).size(flow=True)):
         a(i, 0, 0, 0, weight=3)
