@@ -68,3 +68,32 @@ def test_issue_axis_bin_swan():
     assert hist.axis(0).bin(0).lower() == 0
     assert hist.axis(0).bin(1).lower() == approx(.1)
     assert hist.axis(0).bin(2).lower() == approx(.4)
+
+
+options = (
+        (bh.hist.regular_unlimited, bh.axis.regular_uoflow(5,1,2), bh.storage.unlimited),
+        (bh.hist.regular_int, bh.axis.regular_uoflow(5,1,2), bh.storage.int),
+        (bh.hist.regular_atomic_int, bh.axis.regular_uoflow(5,1,2), bh.storage.atomic_int),
+        (bh.hist.regular_noflow_int, bh.axis.regular_noflow(5,1,2), bh.storage.int),
+        (bh.hist.any_double, bh.axis.regular_uoflow(5,1,2), bh.storage.double),
+        (bh.hist.any_weight, bh.axis.regular_uoflow(5,1,2), bh.storage.weight),
+        (bh.hist.any_int, bh.axis.integer_uoflow(0,5), bh.storage.int),
+        (bh.hist.any_atomic_int, bh.axis.integer_uoflow(0,5), bh.storage.atomic_int),
+        (bh.hist.any_double, bh.axis.integer_uoflow(0,5), bh.storage.double),
+        (bh.hist.any_unlimited, bh.axis.integer_uoflow(0,5), bh.storage.unlimited),
+        (bh.hist.any_weight, bh.axis.integer_uoflow(0,5), bh.storage.weight),
+        )
+
+@pytest.mark.parametrize("histclass, ax, storage", options)
+def test_make_selection(histclass, ax, storage):
+    histogram = bh.make_histogram(ax, storage=storage())
+    assert isinstance(histogram, histclass)
+
+    histogram = bh.make_histogram(ax, ax, storage=storage())
+    assert isinstance(histogram, histclass)
+
+
+def test_make_selection_special():
+    histogram = bh.make_histogram(bh.axis.regular_uoflow(5,1,2), bh.axis.regular_noflow(10,1,2))
+    assert isinstance(histogram, bh.hist.any_int)
+
