@@ -16,8 +16,9 @@
 #include <tuple>
 #include <cmath>
 
+
 template <class Histogram>
-struct fill_helper {
+struct [[gnu::visibility("hidden")]] fill_helper {
     fill_helper(Histogram& h, py::args args) : hist(h) {
         size_t dim = args.size();
         if (dim == 0)
@@ -86,3 +87,4 @@ struct fill_helper {
     std::vector<std::pair<py::array_t<double>, const double*>> arrs;
     ssize_t size;
 };
+

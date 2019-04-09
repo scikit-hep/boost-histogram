@@ -10,11 +10,14 @@
 #include <boost/histogram/python/storage.hpp>
 #include <boost/histogram/python/histogram.hpp>
 #include <boost/histogram/python/histogram_fill.hpp>
+#include <boost/histogram/python/histogram_atomic.hpp>
+#include <boost/histogram/python/histogram_threaded.hpp>
 
 #include <boost/histogram.hpp>
 #include <boost/histogram/axis/ostream.hpp>
 #include <boost/histogram/algorithm/sum.hpp>
 #include <boost/histogram/ostream.hpp>
+#include <boost/histogram/algorithm/project.hpp>
 
 #include <boost/mp11.hpp>
 
@@ -95,6 +98,12 @@ py::class_<bh::histogram<A, S>> register_histogram_by_type(py::module& m, const 
       [](histogram_t &self, py::args args) {
         boost::mp11::mp_with_index<BOOST_HISTOGRAM_DETAIL_AXES_LIMIT>(args.size(), fill_helper<histogram_t>(self, args));
       }, "Insert data into histogram")
+    
+    // generic threaded fill for 1 to N args
+    .def("threaded_fill",
+         [](histogram_t &self, unsigned threads, py::args args) {
+             boost::mp11::mp_with_index<BOOST_HISTOGRAM_DETAIL_AXES_LIMIT>(args.size(), fill_helper_threaded<histogram_t>(self, args, threads));
+         }, "threads"_a, "Insert data into histogram in threads (0 for machine cores)")
 
     .def("at", [](histogram_t &self, py::args &args) {
         // Optimize for no dynamic?
@@ -108,13 +117,50 @@ py::class_<bh::histogram<A, S>> register_histogram_by_type(py::module& m, const 
     .def("sum", [](const histogram_t &self) {
         return bh::algorithm::sum(self);
     })
-
+    
+    /* Broken: Does not work if any string axes present (even just in variant)
+    .def("rebin", [](const histogram_t &self, unsigned axis, unsigned merge){
+        return bh::algorithm::reduce(self, bh::algorithm::rebin(axis, merge));
+    }, "axis"_a, "merge"_a, "Rebin by merging bins. You must select an axis.")
+    
+    .def("shrink", [](const histogram_t &self, unsigned axis, double lower, double upper){
+        return bh::algorithm::reduce(self, bh::algorithm::shrink(axis, lower, upper));
+    }, "axis"_a, "lower"_a, "upper"_a, "Shrink an axis. You must select an axis.")
+    
+    .def("shrink_and_rebin", [](const histogram_t &self, unsigned axis, double lower, double upper, unsigned merge){
+        return bh::algorithm::reduce(self, bh::algorithm::shrink_and_rebin(axis, lower, upper, merge));
+    }, "axis"_a, "lower"_a, "upper"_a, "merge"_a, "Shrink an axis and rebin. You must select an axis.")
+    */
+    
+    /* Broken: Requires non static axes
+    .def("project", [](const histogram_t &self, unsigned value){
+        std::vector<unsigned> values = {value};
+        return bh::algorithm::project(self, values);
+    }, "value"_a, "Project out an axes from the histogram")
+    
+    .def("project", [](const histogram_t &self, const std::vector<unsigned> &values){
+        return bh::algorithm::project(self, values);
+    }, "values"_a, "Project out a list of axes from the histogram")
+    */
+    
     ;
 
     return hist;
 }
 
+template<typename A, typename S>
+void add_atomic_fill(py::class_<bh::histogram<A, S>>& hist) {
+    using histogram_t = bh::histogram<A, S>;
+    hist.def("atomic_fill", [](histogram_t &self, size_t threads, py::args args) {
+        boost::mp11::mp_with_index<BOOST_HISTOGRAM_DETAIL_AXES_LIMIT>(args.size(), fill_helper_atomic<histogram_t>(self, args, threads));
+    }, "threads"_a, "Insert data into histogram, in some number of threads (0 for default)")
+    ;
+}
+
 void register_histogram(py::module& m) {
+    
+    m.attr("BOOST_HISTOGRAM_DETAIL_AXES_LIMIT") = BOOST_HISTOGRAM_DETAIL_AXES_LIMIT;
+    
     py::module hist = m.def_submodule("hist");
 
     // Fast specializations: Fixed number of axis (may be removed if above versions are fast enough)
@@ -129,9 +175,10 @@ void register_histogram(py::module& m) {
     }, "axis"_a, "storage"_a=storage::int_(), "Make a 1D histogram of integers");
 
 
-    register_histogram_by_type<axes::regular_1D, storage::atomic_int>(hist,
+    auto regular_atomic_int_1d = register_histogram_by_type<axes::regular_1D, storage::atomic_int>(hist,
         "regular_atomic_int_1d",
         "1-dimensional histogram for int valued data (atomic).");
+    add_atomic_fill(regular_atomic_int_1d);
     
     m.def("make_histogram", [](axis::regular_uoflow& ax1, storage::atomic_int){
         return bh::make_histogram_with(storage::atomic_int(), ax1);
@@ -147,7 +194,7 @@ void register_histogram(py::module& m) {
 
 
     register_histogram_by_type<axes::regular_noflow_1D, storage::int_>(hist,
-        "regular_int_noflow_1d",
+        "regular_noflow_int_1d",
         "1-dimensional histogram for int valued data.");
 
     m.def("make_histogram", [](axis::regular_noflow& ax1, storage::int_){
@@ -156,7 +203,7 @@ void register_histogram(py::module& m) {
 
 
     register_histogram_by_type<axes::regular_noflow_2D, storage::int_>(hist,
-        "regular_int_noflow_2d",
+        "regular_noflow_int_2d",
         "2-dimensional histogram for int valued data.");
 
     m.def("make_histogram", [](axis::regular_noflow& ax1, axis::regular_noflow& ax2, storage::int_){
@@ -173,9 +220,14 @@ void register_histogram(py::module& m) {
     register_histogram_by_type<axes::regular, storage::int_>(hist,
         "regular_int",
         "N-dimensional histogram for int-valued data.");
+    
+    auto regular_atomic_int = register_histogram_by_type<axes::regular, storage::atomic_int>(hist,
+        "regular_atomic_int",
+        "N-dimensional histogram for atomic int-valued data.");
+    add_atomic_fill(regular_atomic_int);
 
     register_histogram_by_type<axes::regular_noflow, storage::int_>(hist,
-        "regular_int_noflow",
+        "regular_noflow_int",
         "N-dimensional histogram for int-valued data.");
 
     // Completely general histograms
@@ -184,9 +236,10 @@ void register_histogram(py::module& m) {
         "any_int",
         "N-dimensional histogram for int-valued data with any axis types.");
     
-    register_histogram_by_type<axes::any, storage::atomic_int>(hist,
+    auto any_atomic_int = register_histogram_by_type<axes::any, storage::atomic_int>(hist,
         "any_atomic_int",
         "N-dimensional histogram for int-valued data with any axis types (threadsafe).");
+    add_atomic_fill(any_atomic_int);
 
     register_histogram_by_type<axes::any, storage::double_>(hist,
         "any_double",
