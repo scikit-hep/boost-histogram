@@ -73,7 +73,7 @@ base = print_timer(setup_1d,
 
 
 print_timer(setup_1d,
-    'hist = bh.hist.any_int([bh.axis.regular(bins, *ranges)]); hist(vals)',
+    'hist = bh.hist.any_int([bh.axis.regular_uoflow(bins, *ranges)]); hist(vals)',
     name='Any', storage='int', fill='', flow='yes', base=base)
 
 print_timer(setup_1d,
@@ -82,7 +82,7 @@ print_timer(setup_1d,
 
 
 print_timer(setup_1d,
-    'hist = bh.hist.regular_int([bh.axis.regular(bins, *ranges)]); hist(vals)',
+    'hist = bh.hist.regular_int([bh.axis.regular_uoflow(bins, *ranges)]); hist(vals)',
     name='Regular', storage='int', fill='', flow='yes', base=base)
 
 print_timer(setup_1d,
@@ -91,25 +91,17 @@ print_timer(setup_1d,
 
 
 print_timer(setup_1d,
-    'hist = bh.hist.regular_int_1d([bh.axis.regular(bins, *ranges)]); hist(vals)',
-    name='Regular', storage='int 1D', fill='', flow='yes', base=base)
-
-print_timer(setup_1d,
-    'hist = bh.hist.regular_noflow_int_1d([bh.axis.regular_noflow(bins, *ranges)]); hist(vals)',
-    name='Regular', storage='int 1D', fill='', flow='no', base=base)
-
-print_timer(setup_1d,
-    'hist = bh.hist.regular_atomic_int([bh.axis.regular(bins, *ranges)]); hist(vals)',
+    'hist = bh.hist.regular_atomic_int([bh.axis.regular_uoflow(bins, *ranges)]); hist(vals)',
     name='Regular', storage='aint', fill='', flow='yes', base=base)
 
 for fill in counts:
     print_timer(setup_1d,
-        'hist = bh.hist.regular_atomic_int([bh.axis.regular(bins, *ranges)]); hist.atomic_fill({fill},vals)',
+        'hist = bh.hist.regular_atomic_int([bh.axis.regular_uoflow(bins, *ranges)]); hist.atomic_fill({fill},vals)',
         name='Regular', storage='aint', fill=fill, flow='yes', base=base)
 
 for fill in counts:
     print_timer(setup_1d,
-        'hist = bh.hist.regular_int([bh.axis.regular(bins, *ranges)]); hist.threaded_fill({fill},vals)',
+        'hist = bh.hist.regular_int([bh.axis.regular_uoflow(bins, *ranges)]); hist.threaded_fill({fill},vals)',
         name='Regular', storage='int', fill=fill, flow='yes', base=base)
 
 
@@ -125,7 +117,7 @@ base = print_timer(setup_2d,
     name='Numpy', storage='uint64', fill='', flow='no')
 
 print_timer(setup_2d,
-    'hist = bh.hist.any_int([bh.axis.regular(bins[0], *ranges[0]), bh.axis.regular(bins[1], *ranges[1])]); hist(*vals)',
+    'hist = bh.hist.any_int([bh.axis.regular_uoflow(bins[0], *ranges[0]), bh.axis.regular_uoflow(bins[1], *ranges[1])]); hist(*vals)',
     name='Any', storage='int', fill='', flow='yes', base=base)
 
 print_timer(setup_2d,
@@ -133,31 +125,24 @@ print_timer(setup_2d,
     name='Any', storage='int', fill='', flow='no', base=base)
 
 print_timer(setup_2d,
-    'hist = bh.hist.regular_int([bh.axis.regular(bins[0], *ranges[0]), bh.axis.regular(bins[1], *ranges[1])]); hist(*vals)',
+    'hist = bh.hist.regular_int([bh.axis.regular_uoflow(bins[0], *ranges[0]), bh.axis.regular_uoflow(bins[1], *ranges[1])]); hist(*vals)',
     name='Regular', storage='int', fill='', flow='yes', base=base)
 
 print_timer(setup_2d,
     'hist = bh.hist.regular_noflow_int([bh.axis.regular_noflow(bins[0], *ranges[0]), bh.axis.regular_noflow(bins[1], *ranges[1])]); hist(*vals)',
     name='Regular', storage='int', fill='', flow='no', base=base)
 
-print_timer(setup_2d,
-    'hist = bh.hist.regular_int_2d([bh.axis.regular(bins[0], *ranges[0]), bh.axis.regular(bins[1], *ranges[1])]); hist(*vals)',
-    name='Regular', storage='int 2D', fill='', flow='yes', base=base)
 
 print_timer(setup_2d,
-    'hist = bh.hist.regular_noflow_int_2d([bh.axis.regular_noflow(bins[0], *ranges[0]), bh.axis.regular_noflow(bins[1], *ranges[1])]); hist(*vals)',
-    name='Regular', storage='int 2D', fill='', flow='no', base=base)
-
-print_timer(setup_2d,
-    'hist = bh.hist.regular_atomic_int([bh.axis.regular(bins[0], *ranges[0]), bh.axis.regular(bins[1], *ranges[1])]); hist(*vals)',
+    'hist = bh.hist.regular_atomic_int([bh.axis.regular_uoflow(bins[0], *ranges[0]), bh.axis.regular_uoflow(bins[1], *ranges[1])]); hist(*vals)',
     name='Regular', storage='aint', fill='', flow='yes', base=base)
 
 for fill in counts:
     print_timer(setup_2d,
-        'hist = bh.hist.regular_atomic_int([bh.axis.regular(bins[0], *ranges[0]), bh.axis.regular(bins[1], *ranges[1])]); hist.atomic_fill({fill}, *vals)',
+        'hist = bh.hist.regular_atomic_int([bh.axis.regular_uoflow(bins[0], *ranges[0]), bh.axis.regular_uoflow(bins[1], *ranges[1])]); hist.atomic_fill({fill}, *vals)',
         name='Regular', storage='aint', fill=fill, flow='yes', base=base)
 
 for fill in counts:
     print_timer(setup_2d,
-        'hist = bh.hist.regular_int([bh.axis.regular(bins[0], *ranges[0]), bh.axis.regular(bins[1], *ranges[1])]); hist.threaded_fill({fill}, *vals)',
+        'hist = bh.hist.regular_int([bh.axis.regular_uoflow(bins[0], *ranges[0]), bh.axis.regular_uoflow(bins[1], *ranges[1])]); hist.threaded_fill({fill}, *vals)',
         name='Regular', storage='int', fill=fill, flow='yes', base=base)

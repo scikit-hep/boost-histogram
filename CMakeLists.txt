@@ -109,6 +109,10 @@ configure_file(
     "boost/__init__.py"
     "${CMAKE_CURRENT_BINARY_DIR}/boost/__init__.py"
     COPYONLY)
+configure_file(
+    "boost/histogram_utils.py"
+    "${CMAKE_CURRENT_BINARY_DIR}/boost/histogram_utils.py"
+    COPYONLY)
 
 # Tests (Requires pytest to be available to run)
 include(CTest)
