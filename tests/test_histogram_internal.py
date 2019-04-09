@@ -154,6 +154,24 @@ def test_numpy_compare():
     assert_allclose(E1, nE1)
     assert_allclose(E2, nE2)
 
+def test_project():
+    h = bh.hist.regular_int([bh.axis.regular_uoflow(10,0,1), bh.axis.regular_uoflow(5,0,1)])
+    h0 = bh.hist.regular_int([bh.axis.regular_uoflow(10,0,1)])
+    h1 = bh.hist.regular_int([bh.axis.regular_uoflow(5,0,1)])
+
+    for x,y in ((.3,.3),(.7,.7),(.5,.6),(.23,.92),(.15,.32),(.43,.54)):
+        h(x,y)
+        h0(x)
+        h1(y)
+
+    assert h.project(0, 1) == h
+    assert h.project(0) == h0
+    assert h.project(1) == h1
+
+    assert_array_equal(h.project(0, 1), h)
+    assert_array_equal(h.project(0), h0)
+    assert_array_equal(h.project(1), h1)
+
 def test_int_cat_hist():
     h = bh.hist.any_int([bh.axis.category_int([1,2,3])])
 

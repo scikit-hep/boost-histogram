@@ -132,16 +132,9 @@ py::class_<bh::histogram<A, S>> register_histogram_by_type(py::module& m, const 
     }, "axis"_a, "lower"_a, "upper"_a, "merge"_a, "Shrink an axis and rebin. You must select an axis.")
     */
     
-    /* Broken: Requires non static axes
-    .def("project", [](const histogram_t &self, unsigned value){
-        std::vector<unsigned> values = {value};
-        return bh::algorithm::project(self, values);
-    }, "value"_a, "Project out an axes from the histogram")
-    
-    .def("project", [](const histogram_t &self, const std::vector<unsigned> &values){
-        return bh::algorithm::project(self, values);
-    }, "values"_a, "Project out a list of axes from the histogram")
-    */
+    .def("project", [](const histogram_t &self, py::args values){
+        return bh::algorithm::project(self, py::cast<std::vector<unsigned>>(values));
+    }, "Project to a single axis or several axes on a multidiminsional histogram")
     
     ;
 
