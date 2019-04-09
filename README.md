@@ -7,7 +7,7 @@ Python bindings for [Boost::Histogram][] ([source][Boost::Histogram source]), a 
 
 > # Warning: This bindings are in progress and are not yet in an alpha stage.
 >
-> Join the discussion on gitter to follow the development!
+> Join the [discussion on gitter][gitter-link] to follow the development!
 
 [Boost::Histogram]:        https://www.boost.org/doc/libs/develop/libs/histogram/doc/html/index.html 
 [Boost::Histogram source]: https://www.boost.org/doc/libs/develop/libs/histogram/doc/html/index.html 
@@ -17,7 +17,7 @@ Python bindings for [Boost::Histogram][] ([source][Boost::Histogram source]), a 
 
 ## Installation
 
-This library is under development, but you can install directly from github if you would like. You need a C++14 compiler and Python 2.7--3.7.
+This library is under development, but you can install directly from github if you would like. You need a C++14 compiler and Python 2.7--3.7. Boost 1.70 is not required or needed (this only depends on included header-only dependencies).
 All the normal best-practices for Python apply; you should be in a virtual environment, otherwise add `--user`, etc.
 
 ```bash
@@ -32,10 +32,10 @@ This is a suggested example of usage.
 import boost.histogram as bh
 
 # Compose axis however you like
-hist = bh.make_histogram(bh.axis.regular(2, 0, 1),
-                         bh.axis.regular(4, 0.0, 1.0))
+hist = bh.histogram(bh.axis.regular(2, 0, 1),
+                    bh.axis.regular(4, 0.0, 1.0))
 
-# Filling can be done with arrays, one per diminsion
+# Filling can be done with arrays, one per dimension
 hist([.3, .5, .2],
      [.1, .4, .9])
 
@@ -46,9 +46,10 @@ counts = hist.view()
 ## Features
 
 * Many axis types (all support `metadata=...`)
-    * `bh.axis.regular(n, start, stop)`: `n` evenly spaced bins from `start` to `stop`
-    * `bh.axis.regular_noflow(n, start, stop)`: `regular` but with no underflow or overflow bins
-    * `bh.axis.regular_growth(n, start, stop)`: `regular` but grows if a value is added outside the range
+    * `bh.axis.regular(n, start, stop, flow=True, growth=False)`: shortcut
+        * `bh.axis.regular_uoflow(n, start, stop)`: `n` evenly spaced bins from `start` to `stop`
+        * `bh.axis.regular_noflow(n, start, stop)`: `regular` but with no underflow or overflow bins
+        * `bh.axis.regular_growth(n, start, stop)`: `regular` but grows if a value is added outside the range
     * `bh.axis.circular(n, start, stop)`: Value outside the range wrap into the range
     * `bh.axis.regular_log(n, start, stop)`: Regularly spaced values in log 10 scale
     * `bh.axis.regular_sqrt(n, start, stop)`: Regularly spaced value in sqrt scale
@@ -103,9 +104,10 @@ counts = hist.view()
     * `.axis(i)`: Get the `i`th axis
     * `.at(i, j, ...)`: Get the bin contents as a location 
     * `.sum()`: The total count of all bins
+    * `.project(ax1, ax2, ...)` Project down to listed axis (numbers)
 * Details
-    * Use `bh.make_histogram(..., storage=...)` to make a histogram (there are several different types) 
-    * Several common combinations are optimized, such as 1 or 2D regular axes + int storage
+    * Use `bh.histogram(..., storage=...)` to make a histogram (there are several different types) 
+    * Several common combinations are optimized, such as regular axes + int storage
 
 
 
