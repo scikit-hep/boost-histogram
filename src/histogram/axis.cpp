@@ -135,23 +135,9 @@ void register_axis(py::module &m) {
     opt.attr("circular") =  (unsigned) bh::axis::option::circular;
     opt.attr("growth") =    (unsigned) bh::axis::option::growth;
     
-
-    ax.def("make_regular",
-        [](unsigned n, double start, double stop, metadata_t metadata, bool flow, bool growth) -> py::object {
-            if(flow && ! growth) {
-                return py::cast(axis::regular_uoflow(n, start, stop, metadata));
-            } else if (!flow && growth) {
-                return py::cast(axis::regular_growth(n, start, stop, metadata));
-            } else if (!flow && !growth) {
-                return py::cast(axis::regular_noflow(n, start, stop, metadata));
-            } else {
-                throw std::runtime_error("Cannot make axis with both flow and growth options");
-            }
-        },
-       "n"_a, "start"_a, "stop"_a, "metadata"_a = py::str(), "flow"_a = false, "growth"_a = false,
-       "Make a regular axis with nice keyword arguments for flow and growth");
-
-
+    // This factory makes a class that can be used to create axes and also be used in is_instance
+    py::object factory_meta_py = py::module::import("boost.histogram_utils").attr("FactoryMeta");
+    
     register_axis_by_type<axis::regular_uoflow>(ax, "regular_uoflow", "Evenly spaced bins")
     .def(py::init<unsigned, double, double, metadata_t>(), "n"_a, "start"_a, "stop"_a, "metadata"_a = py::str())
     ;
@@ -170,6 +156,22 @@ void register_axis(py::module &m) {
     ;
     register_axis_iv_by_type<axis::regular_growth>(ax, "_regular_growth_internal_view");
 
+    ax.def("make_regular",
+           [](unsigned n, double start, double stop, metadata_t metadata, bool flow, bool growth) -> py::object {
+               if(growth) {
+                   return py::cast(axis::regular_growth(n, start, stop, metadata), py::return_value_policy::move);
+               } else if(flow) {
+                   return py::cast(axis::regular_uoflow(n, start, stop, metadata), py::return_value_policy::move);
+               } else  {
+                   return py::cast(axis::regular_noflow(n, start, stop, metadata), py::return_value_policy::move);
+               }
+           },
+           "n"_a, "start"_a, "stop"_a, "metadata"_a = py::str(), "flow"_a = true, "growth"_a = false,
+           "Make a regular axis with nice keyword arguments for flow and growth");
+    
+    ax.attr("regular") = factory_meta_py(ax.attr("make_regular"), py::make_tuple(ax.attr("regular_uoflow"),
+                                                                                 ax.attr("regular_noflow"),
+                                                                                 ax.attr("regular_growth")));
 
     register_axis_by_type<axis::circular>(ax, "circular", "Evenly spaced bins with wraparound")
     .def(py::init<unsigned, double, double, metadata_t>(), "n"_a, "start"_a, "stop"_a, "metadata"_a = py::str())
