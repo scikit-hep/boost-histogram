@@ -211,7 +211,7 @@ void register_histogram(py::module& m) {
             || boost::get<storage::unlimited>(&storage_union) != nullptr) {
                 auto values = py::cast<axes::regular>(args);
                 return boost::apply_visitor([&values](auto&& storage) -> py::object {
-                    return py::cast(bh::make_histogram_with(storage, values));
+                    return py::cast(bh::make_histogram_with(storage, values), py::return_value_policy::move);
                 }, storage_union);
             }
         } catch (const py::cast_error&) {}
@@ -220,14 +220,14 @@ void register_histogram(py::module& m) {
             if(boost::get<storage::int_>(&storage_union) != nullptr) {
                 auto values = py::cast<axes::regular_noflow>(args);
                 return boost::apply_visitor([&values](auto&& storage) -> py::object {
-                    return py::cast(bh::make_histogram_with(storage, values));
+                    return py::cast(bh::make_histogram_with(storage, values), py::return_value_policy::move);
                 }, storage_union);
             }
         } catch (const py::cast_error&) {}
         
         axes::any values = py::cast<axes::any>(args);
         return boost::apply_visitor([&values](auto&& storage) -> py::object {
-            return py::cast(bh::make_histogram_with(storage, values));
+            return py::cast(bh::make_histogram_with(storage, values), py::return_value_policy::move);
         },
         storage_union);
 
