@@ -132,16 +132,9 @@ py::class_<bh::histogram<A, S>> register_histogram_by_type(py::module& m, const 
     }, "axis"_a, "lower"_a, "upper"_a, "merge"_a, "Shrink an axis and rebin. You must select an axis.")
     */
     
-    /* Broken: Requires non static axes
-    .def("project", [](const histogram_t &self, unsigned value){
-        std::vector<unsigned> values = {value};
-        return bh::algorithm::project(self, values);
-    }, "value"_a, "Project out an axes from the histogram")
-    
-    .def("project", [](const histogram_t &self, const std::vector<unsigned> &values){
-        return bh::algorithm::project(self, values);
-    }, "values"_a, "Project out a list of axes from the histogram")
-    */
+    .def("project", [](const histogram_t &self, py::args values){
+        return bh::algorithm::project(self, py::cast<std::vector<unsigned>>(values));
+    }, "Project to a single axis or several axes on a multidiminsional histogram")
     
     ;
 
@@ -162,53 +155,6 @@ void register_histogram(py::module& m) {
     m.attr("BOOST_HISTOGRAM_DETAIL_AXES_LIMIT") = BOOST_HISTOGRAM_DETAIL_AXES_LIMIT;
     
     py::module hist = m.def_submodule("hist");
-
-    // Fast specializations: Fixed number of axis (may be removed if above versions are fast enough)
-    // Mostly targeting histogram styles supported by numpy for these max performance versions.
-
-    register_histogram_by_type<axes::regular_1D, storage::int_>(hist,
-         "regular_int_1d",
-         "1-dimensional histogram for int valued data.");
-
-    m.def("make_histogram", [](axis::regular_uoflow& ax1, storage::int_){
-        return bh::make_histogram_with(storage::int_(), ax1);
-    }, "axis"_a, "storage"_a=storage::int_(), "Make a 1D histogram of integers");
-
-
-    auto regular_atomic_int_1d = register_histogram_by_type<axes::regular_1D, storage::atomic_int>(hist,
-        "regular_atomic_int_1d",
-        "1-dimensional histogram for int valued data (atomic).");
-    add_atomic_fill(regular_atomic_int_1d);
-    
-    m.def("make_histogram", [](axis::regular_uoflow& ax1, storage::atomic_int){
-        return bh::make_histogram_with(storage::atomic_int(), ax1);
-    }, "axis"_a, "storage"_a=storage::atomic_int(), "Make a 1D histogram of atomic integers");
-    
-    register_histogram_by_type<axes::regular_2D, storage::int_>(hist,
-        "regular_int_2d",
-        "2-dimensional histogram for int valued data.");
-
-    m.def("make_histogram", [](axis::regular_uoflow& ax1, axis::regular_uoflow& ax2, storage::int_){
-        return bh::make_histogram_with(storage::int_(), ax1, ax2);
-    }, "axis1"_a, "axis2"_a, "storage"_a=storage::int_(), "Make a 2D histogram of integers");
-
-
-    register_histogram_by_type<axes::regular_noflow_1D, storage::int_>(hist,
-        "regular_noflow_int_1d",
-        "1-dimensional histogram for int valued data.");
-
-    m.def("make_histogram", [](axis::regular_noflow& ax1, storage::int_){
-        return bh::make_histogram_with(storage::int_(), ax1);
-    }, "axis"_a, "storage"_a=storage::int_(), "Make a 1D histogram of integers without overflow");
-
-
-    register_histogram_by_type<axes::regular_noflow_2D, storage::int_>(hist,
-        "regular_noflow_int_2d",
-        "2-dimensional histogram for int valued data.");
-
-    m.def("make_histogram", [](axis::regular_noflow& ax1, axis::regular_noflow& ax2, storage::int_){
-        return bh::make_histogram_with(storage::int_(), ax1, ax2);
-    }, "axis1"_a, "axis2"_a, "storage"_a=storage::int_(), "Make a 2D histogram of integers without overflow");
 
 
     // Fast specializations - uniform types
@@ -254,10 +200,33 @@ void register_histogram(py::module& m) {
         "N-dimensional histogram for weighted data with any axis types.");
 
     m.def("make_histogram", [](py::args args, py::kwargs kwargs) -> py::object {
-        axes::any values = py::cast<axes::any>(args);
-        auto storage_union = extract_storage(kwargs);
 
-        return bh::axis::visit([&values](auto&& storage) -> py::object {
+        storage::any_variant storage_union = extract_storage(kwargs);
+
+        // We need to try each possible axes type that has high-performance single-type overloads.
+
+        try {
+            if(boost::get<storage::int_>(&storage_union) != nullptr
+            || boost::get<storage::atomic_int>(&storage_union) != nullptr
+            || boost::get<storage::unlimited>(&storage_union) != nullptr) {
+                auto values = py::cast<axes::regular>(args);
+                return boost::apply_visitor([&values](auto&& storage) -> py::object {
+                    return py::cast(bh::make_histogram_with(storage, values));
+                }, storage_union);
+            }
+        } catch (const py::cast_error&) {}
+
+        try {
+            if(boost::get<storage::int_>(&storage_union) != nullptr) {
+                auto values = py::cast<axes::regular_noflow>(args);
+                return boost::apply_visitor([&values](auto&& storage) -> py::object {
+                    return py::cast(bh::make_histogram_with(storage, values));
+                }, storage_union);
+            }
+        } catch (const py::cast_error&) {}
+        
+        axes::any values = py::cast<axes::any>(args);
+        return boost::apply_visitor([&values](auto&& storage) -> py::object {
             return py::cast(bh::make_histogram_with(storage, values));
         },
         storage_union);

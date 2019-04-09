@@ -105,12 +105,5 @@ using regular = std::vector<axis::regular_uoflow>;
 // Specialization for some speed improvement
 using regular_noflow = std::vector<axis::regular_noflow>;
 
-// Specializations for maximum speed!
-using regular_1D = std::tuple<axis::regular_uoflow>;
-using regular_2D = std::tuple<axis::regular_uoflow, axis::regular_uoflow>;
-
-using regular_noflow_1D = std::tuple<axis::regular_noflow>;
-using regular_noflow_2D = std::tuple<axis::regular_noflow, axis::regular_noflow>;
-
 
 } // namespace axes

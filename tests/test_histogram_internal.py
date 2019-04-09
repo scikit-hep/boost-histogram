@@ -20,7 +20,7 @@ methods = [
     bh.hist.any_int,
 ]
 
-@pytest.mark.parametrize("hist_func", methods + [bh.hist.regular_int_1d])
+@pytest.mark.parametrize("hist_func", methods)
 def test_1D_fill_int(hist_func):
     bins = 10
     ranges = (0, 1)
@@ -40,7 +40,7 @@ def test_1D_fill_int(hist_func):
     assert hist.axis(0).size() == bins
     assert hist.axis(0).size(flow=True) == bins + 2
 
-@pytest.mark.parametrize("hist_func", methods + [bh.hist.regular_int_2d])
+@pytest.mark.parametrize("hist_func", methods)
 def test_2D_fill_int(hist_func):
     bins = (10, 15)
     ranges = ((0, 3), (0, 2))
@@ -110,7 +110,7 @@ def test_growing_histogram():
     assert hist.size() == 15
 
 def test_numpy_flow():
-    h = bh.hist.regular_int_2d([bh.axis.regular_uoflow(10,0,1), bh.axis.regular_uoflow(5,0,1)])
+    h = bh.hist.regular_int([bh.axis.regular_uoflow(10,0,1), bh.axis.regular_uoflow(5,0,1)])
 
     for i in range(10):
         for j in range(5):
@@ -133,7 +133,7 @@ def test_numpy_flow():
 
 
 def test_numpy_compare():
-    h = bh.hist.regular_int_2d([bh.axis.regular_uoflow(10,0,1), bh.axis.regular_uoflow(5,0,1)])
+    h = bh.hist.regular_int([bh.axis.regular_uoflow(10,0,1), bh.axis.regular_uoflow(5,0,1)])
 
     xs = []
     ys = []
@@ -153,6 +153,24 @@ def test_numpy_compare():
     assert_array_equal(H, nH)
     assert_allclose(E1, nE1)
     assert_allclose(E2, nE2)
+
+def test_project():
+    h = bh.hist.regular_int([bh.axis.regular_uoflow(10,0,1), bh.axis.regular_uoflow(5,0,1)])
+    h0 = bh.hist.regular_int([bh.axis.regular_uoflow(10,0,1)])
+    h1 = bh.hist.regular_int([bh.axis.regular_uoflow(5,0,1)])
+
+    for x,y in ((.3,.3),(.7,.7),(.5,.6),(.23,.92),(.15,.32),(.43,.54)):
+        h(x,y)
+        h0(x)
+        h1(y)
+
+    assert h.project(0, 1) == h
+    assert h.project(0) == h0
+    assert h.project(1) == h1
+
+    assert_array_equal(h.project(0, 1), h)
+    assert_array_equal(h.project(0), h0)
+    assert_array_equal(h.project(1), h1)
 
 def test_int_cat_hist():
     h = bh.hist.any_int([bh.axis.category_int([1,2,3])])
