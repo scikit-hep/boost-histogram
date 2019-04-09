@@ -20,7 +20,7 @@ methods = [
     bh.hist.any_int,
 ]
 
-@pytest.mark.parametrize("hist_func", methods + [bh.hist.regular_int_1d])
+@pytest.mark.parametrize("hist_func", methods)
 def test_1D_fill_int(hist_func):
     bins = 10
     ranges = (0, 1)
@@ -40,7 +40,7 @@ def test_1D_fill_int(hist_func):
     assert hist.axis(0).size() == bins
     assert hist.axis(0).size(flow=True) == bins + 2
 
-@pytest.mark.parametrize("hist_func", methods + [bh.hist.regular_int_2d])
+@pytest.mark.parametrize("hist_func", methods)
 def test_2D_fill_int(hist_func):
     bins = (10, 15)
     ranges = ((0, 3), (0, 2))
@@ -110,7 +110,7 @@ def test_growing_histogram():
     assert hist.size() == 15
 
 def test_numpy_flow():
-    h = bh.hist.regular_int_2d([bh.axis.regular_uoflow(10,0,1), bh.axis.regular_uoflow(5,0,1)])
+    h = bh.hist.regular_int([bh.axis.regular_uoflow(10,0,1), bh.axis.regular_uoflow(5,0,1)])
 
     for i in range(10):
         for j in range(5):
@@ -133,7 +133,7 @@ def test_numpy_flow():
 
 
 def test_numpy_compare():
-    h = bh.hist.regular_int_2d([bh.axis.regular_uoflow(10,0,1), bh.axis.regular_uoflow(5,0,1)])
+    h = bh.hist.regular_int([bh.axis.regular_uoflow(10,0,1), bh.axis.regular_uoflow(5,0,1)])
 
     xs = []
     ys = []

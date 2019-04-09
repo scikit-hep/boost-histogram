@@ -200,7 +200,7 @@ def test_add_2d_bad():
     a = histogram(integer_uoflow(-1, 1))
     b = histogram(regular_uoflow(3, -1, 1))
 
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         a += b
 
 # WEIGHTED FILLS NOT SUPPORTED YET
@@ -291,7 +291,7 @@ def test_operators():
     assert (h + h).at(0) == (h * 2).at(0)
     assert (h + h).at(0) == (2 * h).at(0)
     h2 = histogram(regular_uoflow(2, 0, 2))
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         h + h2
 
 # CLASSIC: reduce is not yet supported

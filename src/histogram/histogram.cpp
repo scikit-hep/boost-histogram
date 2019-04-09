@@ -163,53 +163,6 @@ void register_histogram(py::module& m) {
     
     py::module hist = m.def_submodule("hist");
 
-    // Fast specializations: Fixed number of axis (may be removed if above versions are fast enough)
-    // Mostly targeting histogram styles supported by numpy for these max performance versions.
-
-    register_histogram_by_type<axes::regular_1D, storage::int_>(hist,
-         "regular_int_1d",
-         "1-dimensional histogram for int valued data.");
-
-    m.def("make_histogram", [](axis::regular_uoflow& ax1, storage::int_){
-        return bh::make_histogram_with(storage::int_(), ax1);
-    }, "axis"_a, "storage"_a=storage::int_(), "Make a 1D histogram of integers");
-
-
-    auto regular_atomic_int_1d = register_histogram_by_type<axes::regular_1D, storage::atomic_int>(hist,
-        "regular_atomic_int_1d",
-        "1-dimensional histogram for int valued data (atomic).");
-    add_atomic_fill(regular_atomic_int_1d);
-    
-    m.def("make_histogram", [](axis::regular_uoflow& ax1, storage::atomic_int){
-        return bh::make_histogram_with(storage::atomic_int(), ax1);
-    }, "axis"_a, "storage"_a=storage::atomic_int(), "Make a 1D histogram of atomic integers");
-    
-    register_histogram_by_type<axes::regular_2D, storage::int_>(hist,
-        "regular_int_2d",
-        "2-dimensional histogram for int valued data.");
-
-    m.def("make_histogram", [](axis::regular_uoflow& ax1, axis::regular_uoflow& ax2, storage::int_){
-        return bh::make_histogram_with(storage::int_(), ax1, ax2);
-    }, "axis1"_a, "axis2"_a, "storage"_a=storage::int_(), "Make a 2D histogram of integers");
-
-
-    register_histogram_by_type<axes::regular_noflow_1D, storage::int_>(hist,
-        "regular_noflow_int_1d",
-        "1-dimensional histogram for int valued data.");
-
-    m.def("make_histogram", [](axis::regular_noflow& ax1, storage::int_){
-        return bh::make_histogram_with(storage::int_(), ax1);
-    }, "axis"_a, "storage"_a=storage::int_(), "Make a 1D histogram of integers without overflow");
-
-
-    register_histogram_by_type<axes::regular_noflow_2D, storage::int_>(hist,
-        "regular_noflow_int_2d",
-        "2-dimensional histogram for int valued data.");
-
-    m.def("make_histogram", [](axis::regular_noflow& ax1, axis::regular_noflow& ax2, storage::int_){
-        return bh::make_histogram_with(storage::int_(), ax1, ax2);
-    }, "axis1"_a, "axis2"_a, "storage"_a=storage::int_(), "Make a 2D histogram of integers without overflow");
-
 
     // Fast specializations - uniform types
 
