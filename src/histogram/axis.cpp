@@ -159,11 +159,11 @@ void register_axis(py::module &m) {
     ax.def("make_regular",
            [](unsigned n, double start, double stop, metadata_t metadata, bool flow, bool growth) -> py::object {
                if(growth) {
-                   return py::cast(axis::regular_growth(n, start, stop, metadata));
+                   return py::cast(axis::regular_growth(n, start, stop, metadata), py::return_value_policy::move);
                } else if(flow) {
-                   return py::cast(axis::regular_uoflow(n, start, stop, metadata));
+                   return py::cast(axis::regular_uoflow(n, start, stop, metadata), py::return_value_policy::move);
                } else  {
-                   return py::cast(axis::regular_noflow(n, start, stop, metadata));
+                   return py::cast(axis::regular_noflow(n, start, stop, metadata), py::return_value_policy::move);
                }
            },
            "n"_a, "start"_a, "stop"_a, "metadata"_a = py::str(), "flow"_a = true, "growth"_a = false,
