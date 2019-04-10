@@ -12,6 +12,7 @@
 #include <boost/histogram/python/histogram_fill.hpp>
 #include <boost/histogram/python/histogram_atomic.hpp>
 #include <boost/histogram/python/histogram_threaded.hpp>
+#include <boost/histogram/python/try_cast.hpp>
 
 #include <boost/histogram.hpp>
 #include <boost/histogram/axis/ostream.hpp>
@@ -214,7 +215,7 @@ void register_histogram(py::module& m) {
               storage::atomic_int,
               storage::unlimited
             >
-          >(storage, [&](auto&& storage) {
+          >(storage, [&args](auto&& storage) {
             auto reg = py::cast<axes::regular>(args);
             return py::cast(bh::make_histogram_with(storage, reg),
                             py::return_value_policy::move);
@@ -224,7 +225,7 @@ void register_histogram(py::module& m) {
         try {
           return try_cast<
             mp_list<storage::int_>
-          >(storage, [&](auto&& storage) {
+          >(storage, [&args](auto&& storage) {
             auto reg = py::cast<axes::regular_noflow>(args);
             return py::cast(bh::make_histogram_with(storage, reg),
                             py::return_value_policy::move);
@@ -232,7 +233,7 @@ void register_histogram(py::module& m) {
         } catch(const py::cast_error&) {}
 
         // fallback to slower generic implementation
-        axes::any values = py::cast<axes::any>(args);
+        auto axes = py::cast<axes::any>(args);
 
         return try_cast<
           mp_list<
@@ -242,9 +243,9 @@ void register_histogram(py::module& m) {
             storage::weight,
             storage::atomic_int
           >
-        >(storage, [&](auto&& storage) {
-          return py::cast(bh::make_histogram_with(storage, values),
-                            py::return_value_policy::move);
+        >(storage, [&axes](auto&& storage) {
+          return py::cast(bh::make_histogram_with(storage, axes),
+                          py::return_value_policy::move);
         });
 
     }, "Make any histogram");
