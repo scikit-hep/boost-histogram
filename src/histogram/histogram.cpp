@@ -201,7 +201,6 @@ void register_histogram(py::module& m) {
         "N-dimensional histogram for weighted data with any axis types.");
 
     m.def("make_histogram", [](py::args args, py::kwargs kwargs) -> py::object {
-        using boost::mp11::mp_list;
 
         py::object storage = kwargs.contains("storage") ?
           kwargs["storage"] : py::cast(storage::int_());
@@ -210,11 +209,9 @@ void register_histogram(py::module& m) {
 
         try {
           return try_cast<
-            mp_list<
-              storage::int_,
-              storage::atomic_int,
-              storage::unlimited
-            >
+            storage::int_,
+            storage::atomic_int,
+            storage::unlimited
           >(storage, [&args](auto&& storage) {
             auto reg = py::cast<axes::regular>(args);
             return py::cast(bh::make_histogram_with(storage, reg),
@@ -224,7 +221,7 @@ void register_histogram(py::module& m) {
 
         try {
           return try_cast<
-            mp_list<storage::int_>
+            storage::int_
           >(storage, [&args](auto&& storage) {
             auto reg = py::cast<axes::regular_noflow>(args);
             return py::cast(bh::make_histogram_with(storage, reg),
@@ -236,13 +233,11 @@ void register_histogram(py::module& m) {
         auto axes = py::cast<axes::any>(args);
 
         return try_cast<
-          mp_list<
-            storage::int_,
-            storage::double_,
-            storage::unlimited,
-            storage::weight,
-            storage::atomic_int
-          >
+          storage::int_,
+          storage::double_,
+          storage::unlimited,
+          storage::weight,
+          storage::atomic_int
         >(storage, [&axes](auto&& storage) {
           return py::cast(bh::make_histogram_with(storage, axes),
                           py::return_value_policy::move);

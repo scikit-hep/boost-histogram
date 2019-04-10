@@ -33,8 +33,14 @@ R try_cast_impl(boost::mp11::mp_list<T, Ts...>, py::object obj, Unary&& unary) {
   Throws pybind11::cast_error if no match is found.
 */
 template <class TypeList, class Unary>
-decltype(auto) try_cast(py::object obj, Unary&& unary) {
+decltype(auto) try_cast_over(py::object obj, Unary&& unary) {
   using R = decltype(unary(std::declval<boost::mp11::mp_first<TypeList>>()));
   using L = boost::mp11::mp_rename<TypeList, boost::mp11::mp_list>;
   return try_cast_impl<R>(L{}, obj, std::forward<Unary>(unary));
+}
+
+/// Like try_cast_over, but passing the types explicitly.
+template <class T, class... Ts, class Unary>
+decltype(auto) try_cast(py::object obj, Unary&& unary) {
+  return try_cast_over<boost::mp11::mp_list<T, Ts...>>(obj, std::forward<Unary>(unary));
 }
