@@ -11,8 +11,6 @@
 
 #include <boost/histogram.hpp>
 
-#include <boost/variant.hpp>
-
 #include <cstdint>
 
 
@@ -26,16 +24,5 @@ using unlimited = bh::unlimited_storage<>;
 using weight = bh::weight_storage;
 using profile = bh::profile_storage;
 using weighted_profile = bh::weighted_profile_storage;
-    
-// Some types not yet suppored (mostly due to fill not accepting weight and sample yet)
-using any_variant = boost::variant<
-    atomic_int,
-    int_,
-    double_,
-    unlimited,
-    weight
->;
 
 }  // namespace storage
-    
-storage::any_variant extract_storage(py::kwargs kwargs);

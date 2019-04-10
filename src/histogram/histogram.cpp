@@ -12,6 +12,7 @@
 #include <boost/histogram/python/histogram_fill.hpp>
 #include <boost/histogram/python/histogram_atomic.hpp>
 #include <boost/histogram/python/histogram_threaded.hpp>
+#include <boost/histogram/python/try_cast.hpp>
 
 #include <boost/histogram.hpp>
 #include <boost/histogram/axis/ostream.hpp>
@@ -201,35 +202,46 @@ void register_histogram(py::module& m) {
 
     m.def("make_histogram", [](py::args args, py::kwargs kwargs) -> py::object {
 
-        storage::any_variant storage_union = extract_storage(kwargs);
+        py::object storage = kwargs.contains("storage") ?
+          kwargs["storage"] : py::cast(storage::int_());
 
-        // We need to try each possible axes type that has high-performance single-type overloads.
-
-        try {
-            if(boost::get<storage::int_>(&storage_union) != nullptr
-            || boost::get<storage::atomic_int>(&storage_union) != nullptr
-            || boost::get<storage::unlimited>(&storage_union) != nullptr) {
-                auto values = py::cast<axes::regular>(args);
-                return boost::apply_visitor([&values](auto&& storage) -> py::object {
-                    return py::cast(bh::make_histogram_with(storage, values), py::return_value_policy::move);
-                }, storage_union);
-            }
-        } catch (const py::cast_error&) {}
+        // We try each possible axes type that has high-performance single-type overloads.
 
         try {
-            if(boost::get<storage::int_>(&storage_union) != nullptr) {
-                auto values = py::cast<axes::regular_noflow>(args);
-                return boost::apply_visitor([&values](auto&& storage) -> py::object {
-                    return py::cast(bh::make_histogram_with(storage, values), py::return_value_policy::move);
-                }, storage_union);
-            }
-        } catch (const py::cast_error&) {}
-        
-        axes::any values = py::cast<axes::any>(args);
-        return boost::apply_visitor([&values](auto&& storage) -> py::object {
-            return py::cast(bh::make_histogram_with(storage, values), py::return_value_policy::move);
-        },
-        storage_union);
+          return try_cast<
+            storage::int_,
+            storage::atomic_int,
+            storage::unlimited
+          >(storage, [&args](auto&& storage) {
+            auto reg = py::cast<axes::regular>(args);
+            return py::cast(bh::make_histogram_with(storage, reg),
+                            py::return_value_policy::move);
+          });
+        } catch(const py::cast_error&) {}
+
+        try {
+          return try_cast<
+            storage::int_
+          >(storage, [&args](auto&& storage) {
+            auto reg = py::cast<axes::regular_noflow>(args);
+            return py::cast(bh::make_histogram_with(storage, reg),
+                            py::return_value_policy::move);
+          });
+        } catch(const py::cast_error&) {}
+
+        // fallback to slower generic implementation
+        auto axes = py::cast<axes::any>(args);
+
+        return try_cast<
+          storage::int_,
+          storage::double_,
+          storage::unlimited,
+          storage::weight,
+          storage::atomic_int
+        >(storage, [&axes](auto&& storage) {
+          return py::cast(bh::make_histogram_with(storage, axes),
+                          py::return_value_policy::move);
+        });
 
     }, "Make any histogram");
 
