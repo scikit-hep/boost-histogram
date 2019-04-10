@@ -66,8 +66,8 @@ R try_cast_impl(boost::mp11::mp_list<T, Ts...>, py::object obj, Unary&& unary) {
 /**
   Cast python object to first match in type list and run functor with that type.
 
-  Returns whatever the functor returns. The functor return type may not depend on the
-  argument type.
+  Returns whatever the functor returns. The functor return type must not depend on 
+  the argument type. In other words, all functor overloads must return the same type.
 
   Throws pybind11::cast_error if no match is found.
 */
