@@ -15,6 +15,9 @@
 #include <type_traits>
 #include <sstream>
 
+#include <boost/mp11/list.hpp>
+#include <boost/mp11/algorithm.hpp>
+
 // Allow command line overide
 #ifndef BOOST_HISTOGRAM_DETAIL_AXES_LIMIT
 #define BOOST_HISTOGRAM_DETAIL_AXES_LIMIT 16
@@ -44,4 +47,33 @@ auto shift_to_string() {
         out << self;
         return out.str();
     };
+}
+
+// end of recursion
+template <class R, class Unary>
+R try_cast_impl(boost::mp11::mp_list<>, py::object, Unary&&) {
+  throw py::cast_error("try_cast failed to find a match for object argument");
+}
+
+// recursion
+template <class R, class T, class... Ts, class Unary>
+R try_cast_impl(boost::mp11::mp_list<T, Ts...>, py::object obj, Unary&& unary) {
+  if (py::isinstance<T>(obj))
+    return unary(py::cast<T>(obj));
+  return try_cast_impl<R>(boost::mp11::mp_list<Ts...>{}, obj, std::forward<Unary>(unary));
+}
+
+/**
+  Cast python object to first match in type list and run functor with that type.
+
+  Returns whatever the functor returns. The functor return type may not depend on the
+  argument type.
+
+  Throws pybind11::cast_error if no match is found.
+*/
+template <class TypeList, class Unary>
+decltype(auto) try_cast(py::object obj, Unary&& unary) {
+  using R = decltype(unary(std::declval<boost::mp11::mp_first<TypeList>>()));
+  using L = boost::mp11::mp_rename<TypeList, boost::mp11::mp_list>;
+  return try_cast_impl<R>(L{}, obj, std::forward<Unary>(unary));
 }

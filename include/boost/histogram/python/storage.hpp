@@ -37,5 +37,3 @@ using any_variant = boost::variant<
 >;
 
 }  // namespace storage
-    
-storage::any_variant extract_storage(py::kwargs kwargs);
