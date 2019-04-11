@@ -86,7 +86,7 @@ py::class_<A> register_axis_by_type(py::module& m, Args&&... args) {
     .def_static("options", &A::options, "Return the options associated to the axis")
     .def_property("metadata",
                   [](const A& self){return self.metadata();},
-                  [](A& self, metadata_t label){self.metadata() = label;},
+                  [](A& self, const metadata_t& label){self.metadata() = label;},
                   "Set the axis label")
 
     ;
@@ -126,7 +126,7 @@ py::class_<bh::axis::interval_view<A>> register_axis_iv_by_type(py::module& m, c
 struct regular_type {};
 
 
-void register_axis(py::module &m) {
+py::module register_axis(py::module &m) {
 
     py::module ax = m.def_submodule("axis");
 
@@ -248,4 +248,5 @@ void register_axis(py::module &m) {
     .def(py::init<>())
     ;
 
+    return ax;
 }

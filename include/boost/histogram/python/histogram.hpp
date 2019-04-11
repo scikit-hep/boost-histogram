@@ -7,6 +7,7 @@
 
 #include <boost/histogram/python/pybind11.hpp>
 
+#include <boost/histogram/python/copyable_atomic.hpp>
 #include <boost/histogram.hpp>
 
 #include <vector>

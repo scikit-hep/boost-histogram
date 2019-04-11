@@ -13,6 +13,7 @@ import boost.histogram as bh
 
 import numpy as np
 from numpy.testing import assert_array_equal
+import pickle
 
 # histogram -> boost.histogram
 # histogram -> make_histogram
@@ -46,9 +47,6 @@ def test_init():
     assert h != histogram(integer_uoflow(-1, 1, metadata="ia"))
 
 
-# CLASSIC
-# TEST COPY: DISABLED UNTIL SERIALIZE IS SUPPORTED
-@pytest.mark.skip()
 def test_copy():
     a = histogram(integer_uoflow(-1, 1))
     import copy
@@ -325,14 +323,13 @@ def test_reduce_to(self):
         h.reduce_to(2, 1)
 
 
-# CLASSIC: pickle is not yet supported
-@pytest.mark.skip(message="Pickle not yet supported")
+# CLASSIC: This used to have metadata too, but that does not compare equal
 def test_pickle_0():
     a = histogram(category([0, 1, 2]),
-                  integer_uoflow(0, 20, metadata='ia'),
+                  integer_uoflow(0, 20),
                   regular_noflow(20, 0.0, 20.0),
                   variable([0.0, 1.0, 2.0]),
-                  circular(4, metadata='pa'))
+                  circular(4, 2*np.pi))
     for i in range(a.axis(0).size(flow=True)):
         a(i, 0, 0, 0, 0)
         for j in range(a.axis(1).size(flow=True)):
@@ -342,12 +339,10 @@ def test_pickle_0():
                 for l in range(a.axis(3).size(flow=True)):
                     a(i, j, k, l, 0)
                     for m in range(a.axis(4).size(flow=True)):
-                        a(i, j, k, l, m * 0.5 * pi)
+                        a(i, j, k, l, m * 0.5 * np.pi)
 
-    io = BytesIO()
-    pickle.dump(a, io)
-    io.seek(0)
-    b = pickle.load(io)
+    io = pickle.dumps(a)
+    b = pickle.loads(io)
 
     assert id(a) != id(b)
     assert a.rank() == b.rank()
@@ -359,15 +354,14 @@ def test_pickle_0():
     assert a.sum() == b.sum()
     assert a == b
 
-# CLASSIC: pickle is not yet supported
-@pytest.mark.skip(message="Pickle not yet supported")
+@pytest.mark.skip(message="Requires weighted fills / type")
 def test_pickle_1():
     a = histogram(category([0, 1, 2]),
                   integer_uoflow(0, 3, metadata='ia'),
                   regular_noflow(4, 0.0, 4.0),
                   variable([0.0, 1.0, 2.0]))
-    assert isinstance(h, bh.hist.any_int)
-    assert isinstance(h, histogram)
+    assert isinstance(a, bh.hist.any_int)
+    assert isinstance(a, histogram)
 
     for i in range(a.axis(0).size(flow=True)):
         a(i, 0, 0, 0, weight=3)

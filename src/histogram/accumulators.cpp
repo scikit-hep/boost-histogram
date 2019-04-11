@@ -16,13 +16,13 @@
 #include <boost/histogram/accumulators/ostream.hpp>
 
 
-void register_accumulators(py::module &m) {
+py::module register_accumulators(py::module &m) {
     
-    py::module accumulator = m.def_submodule("accumulator");
+    py::module accumulators = m.def_submodule("accumulators");
 
     using weighted_sum = bh::accumulators::weighted_sum<double>;
     
-    py::class_<weighted_sum>(accumulator, "weighted_sum")
+    py::class_<weighted_sum>(accumulators, "weighted_sum")
         .def(py::init<>())
         .def(py::init<const double&>(), "value"_a)
         .def(py::init<const double&, const double&>(), "value"_a, "variance"_a)
@@ -53,7 +53,7 @@ void register_accumulators(py::module &m) {
 
     using weighted_mean = bh::accumulators::weighted_mean<double>;
 
-    py::class_<weighted_mean>(accumulator, "weighted_mean")
+    py::class_<weighted_mean>(accumulators, "weighted_mean")
         .def(py::init<>())
         .def(py::init<const double&, const double&, const double&, const double&>(),
              "wsum"_a, "wsum2"_a, "mean"_a, "variance"_a)
@@ -85,7 +85,7 @@ void register_accumulators(py::module &m) {
     
     using mean = bh::accumulators::mean<double>;
     
-    py::class_<mean>(accumulator, "mean")
+    py::class_<mean>(accumulators, "mean")
         .def(py::init<>())
         .def(py::init<std::size_t, const double&, const double&>(),
              "value"_a, "mean"_a, "variance"_a)
@@ -111,7 +111,7 @@ void register_accumulators(py::module &m) {
     
     using sum = bh::accumulators::sum<double>;
     
-    py::class_<sum>(accumulator, "sum")
+    py::class_<sum>(accumulators, "sum")
         .def(py::init<>())
         .def(py::init<const double&>(), "value"_a)
     
@@ -135,4 +135,5 @@ void register_accumulators(py::module &m) {
         .def(make_pickle<sum>())
     ;
 
+    return accumulators;
 }
