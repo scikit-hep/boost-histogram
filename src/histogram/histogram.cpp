@@ -46,6 +46,9 @@ py::class_<bh::histogram<A, S>> register_histogram_by_type(py::module& m, const 
          "Total number of bins in the histogram (including underflow/overflow)" )
     .def("reset", &histogram_t::reset,
          "Reset bin counters to zero")
+    
+    .def("__copy__", [](const histogram_t& self){return histogram_t(self);})
+    .def("__deepcopy__", [](const histogram_t& self, py::object){return histogram_t(self);})
 
     .def(py::self + py::self)
     .def(py::self == py::self)

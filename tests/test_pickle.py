@@ -10,41 +10,29 @@ import copy
 
 import boost.histogram as bh
 
-modes = [2,-1]
+copy_fns = (
+        lambda x: loads(dumps(x, 2)),
+        lambda x: loads(dumps(x, -1)),
+        copy.copy,
+        copy.deepcopy
+        )
 
-@pytest.mark.parametrize("mode", modes)
-class TestAccumulators:
-    def test_sum(self, mode):
-        orig = bh.accumulators.sum(12)
-        new = loads(dumps(orig, mode))
+accumulators = (
+    (bh.accumulators.sum, (12,)),
+    (bh.accumulators.weighted_sum, (1.5, 2.5)),
+    (bh.accumulators.mean, (5, 1.5, 2.5)),
+    (bh.accumulators.weighted_mean, (1.5, 2.5, 3.5, 4.5))
+)
+
+copies = (copy.copy, copy.deepcopy)
+
+
+@pytest.mark.parametrize("accum,args", accumulators)
+@pytest.mark.parametrize("copy_fn", copies)
+def test_accumulators(accum, args, copy_fn):
+        orig = accum(*args)
+        new = copy_fn(orig)
         assert new == orig
-
-        new = copy.copy(orig)
-        assert new == orgin
-
-    def test_weighted_sum(self, mode):
-        orig = bh.accumulators.weighted_sum(1.5, 2.5)
-        new = loads(dumps(orig, mode))
-        assert new == orig
-
-        new = copy.copy(orig)
-        assert new == orgin
-
-    def test_mean(self, mode):
-        orig = bh.accumulators.mean(5, 1.5, 2.5)
-        new = loads(dumps(orig, mode))
-        assert new == orig
-
-        new = copy.copy(orig)
-        assert new == orgin
-
-    def test_weighted_mean(self, mode):
-        orig = bh.accumulators.weighted_mean(1.5, 2.5, 3.5, 4.5)
-        new = loads(dumps(orig, mode))
-        assert new == orig
-
-        new = copy.copy(orig)
-        assert new == orgin
 
 
 axes_creations = (
@@ -63,40 +51,39 @@ axes_creations = (
         (bh.axis.category_str_growth, (["1", "2", "3"],)),
         )
 
-@pytest.mark.parametrize("mode", modes)
-@pytest.mark.parametrize("axis,args", axes_creations)
-def test_axes(axis, args, mode):
-    orig = axis(*args)
-    new = loads(dumps(orig, mode))
-    assert new == orig
 
 @pytest.mark.parametrize("axis,args", axes_creations)
-def test_axes_copy(axis, args)
+@pytest.mark.parametrize("copy_fn", copies)
+def test_axes(axis, args, copy_fn):
     orig = axis(*args)
-    new = copy.copy(orig)
+    new = copy_fn(orig)
     assert new == orig
 
 
-@pytest.mark.parametrize("mode", modes)
 @pytest.mark.parametrize("axis,args", axes_creations)
-def test_metadata_str(axis, args, mode):
+@pytest.mark.parametrize("copy_fn", copies)
+def test_metadata_str(axis, args, copy_fn):
     orig = axis(*args, metadata="hi")
-    new = loads(dumps(orig, mode))
+    new = copy_fn(orig)
     assert new.metadata == orig.metadata
     new.metadata = orig.metadata
     assert new == orig
 
-@pytest.mark.parametrize("mode", modes)
+# Special test: Deepcopy should change metadata id, copy should not
+# TODO
+
+@pytest.mark.parametrize("copy_fn", copies)
 @pytest.mark.parametrize("axis,args", axes_creations)
-def test_metadata_any(axis, args, mode):
+def test_metadata_any(axis, args, copy_fn):
     orig = axis(*args, metadata=(1,2,3))
-    new = loads(dumps(orig, mode))
+    new = copy_fn(orig)
     assert new.metadata == orig.metadata
     new.metadata = orig.metadata
     assert new == orig
 
-@pytest.mark.parametrize("mode", modes)
-def test_storage_int(mode):
+
+@pytest.mark.parametrize("copy_fn", copies)
+def test_storage_int(copy_fn):
     storage = bh.storage.int()
     storage.push_back(1)
     storage.push_back(3)
@@ -106,33 +93,32 @@ def test_storage_int(mode):
     assert storage[1] == 3
     assert storage[2] == 2
 
-    new = loads(dumps(storage, mode))
+    new = copy_fn(storage)
     assert storage == new
 
-@pytest.mark.parametrize("mode", modes)
-def test_histogram_regular(mode):
+
+@pytest.mark.parametrize("copy_fn", copies)
+def test_histogram_regular(copy_fn):
     hist = bh.histogram(bh.axis.regular(4,1,2), bh.axis.regular(8,3,6))
 
-    new = loads(dumps(hist, mode))
+    new = copy_fn(hist)
     assert hist == new
 
 
-@pytest.mark.parametrize("mode", modes)
-def test_histogram_fancy(mode):
+@pytest.mark.parametrize("copy_fn", copies)
+def test_histogram_fancy(copy_fn):
     hist = bh.histogram(bh.axis.regular_noflow(4,1,2), bh.axis.integer_uoflow(0, 6))
 
-    new = loads(dumps(hist, mode))
+    new = copy_fn(hist)
     assert hist == new
 
-@pytest.mark.parametrize("mode", modes)
-def test_histogram_metadata(mode):
 
-    hist = bh.histogram(bh.axis.regular(4,1,2, metadata="This"))
-    new = loads(dumps(hist, mode))
-    assert hist.axis(0).metadata == new.axis(0).metadata
+@pytest.mark.parametrize("copy_fn", copies)
+@pytest.mark.parametrize("metadata", ("This", (1,2,3)))
+def test_histogram_metadata(copy_fn, metadata):
 
-    hist = bh.histogram(bh.axis.regular(4,1,2, metadata=(1,2,3)))
-    new = loads(dumps(hist, mode))
+    hist = bh.histogram(bh.axis.regular(4,1,2, metadata=metadata))
+    new = copy_fn(hist)
     assert hist.axis(0).metadata == new.axis(0).metadata
 
     # Note that == directly will not work since it is "is" in Python
