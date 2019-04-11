@@ -13,7 +13,11 @@ import boost.histogram as bh
 
 import numpy as np
 from numpy.testing import assert_array_equal
-import pickle
+
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 
 # histogram -> boost.histogram
 # histogram -> make_histogram

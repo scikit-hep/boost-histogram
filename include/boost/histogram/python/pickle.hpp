@@ -54,7 +54,7 @@ struct OutToTuple {
     
     template<typename T, std::enable_if_t<!bh::has_method_serialize<T>::value && !bh::has_function_serialize<T>::value>* = nullptr>
     OutToTuple& operator& (T&& arg) {
-        tuple = tuple + py::make_tuple(arg);
+        tuple = tuple + py::make_tuple<py::return_value_policy::reference>(arg);
         return *this;
     }
 };
