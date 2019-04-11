@@ -27,10 +27,32 @@
 
 #include <type_traits>
 
+struct OutToTuple;
+struct InFromTuple;
+
+namespace boost { namespace histogram {
+    BOOST_HISTOGRAM_DETECT(has_method_serialize, (std::declval<T&>().serialize(std::declval<OutToTuple&>(), 0)));
+    BOOST_HISTOGRAM_DETECT(has_function_serialize, (serialize(std::declval<OutToTuple&>(), std::declval<T&>(), 0)));
+}}
+
 struct OutToTuple {
+    using is_loading = std::false_type;
     py::tuple tuple;
     
-    template<typename T>
+    template<typename T, std::enable_if_t<bh::has_method_serialize<T>::value && !bh::has_function_serialize<T>::value>* = nullptr>
+    OutToTuple& operator& (T&& arg) {
+        arg.serialize(*this, 0);
+        return *this;
+    }
+    
+    template<typename T, std::enable_if_t<!bh::has_method_serialize<T>::value && bh::has_function_serialize<T>::value>* = nullptr>
+    OutToTuple& operator& (T&& arg) {
+        serialize(*this, arg, 0);
+        return *this;
+    }
+    
+    
+    template<typename T, std::enable_if_t<!bh::has_method_serialize<T>::value && !bh::has_function_serialize<T>::value>* = nullptr>
     OutToTuple& operator& (T&& arg) {
         tuple = tuple + py::make_tuple(arg);
         return *this;
@@ -38,12 +60,25 @@ struct OutToTuple {
 };
 
 struct InFromTuple {
+    using is_loading = std::true_type;
     const py::tuple& tuple;
     size_t current = 0;
     
     InFromTuple(const py::tuple& tuple_) : tuple(tuple_) {}
     
-    template<typename T>
+    template<typename T, std::enable_if_t<bh::has_method_serialize<T>::value && !bh::has_function_serialize<T>::value>* = nullptr>
+    InFromTuple& operator& (T&& arg) {
+        arg.serialize(*this, 0);
+        return *this;
+    }
+    
+    template<typename T, std::enable_if_t<!bh::has_method_serialize<T>::value && bh::has_function_serialize<T>::value>* = nullptr>
+    InFromTuple& operator& (T&& arg) {
+        serialize(*this, arg, 0);
+        return *this;
+    }
+    
+    template<typename T, std::enable_if_t<!bh::has_method_serialize<T>::value && !bh::has_function_serialize<T>::value>* = nullptr>
     InFromTuple& operator& (T&& arg) {
         using Tbase = std::decay_t<T>;
         arg = py::cast<Tbase>(tuple[current++]);
@@ -51,55 +86,22 @@ struct InFromTuple {
     }
 };
 
-namespace boost { namespace histogram {
-    BOOST_HISTOGRAM_DETECT(has_method_serialize, (std::declval<T&>().serialize(std::declval<OutToTuple&>(), 0)));
-    BOOST_HISTOGRAM_DETECT(has_function_serialize, (serialize(std::declval<T&>(), std::declval<OutToTuple&>(), 0)));
-}}
-
-/// Convert "serialize" to something usable for Python
-template<typename T>
-py::tuple to_py_tuple(std::true_type, const T& p) {
-    OutToTuple out;
-    const_cast<T&>(p).serialize(out,0);
-    return out.tuple;
-}
-
-/// Convert "serialize" to something usable for Python
-template<typename T>
-py::tuple to_py_tuple(std::false_type, const T& p) {
-    using namespace boost::histogram;
-    OutToTuple out;
-    serialize(out, const_cast<T&>(p), 0);
-    return out.tuple;
-}
-
-
-/// Convert "serialize" to something usable for Python
-template<typename T>
-T from_py_tuple(std::true_type, const py::tuple& t) {
-    InFromTuple in{t};
-    T p;
-    p.serialize(in, 0);
-    return p;
-}
-
-/// Convert "serialize" to something usable for Python
-template<typename T>
-T from_py_tuple(std::false_type, const py::tuple& t) {
-    using namespace boost::histogram;
-    InFromTuple in{t};
-    T p;
-    serialize(in, p, 0);
-    return p;
-}
 
 /// Make a pickle serializer with a given type
 template<typename T>
 decltype(auto) make_pickle() {
     return py::pickle(
         [](const T &p){
-            return to_py_tuple(bh::has_method_serialize<T>{}, p); },
-        [](py::tuple t){return from_py_tuple<T>(bh::has_method_serialize<T>{}, t); });
+            OutToTuple out;
+            out & const_cast<T&>(p);
+            return out.tuple;
+        },
+        [](py::tuple t){
+            InFromTuple in{t};
+            T p;
+            in & p;
+            return p;
+        });
 }
 
 // Note that this is just designed this way to make accessing private members easy.
@@ -162,60 +164,60 @@ void serialize(Archive&, null_type&, unsigned /* version */) {}
 template <class T, class Tr, class M, class O>
 template <class Archive>
 void regular<T, Tr, M, O>::serialize(Archive& ar, unsigned /* version */) {
-  transform::serialize(ar, static_cast<transform_type&>(*this), 0);
-  ar & size_meta_.first() & size_meta_.second() & min_ & delta_;
+    ar & static_cast<transform_type&>(*this);
+    ar & size_meta_.first() & size_meta_.second() & min_ & delta_;
 }
 
 template <class T, class M, class O>
 template <class Archive>
 void integer<T, M, O>::serialize(Archive& ar, unsigned /* version */) {
-  ar & size_meta_.first() & size_meta_.second() & min_;
+    ar & size_meta_.first() & size_meta_.second() & min_;
 }
 
 template <class T, class M, class O, class A>
 template <class Archive>
 void variable<T, M, O, A>::serialize(Archive& ar, unsigned /* version */) {
-  ar & vec_meta_.first() & vec_meta_.second();
+    ar & vec_meta_.first() & vec_meta_.second();
 }
 
 template <class T, class M, class O, class A>
 template <class Archive>
 void category<T, M, O, A>::serialize(Archive& ar, unsigned /* version */) {
-  ar & vec_meta_.first() & vec_meta_.second();
+    ar & vec_meta_.first() & vec_meta_.second();
 }
 
 template <class... Ts>
 template <class Archive>
 void variant<Ts...>::serialize(Archive& ar, unsigned /* version */) {
-  ar & impl;
+    ar & impl;
 }
 } // namespace axis
 
 namespace detail {
 template <class Archive, class T>
 void serialize(Archive& ar, vector_impl<T>& impl, unsigned /* version */) {
-  ar & static_cast<T&>(impl);
+    ar & static_cast<T&>(impl);
 }
 
 template <class Archive, class T>
 void serialize(Archive& ar, array_impl<T>& impl, unsigned /* version */) {
-  ar & impl.size_ & impl;
+    ar & impl.size_ & impl;
 }
 
 template <class Archive, class T>
 void serialize(Archive& ar, map_impl<T>& impl, unsigned /* version */) {
-  ar & impl.size_ & static_cast<T&>(impl);
+    ar & impl.size_ & static_cast<T&>(impl);
 }
 
 template <class Archive, class Allocator>
 void serialize(Archive& ar, mp_int<Allocator>& x, unsigned /* version */) {
-  ar & x.data;
+    ar & x.data;
 }
 } // namespace detail
 
 template <class Archive, class T>
 void serialize(Archive& ar, storage_adaptor<T>& s, unsigned /* version */) {
-  serialize(ar, static_cast<detail::storage_adaptor_impl<T>&>(s), 0);
+    ar & static_cast<detail::storage_adaptor_impl<T>&>(s);
 }
 
 template <class A>
