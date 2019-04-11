@@ -345,7 +345,7 @@ def test_pickle_0():
                     for m in range(a.axis(4).size(flow=True)):
                         a(i, j, k, l, m * 0.5 * np.pi)
 
-    io = pickle.dumps(a)
+    io = pickle.dumps(a,-1)
     b = pickle.loads(io)
 
     assert id(a) != id(b)
