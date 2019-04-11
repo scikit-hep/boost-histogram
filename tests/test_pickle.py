@@ -6,6 +6,8 @@ try:
 except ImportError:
     from pickle import loads, dumps
 
+import copy
+
 import boost.histogram as bh
 
 modes = [2,-1]
@@ -17,20 +19,32 @@ class TestAccumulators:
         new = loads(dumps(orig, mode))
         assert new == orig
 
+        new = copy.copy(orig)
+        assert new == orgin
+
     def test_weighted_sum(self, mode):
         orig = bh.accumulators.weighted_sum(1.5, 2.5)
         new = loads(dumps(orig, mode))
         assert new == orig
+
+        new = copy.copy(orig)
+        assert new == orgin
 
     def test_mean(self, mode):
         orig = bh.accumulators.mean(5, 1.5, 2.5)
         new = loads(dumps(orig, mode))
         assert new == orig
 
+        new = copy.copy(orig)
+        assert new == orgin
+
     def test_weighted_mean(self, mode):
         orig = bh.accumulators.weighted_mean(1.5, 2.5, 3.5, 4.5)
         new = loads(dumps(orig, mode))
         assert new == orig
+
+        new = copy.copy(orig)
+        assert new == orgin
 
 
 axes_creations = (
@@ -54,6 +68,12 @@ axes_creations = (
 def test_axes(axis, args, mode):
     orig = axis(*args)
     new = loads(dumps(orig, mode))
+    assert new == orig
+
+@pytest.mark.parametrize("axis,args", axes_creations)
+def test_axes_copy(axis, args)
+    orig = axis(*args)
+    new = copy.copy(orig)
     assert new == orig
 
 
