@@ -90,7 +90,12 @@ py::class_<A> register_axis_by_type(py::module& m, Args&&... args) {
                   "Set the axis label")
     
     .def("__copy__", [](const A& self){return A(self);})
-    .def("__deepcopy__", [](const A& self, py::object){return A(self);})
+    .def("__deepcopy__", [](const A& self, py::object memo){
+        A* a = new A(self);
+        py::module copy = py::module::import("copy");
+        a->metadata() = copy.attr("deepcopy")(a->metadata(), memo);
+        return a;
+    })
 
     ;
 

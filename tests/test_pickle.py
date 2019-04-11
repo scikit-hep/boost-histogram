@@ -70,7 +70,15 @@ def test_metadata_str(axis, args, copy_fn):
     assert new == orig
 
 # Special test: Deepcopy should change metadata id, copy should not
-# TODO
+@pytest.mark.parametrize("metadata", ({1:2}, [1,2,3]))
+def test_compare_copy(metadata):
+    orig = bh.axis.regular_noflow(4,0,2, metadata=metadata)
+    new = copy.copy(orig)
+    dnew = copy.deepcopy(orig)
+
+    assert orig.metadata is new.metadata
+    assert orig.metadata == dnew.metadata
+    assert orig.metadata is not dnew.metadata
 
 @pytest.mark.parametrize("copy_fn", copies)
 @pytest.mark.parametrize("axis,args", axes_creations)
