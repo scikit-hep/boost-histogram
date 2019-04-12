@@ -123,9 +123,18 @@ py::class_<bh::histogram<A, S>> register_histogram_by_type(py::module& m, const 
 
     .def("__repr__", shift_to_string<histogram_t>())
     
-    .def("sum", [](const histogram_t &self) {
-        return bh::algorithm::sum(self);
-    })
+    .def("sum", [](const histogram_t &self, bool flow) {
+        if(flow) {
+            return bh::algorithm::sum(self);
+        } else {
+            using T = typename bh::histogram<A, S>::value_type;
+            using Sum = boost::mp11::mp_if<std::is_arithmetic<T>, bh::accumulators::sum<double>, T>;
+            Sum sum;
+            for (auto x : bh::indexed(self)) sum += *x;
+            using R = boost::mp11::mp_if<std::is_arithmetic<T>, double, T>;
+            return static_cast<R>(sum);
+        }
+    }, "flow"_a = false)
     
     /* Broken: Does not work if any string axes present (even just in variant)
     .def("rebin", [](const histogram_t &self, unsigned axis, unsigned merge){
@@ -142,6 +151,8 @@ py::class_<bh::histogram<A, S>> register_histogram_by_type(py::module& m, const 
     */
     
     .def("project", [](const histogram_t &self, py::args values){
+        // If static
+        // histogram<any_axis> any = self;
         return bh::algorithm::project(self, py::cast<std::vector<unsigned>>(values));
     }, "Project to a single axis or several axes on a multidiminsional histogram")
     
@@ -210,6 +221,7 @@ py::module register_histogram(py::module& m) {
         "any_weight",
         "N-dimensional histogram for weighted data with any axis types.");
 
+    // Requieres sampled fills
     // register_histogram_by_type<axes::any, bh::profile_storage>(hist,
     //    "any_profile",
     //    "N-dimensional histogram for sampled data with any axis types.");
