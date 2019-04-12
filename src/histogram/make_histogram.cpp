@@ -22,8 +22,7 @@ void register_make_histogram(py::module& m, py::module& hist) {
     
     m.def("make_histogram", [](py::args args, py::kwargs kwargs) -> py::object {
         
-        py::object storage = kwargs.contains("storage") ?
-        kwargs["storage"] : py::cast(storage::int_());
+        py::object storage = kwargs.contains("storage") ? kwargs["storage"] : py::cast(storage::int_());
         
         // We try each possible axes type that has high-performance single-type overloads.
         

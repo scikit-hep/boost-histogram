@@ -99,6 +99,18 @@ def test_regular_axis_repr(axis):
     assert 'That' in repr(ax)
     assert ax.metadata == 'That'
 
+def test_metadata_compare():
+    ax1 = bh.axis.regular_uoflow(1,2,3, metadata=[1,])
+    ax2 = bh.axis.regular_uoflow(1,2,3, metadata=[1,])
+
+    assert ax1 == ax2
+
+def test_metadata_compare_neq():
+    ax1 = bh.axis.regular_uoflow(1,2,3, metadata=[1,])
+    ax2 = bh.axis.regular_uoflow(1,2,3, metadata=[2,])
+
+    assert ax1 != ax2
+
 @pytest.mark.parametrize("axis", normal_axs)
 def test_any_metadata(axis):
     ax = axis(2,3,4, metadata={"one": "1"})
