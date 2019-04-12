@@ -146,7 +146,9 @@ Run the unit tests (requires pytest and numpy). Use `ctest` or `make test`, like
 make test
 ```
 
-The tests require `numpy` and `pytest`. If you are using Python 2, you will need `futures` as well.
+The tests require `numpy`, `pytest`, and `pytest-benchmark`. If you are using Python 2, you will need `futures` as well.
+
+You can enable benchmarking with `--benchmark-enable`. You can also run explicit performance tests with `scripts/performance_report.py`.
 
 To install using the pip method for development instead, run:
 

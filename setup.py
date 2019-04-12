@@ -94,7 +94,7 @@ class BuildExt(build_ext):
         build_ext.build_extensions(self)
 
 extras = {
-    'test': ['pytest', 'numpy', 'futures; python_version < "3"']
+    'test': ['pytest', 'pytest-benchmark', 'numpy', 'futures; python_version < "3"']
 }
 
 setup(
