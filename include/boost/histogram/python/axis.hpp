@@ -20,7 +20,7 @@ namespace pybind11 { namespace detail {
 }} // namespace pybind11::detail
 
 
-/// Utility to concer an axis to edges array
+/// Utility to convert an axis to edges array
 template<typename A>
 py::array_t<double> axis_to_edges(const A& ax, bool flow) {
     unsigned overflow = flow && (bh::axis::traits::options(ax) & bh::axis::option::underflow);
@@ -47,16 +47,50 @@ decltype(auto) axis_to_bins(const A& self, bool flow) {
     std::vector<bh::detail::remove_cvref_t<decltype(self.bin(0))>> out;
     bool overflow = flow && (bh::axis::traits::options(self) & bh::axis::option::underflow);
     bool underflow = flow && (bh::axis::traits::options(self) & bh::axis::option::overflow);
-    
+
     out.reserve((size_t) bh::axis::traits::extent(self));
-    
+
     for(int i = 0 - underflow ; i<self.size() + overflow; i++)
         out.emplace_back(self.bin(i));
-        
+
     return out;
 }
 
-using metadata_t = py::object;
+inline bool PyObject_Check(void* value) {
+    return value != nullptr;
+}
+
+#if PY_MAJOR_VERSION < 3
+
+extern PyThreadState * _PyThreadState_Current;
+
+inline int PyGILState_Check(void) {
+    PyThreadState * tstate = _PyThreadState_Current;
+    return tstate && (tstate == PyGILState_GetThisThreadState());
+}
+#endif
+
+class metadata_t : public py::object {
+    PYBIND11_OBJECT_DEFAULT(metadata_t, object, PyObject_Check);
+
+    bool operator==(const metadata_t& other) const {
+        if(PyGILState_Check()) {
+            return py::cast<bool>(this->attr("__eq__")(other));
+        } else {
+            py::gil_scoped_acquire gil;
+            return py::cast<bool>(this->attr("__eq__")(other));
+        }
+    }
+    bool operator!=(const metadata_t& other) const {
+        if(PyGILState_Check()) {
+            return py::cast<bool>(this->attr("__ne__")(other));
+        } else {
+            py::gil_scoped_acquire gil;
+            return py::cast<bool>(this->attr("__ne__")(other));
+        }
+    }
+};
+
 
 namespace axis {
 

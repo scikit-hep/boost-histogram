@@ -238,8 +238,8 @@ void unlimited_storage<A>::serialize(Archive& ar, unsigned /* version */) {
     ar & buffer.type & buffer.size;
   }
     
-  buffer.apply([this, &ar](auto* tp) {
-    ar & buffer;
+  buffer.apply([&ar](auto* tp) {
+    ar & *tp;
   });
 }
 

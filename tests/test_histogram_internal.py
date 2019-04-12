@@ -172,6 +172,13 @@ def test_project():
     assert_array_equal(h.project(0), h0)
     assert_array_equal(h.project(1), h1)
 
+def test_sums():
+    h = bh.histogram(bh.axis.regular_uoflow(4,0,1))
+    h([.1,.2,.3,10])
+
+    assert h.sum() == 3
+    assert h.sum(flow=True) == 4
+
 def test_int_cat_hist():
     h = bh.hist.any_int([bh.axis.category_int([1,2,3])])
 

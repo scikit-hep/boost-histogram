@@ -138,6 +138,5 @@ def test_histogram_metadata(copy_fn, metadata):
 
     hist = bh.histogram(bh.axis.regular(4,1,2, metadata=metadata))
     new = copy_fn(hist)
-    assert hist.axis(0).metadata == new.axis(0).metadata
+    assert hist == new
 
-    # Note that == directly will not work since it is "is" in Python

@@ -146,7 +146,9 @@ Run the unit tests (requires pytest and numpy). Use `ctest` or `make test`, like
 make test
 ```
 
-The tests require `numpy` and `pytest`. If you are using Python 2, you will need `futures` as well.
+The tests require `numpy`, `pytest`, and `pytest-benchmark`. If you are using Python 2, you will need `futures` as well.
+
+You can enable benchmarking with `--benchmark-enable`. You can also run explicit performance tests with `scripts/performance_report.py`.
 
 To install using the pip method for development instead, run:
 
@@ -157,6 +159,21 @@ python -m pip install .[test]
 ```
 
 You'll need to reinstall it if you want to rebuild.
+
+<details><summary>Updating dependencies (click to expand)</summary>
+
+This will checkout new versions of the dependencies. Example given using the fish shell.
+
+```fish
+for f in *
+    cd $f
+    git fetch
+    git checkout boost-1.70.0 || echo "Not found"
+    cd ..
+end
+```
+
+</details>
 
 [gitter-badge]: https://badges.gitter.im/HSF/PyHEP-histogramming.svg
 [gitter-link]:  https://gitter.im/HSF/PyHEP-histogramming?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge

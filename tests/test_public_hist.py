@@ -75,7 +75,8 @@ def test_fill_int_1d():
         h(1, 2)
     for x in (-10, -1, -1, 0, 1, 1, 1, 10):
         h(x)
-    assert h.sum() == 8
+    assert h.sum() == 6
+    assert h.sum(flow=True) == 8
     assert h.axis(0).size(flow=True) == 5
 
     with pytest.raises(TypeError):
@@ -108,8 +109,9 @@ def test_fill_1d(flow):
     for x in (-10, -1, -1, 0, 1, 1, 1, 10):
         h(x)
 
-    assert h.sum() == {False: 6, True: 8}[flow]
-    assert h.axis(0).size(flow=True) == {False: 3, True: 5}[flow]
+    assert h.sum() == 6
+    assert h.sum(flow=True) == 6 + 2*flow
+    assert h.axis(0).size(flow=True) == 3 + 2*flow
 
     with pytest.raises(TypeError):
         h.at(0, foo=None)
