@@ -51,7 +51,7 @@ py::class_<bh::histogram<A, S>> register_histogram_by_type(py::module& m, const 
     .def("__deepcopy__", [](const histogram_t& self, py::object memo){
         histogram_t* a = new histogram_t(self);
         py::module copy = py::module::import("copy");
-        for(int i=0; i<a->rank(); i++) {
+        for(unsigned i=0; i<a->rank(); i++) {
             bh::unsafe_access::axis(*a, i).metadata() = copy.attr("deepcopy")(a->axis(i).metadata(), memo);
         }
         return a;
@@ -128,9 +128,10 @@ py::class_<bh::histogram<A, S>> register_histogram_by_type(py::module& m, const 
             return bh::algorithm::sum(self);
         } else {
             using T = typename bh::histogram<A, S>::value_type;
+            using AddType = boost::mp11::mp_if<std::is_arithmetic<T>, double, T>;
             using Sum = boost::mp11::mp_if<std::is_arithmetic<T>, bh::accumulators::sum<double>, T>;
             Sum sum;
-            for (auto x : bh::indexed(self)) sum += *x;
+            for (auto x : bh::indexed(self)) sum += (AddType) *x;
             using R = boost::mp11::mp_if<std::is_arithmetic<T>, double, T>;
             return static_cast<R>(sum);
         }

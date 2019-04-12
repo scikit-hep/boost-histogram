@@ -80,22 +80,23 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src PREFIX "Source Files" FILES ${
 option(BOOST_HISTOGRAM_ERRORS "Make warnings errors (for CI mostly)")
 
 # Adding warnings
-if("${CMAKE_COMPILER_ID}" MATCHES "CLANG" OR  "${CMAKE_COMPILER_ID}" MATCHES "GNU")
+if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang" OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
     target_compile_options(histogram PRIVATE -Wall -Wextra -pedantic-errors -Wconversion -Wsign-conversion)
     if(BOOST_HISTOGRAM_ERRORS)
         target_compile_options(histogram PRIVATE -Werror)
     endif()
-elseif("${CMAKE_COMPILER_ID}" MATCHES "MSVC")
+
+    # Python 2 will not be compatible with C++17, but let's not be reminded of that over and over again here.
+    if("${PYTHON_VERSION_MAJOR}" LESS 3)
+         target_compile_options(histogram PRIVATE -Wno-deprecated-register)
+    endif()
+elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
     target_compile_options(histogram PRIVATE /W4)
     if(BOOST_HISTOGRAM_ERRORS)
         target_compile_options(histogram PRIVATE /WE)
     endif()
 endif()
 
-# Hide an error from PyBind11 (will be fixed upstream hopefully)
-if("${CMAKE_COMPILER_ID}" MATCHES "CLANG")
-     target_compile_options(histogram PRIVATE -Wno-return-std-move)
-endif()
 
 
 set(BOOST_HISTOGRAM_DETAIL_AXES_LIMIT "" CACHE STRING "Set the maximum number of axis in a histogram (affects compile time and size)")

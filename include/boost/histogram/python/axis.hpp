@@ -60,6 +60,16 @@ inline bool PyObject_Check(void* value) {
     return value != nullptr;
 }
 
+#if PY_MAJOR_VERSION < 3
+
+extern PyThreadState * _PyThreadState_Current;
+
+inline int PyGILState_Check(void) {
+    PyThreadState * tstate = _PyThreadState_Current;
+    return tstate && (tstate == PyGILState_GetThisThreadState());
+}
+#endif
+
 class metadata_t : public py::object {
     PYBIND11_OBJECT_DEFAULT(metadata_t, object, PyObject_Check);
 
