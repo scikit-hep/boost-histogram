@@ -48,7 +48,14 @@ py::class_<bh::histogram<A, S>> register_histogram_by_type(py::module& m, const 
          "Reset bin counters to zero")
     
     .def("__copy__", [](const histogram_t& self){return histogram_t(self);})
-    .def("__deepcopy__", [](const histogram_t& self, py::object){return histogram_t(self);})
+    .def("__deepcopy__", [](const histogram_t& self, py::object memo){
+        histogram_t* a = new histogram_t(self);
+        py::module copy = py::module::import("copy");
+        for(int i=0; i<a->rank(); i++) {
+            bh::unsafe_access::axis(*a, i).metadata() = copy.attr("deepcopy")(a->axis(i).metadata(), memo);
+        }
+        return a;
+    })
 
     .def(py::self + py::self)
     .def(py::self == py::self)

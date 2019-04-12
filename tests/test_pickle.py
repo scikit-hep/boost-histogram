@@ -71,7 +71,7 @@ def test_metadata_str(axis, args, copy_fn):
 
 # Special test: Deepcopy should change metadata id, copy should not
 @pytest.mark.parametrize("metadata", ({1:2}, [1,2,3]))
-def test_compare_copy(metadata):
+def test_compare_copy_axis(metadata):
     orig = bh.axis.regular_noflow(4,0,2, metadata=metadata)
     new = copy.copy(orig)
     dnew = copy.deepcopy(orig)
@@ -80,8 +80,19 @@ def test_compare_copy(metadata):
     assert orig.metadata == dnew.metadata
     assert orig.metadata is not dnew.metadata
 
-@pytest.mark.parametrize("copy_fn", copies)
+# Special test: Deepcopy should change metadata id, copy should not
+@pytest.mark.parametrize("metadata", ({1:2}, [1,2,3]))
+def test_compare_copy_hist(metadata):
+    orig = bh.make_histogram(bh.axis.regular_noflow(4,0,2, metadata=metadata))
+    new = copy.copy(orig)
+    dnew = copy.deepcopy(orig)
+
+    assert orig.axis(0).metadata is new.axis(0).metadata
+    assert orig.axis(0).metadata == dnew.axis(0).metadata
+    assert orig.axis(0).metadata is not dnew.axis(0).metadata
+
 @pytest.mark.parametrize("axis,args", axes_creations)
+@pytest.mark.parametrize("copy_fn", copies)
 def test_metadata_any(axis, args, copy_fn):
     orig = axis(*args, metadata=(1,2,3))
     new = copy_fn(orig)
