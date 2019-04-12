@@ -12,7 +12,7 @@
 #include <boost/histogram/python/histogram_fill.hpp>
 #include <boost/histogram/python/histogram_atomic.hpp>
 #include <boost/histogram/python/histogram_threaded.hpp>
-#include <boost/histogram/python/try_cast.hpp>
+#include <boost/histogram/python/pickle.hpp>
 
 #include <boost/histogram.hpp>
 #include <boost/histogram/axis/ostream.hpp>
@@ -22,11 +22,9 @@
 
 #include <boost/mp11.hpp>
 
-#include <cassert>
 #include <vector>
 #include <sstream>
 #include <tuple>
-#include <cmath>
 
 
 template<typename A, typename S>
@@ -48,6 +46,16 @@ py::class_<bh::histogram<A, S>> register_histogram_by_type(py::module& m, const 
          "Total number of bins in the histogram (including underflow/overflow)" )
     .def("reset", &histogram_t::reset,
          "Reset bin counters to zero")
+    
+    .def("__copy__", [](const histogram_t& self){return histogram_t(self);})
+    .def("__deepcopy__", [](const histogram_t& self, py::object memo){
+        histogram_t* a = new histogram_t(self);
+        py::module copy = py::module::import("copy");
+        for(int i=0; i<a->rank(); i++) {
+            bh::unsafe_access::axis(*a, i).metadata() = copy.attr("deepcopy")(a->axis(i).metadata(), memo);
+        }
+        return a;
+    })
 
     .def(py::self + py::self)
     .def(py::self == py::self)
@@ -137,6 +145,8 @@ py::class_<bh::histogram<A, S>> register_histogram_by_type(py::module& m, const 
         return bh::algorithm::project(self, py::cast<std::vector<unsigned>>(values));
     }, "Project to a single axis or several axes on a multidiminsional histogram")
     
+    .def(make_pickle<histogram_t>())
+    
     ;
 
     return hist;
@@ -151,7 +161,7 @@ void add_atomic_fill(py::class_<bh::histogram<A, S>>& hist) {
     ;
 }
 
-void register_histogram(py::module& m) {
+py::module register_histogram(py::module& m) {
     
     m.attr("BOOST_HISTOGRAM_DETAIL_AXES_LIMIT") = BOOST_HISTOGRAM_DETAIL_AXES_LIMIT;
     
@@ -200,51 +210,6 @@ void register_histogram(py::module& m) {
         "any_weight",
         "N-dimensional histogram for weighted data with any axis types.");
 
-    m.def("make_histogram", [](py::args args, py::kwargs kwargs) -> py::object {
-
-        py::object storage = kwargs.contains("storage") ?
-          kwargs["storage"] : py::cast(storage::int_());
-
-        // We try each possible axes type that has high-performance single-type overloads.
-
-        try {
-          return try_cast<
-            storage::int_,
-            storage::atomic_int,
-            storage::unlimited
-          >(storage, [&args](auto&& storage) {
-            auto reg = py::cast<axes::regular>(args);
-            return py::cast(bh::make_histogram_with(storage, reg),
-                            py::return_value_policy::move);
-          });
-        } catch(const py::cast_error&) {}
-
-        try {
-          return try_cast<
-            storage::int_
-          >(storage, [&args](auto&& storage) {
-            auto reg = py::cast<axes::regular_noflow>(args);
-            return py::cast(bh::make_histogram_with(storage, reg),
-                            py::return_value_policy::move);
-          });
-        } catch(const py::cast_error&) {}
-
-        // fallback to slower generic implementation
-        auto axes = py::cast<axes::any>(args);
-
-        return try_cast<
-          storage::int_,
-          storage::double_,
-          storage::unlimited,
-          storage::weight,
-          storage::atomic_int
-        >(storage, [&axes](auto&& storage) {
-          return py::cast(bh::make_histogram_with(storage, axes),
-                          py::return_value_policy::move);
-        });
-
-    }, "Make any histogram");
-
     // register_histogram_by_type<axes::any, bh::profile_storage>(hist,
     //    "any_profile",
     //    "N-dimensional histogram for sampled data with any axis types.");
@@ -252,20 +217,8 @@ void register_histogram(py::module& m) {
     // register_histogram_by_type<axes::any, bh::weighted_profile_storage>(hist,
     //    "any_weighted_profile",
     //    "N-dimensional histogram for weighted and sampled data with any axis types.");
-
-    // This factory makes a class that can be used to create histograms and also be used in is_instance
-    py::object factory_meta_py = py::module::import("boost.histogram_utils").attr("FactoryMeta");
     
-    m.attr("histogram") = factory_meta_py(m.attr("make_histogram"),
-                                          py::make_tuple(hist.attr("regular_unlimited"),
-                                                         hist.attr("regular_int"),
-                                                         hist.attr("regular_atomic_int"),
-                                                         hist.attr("regular_noflow_int"),
-                                                         hist.attr("any_int"),
-                                                         hist.attr("any_atomic_int"),
-                                                         hist.attr("any_double"),
-                                                         hist.attr("any_unlimited"),
-                                                         hist.attr("any_weight")
-                                                         ));
+    return hist;
+
 }
 

@@ -6,7 +6,7 @@ import numpy as np
 
 
 def test_weighted_sum():
-    v = bh.accumulator.weighted_sum(1.5, 2.5)
+    v = bh.accumulators.weighted_sum(1.5, 2.5)
 
     assert v.value == 1.5
     assert v.variance == 2.5
@@ -16,7 +16,7 @@ def test_weighted_sum():
     assert v.value == 3.0
     assert v.variance == 4.75
 
-    v = bh.accumulator.weighted_sum()
+    v = bh.accumulators.weighted_sum()
     v([1,2,3], [4,5,6])
 
     assert v.value == 6
@@ -25,7 +25,7 @@ def test_weighted_sum():
 
 
 def test_weighted_mean():
-    v = bh.accumulator.weighted_mean()
+    v = bh.accumulators.weighted_mean()
     v(1,4)
     v(2,1)
 
@@ -33,7 +33,7 @@ def test_weighted_mean():
     assert v.variance == 4.5
     assert v.value == 2.0
 
-    v = bh.accumulator.weighted_mean()
+    v = bh.accumulators.weighted_mean()
     v([1,2],[4,1])
 
     assert v.sum_of_weights == 3.0
@@ -43,7 +43,7 @@ def test_weighted_mean():
 
 
 def test_mean():
-    v = bh.accumulator.mean()
+    v = bh.accumulators.mean()
     v(1)
     v(2)
     v(3)
@@ -52,7 +52,7 @@ def test_mean():
     assert v.variance == 1
     assert v.value == 2
 
-    v = bh.accumulator.mean()
+    v = bh.accumulators.mean()
     v([1,2,3])
 
     assert v.count == 3
@@ -61,14 +61,14 @@ def test_mean():
 
 
 def test_sum():
-    v = bh.accumulator.sum()
+    v = bh.accumulators.sum()
     v += 1
     v += 2
     v += 3
 
     assert v.value == 6
 
-    v = bh.accumulator.sum()
+    v = bh.accumulators.sum()
     v([1,2,3])
     assert v.value == 6
 

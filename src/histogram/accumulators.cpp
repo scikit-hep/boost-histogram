@@ -6,6 +6,8 @@
 #include <boost/histogram/python/pybind11.hpp>
 #include <pybind11/operators.h>
 
+#include <boost/histogram/python/pickle.hpp>
+
 #include <boost/histogram.hpp>
 #include <boost/histogram/accumulators/weighted_sum.hpp>
 #include <boost/histogram/accumulators/weighted_mean.hpp>
@@ -14,14 +16,32 @@
 #include <boost/histogram/accumulators/ostream.hpp>
 
 
-void register_accumulators(py::module &m) {
+template<typename A, typename... Args>
+py::class_<A> add_accumulator(py::module acc, Args&&... args) {
     
-    py::module accumulator = m.def_submodule("accumulator");
+    return py::class_<A>(acc, std::forward<Args>(args)...)
+        .def(py::init<>())
+    
+        .def(py::self += py::self)
+        .def(py::self == py::self)
+        .def(py::self != py::self)
+    
+        .def("__repr__", shift_to_string<A>())
+    
+        .def("__copy__", [](const A& self){return A(self);})
+        .def("__deepcopy__", [](const A& self, py::object){return A(self);})
+    
+        .def(make_pickle<A>())
+    ;
+}
+
+py::module register_accumulators(py::module &m) {
+    
+    py::module accumulators = m.def_submodule("accumulators");
 
     using weighted_sum = bh::accumulators::weighted_sum<double>;
     
-    py::class_<weighted_sum>(accumulator, "weighted_sum")
-        .def(py::init<>())
+    add_accumulator<weighted_sum>(accumulators, "weighted_sum")
         .def(py::init<const double&>(), "value"_a)
         .def(py::init<const double&, const double&>(), "value"_a, "variance"_a)
     
@@ -31,8 +51,6 @@ void register_accumulators(py::module &m) {
         .def(py::self += double())
         .def(py::self += py::self)
         .def(py::self *= double())
-        .def(py::self == py::self)
-        .def(py::self != py::self)
     
         .def("__call__", py::vectorize([](weighted_sum& self, double value){
             self += value;
@@ -43,14 +61,11 @@ void register_accumulators(py::module &m) {
             self += weighted_sum(value, variance);
             return self.value(); 
         }), "values"_a, "variances"_a)
-    
-        .def("__repr__", shift_to_string<weighted_sum>())
     ;
 
     using weighted_mean = bh::accumulators::weighted_mean<double>;
 
-    py::class_<weighted_mean>(accumulator, "weighted_mean")
-        .def(py::init<>())
+    add_accumulator<weighted_mean>(accumulators, "weighted_mean")
         .def(py::init<const double&, const double&, const double&, const double&>(),
              "wsum"_a, "wsum2"_a, "mean"_a, "variance"_a)
 
@@ -59,10 +74,7 @@ void register_accumulators(py::module &m) {
         .def_property_readonly("variance", &weighted_mean::variance)
         .def_property_readonly("value", &weighted_mean::value)
 
-        .def(py::self += py::self)
         .def(py::self *= double())
-        .def(py::self == py::self)
-        .def(py::self != py::self)
     
         .def("__call__", py::vectorize([](weighted_mean& self, double value){
             self(value);
@@ -72,16 +84,13 @@ void register_accumulators(py::module &m) {
            self(weight, value);
            return self.value();
        }), "weight"_a, "value"_a)
-
-      .def("__repr__", shift_to_string<weighted_mean>())
     
       ;
 
     
     using mean = bh::accumulators::mean<double>;
     
-    py::class_<mean>(accumulator, "mean")
-        .def(py::init<>())
+    add_accumulator<mean>(accumulators, "mean")
         .def(py::init<std::size_t, const double&, const double&>(),
              "value"_a, "mean"_a, "variance"_a)
     
@@ -89,31 +98,23 @@ void register_accumulators(py::module &m) {
         .def_property_readonly("variance", &mean::variance)
         .def_property_readonly("value", &mean::value)
     
-        .def(py::self += py::self)
         .def(py::self *= double())
-        .def(py::self == py::self)
-        .def(py::self != py::self)
     
         .def("__call__", py::vectorize([](mean& self, double value){
             self(value);
             return self.value();
         }), "value"_a)
-    
-        .def("__repr__", shift_to_string<mean>())
     ;
     
     using sum = bh::accumulators::sum<double>;
     
-    py::class_<sum>(accumulator, "sum")
-        .def(py::init<>())
+    add_accumulator<sum>(accumulators, "sum")
         .def(py::init<const double&>(), "value"_a)
     
         .def_property("value", &sum::operator double, [](sum& s, double v){s = v;})
     
         .def(py::self += double())
         .def(py::self *= double())
-        .def(py::self == py::self)
-        .def(py::self != py::self)
     
         .def("__call__", py::vectorize([](sum& self, double value){
             self += value;
@@ -123,7 +124,7 @@ void register_accumulators(py::module &m) {
         .def_property_readonly("small", &sum::small)
         .def_property_readonly("large", &sum::large)
     
-        .def("__repr__", shift_to_string<sum>())
     ;
 
+    return accumulators;
 }

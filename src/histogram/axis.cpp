@@ -10,6 +10,7 @@
 #include <pybind11/eval.h>
 
 #include <boost/histogram/python/axis.hpp>
+#include <boost/histogram/python/pickle.hpp>
 
 #include <boost/histogram/axis/ostream.hpp>
 #include <boost/histogram.hpp>
@@ -85,8 +86,16 @@ py::class_<A> register_axis_by_type(py::module& m, Args&&... args) {
     .def_static("options", &A::options, "Return the options associated to the axis")
     .def_property("metadata",
                   [](const A& self){return self.metadata();},
-                  [](A& self, metadata_t label){self.metadata() = label;},
+                  [](A& self, const metadata_t& label){self.metadata() = label;},
                   "Set the axis label")
+    
+    .def("__copy__", [](const A& self){return A(self);})
+    .def("__deepcopy__", [](const A& self, py::object memo){
+        A* a = new A(self);
+        py::module copy = py::module::import("copy");
+        a->metadata() = copy.attr("deepcopy")(a->metadata(), memo);
+        return a;
+    })
 
     ;
 
@@ -95,6 +104,8 @@ py::class_<A> register_axis_by_type(py::module& m, Args&&... args) {
 
     // This is a replacement for constexpr if
     add_to_axis<A>(axis, std::integral_constant<bool, std::is_reference<Result>::value || std::is_integral<Result>::value>{});
+
+    axis.def(make_pickle<A>());
 
     return axis;
 }
@@ -123,7 +134,7 @@ py::class_<bh::axis::interval_view<A>> register_axis_iv_by_type(py::module& m, c
 struct regular_type {};
 
 
-void register_axis(py::module &m) {
+py::module register_axis(py::module &m) {
 
     py::module ax = m.def_submodule("axis");
 
@@ -245,4 +256,5 @@ void register_axis(py::module &m) {
     .def(py::init<>())
     ;
 
+    return ax;
 }

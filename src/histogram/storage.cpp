@@ -6,6 +6,8 @@
 #include <boost/histogram/python/pybind11.hpp>
 
 #include <boost/histogram/python/storage.hpp>
+#include <boost/histogram/python/pickle.hpp>
+#include <pybind11/operators.h>
 
 #include <boost/histogram.hpp>
 #include <boost/histogram/storage_adaptor.hpp>
@@ -17,16 +19,34 @@
 #include <utility>
 #include <vector>
 
+/// Add helpers common to all storage types
+template<typename A, typename T>
+py::class_<A> register_storage_by_type(py::module& m, const char* name, const char* desc) {
+    py::class_<A> storage(m, name, desc);
+    
+    storage
+    .def(py::init<>())
+    .def("__getitem__", [](A& self, size_t ind){return self.at(ind);})
+    .def("__setitem__", [](A& self, size_t ind, T val){self.at(ind) = val;})
+    .def("push_back", [](A& self, T val){self.push_back(val);})
+    .def(py::self == py::self)
+    .def(py::self != py::self)
+    .def(make_pickle<A>())
+    .def("__copy__", [](const A& self){return A(self);})
+    .def("__deepcopy__", [](const A& self, py::object){return A(self);})
+    ;
+    
+    return storage;
+}
 
-void register_storage(py::module &m) {
+
+py::module register_storage(py::module &m) {
 
     py::module storage = m.def_submodule("storage");
 
     // Fast storages
 
-    py::class_<storage::int_>(storage, "int", "Integers in vectors storage type")
-    .def(py::init<>())
-    ;
+    register_storage_by_type<storage::int_, unsigned>(storage, "int", "Integers in vectors storage type");
 
     py::class_<storage::double_>(storage, "double", "Weighted storage without variance type (fast but simple)")
     .def(py::init<>())
@@ -54,4 +74,5 @@ void register_storage(py::module &m) {
     .def(py::init<>())
     ;
 
+    return storage;
 }
