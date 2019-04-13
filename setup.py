@@ -4,6 +4,15 @@ import sys
 import setuptools
 from setuptools import find_packages
 
+try:
+    import numpy as np
+
+    from numpy.distutils.ccompiler import CCompiler_compile
+    import distutils.ccompiler
+    distutils.ccompiler.CCompiler.compile = CCompiler_compile
+except ImportError:
+    print("Numpy not found, parallel compile not available")
+
 __version__ = '0.0.1'
 
 ext_modules = [
