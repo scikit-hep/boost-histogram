@@ -51,6 +51,9 @@ jobs:
   pool:
     vmImage: 'ubuntu-16.04'
   steps:
+  - checkout: self
+    fetchDepth: 50
+    submodules: true
   - script: |
       docker run --rm -v `pwd`:/io skhep/manylinuxgcc-x86_64 /io/.ci/build-wheels.sh
       PRECMD=linux32 docker run --rm -v `pwd`:/io skhep/manylinuxgcc-i686 /io/.ci/build-wheels.sh
