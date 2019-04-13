@@ -4,9 +4,8 @@ import sys
 import setuptools
 from setuptools import find_packages
 
+# Use -j N or set the environment variable NPY_NUM_BUILD_JOBS
 try:
-    import numpy as np
-
     from numpy.distutils.ccompiler import CCompiler_compile
     import distutils.ccompiler
     distutils.ccompiler.CCompiler.compile = CCompiler_compile

@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e -x
 
+export NPY_NUM_BUILD_JOBS=4
+
 # Compile wheels
 for PYBIN in /opt/python/*/bin; do
     "${PYBIN}/pip" install -r /io/dev-requirements.txt
