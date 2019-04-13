@@ -8,12 +8,12 @@ for PYBIN in /opt/python/*/bin; do
 done
 
 # Bundle external shared libraries into the wheels
-for whl in wheelhouse/*.whl; do
+for whl in wheelhouse/boost_histogram-*.whl; do
     auditwheel repair "$whl" -w /io/wheelhouse/
 done
 
 # Install packages and test
 for PYBIN in /opt/python/*/bin/; do
-    "${PYBIN}/pip" install python-manylinux-demo --no-index -f /io/wheelhouse
-    (cd "$HOME"; "${PYBIN}/python" -m pytest pymanylinuxdemo)
+    "${PYBIN}/pip" install boost_histogram --no-index -f /io/wheelhouse
+    (cd /io/tests && "${PYBIN}/python" -m pytest)
 done
