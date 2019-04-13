@@ -1,0 +1,30 @@
+graft boost
+graft include
+graft scripts
+graft src
+graft tests
+
+graft extern/assert/include
+graft extern/callable_traits/include
+graft extern/config/include
+graft extern/container_hash/include
+graft extern/core/include
+graft extern/detail/include
+graft extern/histogram/include
+graft extern/integer/include
+graft extern/iterator/include
+graft extern/move/include
+graft extern/mp11/include
+graft extern/mpl/include
+graft extern/preprocessor/include
+graft extern/static_assert/include
+graft extern/throw_exception/include
+graft extern/type_index/include
+graft extern/type_traits/include
+graft extern/utility/include
+graft extern/variant/include
+
+graft extern/pybind11
+
+global-exclude .git*
+include CMakeLists.txt LICENSE README.md setup.py dev-requirements.txt
