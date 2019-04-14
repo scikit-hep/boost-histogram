@@ -7,12 +7,17 @@ steps:
 
 - script: |
     python -m pip install --upgrade pip
-    python -m pip install --upgrade pytest
-  displayName: 'Install dependencies'
+    python -m pip install --upgrade pytest wheel
+  displayName: 'Install distribution tools for Python'
 
 - script: |
-    python -m pip install --verbose -e .[test]
-  displayName: 'Build and install package'
+    python -m pip wheel . -w wheelhouse/
+    ls -lh wheelhouse
+  displayName: 'Build wheel'
+
+- script: |
+    python -m pip install boost_histogram[test] --no-index -f wheelhouse
+  displayName: 'Install wheel'
 
 - script: |
     python -m pytest tests
