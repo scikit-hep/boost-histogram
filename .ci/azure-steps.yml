@@ -1,22 +1,12 @@
 steps:
 
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '$(python.version)'
-    architecture: 'x64'
-
-- script: |
-    python -m pip install --upgrade pip
-    python -m pip install --upgrade pytest wheel
-  displayName: 'Install distribution tools for Python'
-
 - script: |
     python -m pip wheel . -w wheelhouse/
     ls -lh wheelhouse
   displayName: 'Build wheel'
 
 - script: |
-    python -m pip install boost_histogram[test] --no-index -f wheelhouse
+    python -m pip install boost_histogram --no-index -f wheelhouse
   displayName: 'Install wheel'
 
 - script: |

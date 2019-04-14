@@ -41,3 +41,4 @@
 *.egg-info
 .ipynb_checkpoints
 /wheelhouse/*
+/dist/*

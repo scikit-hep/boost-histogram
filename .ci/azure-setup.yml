@@ -1,0 +1,13 @@
+steps:
+
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '$(python.version)'
+    architecture: '$(python.architecture)'
+
+- script: |
+    python -m pip install --upgrade pip
+    python -m pip install --upgrade pytest wheel
+    python -m pip install -f dev-requirements.txt
+  displayName: 'Install dependencies'
+

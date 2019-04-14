@@ -24,7 +24,14 @@ graft extern/type_traits/include
 graft extern/utility/include
 graft extern/variant/include
 
-graft extern/pybind11
+graft extern/pybind11/include
+graft extern/pybind11/tools
+include extern/pybind11/CMakeLists.txt
 
 global-exclude .git*
+global-exclude .pytest_cache
+global-exclude .DS_Store
+global-exclude *.py[co]
+global-exclude __pycache__
 include CMakeLists.txt LICENSE README.md setup.py dev-requirements.txt
+recursive-include extern LICENSE

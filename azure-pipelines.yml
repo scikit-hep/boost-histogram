@@ -29,12 +29,15 @@ jobs:
     matrix:
       Python27:
         python.version: '2.7'
+        python.architecture: 'x64'
       Python37:
         python.version: '3.7'
+        python.architecture: 'x64'
   pool:
     vmImage: 'ubuntu-16.04'
   steps:
     - template: .ci/azure-submodules.yml
+    - template: .ci/azure-setup.yml
     - template: .ci/azure-cmake-steps.yml
 
 - job: macOS
@@ -42,12 +45,15 @@ jobs:
     matrix:
       Python27:
         python.version: '2.7'
+        python.architecture: 'x64'
       Python37:
         python.version: '3.7'
+        python.architecture: 'x64'
   pool:
     vmImage: 'macOS-10.13'
   steps:
     - template: .ci/azure-submodules.yml
+    - template: .ci/azure-setup.yml
     - template: .ci/azure-steps.yml
 
 - job: Windows
@@ -55,9 +61,11 @@ jobs:
     matrix:
       Python37:
         python.version: '3.7'
+        python.architecture: 'x64'
   pool:
     vmImage: 'vs2017-win2016'
   steps:
     - template: .ci/azure-submodules.yml
+    - template: .ci/azure-setup.yml
     - template: .ci/azure-steps.yml
 
