@@ -13,6 +13,7 @@ jobs:
         docker run --rm -v `pwd`:/io skhep/manylinuxgcc-x86_64 /io/.ci/build-wheels.sh
         ls -lh wheelhouse/
       displayName: Build wheels
+    - template: .ci/azure-upload.yml
 
 - job: ManyLinux32
   pool:
@@ -23,6 +24,7 @@ jobs:
         docker run --rm -v `pwd`:/io skhep/manylinuxgcc-i686 /io/.ci/build-wheels.sh
         ls -lh wheelhouse/
       displayName: Build wheels
+    - template: .ci/azure-upload.yml
 
 - job: LinuxCMake
   strategy:
@@ -46,6 +48,9 @@ jobs:
       Python27:
         python.version: '2.7'
         python.architecture: 'x64'
+      Python36:
+        python.version: '3.6'
+        python.architecture: 'x64'
       Python37:
         python.version: '3.7'
         python.architecture: 'x64'
@@ -55,12 +60,22 @@ jobs:
     - template: .ci/azure-submodules.yml
     - template: .ci/azure-setup.yml
     - template: .ci/azure-steps.yml
+    - template: .ci/azure-upload.yml
 
 - job: Windows
   strategy:
     matrix:
+      Python35:
+        python.version: '3.5'
+        python.architecture: 'x64'
+      Python36:
+        python.version: '3.6'
+        python.architecture: 'x64'
       Python37:
         python.version: '3.7'
+        python.architecture: 'x64'
+      Python27:
+        python.version: '2.7'
         python.architecture: 'x64'
   pool:
     vmImage: 'vs2017-win2016'
@@ -68,4 +83,7 @@ jobs:
     - template: .ci/azure-submodules.yml
     - template: .ci/azure-setup.yml
     - template: .ci/azure-steps.yml
-
+    - script: |
+        python setup.py sdist
+        python -m twine upload dist/*
+    - template: .ci/azure-upload.yml
