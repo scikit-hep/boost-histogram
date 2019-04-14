@@ -2,8 +2,10 @@ steps:
 
 - script: |
     python -m pip wheel . -w wheelhouse/
-    ls -lh wheelhouse
   displayName: 'Build wheel'
+- script: |
+    ls -lh wheelhouse
+  displayName: 'Show wheelhouse'
 
 - script: |
     python -m pip install boost_histogram --no-index -f wheelhouse

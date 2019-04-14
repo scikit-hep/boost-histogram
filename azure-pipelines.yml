@@ -71,9 +71,7 @@ jobs:
 - job: Windows
   strategy:
     matrix:
-      Python35:
-        python.version: '3.5'
-        python.architecture: 'x64'
+      # Python 3.5 and below not supported due to old VS
       Python36:
         python.version: '3.6'
         python.architecture: 'x64'
