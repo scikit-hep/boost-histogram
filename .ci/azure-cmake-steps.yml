@@ -2,7 +2,7 @@ steps:
 
 - task: CMake@1
   inputs:
-    cmakeArgs: .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_HISTOGRAM_ERRORS=ON -DPYTHON_EXECUTABLE="`which python`"
+    cmakeArgs: .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_HISTOGRAM_ERRORS=ON -DPYTHON_EXECUTABLE="$(python.executable)"
   displayName: 'Configure'
 
 - script: cmake --build . -j
