@@ -15,6 +15,7 @@ jobs:
       displayName: Build wheels
     - template: .ci/azure-upload.yml
     - script: |
+        python -m pip install twine
         python setup.py sdist
         python -m twine upload dist/*
       displayName: Upload source
@@ -78,11 +79,7 @@ jobs:
       Python37:
         python.version: '3.7'
         python.architecture: 'x64'
-      # This requires VS9, but that's too old
-      # Look up workaround
-      # Python27:
-      #  python.version: '2.7'
-      #   python.architecture: 'x64'
+      # Python 2.7 requires VS9, but that's too old
   pool:
     vmImage: 'vs2017-win2016'
   steps:

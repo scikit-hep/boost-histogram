@@ -12,5 +12,6 @@ steps:
   displayName: 'Install wheel'
 
 - script: |
-    python -m pytest tests
+    python -m pytest
+  workingDirectory: tests
   displayName: 'Test with pytest'

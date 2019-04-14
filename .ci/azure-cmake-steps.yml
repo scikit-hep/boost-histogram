@@ -1,9 +1,9 @@
 steps:
 
-- script:
+- script: |
     mkdir -p build
     cd build
-    cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_HISTOGRAM_ERRORS=ON -DPYTHON_EXECUTABLE="$(python.executable)"
+    cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_HISTOGRAM_ERRORS=ON -DPYTHON_EXECUTABLE="$(which python)"
   displayName: 'Configure'
 
 - script: cmake --build . -j
