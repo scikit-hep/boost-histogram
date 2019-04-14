@@ -3,17 +3,39 @@ trigger:
 - develop
 
 jobs:
-- job: Linux
+
+- job: ManyLinux64
+  pool:
+    vmImage: 'ubuntu-16.04'
+  steps:
+    - template: .ci/azure-submodules.yml
+    - script: |
+        docker run --rm -v `pwd`:/io skhep/manylinuxgcc-x86_64 /io/.ci/build-wheels.sh
+        ls -lh wheelhouse/
+      displayName: Build wheels
+
+- job: ManyLinux32
+  pool:
+    vmImage: 'ubuntu-16.04'
+  steps:
+    - template: .ci/azure-submodules.yml
+    - script: |
+        docker run --rm -v `pwd`:/io skhep/manylinuxgcc-i686 /io/.ci/build-wheels.sh
+        ls -lh wheelhouse/
+      displayName: Build wheels
+
+- job: LinuxCMake
   strategy:
     matrix:
       Python27:
         python.version: '2.7'
-      Python36:
-        python.version: '3.6'
+      Python37:
+        python.version: '3.7'
   pool:
     vmImage: 'ubuntu-16.04'
   steps:
-    - template: .ci/azure-steps.yml
+    - template: .ci/azure-submodules.yml
+    - template: .ci/azure-cmake-steps.yml
 
 - job: macOS
   strategy:
@@ -25,6 +47,7 @@ jobs:
   pool:
     vmImage: 'macOS-10.13'
   steps:
+    - template: .ci/azure-submodules.yml
     - template: .ci/azure-steps.yml
 
 - job: Windows
@@ -35,27 +58,6 @@ jobs:
   pool:
     vmImage: 'vs2017-win2016'
   steps:
+    - template: .ci/azure-submodules.yml
     - template: .ci/azure-steps.yml
-
-- job: Linux_CMake
-  strategy:
-    matrix:
-      Python37:
-        python.version: '3.7'
-  pool:
-    vmImage: 'ubuntu-16.04'
-  steps:
-    - template: .ci/azure-cmake-steps.yml
-
-- job: ManyLinux
-  pool:
-    vmImage: 'ubuntu-16.04'
-  steps:
-  - checkout: self
-    fetchDepth: 50
-    submodules: true
-  - script: |
-      docker run --rm -v `pwd`:/io skhep/manylinuxgcc-x86_64 /io/.ci/build-wheels.sh
-      PRECMD=linux32 docker run --rm -v `pwd`:/io skhep/manylinuxgcc-i686 /io/.ci/build-wheels.sh
-      ls -lh wheelhouse/
 
