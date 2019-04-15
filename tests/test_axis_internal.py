@@ -27,6 +27,10 @@ def test_axis_regular_uoflow(axtype, function):
     assert ax.bin(3).width() == approx(.1)
     assert ax.bin(3).center() == approx(.35)
 
+    for b, v in zip(ax.bins(), np.arange(10)/10.0):
+        assert b.lower() == approx(v)
+        assert b.upper() == approx(v + .1)
+
 def test_axis_regular_extents():
     ax = bh.axis.regular_uoflow(10,0,1)
     assert 12 == ax.size(flow=True)
