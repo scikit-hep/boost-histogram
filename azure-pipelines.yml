@@ -23,6 +23,10 @@ jobs:
       inputs:
         artifactName: 'SDist'
         targetPath: 'dist'
+    - task: TwineAuthenticate@0
+      inputs:
+          artifactFeeds: 'TestArtifacts'
+
 
 - job: ManyLinux32
   pool:
@@ -37,6 +41,9 @@ jobs:
       inputs:
         artifactName: 'ManyLinux32'
         targetPath: 'wheelhouse'
+    - task: TwineAuthenticate@0
+      inputs:
+          artifactFeeds: 'TestArtifacts'
 
 - job: LinuxCMake
   strategy:
@@ -78,6 +85,9 @@ jobs:
       inputs:
         artifactName: 'macOS'
         targetPath: 'wheelhouse'
+    - task: TwineAuthenticate@0
+      inputs:
+          artifactFeeds: 'TestArtifacts'
 
 - job: Windows
   strategy:
@@ -100,3 +110,6 @@ jobs:
       inputs:
         artifactName: 'Windows64'
         targetPath: 'wheelhouse'
+    - task: TwineAuthenticate@0
+      inputs:
+          artifactFeeds: 'TestArtifacts'
