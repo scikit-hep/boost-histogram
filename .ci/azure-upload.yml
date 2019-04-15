@@ -1,5 +1,0 @@
-steps:
-
-- script: |
-    python -m twine upload wheelhouse/boost_histogram*.whl
-  displayName: 'Upload to PyPi'

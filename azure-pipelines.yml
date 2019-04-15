@@ -13,12 +13,10 @@ jobs:
         docker run --rm -v `pwd`:/io skhep/manylinuxgcc-x86_64 /io/.ci/build-wheels.sh
         ls -lh wheelhouse/
       displayName: Build wheels
-    - template: .ci/azure-upload.yml
-    - script: |
-        python -m pip install twine
-        python setup.py sdist
-        python -m twine upload dist/*
-      displayName: Upload source
+    - task: PublishPipelineArtifact@0
+      inputs:
+        artifactName: 'ManyLinux64'
+        targetPath: 'wheelhouse'
 
 - job: ManyLinux32
   pool:
@@ -29,7 +27,10 @@ jobs:
         docker run --rm -v `pwd`:/io skhep/manylinuxgcc-i686 /io/.ci/build-wheels.sh
         ls -lh wheelhouse/
       displayName: Build wheels
-    - template: .ci/azure-upload.yml
+    - task: PublishPipelineArtifact@0
+      inputs:
+        artifactName: 'ManyLinux32'
+        targetPath: 'wheelhouse'
 
 - job: LinuxCMake
   strategy:
@@ -67,7 +68,10 @@ jobs:
     - template: .ci/azure-submodules.yml
     - template: .ci/azure-setup.yml
     - template: .ci/azure-steps.yml
-    - template: .ci/azure-upload.yml
+    - task: PublishPipelineArtifact@0
+      inputs:
+        artifactName: 'macOS'
+        targetPath: 'dist'
 
 - job: Windows
   strategy:
@@ -86,4 +90,7 @@ jobs:
     - template: .ci/azure-submodules.yml
     - template: .ci/azure-setup.yml
     - template: .ci/azure-steps.yml
-    - template: .ci/azure-upload.yml
+    - task: PublishPipelineArtifact@0
+      inputs:
+        artifactName: 'Windows64'
+        targetPath: 'dist'
