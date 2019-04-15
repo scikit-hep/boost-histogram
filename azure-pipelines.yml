@@ -17,6 +17,12 @@ jobs:
       inputs:
         artifactName: 'ManyLinux64'
         targetPath: 'wheelhouse'
+    - script: |
+        python setup.py sdist
+    - task: PublishPipelineArtifact@0
+      inputs:
+        artifactName: 'SDist'
+        targetPath: 'dist'
 
 - job: ManyLinux32
   pool:
@@ -71,7 +77,7 @@ jobs:
     - task: PublishPipelineArtifact@0
       inputs:
         artifactName: 'macOS'
-        targetPath: 'dist'
+        targetPath: 'wheelhouse'
 
 - job: Windows
   strategy:
@@ -93,4 +99,4 @@ jobs:
     - task: PublishPipelineArtifact@0
       inputs:
         artifactName: 'Windows64'
-        targetPath: 'dist'
+        targetPath: 'wheelhouse'
