@@ -15,9 +15,10 @@ jobs:
       displayName: Build wheels
     - task: PublishPipelineArtifact@0
       inputs:
-        artifactName: 'ManyLinux64'
+        artifactName: 'ManyLinux_64'
         targetPath: 'wheelhouse'
     - script: |
+        python -m pip install setuptools
         python setup.py sdist
     - task: PublishPipelineArtifact@0
       inputs:
@@ -39,7 +40,7 @@ jobs:
       displayName: Build wheels
     - task: PublishPipelineArtifact@0
       inputs:
-        artifactName: 'ManyLinux32'
+        artifactName: 'ManyLinux_32'
         targetPath: 'wheelhouse'
     - task: TwineAuthenticate@0
       inputs:
@@ -83,7 +84,7 @@ jobs:
     - template: .ci/azure-steps.yml
     - task: PublishPipelineArtifact@0
       inputs:
-        artifactName: 'macOS'
+        artifactName: 'macOS_$(python.version)'
         targetPath: 'wheelhouse'
     - task: TwineAuthenticate@0
       inputs:
@@ -108,7 +109,7 @@ jobs:
     - template: .ci/azure-steps.yml
     - task: PublishPipelineArtifact@0
       inputs:
-        artifactName: 'Windows64'
+        artifactName: 'Windows_$(python.architecture)_$(python.version)'
         targetPath: 'wheelhouse'
     - task: TwineAuthenticate@0
       inputs:
