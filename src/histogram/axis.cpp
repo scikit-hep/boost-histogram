@@ -35,7 +35,7 @@ void add_to_axis(B&& axis, std::false_type) {
     axis.def("bin", &A::bin, "The bin details (center, lower, upper)", "idx"_a, py::keep_alive<0, 1>());
     axis.def("bins", [](const A& self, bool flow){
         return axis_to_bins(self, flow);
-    }, "flow"_a=false, py::keep_alive<0, 1>());
+    }, "flow"_a=false);
     axis.def("index", py::vectorize(&A::index), "The index at a point(s) on the axis", "x"_a);
     axis.def("value", py::vectorize(&A::value), "The value(s) for a fractional bin(s) in the axis", "i"_a);
 
