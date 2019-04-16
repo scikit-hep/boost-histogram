@@ -67,25 +67,25 @@ jobs:
     matrix:
       Python27:
         python.version: '2.7'
-        python.architecture: 'x64'
       Python36:
         python.version: '3.6'
-        python.architecture: 'x64'
       Python37:
         python.version: '3.7'
-        python.architecture: 'x64'
   pool:
-    vmImage: 'macOS-10.13'
-  variables:
-    MACOSX_DEPLOYMENT_TARGET: '10.9'
+    vmImage: 'macOS-10.14'
   steps:
     - template: .ci/azure-submodules.yml
-    - template: .ci/azure-setup.yml
+    - template: .ci/azure-macos-setup.yml
     - template: .ci/azure-steps.yml
+    - script: |
+        python -m pip install delocate
+        /Library/Frameworks/Python.framework/Versions/$(python.version)/bin/delocate-listdeps dist/boost*.whl
+        /Library/Frameworks/Python.framework/Versions/$(python.version)/bin/delocate-wheel dist/boost*.whl
+      displayName: 'Delocate wheels'
     - task: PublishPipelineArtifact@0
       inputs:
         artifactName: 'macOS_$(python.version)'
-        targetPath: 'wheelhouse'
+        targetPath: 'dist'
     - task: TwineAuthenticate@0
       inputs:
           artifactFeeds: 'TestArtifacts'
@@ -110,7 +110,7 @@ jobs:
     - task: PublishPipelineArtifact@0
       inputs:
         artifactName: 'Windows_$(python.architecture)_$(python.version)'
-        targetPath: 'wheelhouse'
+        targetPath: 'dist'
     - task: TwineAuthenticate@0
       inputs:
           artifactFeeds: 'TestArtifacts'

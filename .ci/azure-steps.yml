@@ -5,6 +5,8 @@ steps:
   displayName: 'Build wheel'
 - script: |
     ls -lh wheelhouse
+    mkdir -p dist
+    cp wheelhouse/boost* dist/.
   displayName: 'Show wheelhouse'
 
 - script: |
