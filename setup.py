@@ -4,6 +4,14 @@ import sys
 import setuptools
 from setuptools import find_packages
 
+# Use -j N or set the environment variable NPY_NUM_BUILD_JOBS
+try:
+    from numpy.distutils.ccompiler import CCompiler_compile
+    import distutils.ccompiler
+    distutils.ccompiler.CCompiler.compile = CCompiler_compile
+except ImportError:
+    print("Numpy not found, parallel compile not available")
+
 __version__ = '0.0.1'
 
 ext_modules = [
@@ -77,7 +85,7 @@ class BuildExt(build_ext):
     }
 
     if sys.platform == 'darwin':
-        c_opts['unix'] += ['-stdlib=libc++', '-mmacosx-version-min=10.7']
+        c_opts['unix'] += ['-stdlib=libc++', '-mmacosx-version-min=10.9']
 
     def build_extensions(self):
         ct = self.compiler.compiler_type

@@ -1,0 +1,4 @@
+pytest
+pytest-benchmark
+numpy
+futures; python_version < "3"

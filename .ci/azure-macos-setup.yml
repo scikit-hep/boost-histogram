@@ -1,0 +1,14 @@
+# This is special for macOS because "UsePythonVersion"
+# does not use the official Python.org installers.
+
+steps:
+
+- script: .ci/macos-install-python.sh '$(python.version)'
+  displayName: Install Python.org Python
+
+- script: |
+    python -m pip install --upgrade pip
+    python -m pip install --upgrade pytest wheel twine
+    python -m pip install -r dev-requirements.txt
+  displayName: 'Install dependencies'
+

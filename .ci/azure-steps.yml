@@ -1,23 +1,25 @@
 steps:
 
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '$(python.version)'
-    architecture: 'x64'
-
-- checkout: self
-  fetchDepth: 50
-  submodules: true
+- script: |
+    python -m pip wheel . -w wheelhouse/
+  displayName: 'Build wheel'
+- script: |
+    ls -lh wheelhouse
+    mkdir -p dist
+    cp wheelhouse/boost* dist/.
+  displayName: 'Show wheelhouse'
 
 - script: |
-    python -m pip install --upgrade pip
-    python -m pip install --upgrade pytest
-  displayName: 'Install dependencies'
+    python -m pip install boost_histogram --no-index -f wheelhouse
+  displayName: 'Install wheel'
 
 - script: |
-    python -m pip install --verbose -e .[test]
-  displayName: 'Build and install package'
-
-- script: |
-    python -m pytest tests
+    python -m pytest --junitxml=junit/test-results.xml
+  workingDirectory: tests
   displayName: 'Test with pytest'
+
+- task: PublishTestResults@2
+  inputs:
+    testResultsFiles: '**/test-*.xml'
+    testRunTitle: 'Publish test results for Python $(python.version)'
+  condition: succeededOrFailed()

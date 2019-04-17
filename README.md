@@ -175,6 +175,10 @@ end
 
 </details>
 
+## Talks and other documentation/tutorial sources
+
+* [2019-4-15 IRIS-HEP Topical meeting](https://indico.cern.ch/event/803122/)
+
 [gitter-badge]: https://badges.gitter.im/HSF/PyHEP-histogramming.svg
 [gitter-link]:  https://gitter.im/HSF/PyHEP-histogramming?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
 [azure-badge]:  https://dev.azure.com/scikit-hep/boost-histogram/_apis/build/status/scikit-hep.boost-histogram?branchName=develop

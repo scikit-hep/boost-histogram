@@ -52,7 +52,7 @@ def test_axis_growth():
     assert ax.size() == 10
     assert len(ax.centers()) == 10
     assert len(ax.edges()) == 11
-    assert ax.update(1.2) == (12,-3)
+    assert ax.update(1.21) == (12,-3)
     assert ax.size() == 13
     assert len(ax.edges()) == 14
     assert len(ax.centers()) == 13

@@ -1,0 +1,11 @@
+
+steps:
+- script: |
+    python -m pip install twine
+    python -m twine upload --repository-url $(TWINE_REPOSITORY_URL) \
+                           --username $(TWINE_USERNAME) \
+                           --password $(TWINE_PASSWORD) \
+                           dist/*
+  displayName: "Publish to PyPI"
+  condition: and(succeeded(), contains(variables['Build.SourceBranch'], 'refs/tags/'))
+

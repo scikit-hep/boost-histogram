@@ -1,23 +1,9 @@
 steps:
 
-- checkout: self
-  fetchDepth: 50
-  submodules: true
-
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '$(python.version)'
-    architecture: 'x64'
-
 - script: |
-    python -m pip install --upgrade pip
-    python -m pip install --upgrade pytest
-    python -m pip install numpy pytest-benchmark 'futures; python_version<"3.4"'
-  displayName: 'Install dependencies'
-
-- task: CMake@1
-  inputs:
-    cmakeArgs: .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_HISTOGRAM_ERRORS=ON
+    mkdir -p build
+    cd build
+    cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_HISTOGRAM_ERRORS=ON -DPYTHON_EXECUTABLE="$(which python)"
   displayName: 'Configure'
 
 - script: cmake --build . -j
@@ -28,3 +14,13 @@ steps:
   displayName: 'Test'
   workingDirectory: build
 
+- script: |
+    python -m pytest --junitxml=junit/test-results.xml ../tests
+  workingDirectory: build
+  displayName: 'Test with pytest'
+
+- task: PublishTestResults@2
+  inputs:
+    testResultsFiles: '**/test-*.xml'
+    testRunTitle: 'Publish test results for Python $(python.version)'
+  condition: succeededOrFailed()

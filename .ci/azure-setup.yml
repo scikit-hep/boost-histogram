@@ -1,0 +1,14 @@
+steps:
+
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '$(python.version)'
+    architecture: '$(python.architecture)'
+
+- script: |
+    python -m pip install --upgrade pip
+    python -m pip install --upgrade pytest wheel twine
+    python -m pip install -r dev-requirements.txt
+    mkdir -p dist
+  displayName: 'Install dependencies'
+
