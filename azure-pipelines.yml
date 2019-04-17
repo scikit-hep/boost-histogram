@@ -9,13 +9,19 @@ trigger:
 
 jobs:
 
-- job: ManyLinux64
+- job: ManyLinux
+  strategy:
+    matrix:
+      ManyLinux64:
+        arch: x86_64
+      ManyLinux32:
+        arch: i686
   pool:
     vmImage: 'ubuntu-16.04'
   steps:
     - template: .ci/azure-submodules.yml
     - script: |
-        docker run --rm -v `pwd`:/io skhep/manylinuxgcc-x86_64 /io/.ci/build-wheels.sh
+        docker run --rm -v `pwd`:/io skhep/manylinuxgcc-$(arch) /io/.ci/build-wheels.sh
         ls -lh wheelhouse/
         mkdir -p dist
         cp wheelhouse/boost*.whl dist/.
@@ -23,20 +29,6 @@ jobs:
     - script: |
         python -m pip install setuptools
         python setup.py sdist
-    - template: .ci/azure-publish-dist.yml
-
-
-- job: ManyLinux32
-  pool:
-    vmImage: 'ubuntu-16.04'
-  steps:
-    - template: .ci/azure-submodules.yml
-    - script: |
-        docker run --rm -v `pwd`:/io skhep/manylinuxgcc-i686 /io/.ci/build-wheels.sh
-        ls -lh wheelhouse/
-        mkdir -p dist
-        cp wheelhouse/boost*.whl dist/.
-      displayName: Build wheels
     - template: .ci/azure-publish-dist.yml
 
 - job: LinuxCMake
