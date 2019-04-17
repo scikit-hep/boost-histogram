@@ -93,13 +93,20 @@ jobs:
 - job: Windows
   strategy:
     matrix:
-      # Python 3.5 and below not supported due to old VS
       Python36:
         python.version: '3.6'
         python.architecture: 'x64'
       Python37:
         python.version: '3.7'
         python.architecture: 'x64'
+      Python36_32:
+        python.version: '3.6'
+        python.architecture: 'x86'
+      Python37_32:
+        python.version: '3.7'
+        python.architecture: 'x86'
+        
+
       # Python 2.7 requires VS9, but that's too old
   pool:
     vmImage: 'vs2017-win2016'
