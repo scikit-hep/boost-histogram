@@ -22,7 +22,7 @@ jobs:
     - template: .ci/azure-publish-dist.yml
 
 - job: ManyLinux
-  condition: contains(variables['Build.SourceBranch'], 'refs/tags/')
+  condition: contains(variables['Build.SourceBranch'], 'refs/tags/') 
   strategy:
     matrix:
       64Bit2010:
