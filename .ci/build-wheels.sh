@@ -17,7 +17,7 @@ done
 
 # Bundle external shared libraries into the wheels
 for whl in wheelhouse/boost_histogram-*.whl; do
-    auditwheel repair "$whl" -w /io/wheelhouse/
+    auditwheel repair --plat $PLAT "$whl" -w /io/wheelhouse/
 done
 
 # Install packages and test

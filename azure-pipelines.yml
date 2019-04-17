@@ -9,26 +9,44 @@ trigger:
 
 jobs:
 
-- job: ManyLinux
-  strategy:
-    matrix:
-      ManyLinux64:
-        arch: x86_64
-      ManyLinux32:
-        arch: i686
+- job: LinuxSDist
+  # condition: contains(variables['Build.SourceBranch'], 'refs/tags/') 
   pool:
     vmImage: 'ubuntu-16.04'
   steps:
     - template: .ci/azure-submodules.yml
     - script: |
-        docker run --rm -v `pwd`:/io skhep/manylinuxgcc-$(arch) /io/.ci/build-wheels.sh
+        python -m pip install setuptools
+        python setup.py sdist
+      displayName: Publish sdist
+    - template: .ci/azure-publish-dist.yml
+
+- job: ManyLinux
+  # condition: contains(variables['Build.SourceBranch'], 'refs/tags/')
+  strategy:
+    matrix:
+      64Bit2010:
+        arch: x86_64
+        plat: manylinux2010_x86_64
+        image: quay.io/pypa/manylinux2010_x86_64
+      64Bit:
+        arch: x86_64
+        plat: manylinux1_x86_64
+        image: skhep/manylinuxgcc-x86_64
+      32Bit:
+        arch: i686
+        plat: manylinux1_i686
+        image: skhep/manylinuxgcc-i686
+  pool:
+    vmImage: 'ubuntu-16.04'
+  steps:
+    - template: .ci/azure-submodules.yml
+    - script: |
+        docker run -e PLAT=$(plat) --rm -v `pwd`:/io $(image) /io/.ci/build-wheels.sh
         ls -lh wheelhouse/
         mkdir -p dist
         cp wheelhouse/boost*.whl dist/.
       displayName: Build wheels
-    - script: |
-        python -m pip install setuptools
-        python setup.py sdist
     - template: .ci/azure-publish-dist.yml
 
 - job: LinuxCMake
@@ -39,6 +57,9 @@ jobs:
         python.architecture: 'x64'
       Python37:
         python.version: '3.7'
+        python.architecture: 'x64'
+      Python35:
+        python.version: '3.5'
         python.architecture: 'x64'
   pool:
     vmImage: 'ubuntu-16.04'
@@ -84,8 +105,6 @@ jobs:
       Python37_32:
         python.version: '3.7'
         python.architecture: 'x86'
-        
-
       # Python 2.7 requires VS9, but that's too old
   pool:
     vmImage: 'vs2017-win2016'

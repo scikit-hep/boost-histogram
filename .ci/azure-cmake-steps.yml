@@ -14,3 +14,13 @@ steps:
   displayName: 'Test'
   workingDirectory: build
 
+- script: |
+    python -m pytest --junitxml=junit/test-results.xml ../tests
+  workingDirectory: build
+  displayName: 'Test with pytest'
+
+- task: PublishTestResults@2
+  inputs:
+    testResultsFiles: '**/test-*.xml'
+    testRunTitle: 'Publish test results for Python $(python.version)'
+  condition: succeededOrFailed()
