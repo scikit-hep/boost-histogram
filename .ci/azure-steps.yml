@@ -14,6 +14,12 @@ steps:
   displayName: 'Install wheel'
 
 - script: |
-    python -m pytest
+    python -m pytest --junitxml=junit/test-results.xml
   workingDirectory: tests
   displayName: 'Test with pytest'
+
+- task: PublishTestResults@2
+  inputs:
+    testResultsFiles: '**/test-*.xml'
+    testRunTitle: 'Publish test results for Python $(python.version)'
+  condition: succeededOrFailed()

@@ -9,5 +9,6 @@ steps:
     python -m pip install --upgrade pip
     python -m pip install --upgrade pytest wheel twine
     python -m pip install -r dev-requirements.txt
+    mkdir -p dist
   displayName: 'Install dependencies'
 

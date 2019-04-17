@@ -1,6 +1,11 @@
 trigger:
-- master
-- develop
+  tags:
+    include:
+    - v*
+  branches:
+    include:
+    - master
+    - develop
 
 jobs:
 
@@ -12,21 +17,13 @@ jobs:
     - script: |
         docker run --rm -v `pwd`:/io skhep/manylinuxgcc-x86_64 /io/.ci/build-wheels.sh
         ls -lh wheelhouse/
+        mkdir -p dist
+        cp wheelhouse/boost*.whl dist/.
       displayName: Build wheels
-    - task: PublishPipelineArtifact@0
-      inputs:
-        artifactName: 'ManyLinux_64'
-        targetPath: 'wheelhouse'
     - script: |
         python -m pip install setuptools
         python setup.py sdist
-    - task: PublishPipelineArtifact@0
-      inputs:
-        artifactName: 'SDist'
-        targetPath: 'dist'
-    - task: TwineAuthenticate@0
-      inputs:
-          artifactFeeds: 'TestArtifacts'
+    - template: .ci/azure-publish-dist.yml
 
 
 - job: ManyLinux32
@@ -37,14 +34,10 @@ jobs:
     - script: |
         docker run --rm -v `pwd`:/io skhep/manylinuxgcc-i686 /io/.ci/build-wheels.sh
         ls -lh wheelhouse/
+        mkdir -p dist
+        cp wheelhouse/boost*.whl dist/.
       displayName: Build wheels
-    - task: PublishPipelineArtifact@0
-      inputs:
-        artifactName: 'ManyLinux_32'
-        targetPath: 'wheelhouse'
-    - task: TwineAuthenticate@0
-      inputs:
-          artifactFeeds: 'TestArtifacts'
+    - template: .ci/azure-publish-dist.yml
 
 - job: LinuxCMake
   strategy:
@@ -82,13 +75,7 @@ jobs:
         /Library/Frameworks/Python.framework/Versions/$(python.version)/bin/delocate-listdeps dist/boost*.whl
         /Library/Frameworks/Python.framework/Versions/$(python.version)/bin/delocate-wheel dist/boost*.whl
       displayName: 'Delocate wheels'
-    - task: PublishPipelineArtifact@0
-      inputs:
-        artifactName: 'macOS_$(python.version)'
-        targetPath: 'dist'
-    - task: TwineAuthenticate@0
-      inputs:
-          artifactFeeds: 'TestArtifacts'
+    - template: .ci/azure-publish-dist.yml
 
 - job: Windows
   strategy:
@@ -114,10 +101,4 @@ jobs:
     - template: .ci/azure-submodules.yml
     - template: .ci/azure-setup.yml
     - template: .ci/azure-steps.yml
-    - task: PublishPipelineArtifact@0
-      inputs:
-        artifactName: 'Windows_$(python.architecture)_$(python.version)'
-        targetPath: 'dist'
-    - task: TwineAuthenticate@0
-      inputs:
-          artifactFeeds: 'TestArtifacts'
+    - template: .ci/azure-publish-dist.yml
