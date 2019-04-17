@@ -22,6 +22,6 @@ done
 
 # Install packages and test
 for PYBIN in "${pys[@]}"; do
-    "${PYBIN}/pip" install boost_histogram --no-index -f /io/wheelhouse
-    (cd /io/tests && "${PYBIN}/python" -m pytest)
+    "${PYBIN}/python" -m pip install boost_histogram --no-index -f /io/wheelhouse
+    "${PYBIN}/pytest" /io/tests
 done

@@ -4,5 +4,5 @@ steps:
     python -m pip install twine
     python -m twine upload --repository-url https://test.pypi.org/legacy/ --username $(TWINE_USERNAME) --password $(TWINE_PASSWORD) dist/*
   displayName: "Publish to PyPI"
-  # condition: and(succeeded(), contains(variables['Build.SourceBranch'], 'refs/tags/'))
+  condition: and(succeeded(), contains(variables['Build.SourceBranch'], 'refs/tags/'))
 
