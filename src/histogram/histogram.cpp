@@ -38,7 +38,7 @@ py::class_<bh::histogram<A, S>> register_histogram_by_type(py::module& m, const 
     .def(py::init<const A&, S>(), "axes"_a, "storage"_a=S())
 
     .def_buffer([](bh::histogram<A, S>& h) -> py::buffer_info
-        {return make_buffer(h, true);})
+        {return make_buffer(h, false);})
 
     .def("rank", &histogram_t::rank,
          "Number of axes (dimensions) of histogram" )

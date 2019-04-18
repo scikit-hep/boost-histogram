@@ -34,8 +34,9 @@ def test_1D_fill_int(hist_func):
 
     H =  np.array([0, 1, 2, 0, 0, 0, 0, 0, 0, 0])
 
-    assert_array_equal(np.asarray(hist)[1:-1], H)
+    assert_array_equal(np.asarray(hist), H)
     assert_array_equal(hist.view(flow=False), H)
+    assert_array_equal(hist.view(flow=True)[1:-1], H)
 
     assert hist.axis(0).size() == bins
     assert hist.axis(0).size(flow=True) == bins + 2
@@ -55,7 +56,8 @@ def test_2D_fill_int(hist_func):
 
     H = np.histogram2d(*vals, bins=bins, range=ranges)[0]
 
-    assert_array_equal(np.asarray(hist)[1:-1, 1:-1], H)
+    assert_array_equal(np.asarray(hist), H)
+    assert_array_equal(hist.view(flow=True)[1:-1, 1:-1], H)
     assert_array_equal(hist.view(flow=False), H)
 
     assert hist.axis(0).size() == bins[0]
@@ -75,7 +77,7 @@ def test_edges_histogram():
     hist(vals)
 
     bins = np.asarray(hist)
-    assert_array_equal(bins, [0,0,2,2,0])
+    assert_array_equal(bins, [0,2,2])
     assert_array_equal(hist.view(flow=True), [0,0,2,2,0])
     assert_array_equal(hist.view(flow=False), [0,2,2])
 
@@ -88,7 +90,8 @@ def test_int_histogram():
     hist(vals)
 
     bins = np.asarray(hist)
-    assert_array_equal(bins, [2,1,1,1,1,3])
+    assert_array_equal(bins, [1,1,1,1])
+    assert_array_equal(hist.view(flow=False), [1,1,1,1])
     assert_array_equal(hist.view(flow=True), [2,1,1,1,1,3])
 
 

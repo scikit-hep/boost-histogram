@@ -495,6 +495,9 @@ def test_numpy_conversion_4():
     assert b1.shape == ()
     assert np.sum(b1) == 0
 
+    # Compare sum methods
+    assert b.sum() == np.asarray(b).sum()
+
 @pytest.mark.skip(message="This require multiprecision storage")
 def test_numpy_conversion_5():
     a = histogram(integer_noflow(0, 3),
