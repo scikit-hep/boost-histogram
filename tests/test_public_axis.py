@@ -170,10 +170,10 @@ class TestRegular(Axis):
     def test_iter(self):
         v = np.array([1.0, 1.25, 1.5, 1.75, 2.0])
         a = regular_uoflow(4, 1.0, 2.0)
-        assert np.all(a.edges() == v)
+        assert_array_equal(a.edges(), v)
 
         c = (v[:-1] + v[1:])/2
-        assert np.all(a.centers() == approx(c))
+        assert_allclose(a.centers(), c)
 
     def test_index(self):
         a = regular_uoflow(4, 1.0, 2.0)
@@ -407,10 +407,10 @@ class TestVariable(Axis):
         v = np.array([-0.1, 0.2, 0.3])
         a = variable(v)
 
-        assert np.all(a.edges() == v)
+        assert_array_equal(a.edges(), v)
 
         c = (v[:-1] + v[1:])/2
-        assert np.all(a.centers() == approx(c))
+        assert_allclose(a.centers(), c)
 
     def test_index(self):
         a = variable([-0.1, 0.2, 0.3])
@@ -486,7 +486,7 @@ class TestInteger:
     def test_iter(self):
         v = np.array([-1, 0, 1, 2])
         a = integer_uoflow(-1, 3)
-        assert (a.bins() == v).all()
+        assert_array_equal(a.bins(), v)
 
     def test_index(self):
         a = integer_uoflow(-1, 3)
