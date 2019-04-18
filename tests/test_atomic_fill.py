@@ -15,8 +15,8 @@ def test_make_regular_1D():
 
     vals = np.random.rand(10000)
 
-    hist_linear(vals)
-    hist_atomic(vals)
+    hist_linear.fill(vals)
+    hist_atomic.fill(vals)
 
     assert_array_equal(hist_linear, hist_atomic)
 
@@ -27,11 +27,11 @@ def test_atomic_fill_1D():
 
     vals = np.random.rand(10000)
 
-    hist_linear(vals)
+    hist_linear.fill(vals)
 
     with ThreadPoolExecutor(4) as pool:
         for i in range(4):
-            pool.submit(hist_atomic, vals[i*2500:(i+1)*2500])
+            pool.submit(hist_atomic.fill, vals[i*2500:(i+1)*2500])
 
     assert_array_equal(hist_linear, hist_atomic)
 
@@ -44,8 +44,8 @@ def test_atomic_builtin(threads):
 
     vals = np.random.rand(10000)
 
-    hist_atomic1(vals)
-    hist_atomic2.atomic_fill(threads, vals)
+    hist_atomic1.fill(vals)
+    hist_atomic2.fill(vals, atomic=threads)
 
     assert_array_equal(hist_atomic1, hist_atomic2)
 
@@ -57,7 +57,7 @@ def test_threaded_builtin(threads):
 
     vals = np.random.rand(10000)
 
-    hist_atomic1(vals)
-    hist_atomic2.threaded_fill(threads, vals)
+    hist_atomic1.fill(vals)
+    hist_atomic2.fill(vals, threads=threads)
 
     assert_array_equal(hist_atomic1, hist_atomic2)
