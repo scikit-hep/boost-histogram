@@ -6,9 +6,7 @@
 #include <boost/histogram/python/pybind11.hpp>
 
 void register_version(py::module &m) {
-    
     py::module ver = py::module::import("boost.histogram_version");
-    
+
     m.attr("__version__") = ver.attr("__version__");
-    
 }
