@@ -7,13 +7,13 @@
 
 #pragma once
 
-#include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
+#include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
 #include <functional>
-#include <type_traits>
 #include <sstream>
+#include <type_traits>
 
 // Allow command line overide
 #ifndef BOOST_HISTOGRAM_DETAIL_AXES_LIMIT
@@ -23,23 +23,25 @@
 namespace py = pybind11;
 using namespace pybind11::literals; // For ""_a syntax
 
-namespace boost { namespace histogram {}}
+namespace boost {
+namespace histogram {}
+} // namespace boost
 namespace bh = boost::histogram;
 
 /// Static if standin: define a method if expression is true
-template<typename T, typename... Args>
-void def_optionally(T&& module, std::true_type, Args&&... expression) {
+template <typename T, typename... Args>
+void def_optionally(T &&module, std::true_type, Args &&... expression) {
     module.def(std::forward<Args...>(expression...));
 }
 
 /// Static if standin: Do nothing if compile time expression is false
-template<typename T, typename... Args>
-void def_optionally(T&&, std::false_type, Args&&...) {}
+template <typename T, typename... Args>
+void def_optionally(T &&, std::false_type, Args &&...) {}
 
 /// Shift to string
-template<typename T>
+template <typename T>
 auto shift_to_string() {
-    return [](const T& self){
+    return [](const T &self) {
         std::ostringstream out;
         out << self;
         return out.str();

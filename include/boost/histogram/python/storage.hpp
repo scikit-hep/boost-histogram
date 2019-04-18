@@ -13,16 +13,15 @@
 
 #include <cstdint>
 
-
 namespace storage {
 
 // Names match Python names
-using int_ = bh::dense_storage<uint64_t>;
-using atomic_int = bh::dense_storage<copyable_atomic<uint64_t>>;
-using double_ = bh::dense_storage<double>;
-using unlimited = bh::unlimited_storage<>;
-using weight = bh::weight_storage;
-using profile = bh::profile_storage;
+using int_             = bh::dense_storage<uint64_t>;
+using atomic_int       = bh::dense_storage<copyable_atomic<uint64_t>>;
+using double_          = bh::dense_storage<double>;
+using unlimited        = bh::unlimited_storage<>;
+using weight           = bh::weight_storage;
+using profile          = bh::profile_storage;
 using weighted_profile = bh::weighted_profile_storage;
 
-}  // namespace storage
+} // namespace storage
