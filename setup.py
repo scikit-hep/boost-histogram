@@ -1,6 +1,7 @@
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
 import sys
+import re
 import setuptools
 from setuptools import find_packages
 
@@ -12,12 +13,27 @@ try:
 except ImportError:
     print("Numpy not found, parallel compile not available")
 
-__version__ = '0.0.1'
+RE_VERSION = re.compile(r"""^__version__\s*=\s*['"]([^'"]*)['"]""", re.MULTILINE)
+
+def get_version(version_file):
+    with open(version_file) as f:
+        contents = f.read()
+    mo = RE_VERSION.search(contents)
+    if not mo:
+        raise RuntimeError("Unable to find version string in {}.".format(version_file))
+
+    return mo.group(1)
+
+def get_description(readme_file):
+    with open("README.md", "rb") as f:
+        result = f.read().decode("utf8", "ignore")
+    return result
 
 ext_modules = [
     Extension(
         'boost.histogram',
         ['src/module.cpp',
+         'src/histogram/version.cpp',
          'src/histogram/axis.cpp',
          'src/histogram/histogram.cpp',
          'src/histogram/make_histogram.cpp',
@@ -107,17 +123,43 @@ extras = {
 
 setup(
     name='boost-histogram',
-    version=__version__,
+    version=get_version("boost/histogram_version.py"),
     author='Henry Schreiner',
     author_email='hschrein@cern.ch',
+    maintainer='Henry Schreiner',
+    maintainer_email='hschrein@cern.ch',
     url='https://github.com/scikit-hep/boost-histogram',
     description='The Boost::Histogram Python wrapper.',
-    long_description='',
+    long_description=get_description("README.md"),
+    long_description_content_type='text/markdown',
     ext_modules=ext_modules,
-    packages=find_packages(),
+    packages=find_packages(exclude = ["tests"]),
     cmdclass={'build_ext': BuildExt},
-    zip_safe=False,
+    test_suite="tests",
     install_requires=['numpy'],
     tests_require=extras['test'],
-    extras_require=extras
+    extras_require=extras,
+    classifiers = [
+          "Development Status :: 2 - Pre-Alpha",
+          "Intended Audience :: Developers",
+          "Intended Audience :: Information Technology",
+          "Intended Audience :: Science/Research",
+          "License :: OSI Approved :: BSD License",
+          "Operating System :: Microsoft :: Windows",
+          "Operating System :: MacOS",
+          "Operating System :: POSIX",
+          "Operating System :: Unix",
+          "Programming Language :: Python",
+          "Programming Language :: Python :: 2.7",
+          "Programming Language :: Python :: 3.5",
+          "Programming Language :: Python :: 3.6",
+          "Programming Language :: Python :: 3.7",
+          "Programming Language :: C++",
+          "Topic :: Scientific/Engineering",
+          "Topic :: Scientific/Engineering :: Information Analysis",
+          "Topic :: Scientific/Engineering :: Mathematics",
+          "Topic :: Scientific/Engineering :: Physics",
+          "Topic :: Software Development",
+          "Topic :: Utilities",
+          ],
 )
