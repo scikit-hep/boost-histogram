@@ -2,9 +2,7 @@
 
 set -evx
 
-# Also good but untagged: CLANG_FORMAT=unibeautify/clang-format
-CLANG_FORMAT=saschpe/clang-format:5.0.1
-
+CLANG_FORMAT=unibeautify/clang-format
 
 if [ -x "$(command -v clang-format)" ] ; then
 

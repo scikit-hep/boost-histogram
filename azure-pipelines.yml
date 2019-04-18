@@ -17,7 +17,7 @@ jobs:
       displayName: Check format
 
 - job: LinuxSDist
-  condition: contains(variables['Build.SourceBranch'], 'refs/tags/') 
+  condition: or(contains(variables.Build.SourceBranch, 'refs/tags/'), variables.FULLBUILD_FORCE)
   pool:
     vmImage: 'ubuntu-16.04'
   steps:
@@ -29,7 +29,7 @@ jobs:
     - template: .ci/azure-publish-dist.yml
 
 - job: ManyLinux
-  condition: contains(variables['Build.SourceBranch'], 'refs/tags/') 
+  condition: or(contains(variables.Build.SourceBranch, 'refs/tags/'), variables.FULLBUILD_FORCE)
   strategy:
     matrix:
       64Bit2010:
