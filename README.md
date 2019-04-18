@@ -110,6 +110,32 @@ counts = hist.view()
     * Several common combinations are optimized, such as regular axes + int storage
 
 
+## Supported platforms
+
+For a source build, for example from an "sdist" package, the only requirements are a C++14 compatible compiler. If you are using Python 2.7 on Windows, this can be done in theory but is challenging; please upgrade to Python 3.6 or newer. Check the PyBind11 documentation for [more help](https://pybind11.readthedocs.io/en/stable/faq.html#working-with-ancient-visual-studio-2009-builds-on-windows). On some Linux systems, you may need to use a newer compiler than the one your distribution ships with. 
+
+#### Binaries available:
+
+The easiest way to get boost-histogram is to use a binary wheel. These are the supported platforms for which wheels are produced:
+
+| System | Arch | Python versions |
+|---------|-----|------------------|
+| ManyLinux1 (custom GCC 8.3) | 64 & 32-bit | 2.7, 3.5, 3.6, 3.7 |
+| ManyLinux2010 | 64-bit | 2.7, 3.5, 3.6, 3.7 |
+| macOS 10.9+ | 64-bit | 2.7, 3.6, 3.7 |
+| Windows | 64 & 32-bit | 3.6, 3.7 |
+
+#### Notes
+
+* Linux: I'm not supporting 3.4 because I have to build the Numpy wheels to do so.
+* manylinux1: Using a custom docker container with GCC 8.3; should work but can't be called directly other compiled extensions unless they do the same thing (think that's the main caveat). Supporting 32 bits because it's there.
+* manylinux2010: Requires pip 10+ and a version of Linux newer than 2010. This is very new technology.
+* MacOS: Using the dedicated 64 bit 10.9+ Python.org builds. Not supporting 3.5 because those no longer provide binaries (could add a 32+64 fat 10.6+ that really was 10.9+, but not worth it, IMO)
+* Windows:  older is hard to support for now due to MSVC, could be attempted later - PyBind11 is technically supposed to be able to do it.
+
+If you are on a Linux system that is not part of the "many" in manylinux, such as Alpine or ClearLinux, building from source is usually fine, since the compilers on those systems are often quite new. It will just take a little longer to install when it's using the sdist instead of a wheel.
+
+Conda support is planned.
 
 ## Developing
 
