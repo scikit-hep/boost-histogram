@@ -25,12 +25,13 @@ def test_numpy_perf_2d(benchmark):
 
 def make_and_run_hist(hist, axes, vals, fill):
     histo = hist(axes)
+
     if fill is None:
-        histo(*vals)
+        histo.fill(*vals)
     elif fill < 0:
-        histo.atomic_fill(-fill, *vals)
+        histo.fill(*vals, atomic=-fill)
     else:
-        histo.threaded_fill(fill, *vals)
+        histo.fill(*vals, threads=fill)
 
     return histo.view()
 

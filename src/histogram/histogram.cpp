@@ -4,6 +4,7 @@
 // file LICENSE or https://github.com/scikit-hep/boost-histogram for details.
 
 #include <boost/histogram/python/pybind11.hpp>
+#include <boost/histogram/python/kwargs.hpp>
 #include <pybind11/operators.h>
 
 #include <boost/histogram/python/axis.hpp>
@@ -102,18 +103,6 @@ py::class_<bh::histogram<A, S>> register_histogram_by_type(py::module& m, const 
      "Get N-th axis with runtime index", "i"_a,
          py::return_value_policy::move)
 
-    // generic fill for 1 to N args
-    .def("__call__",
-      [](histogram_t &self, py::args args) {
-        boost::mp11::mp_with_index<BOOST_HISTOGRAM_DETAIL_AXES_LIMIT>(args.size(), fill_helper<histogram_t>(self, args));
-      }, "Insert data into histogram")
-    
-    // generic threaded fill for 1 to N args
-    .def("threaded_fill",
-         [](histogram_t &self, unsigned threads, py::args args) {
-             boost::mp11::mp_with_index<BOOST_HISTOGRAM_DETAIL_AXES_LIMIT>(args.size(), fill_helper_threaded<histogram_t>(self, args, threads));
-         }, "threads"_a, "Insert data into histogram in threads (0 for machine cores)")
-
     .def("at", [](histogram_t &self, py::args &args) {
         // Optimize for no dynamic?
         auto int_args = py::cast<std::vector<int>>(args);
@@ -160,18 +149,55 @@ py::class_<bh::histogram<A, S>> register_histogram_by_type(py::module& m, const 
     .def(make_pickle<histogram_t>())
     
     ;
+    
+    add_fill(std::is_same<S, storage::atomic_int>{}, hist);
 
     return hist;
 }
 
-template<typename A, typename S>
-void add_atomic_fill(py::class_<bh::histogram<A, S>>& hist) {
+// Atomic fill supported?
+template<typename A, typename S >
+void add_fill(std::true_type, py::class_<bh::histogram<A, S>>& hist) {
     using histogram_t = bh::histogram<A, S>;
-    hist.def("atomic_fill", [](histogram_t &self, size_t threads, py::args args) {
-        boost::mp11::mp_with_index<BOOST_HISTOGRAM_DETAIL_AXES_LIMIT>(args.size(), fill_helper_atomic<histogram_t>(self, args, threads));
-    }, "threads"_a, "Insert data into histogram, in some number of threads (0 for default)")
-    ;
+    
+    // generic threaded and atomic fill for 1 to N args
+    hist.def("fill",
+             [](histogram_t &self, py::args args, py::kwargs kwargs) {
+                 std::unique_ptr<size_t> threads = optional_arg<size_t>(kwargs, "threads");
+                 std::unique_ptr<size_t> atomic = optional_arg<size_t>(kwargs, "atomic");
+                 finalize_args(kwargs);
+                 
+                 if(threads && atomic)
+                     throw py::key_error("Cannot have both atomic and threads in one fill call!");
+                 else if(threads)
+                     boost::mp11::mp_with_index<BOOST_HISTOGRAM_DETAIL_AXES_LIMIT>(args.size(), fill_helper_threaded<histogram_t>(self, args, *threads));
+                 else if(atomic)
+                     boost::mp11::mp_with_index<BOOST_HISTOGRAM_DETAIL_AXES_LIMIT>(args.size(), fill_helper_atomic<histogram_t>(self, args, *atomic));
+                 else
+                     boost::mp11::mp_with_index<BOOST_HISTOGRAM_DETAIL_AXES_LIMIT>(args.size(), fill_helper<histogram_t>(self, args));
+                 
+             }, "Insert data into histogram in threads (0 for machine cores). Keyword arguments: threads=N, atomic=N (exclusive)");
 }
+
+template<typename A, typename S>
+void add_fill(std::false_type, py::class_<bh::histogram<A, S>>& hist) {
+    using histogram_t = bh::histogram<A, S>;
+    
+    // generic threaded fill for 1 to N args
+    hist.def("fill",
+         [](histogram_t &self, py::args args, py::kwargs kwargs) {
+             std::unique_ptr<size_t> threads = optional_arg<size_t>(kwargs, "threads");
+             finalize_args(kwargs);
+             
+             if(threads)
+                 boost::mp11::mp_with_index<BOOST_HISTOGRAM_DETAIL_AXES_LIMIT>(args.size(), fill_helper_threaded<histogram_t>(self, args, *threads));
+             else
+                 boost::mp11::mp_with_index<BOOST_HISTOGRAM_DETAIL_AXES_LIMIT>(args.size(), fill_helper<histogram_t>(self, args));
+             
+         }, "Insert data into histogram in threads (0 for machine cores). Keyword argument: threads=N");
+
+}
+
 
 py::module register_histogram(py::module& m) {
     
@@ -193,7 +219,6 @@ py::module register_histogram(py::module& m) {
     auto regular_atomic_int = register_histogram_by_type<axes::regular, storage::atomic_int>(hist,
         "regular_atomic_int",
         "N-dimensional histogram for atomic int-valued data.");
-    add_atomic_fill(regular_atomic_int);
 
     register_histogram_by_type<axes::regular_noflow, storage::int_>(hist,
         "regular_noflow_int",
@@ -208,7 +233,6 @@ py::module register_histogram(py::module& m) {
     auto any_atomic_int = register_histogram_by_type<axes::any, storage::atomic_int>(hist,
         "any_atomic_int",
         "N-dimensional histogram for int-valued data with any axis types (threadsafe).");
-    add_atomic_fill(any_atomic_int);
 
     register_histogram_by_type<axes::any, storage::double_>(hist,
         "any_double",
