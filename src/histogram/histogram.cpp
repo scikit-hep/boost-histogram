@@ -20,6 +20,7 @@
 #include <boost/histogram/algorithm/sum.hpp>
 #include <boost/histogram/axis/ostream.hpp>
 #include <boost/histogram/ostream.hpp>
+#include <boost/histogram/unsafe_access.hpp>
 
 #include <boost/mp11.hpp>
 
@@ -53,8 +54,35 @@ py::class_<bh::histogram<A, S>> register_histogram_by_type(py::module &m, const 
              })
 
         .def(py::self + py::self)
-        .def(py::self == py::self)
-        .def(py::self != py::self);
+
+        .def("__eq__",
+             [](const histogram_t &self, const histogram_t &other) {
+                 if(self.rank() != other.rank())
+                     return false;
+
+                 for(unsigned i = 0; i < self.rank(); i++)
+                     if(!compare_axes_eq(self.axis(i), other.axis(i)))
+                         return false;
+
+                 return bh::unsafe_access::storage(self) == bh::unsafe_access::storage(other);
+             })
+        .def("__ne__",
+             [](const histogram_t &self, const histogram_t &other) {
+                 if(self.rank() != other.rank())
+                     return true;
+
+                 for(unsigned i = 0; i < self.rank(); i++)
+                     if(compare_axes_ne(self.axis(i), other.axis(i)))
+                         return true;
+
+                 return !(bh::unsafe_access::storage(self) == bh::unsafe_access::storage(other));
+             })
+
+        // Fall through for non-matching types
+        .def("__eq__", [](const histogram_t &, const py::object &) { return false; })
+        .def("__ne__", [](const histogram_t &, const py::object &) { return true; })
+
+        ;
 
     // Atomics for example do not support these operations
     def_optionally(hist, bh::detail::has_operator_rmul<histogram_t, double>{}, py::self *= double());
