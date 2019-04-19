@@ -98,30 +98,31 @@ jobs:
     vmImage: 'macOS-10.14'
   steps:
     - template: .ci/azure-submodules.yml
-    - template: .ci/azure-macos-setup.yml
+    - template: .ci/azure-setup.yml
     - template: .ci/azure-steps.yml
-    - script: |
-        python -m pip install delocate
-        /Library/Frameworks/Python.framework/Versions/$(python.version)/bin/delocate-wheel dist/$(package_name)*.whl
-      displayName: 'Delocate wheels'
     - template: .ci/azure-publish-dist.yml
 
 - job: Windows
   strategy:
     matrix:
+      Python27:
+        python.version: '2.7'
+        python.architecture: 'x64'
       Python36:
         python.version: '3.6'
         python.architecture: 'x64'
       Python37:
         python.version: '3.7'
         python.architecture: 'x64'
+      Python27_32:
+        python.version: '2.7'
+        python.architecture: 'x86'
       Python36_32:
         python.version: '3.6'
         python.architecture: 'x86'
       Python37_32:
         python.version: '3.7'
         python.architecture: 'x86'
-      # Python 2.7 requires VS9, but that's too old
   pool:
     vmImage: 'vs2017-win2016'
   steps:
