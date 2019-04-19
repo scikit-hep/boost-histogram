@@ -3,6 +3,10 @@ trigger:
     include:
     - v*
 
+pr:
+- master
+
+
 variables:
   # This is the output name, - is replaced by _
   package_name: boost_histogram
