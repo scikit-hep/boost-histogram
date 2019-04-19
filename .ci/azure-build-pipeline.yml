@@ -16,7 +16,6 @@ jobs:
   variables:
     python.architecture: 'none'
   steps:
-    - template: azure-submodules.yml
     - script: |
         python -m pip install setuptools
         python setup.py sdist
@@ -44,7 +43,6 @@ jobs:
   pool:
     vmImage: 'ubuntu-16.04'
   steps:
-    - template: azure-submodules.yml
     - script: |
         docker run -e NPY_NUM_BUILD_JOBS=4 -e PLAT=$(plat) -e package_name=$(package_name) --rm -v `pwd`:/io $(image) /io/.ci/build-wheels.sh
         ls -lh wheelhouse/
@@ -67,7 +65,6 @@ jobs:
   pool:
     vmImage: 'macOS-10.14'
   steps:
-    - template: azure-submodules.yml
     - template: azure-setup.yml
     - template: azure-steps.yml
     - template: azure-publish-dist.yml
@@ -96,7 +93,6 @@ jobs:
   pool:
     vmImage: 'vs2017-win2016'
   steps:
-    - template: azure-submodules.yml
     - template: azure-setup.yml
     - template: azure-steps.yml
     - template: azure-publish-dist.yml

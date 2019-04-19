@@ -23,7 +23,6 @@ jobs:
   variables:
     python.architecture: 'none'
   steps:
-    - template: azure-submodules.yml
     - script: |
         python -m pip install setuptools
         python setup.py sdist
@@ -39,13 +38,12 @@ jobs:
       Python37:
         python.version: '3.7'
         python.architecture: 'x64'
-      Python34:
-        python.version: '3.4'
+      Python35:
+        python.version: '3.5'
         python.architecture: 'x64'
   pool:
     vmImage: 'ubuntu-16.04'
   steps:
-    - template: azure-submodules.yml
     - template: azure-setup.yml
     - template: azure-cmake-steps.yml
 
@@ -63,7 +61,6 @@ jobs:
   pool:
     vmImage: $(image)
   steps:
-    - template: azure-submodules.yml
     - template: azure-setup.yml
     - template: azure-steps.yml
     - template: azure-publish-dist.yml
