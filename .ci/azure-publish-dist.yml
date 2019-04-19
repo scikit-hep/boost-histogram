@@ -2,7 +2,7 @@
 steps:
 - task: PublishPipelineArtifact@0
   inputs:
-    artifactName: '$(Agent.JobName)_$(python.architecture)_artifact'
+    artifactName: '$(Agent.ID)_$(Agent.JobName)_$(python.architecture)_artifact'
     targetPath: 'dist'
 - script: |
     python -m pip install twine

@@ -91,9 +91,9 @@ jobs:
         python.version: '3.6'
       Python37:
         python.version: '3.7'
+        condition: or(contains(variables.Build.SourceBranch, 'refs/tags/'), variables.FULLBUILD_FORCE, variables.TWINE_UPLOAD)
   pool:
     vmImage: 'macOS-10.14'
-  condition: or(contains(variables.Build.SourceBranch, 'refs/tags/'), variables.FULLBUILD_FORCE, variables.TWINE_UPLOAD, eq(variables.python.version, '3.7'))
   steps:
     - template: .ci/azure-submodules.yml
     - template: .ci/azure-macos-setup.yml
@@ -123,7 +123,6 @@ jobs:
       # Python 2.7 requires VS9, but that's too old
   pool:
     vmImage: 'vs2017-win2016'
-  condition: or(contains(variables.Build.SourceBranch, 'refs/tags/'), variables.FULLBUILD_FORCE, variables.TWINE_UPLOAD, eq(variables.python.version, '3.7'))
   steps:
     - template: .ci/azure-submodules.yml
     - template: .ci/azure-setup.yml
