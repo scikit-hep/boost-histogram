@@ -20,6 +20,8 @@ jobs:
   condition: or(contains(variables.Build.SourceBranch, 'refs/tags/'), variables.FULLBUILD_FORCE, variables.TWINE_UPLOAD)
   pool:
     vmImage: 'ubuntu-16.04'
+  variables:
+    python.architecture: 'none'
   steps:
     - template: .ci/azure-submodules.yml
     - script: |
@@ -79,6 +81,8 @@ jobs:
     - template: .ci/azure-cmake-steps.yml
 
 - job: macOS
+  variables:
+    python.architecture: 'x64'
   strategy:
     matrix:
       Python27:
