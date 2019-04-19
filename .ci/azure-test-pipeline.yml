@@ -23,12 +23,12 @@ jobs:
   variables:
     python.architecture: 'none'
   steps:
-    - template: .ci/azure-submodules.yml
+    - template: azure-submodules.yml
     - script: |
         python -m pip install setuptools
         python setup.py sdist
       displayName: Publish sdist
-    - template: .ci/azure-publish-dist.yml
+    - template: azure-publish-dist.yml
 
 - job: LinuxCMake
   strategy:
@@ -45,9 +45,9 @@ jobs:
   pool:
     vmImage: 'ubuntu-16.04'
   steps:
-    - template: .ci/azure-submodules.yml
-    - template: .ci/azure-setup.yml
-    - template: .ci/azure-cmake-steps.yml
+    - template: azure-submodules.yml
+    - template: azure-setup.yml
+    - template: azure-cmake-steps.yml
 
 - job: Wheels
   strategy:
@@ -63,8 +63,8 @@ jobs:
   pool:
     vmImage: $(image)
   steps:
-    - template: .ci/azure-submodules.yml
-    - template: .ci/azure-setup.yml
-    - template: .ci/azure-steps.yml
-    - template: .ci/azure-publish-dist.yml
+    - template: azure-submodules.yml
+    - template: azure-setup.yml
+    - template: azure-steps.yml
+    - template: azure-publish-dist.yml
 

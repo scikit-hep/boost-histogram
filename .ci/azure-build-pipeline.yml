@@ -16,12 +16,12 @@ jobs:
   variables:
     python.architecture: 'none'
   steps:
-    - template: .ci/azure-submodules.yml
+    - template: azure-submodules.yml
     - script: |
         python -m pip install setuptools
         python setup.py sdist
       displayName: Publish sdist
-    - template: .ci/azure-publish-dist.yml
+    - template: azure-publish-dist.yml
 
 - job: ManyLinux
   strategy:
@@ -44,14 +44,14 @@ jobs:
   pool:
     vmImage: 'ubuntu-16.04'
   steps:
-    - template: .ci/azure-submodules.yml
+    - template: azure-submodules.yml
     - script: |
         docker run -e NPY_NUM_BUILD_JOBS=4 -e PLAT=$(plat) -e package_name=$(package_name) --rm -v `pwd`:/io $(image) /io/.ci/build-wheels.sh
         ls -lh wheelhouse/
         mkdir -p dist
         cp wheelhouse/$(package_name)*.whl dist/.
       displayName: Build wheels
-    - template: .ci/azure-publish-dist.yml
+    - template: azure-publish-dist.yml
 
 - job: macOS
   variables:
@@ -67,10 +67,10 @@ jobs:
   pool:
     vmImage: 'macOS-10.14'
   steps:
-    - template: .ci/azure-submodules.yml
-    - template: .ci/azure-setup.yml
-    - template: .ci/azure-steps.yml
-    - template: .ci/azure-publish-dist.yml
+    - template: azure-submodules.yml
+    - template: azure-setup.yml
+    - template: azure-steps.yml
+    - template: azure-publish-dist.yml
 
 - job: Windows
   strategy:
@@ -96,7 +96,7 @@ jobs:
   pool:
     vmImage: 'vs2017-win2016'
   steps:
-    - template: .ci/azure-submodules.yml
-    - template: .ci/azure-setup.yml
-    - template: .ci/azure-steps.yml
-    - template: .ci/azure-publish-dist.yml
+    - template: azure-submodules.yml
+    - template: azure-setup.yml
+    - template: azure-steps.yml
+    - template: azure-publish-dist.yml
