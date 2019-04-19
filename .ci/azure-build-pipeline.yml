@@ -24,7 +24,6 @@ jobs:
     - template: .ci/azure-publish-dist.yml
 
 - job: ManyLinux
-  condition: or(contains(variables.Build.SourceBranch, 'refs/tags/'), variables.FULLBUILD_FORCE)
   strategy:
     matrix:
       64Bit2010:
