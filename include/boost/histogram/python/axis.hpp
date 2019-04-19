@@ -58,36 +58,39 @@ decltype(auto) axis_to_bins(const A &self, bool flow) {
 
 inline bool PyObject_Check(void *value) { return value != nullptr; }
 
-#if PY_MAJOR_VERSION < 3
+using metadata_t = py::object;
 
-extern PyThreadState *_PyThreadState_Current;
-
-inline int PyGILState_Check(void) {
-    PyThreadState *tstate = _PyThreadState_Current;
-    return tstate && (tstate == PyGILState_GetThisThreadState());
+// Make py::object's as metadata always compare true (check will happen later)
+namespace boost {
+namespace histogram {
+namespace detail {
+template <>
+constexpr bool relaxed_equal(const py::object &, const py::object &) noexcept {
+    return true;
 }
-#endif
+} // namespace detail
+} // namespace histogram
+} // namespace boost
 
-class metadata_t : public py::object {
-    PYBIND11_OBJECT_DEFAULT(metadata_t, object, PyObject_Check);
+template <typename T>
+bool compare_axes_eq(const T &self, const T &other) {
+    auto op = py::module::import("operator");
+    if(py::cast<bool>(op.attr("eq")(self.metadata(), other.metadata()))) {
+        return self == other;
+    } else {
+        return false;
+    }
+}
 
-    bool operator==(const metadata_t &other) const {
-        if(PyGILState_Check()) {
-            return py::cast<bool>(this->attr("__eq__")(other));
-        } else {
-            py::gil_scoped_acquire gil;
-            return py::cast<bool>(this->attr("__eq__")(other));
-        }
+template <typename T>
+bool compare_axes_ne(const T &self, const T &other) {
+    auto op = py::module::import("operator");
+    if(py::cast<bool>(op.attr("ne")(self.metadata(), other.metadata()))) {
+        return true;
+    } else {
+        return self != other;
     }
-    bool operator!=(const metadata_t &other) const {
-        if(PyGILState_Check()) {
-            return py::cast<bool>(this->attr("__ne__")(other));
-        } else {
-            py::gil_scoped_acquire gil;
-            return py::cast<bool>(this->attr("__ne__")(other));
-        }
-    }
-};
+}
 
 namespace axis {
 

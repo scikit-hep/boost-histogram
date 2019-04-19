@@ -74,8 +74,12 @@ py::class_<A> register_axis_by_type(py::module &m, Args &&... args) {
 
     axis.def("__repr__", shift_to_string<A>())
 
-        .def(py::self == py::self)
-        .def(py::self != py::self)
+        .def("__eq__", [](const A &self, const A &other) { return compare_axes_eq(self, other); })
+        .def("__ne__", [](const A &self, const A &other) { return compare_axes_ne(self, other); })
+
+        // Fall through for non-matching types
+        .def("__eq__", [](const A &, const py::object &) { return false; })
+        .def("__ne__", [](const A &, const py::object &) { return true; })
 
         .def(
             "size",
