@@ -17,7 +17,7 @@ jobs:
       displayName: Check format
 
 - job: LinuxSDist
-  condition: or(contains(variables.Build.SourceBranch, 'refs/tags/'), variables.FULLBUILD_FORCE)
+  condition: or(contains(variables.Build.SourceBranch, 'refs/tags/'), variables.FULLBUILD_FORCE, variables.TWINE_UPLOAD)
   pool:
     vmImage: 'ubuntu-16.04'
   steps:
@@ -29,21 +29,24 @@ jobs:
     - template: .ci/azure-publish-dist.yml
 
 - job: ManyLinux
-  condition: or(contains(variables.Build.SourceBranch, 'refs/tags/'), variables.FULLBUILD_FORCE)
+  condition: or(contains(variables.Build.SourceBranch, 'refs/tags/'), variables.FULLBUILD_FORCE, variables.TWINE_UPLOAD)
   strategy:
     matrix:
       64Bit2010:
         arch: x86_64
         plat: manylinux2010_x86_64
         image: quay.io/pypa/manylinux2010_x86_64
+        python.architecture: x64
       64Bit:
         arch: x86_64
         plat: manylinux1_x86_64
         image: skhep/manylinuxgcc-x86_64
+        python.architecture: x64
       32Bit:
         arch: i686
         plat: manylinux1_i686
         image: skhep/manylinuxgcc-i686
+        python.architecture: x86
   pool:
     vmImage: 'ubuntu-16.04'
   steps:
@@ -86,6 +89,7 @@ jobs:
         python.version: '3.7'
   pool:
     vmImage: 'macOS-10.14'
+  condition: or(contains(variables.Build.SourceBranch, 'refs/tags/'), variables.FULLBUILD_FORCE, variables.TWINE_UPLOAD, eq(variables.python.version, '3.7'))
   steps:
     - template: .ci/azure-submodules.yml
     - template: .ci/azure-macos-setup.yml
@@ -115,6 +119,7 @@ jobs:
       # Python 2.7 requires VS9, but that's too old
   pool:
     vmImage: 'vs2017-win2016'
+  condition: or(contains(variables.Build.SourceBranch, 'refs/tags/'), variables.FULLBUILD_FORCE, variables.TWINE_UPLOAD, eq(variables.python.version, '3.7'))
   steps:
     - template: .ci/azure-submodules.yml
     - template: .ci/azure-setup.yml
