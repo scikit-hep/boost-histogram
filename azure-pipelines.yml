@@ -7,6 +7,10 @@ trigger:
     - master
     - develop
 
+variables:
+  # This is the output name, - is replaced by _
+  package_name: boost_histogram
+
 jobs:
 
 - job: ClangFormat
@@ -53,10 +57,10 @@ jobs:
   steps:
     - template: .ci/azure-submodules.yml
     - script: |
-        docker run -e PLAT=$(plat) --rm -v `pwd`:/io $(image) /io/.ci/build-wheels.sh
+        docker run -e NPY_NUM_BUILD_JOBS=4 -e PLAT=$(plat) -e package_name=$(package_name) --rm -v `pwd`:/io $(image) /io/.ci/build-wheels.sh
         ls -lh wheelhouse/
         mkdir -p dist
-        cp wheelhouse/boost*.whl dist/.
+        cp wheelhouse/$(package_name)*.whl dist/.
       displayName: Build wheels
     - template: .ci/azure-publish-dist.yml
 
@@ -98,7 +102,7 @@ jobs:
     - template: .ci/azure-steps.yml
     - script: |
         python -m pip install delocate
-        /Library/Frameworks/Python.framework/Versions/$(python.version)/bin/delocate-wheel dist/boost*.whl
+        /Library/Frameworks/Python.framework/Versions/$(python.version)/bin/delocate-wheel dist/$(package_name)*.whl
       displayName: 'Delocate wheels'
     - template: .ci/azure-publish-dist.yml
 
