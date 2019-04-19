@@ -7,6 +7,10 @@ trigger:
     - master
     - develop
 
+variables:
+  # This is the output name, - is replaced by _
+  package_name: boost_histogram
+
 jobs:
 
 - job: ClangFormat
@@ -17,9 +21,10 @@ jobs:
       displayName: Check format
 
 - job: LinuxSDist
-  condition: contains(variables['Build.SourceBranch'], 'refs/tags/') 
   pool:
     vmImage: 'ubuntu-16.04'
+  variables:
+    python.architecture: 'none'
   steps:
     - template: .ci/azure-submodules.yml
     - script: |
@@ -29,30 +34,33 @@ jobs:
     - template: .ci/azure-publish-dist.yml
 
 - job: ManyLinux
-  condition: contains(variables['Build.SourceBranch'], 'refs/tags/') 
+  condition: or(contains(variables.Build.SourceBranch, 'refs/tags/'), variables.FULLBUILD_FORCE)
   strategy:
     matrix:
       64Bit2010:
         arch: x86_64
         plat: manylinux2010_x86_64
         image: quay.io/pypa/manylinux2010_x86_64
+        python.architecture: x64
       64Bit:
         arch: x86_64
         plat: manylinux1_x86_64
         image: skhep/manylinuxgcc-x86_64
+        python.architecture: x64
       32Bit:
         arch: i686
         plat: manylinux1_i686
         image: skhep/manylinuxgcc-i686
+        python.architecture: x86
   pool:
     vmImage: 'ubuntu-16.04'
   steps:
     - template: .ci/azure-submodules.yml
     - script: |
-        docker run -e PLAT=$(plat) --rm -v `pwd`:/io $(image) /io/.ci/build-wheels.sh
+        docker run -e NPY_NUM_BUILD_JOBS=4 -e PLAT=$(plat) -e package_name=$(package_name) --rm -v `pwd`:/io $(image) /io/.ci/build-wheels.sh
         ls -lh wheelhouse/
         mkdir -p dist
-        cp wheelhouse/boost*.whl dist/.
+        cp wheelhouse/$(package_name)*.whl dist/.
       displayName: Build wheels
     - template: .ci/azure-publish-dist.yml
 
@@ -76,6 +84,8 @@ jobs:
     - template: .ci/azure-cmake-steps.yml
 
 - job: macOS
+  variables:
+    python.architecture: 'x64'
   strategy:
     matrix:
       Python27:
@@ -92,8 +102,7 @@ jobs:
     - template: .ci/azure-steps.yml
     - script: |
         python -m pip install delocate
-        /Library/Frameworks/Python.framework/Versions/$(python.version)/bin/delocate-listdeps dist/boost*.whl
-        /Library/Frameworks/Python.framework/Versions/$(python.version)/bin/delocate-wheel dist/boost*.whl
+        /Library/Frameworks/Python.framework/Versions/$(python.version)/bin/delocate-wheel dist/$(package_name)*.whl
       displayName: 'Delocate wheels'
     - template: .ci/azure-publish-dist.yml
 

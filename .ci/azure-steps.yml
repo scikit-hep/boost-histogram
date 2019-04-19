@@ -6,7 +6,7 @@ steps:
 - script: |
     ls -lh wheelhouse
     mkdir -p dist
-    cp wheelhouse/boost* dist/.
+    cp wheelhouse/$(package_name)* dist/.
   displayName: 'Show wheelhouse'
 
 - script: |

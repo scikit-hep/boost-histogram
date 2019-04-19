@@ -1,11 +1,9 @@
 
 steps:
-- script: |
-    python -m pip install twine
-    python -m twine upload --repository-url $(TWINE_REPOSITORY_URL) \
-                           --username $(TWINE_USERNAME) \
-                           --password $(TWINE_PASSWORD) \
-                           dist/*
-  displayName: "Publish to PyPI"
-  condition: and(succeeded(), contains(variables['Build.SourceBranch'], 'refs/tags/'))
+- task: PublishPipelineArtifact@0
+  inputs:
+    artifactName: '$(Agent.OS)_$(Agent.JobName)_$(python.architecture)_artifact'
+    targetPath: 'dist'
 
+# You can set FULLBUILD_FORCE to anything non-blank to get the manylinux job to run.
+# Artifacts are attached to the build, and are published with an Azure release pipeline.
