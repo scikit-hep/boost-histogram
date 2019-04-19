@@ -2,13 +2,6 @@
 steps:
 - task: PublishPipelineArtifact@0
   inputs:
-    artifactName: '$(Agent.ID)_$(Agent.JobName)_$(python.architecture)_artifact'
+    artifactName: '$(Build.DefinitionName)_$(Agent.OS)_$(Agent.JobName)_$(python.architecture)_artifact'
     targetPath: 'dist'
-- script: |
-    python -m pip install twine
-    python -m twine upload dist/*
-  displayName: "Publish to PyPI"
-  condition: and(succeeded(), or(contains(variables.Build.SourceBranch, 'refs/tags/'), variables.TWINE_UPLOAD))
-  env:
-    TWINE_PASSWORD: $(TWINE_PASSWORD)
 

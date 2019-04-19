@@ -17,7 +17,6 @@ jobs:
       displayName: Check format
 
 - job: LinuxSDist
-  condition: or(contains(variables.Build.SourceBranch, 'refs/tags/'), variables.FULLBUILD_FORCE, variables.TWINE_UPLOAD)
   pool:
     vmImage: 'ubuntu-16.04'
   variables:
@@ -31,7 +30,7 @@ jobs:
     - template: .ci/azure-publish-dist.yml
 
 - job: ManyLinux
-  condition: or(contains(variables.Build.SourceBranch, 'refs/tags/'), variables.FULLBUILD_FORCE, variables.TWINE_UPLOAD)
+  condition: or(contains(variables.Build.SourceBranch, 'refs/tags/'), variables.FULLBUILD_FORCE)
   strategy:
     matrix:
       64Bit2010:
@@ -91,7 +90,6 @@ jobs:
         python.version: '3.6'
       Python37:
         python.version: '3.7'
-        condition: or(contains(variables.Build.SourceBranch, 'refs/tags/'), variables.FULLBUILD_FORCE, variables.TWINE_UPLOAD)
   pool:
     vmImage: 'macOS-10.14'
   steps:
@@ -100,7 +98,6 @@ jobs:
     - template: .ci/azure-steps.yml
     - script: |
         python -m pip install delocate
-        /Library/Frameworks/Python.framework/Versions/$(python.version)/bin/delocate-listdeps dist/boost*.whl
         /Library/Frameworks/Python.framework/Versions/$(python.version)/bin/delocate-wheel dist/boost*.whl
       displayName: 'Delocate wheels'
     - template: .ci/azure-publish-dist.yml
