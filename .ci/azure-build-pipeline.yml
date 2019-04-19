@@ -2,10 +2,6 @@ trigger:
   tags:
     include:
     - v*
-  branches:
-    include:
-    - master
-    - develop
 
 variables:
   # This is the output name, - is replaced by _
@@ -13,12 +9,6 @@ variables:
 
 jobs:
 
-- job: ClangFormat
-  pool:
-    vmImage: 'ubuntu-16.04'
-  steps:
-    - script: scripts/check_style_docker.sh
-      displayName: Check format
 
 - job: LinuxSDist
   pool:
@@ -63,25 +53,6 @@ jobs:
         cp wheelhouse/$(package_name)*.whl dist/.
       displayName: Build wheels
     - template: .ci/azure-publish-dist.yml
-
-- job: LinuxCMake
-  strategy:
-    matrix:
-      Python27:
-        python.version: '2.7'
-        python.architecture: 'x64'
-      Python37:
-        python.version: '3.7'
-        python.architecture: 'x64'
-      Python35:
-        python.version: '3.5'
-        python.architecture: 'x64'
-  pool:
-    vmImage: 'ubuntu-16.04'
-  steps:
-    - template: .ci/azure-submodules.yml
-    - template: .ci/azure-setup.yml
-    - template: .ci/azure-cmake-steps.yml
 
 - job: macOS
   variables:
