@@ -98,9 +98,8 @@ class TestRegular(Axis):
         with pytest.raises(ValueError):
             regular_uoflow(1, 1.0, 1.0)
 
-        # CLASSIC: this was not allowed. Now it is.
-        # with pytest.raises(TypeError):
-        regular_uoflow(1, 1.0, 2.0, metadata=0)
+        with pytest.raises(TypeError):
+            regular_uoflow(1, 1.0, 2.0, metadata=0)
 
 
 
@@ -261,10 +260,10 @@ class TestCircular(Axis):
             circular()
         with pytest.raises(Exception):
             circular(-1)
-        # CLASSIC: Used to be disallowed, now matches as metadata.
-        circular(1, 1.0, 2.0, 3.0)
-        # CLASSIC: Used to be disallowed.
-        circular(1, 1.0, metadata=1)
+        with pytest.raises(TypeError):
+            circular(1, 1.0, 2.0, 3.0)
+        with pytest.raises(TypeError):
+            circular(1, 1.0, metadata=1)
         with pytest.raises(TypeError):
             circular("1")
 
@@ -441,8 +440,8 @@ class TestInteger:
         with pytest.raises(ValueError):
             integer_uoflow(2, -1)
 
-        # CLASSIC: Used to fail
-        integer_uoflow(1, 2, 3)
+        with pytest.raises(TypeError):
+            integer_uoflow(1, 2, 3)
 
         assert integer_uoflow(-1, 2) == integer_uoflow(-1, 2)
         assert integer_uoflow(-1, 2) != integer_uoflow(-1, 2, metadata="Other")
@@ -511,8 +510,8 @@ class TestCategory(Axis):
             category(["1"])
         with pytest.raises(TypeError):
             category([1, "2"])
-        # CLASSIC: Used to raise TypeError
-        category([1, 2], metadata=1)
+        with pytest.raises(TypeError):
+            category([1, 2], metadata=1)
         with pytest.raises(TypeError):
             category([1, 2, 3], uoflow=True)
 
