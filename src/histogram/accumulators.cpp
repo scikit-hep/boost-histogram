@@ -6,7 +6,7 @@
 #include <boost/histogram/python/pybind11.hpp>
 #include <pybind11/operators.h>
 
-#include <boost/histogram/python/pickle.hpp>
+#include <boost/histogram/python/register_accumulator.hpp>
 
 #include <boost/histogram.hpp>
 #include <boost/histogram/accumulators/mean.hpp>
@@ -15,29 +15,12 @@
 #include <boost/histogram/accumulators/weighted_mean.hpp>
 #include <boost/histogram/accumulators/weighted_sum.hpp>
 
-template <typename A, typename... Args>
-py::class_<A> add_accumulator(py::module acc, Args &&... args) {
-    return py::class_<A>(acc, std::forward<Args>(args)...)
-        .def(py::init<>())
-
-        .def(py::self += py::self)
-        .def(py::self == py::self)
-        .def(py::self != py::self)
-
-        .def("__repr__", shift_to_string<A>())
-
-        .def("__copy__", [](const A &self) { return A(self); })
-        .def("__deepcopy__", [](const A &self, py::object) { return A(self); })
-
-        .def(make_pickle<A>());
-}
-
 py::module register_accumulators(py::module &m) {
     py::module accumulators = m.def_submodule("accumulators");
 
     using weighted_sum = bh::accumulators::weighted_sum<double>;
 
-    add_accumulator<weighted_sum>(accumulators, "weighted_sum")
+    register_accumulator<weighted_sum>(accumulators, "weighted_sum")
         .def(py::init<const double &>(), "value"_a)
         .def(py::init<const double &, const double &>(), "value"_a, "variance"_a)
 
@@ -65,7 +48,7 @@ py::module register_accumulators(py::module &m) {
 
     using weighted_mean = bh::accumulators::weighted_mean<double>;
 
-    add_accumulator<weighted_mean>(accumulators, "weighted_mean")
+    register_accumulator<weighted_mean>(accumulators, "weighted_mean")
         .def(py::init<const double &, const double &, const double &, const double &>(),
              "wsum"_a,
              "wsum2"_a,
@@ -96,7 +79,7 @@ py::module register_accumulators(py::module &m) {
 
     using mean = bh::accumulators::mean<double>;
 
-    add_accumulator<mean>(accumulators, "mean")
+    register_accumulator<mean>(accumulators, "mean")
         .def(py::init<std::size_t, const double &, const double &>(), "value"_a, "mean"_a, "variance"_a)
 
         .def_property_readonly("count", &mean::count)
@@ -114,7 +97,7 @@ py::module register_accumulators(py::module &m) {
 
     using sum = bh::accumulators::sum<double>;
 
-    add_accumulator<sum>(accumulators, "sum")
+    register_accumulator<sum>(accumulators, "sum")
         .def(py::init<const double &>(), "value"_a)
 
         .def_property(
