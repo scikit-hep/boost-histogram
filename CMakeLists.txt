@@ -119,10 +119,26 @@ configure_file(
     "${CMAKE_CURRENT_BINARY_DIR}/boost/histogram_version.py"
     COPYONLY)
 
+
 # Tests (Requires pytest to be available to run)
 include(CTest)
 
 if(BUILD_TESTING)
+
+    # Support for running from build directory
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/pytest.ini"
+        "[pytest]\n"
+        "addopts = --benchmark-disable\n"
+        "testpaths = . ../tests\n"
+        )
+
+    # Support plain "pytest" in addition to "python -m pytest"
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/conftest.py"
+        "import os, sys\n"
+        "sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))\n"
+        )
+
+
     # Look for all the tests
     file(GLOB
         BOOST_HIST_PY_TESTS
