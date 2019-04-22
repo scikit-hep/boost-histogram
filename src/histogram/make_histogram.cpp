@@ -28,7 +28,7 @@ void register_make_histogram(py::module &m, py::module &hist) {
             try {
                 return try_cast<storage::int_, storage::atomic_int, storage::unlimited>(
                     storage, [&args](auto &&storage) {
-                        auto reg = py::cast<axes::regular>(args);
+                        auto reg = py::cast<axes::regular_uoflow>(args);
                         return py::cast(bh::make_histogram_with(storage, reg), py::return_value_policy::move);
                     });
             } catch(const py::cast_error &) {

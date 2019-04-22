@@ -2,11 +2,16 @@ import pytest
 from pytest import approx
 
 from boost.histogram.axis import (regular, regular_growth,
-                                  regular_uoflow, regular_noflow,
+                                  regular_uoflow, regular_uflow,
+                                  regular_oflow, regular_noflow,
                                   regular_log, regular_sqrt,
                                   regular_pow, circular,
-                                  variable, integer_uoflow,
-                                  integer_noflow, integer_growth,
+                                  variable,
+                                  variable_uoflow, variable_uflow,
+                                  variable_oflow, variable_noflow,
+                                  integer, integer_growth,
+                                  integer_uoflow, integer_oflow,
+                                  integer_uflow, integer_noflow,
                                   category_int as category)
 
 import numpy as np
@@ -61,11 +66,21 @@ class TestRegular(Axis):
         assert isinstance(regular(1,2,3), regular_uoflow)
         assert isinstance(regular(1,2,3), regular)
 
+        assert isinstance(regular(1,2,3, overflow=False), regular_uflow)
+        assert isinstance(regular(1,2,3, overflow=False), regular)
+
+        assert isinstance(regular(1,2,3, underflow=False), regular_oflow)
+        assert isinstance(regular(1,2,3, underflow=False), regular)
+
         assert isinstance(regular(1,2,3, flow=False), regular_noflow)
         assert isinstance(regular(1,2,3, flow=False), regular)
 
+        assert isinstance(regular(1,2,3, underflow=False, overflow=False), regular_noflow)
+        assert isinstance(regular(1,2,3, underflow=False, overflow=False, flow=True), regular_uoflow)
+
         assert isinstance(regular(1,2,3, growth=True), regular_growth)
         assert isinstance(regular(1,2,3, growth=True), regular)
+
 
     def test_init(self):
         # Should not throw
@@ -345,6 +360,21 @@ class TestCircular(Axis):
 
 
 class TestVariable(Axis):
+    def test_shortcut(self):
+        assert isinstance(variable([1,2,3]), variable_uoflow)
+        assert isinstance(variable([1,2,3]), variable)
+
+        assert isinstance(variable([1,2,3], overflow=False), variable_uflow)
+        assert isinstance(variable([1,2,3], overflow=False), variable)
+
+        assert isinstance(variable([1,2,3], underflow=False), variable_oflow)
+        assert isinstance(variable([1,2,3], underflow=False), variable)
+
+        assert isinstance(variable([1,2,3], flow=False), variable_noflow)
+        assert isinstance(variable([1,2,3], flow=False), variable)
+
+        assert isinstance(variable([1,2,3], underflow=False, overflow=False), variable_noflow)
+        assert isinstance(variable([1,2,3], underflow=False, overflow=False, flow=True), variable_uoflow)
 
     def test_init(self):
         variable([0, 1])
@@ -362,7 +392,7 @@ class TestVariable(Axis):
             variable([1, 1])
         with pytest.raises(TypeError):
             variable(["1", 2])
-        with pytest.raises(TypeError):
+        with pytest.raises(KeyError):
             variable([0.0, 1.0, 2.0], bad_keyword="ra")
 
         a = variable([-0.1, 0.2, 0.3])
@@ -426,6 +456,24 @@ class TestVariable(Axis):
         assert a.index(10) == 2
 
 class TestInteger:
+    def test_shortcut(self):
+        assert isinstance(integer(1, 3), integer_uoflow)
+        assert isinstance(integer(1, 3), integer)
+
+        assert isinstance(integer(1, 3, overflow=False), integer_uflow)
+        assert isinstance(integer(1, 3, overflow=False), integer)
+
+        assert isinstance(integer(1, 3, underflow=False), integer_oflow)
+        assert isinstance(integer(1, 3, underflow=False), integer)
+
+        assert isinstance(integer(1, 3, flow=False), integer_noflow)
+        assert isinstance(integer(1, 3, flow=False), integer)
+
+        assert isinstance(integer(1, 3, underflow=False, overflow=False), integer_noflow)
+        assert isinstance(integer(1, 3, underflow=False, overflow=False, flow=True), integer_uoflow)
+
+        assert isinstance(integer(1, 3, growth=True), integer_growth)
+        assert isinstance(integer(1, 3, growth=True), integer)
 
     def test_init(self):
         integer_uoflow(-1, 2)

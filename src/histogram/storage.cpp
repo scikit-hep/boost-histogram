@@ -25,7 +25,6 @@ py::module register_storages(py::module &m) {
     // Default storages
 
     register_storage<storage::unlimited>(storage, "unlimited", "Optimized for unweighted histograms, adaptive");
-    //.def(py::init<>());
 
     register_storage<storage::weight>(
         storage, "weight", "Dense storage which tracks sums of weights and a variance estimate");

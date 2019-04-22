@@ -3,9 +3,13 @@
 // Distributed under the 3-Clause BSD License.  See accompanying
 // file LICENSE or https://github.com/scikit-hep/boost-histogram for details.
 
-// This file must be the first include
+// This file must be the first include (that is, it must be before stdlib or boost headers)
+// This reduces the warning output from Python.h and also lets us define s afew things
 
 #pragma once
+
+#define BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS
+#define BOOST_MPL_LIMIT_LIST_SIZE 30
 
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
