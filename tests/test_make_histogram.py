@@ -25,6 +25,23 @@ def test_shortcuts():
     assert isinstance(hist.axis(1), bh.axis.regular_uoflow)
     assert not isinstance(hist.axis(1), bh.axis.variable)
 
+
+def test_shortcuts_with_metadata():
+    bh.histogram((1,2,3, "this"))
+    with pytest.raises(TypeError):
+        bh.histogram((1,2,3,4))
+    with pytest.raises(TypeError):
+        bh.histogram((1,2))
+    with pytest.raises(TypeError):
+        bh.histogram((1,2,3,4,5))
+
+    bh.histogram([1,2,3,4,5,6])
+    bh.histogram([1,2,3,4,5,6, "that"])
+
+    with pytest.raises(RuntimeError):
+        bh.histogram([1,2,"this",3])
+
+
 @pytest.mark.parametrize("axis,extent", ((bh.axis.regular_uoflow, 2),
                                          (bh.axis.regular_noflow, 0)))
 def test_make_regular_2D(axis, extent):

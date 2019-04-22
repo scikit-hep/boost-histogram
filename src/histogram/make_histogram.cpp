@@ -37,15 +37,38 @@ void register_make_histogram(py::module &m, py::module &hist) {
                                                                     py::cast<double>(arg[2]),
                                                                     py::str()),
                                            py::return_value_policy::take_ownership);
+                    } else if(arg.size() == 4) {
+                        try {
+                            py::cast<double>(arg[3]);
+                            throw py::type_error("The fourth argument (metadata) in the tuple cannot be numeric!");
+                        } catch(const py::cast_error &) {
+                        }
+
+                        args[i] = py::cast(
+                            new axis::regular_uoflow(
+                                py::cast<unsigned>(arg[0]), py::cast<double>(arg[1]), py::cast<double>(arg[2]), arg[3]),
+                            py::return_value_policy::take_ownership);
+                    } else {
+                        throw py::type_error(
+                            "Only (bins, start, stop) and (bins, start, stop, metadata) tuples accepted");
                     }
 
                     // A list converts to a variable length array.
                 } else if(py::isinstance<py::list>(args[i])) {
                     py::list arg = py::cast<py::list>(args[i]);
-                    args[i]      = py::cast(new axis::variable_uoflow(py::cast<std::vector<double>>(arg), py::str()),
-                                       py::return_value_policy::take_ownership);
+                    if(arg.size() < 2) {
+                        throw py::type_error("Variable axes require at least two edges (probably more)");
+                    }
+                    try {
+                        py::cast<double>(arg[arg.size() - 1]);
+                        args[i] = py::cast(new axis::variable_uoflow(py::cast<std::vector<double>>(arg), py::str()),
+                                           py::return_value_policy::take_ownership);
+                    } catch(const py::cast_error &) {
+                        py::object metadata = arg.attr("pop")();
+                        args[i] = py::cast(new axis::variable_uoflow(py::cast<std::vector<double>>(arg), metadata),
+                                           py::return_value_policy::take_ownership);
+                    }
                 }
-
             }
 
             // We try each possible axes type that has high-performance single-type overloads.
