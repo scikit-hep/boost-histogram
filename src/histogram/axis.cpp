@@ -25,17 +25,31 @@ py::module register_axes(py::module &m) {
     py::object factory_meta_py = py::module::import("boost.histogram_utils").attr("FactoryMeta");
 
     register_axis<axis::regular_uoflow>(ax, "regular_uoflow", "Evenly spaced bins")
-        .def(py::init<unsigned, double, double, metadata_t>(), "n"_a, "start"_a, "stop"_a, "metadata"_a = py::str());
-    
+        .def(construct_axes<axis::regular_uoflow, unsigned, double, double>(),
+             "n"_a,
+             "start"_a,
+             "stop"_a,
+             "metadata"_a = py::str());
+
     register_axis<axis::regular_noflow>(ax, "regular_noflow", "Evenly spaced bins without over/under flow")
-        .def(py::init<unsigned, double, double, metadata_t>(), "n"_a, "start"_a, "stop"_a, "metadata"_a = py::str());
-    
+        .def(construct_axes<axis::regular_noflow, unsigned, double, double>(),
+             "n"_a,
+             "start"_a,
+             "stop"_a,
+             "metadata"_a = py::str());
+
     register_axis<axis::regular_growth>(ax, "regular_growth", "Evenly spaced bins that grow as needed")
-        .def(py::init<unsigned, double, double, metadata_t>(), "n"_a, "start"_a, "stop"_a, "metadata"_a = py::str());
-    
+        .def(construct_axes<axis::regular_growth, unsigned, double, double>(),
+             "n"_a,
+             "start"_a,
+             "stop"_a,
+             "metadata"_a = py::str());
+
     ax.def(
         "make_regular",
         [](unsigned n, double start, double stop, metadata_t metadata, bool flow, bool growth) -> py::object {
+            validate_metadata(metadata);
+
             if(growth) {
                 return py::cast(axis::regular_growth(n, start, stop, metadata), py::return_value_policy::move);
             } else if(flow) {
@@ -57,22 +71,36 @@ py::module register_axes(py::module &m) {
         py::make_tuple(ax.attr("regular_uoflow"), ax.attr("regular_noflow"), ax.attr("regular_growth")));
 
     register_axis<axis::circular>(ax, "circular", "Evenly spaced bins with wraparound")
-        .def(py::init<unsigned, double, double, metadata_t>(), "n"_a, "start"_a, "stop"_a, "metadata"_a = py::str())
+        .def(construct_axes<axis::circular, unsigned, double, double>(),
+             "n"_a,
+             "start"_a,
+             "stop"_a,
+             "metadata"_a = py::str())
         .def(py::init([](unsigned n, double stop, metadata_t metadata) {
+                 validate_metadata(metadata);
                  return new axis::circular{n, 0.0, stop, metadata};
              }),
              "n"_a,
              "stop"_a,
              "metadata"_a = py::str());
-    
+
     register_axis<axis::regular_log>(ax, "regular_log", "Evenly spaced bins in log10")
-        .def(py::init<unsigned, double, double, metadata_t>(), "n"_a, "start"_a, "stop"_a, "metadata"_a = py::str());
-    
+        .def(construct_axes<axis::regular_log, unsigned, double, double>(),
+             "n"_a,
+             "start"_a,
+             "stop"_a,
+             "metadata"_a = py::str());
+
     register_axis<axis::regular_sqrt>(ax, "regular_sqrt", "Evenly spaced bins in sqrt")
-        .def(py::init<unsigned, double, double, metadata_t>(), "n"_a, "start"_a, "stop"_a, "metadata"_a = py::str());
-    
+        .def(construct_axes<axis::regular_sqrt, unsigned, double, double>(),
+             "n"_a,
+             "start"_a,
+             "stop"_a,
+             "metadata"_a = py::str());
+
     register_axis<axis::regular_pow>(ax, "regular_pow", "Evenly spaced bins in a power")
         .def(py::init([](unsigned n, double start, double stop, double pow, metadata_t metadata) {
+                 validate_metadata(metadata);
                  return new axis::regular_pow(bh::axis::transform::pow{pow}, n, start, stop, metadata);
              }),
              "n"_a,
@@ -80,33 +108,35 @@ py::module register_axes(py::module &m) {
              "stop"_a,
              "power"_a,
              "metadata"_a = py::str());
-    
+
     register_axis<axis::variable>(ax, "variable", "Unevenly spaced bins")
-        .def(py::init<std::vector<double>, metadata_t>(), "edges"_a, "metadata"_a = py::str());
-    
+        .def(construct_axes<axis::variable, std::vector<double>>(), "edges"_a, "metadata"_a = py::str());
+
     register_axis<axis::integer_uoflow>(ax, "integer_uoflow", "Contigious integers")
-        .def(py::init<int, int, metadata_t>(), "min"_a, "max"_a, "metadata"_a = py::str());
-    
+        .def(construct_axes<axis::integer_uoflow, int, int>(), "min"_a, "max"_a, "metadata"_a = py::str());
+
     register_axis<axis::integer_noflow>(ax, "integer_noflow", "Contigious integers with no under/overflow")
-        .def(py::init<int, int, metadata_t>(), "min"_a, "max"_a, "metadata"_a = py::str());
-    
+        .def(construct_axes<axis::integer_noflow, int, int>(), "min"_a, "max"_a, "metadata"_a = py::str());
+
     register_axis<axis::integer_growth>(ax, "integer_growth", "Contigious integers with growth")
-        .def(py::init<int, int, metadata_t>(), "min"_a, "max"_a, "metadata"_a = py::str());
-    
+        .def(construct_axes<axis::integer_growth, int, int>(), "min"_a, "max"_a, "metadata"_a = py::str());
+
     register_axis<axis::category_int>(ax, "category_int", "Text label bins")
-        .def(py::init<std::vector<int>, metadata_t>(), "labels"_a, "metadata"_a = py::str());
+        .def(construct_axes<axis::category_int, std::vector<int>>(), "labels"_a, "metadata"_a = py::str());
 
     register_axis<axis::category_int_growth>(ax, "category_int_growth", "Text label bins")
-        .def(py::init<std::vector<int>, metadata_t>(), "labels"_a, "metadata"_a = py::str())
+        .def(construct_axes<axis::category_int_growth, std::vector<int>>(), "labels"_a, "metadata"_a = py::str())
         .def(py::init<>());
 
     register_axis<axis::category_str>(ax, "category_str", "Text label bins")
-        .def(py::init<std::vector<std::string>, metadata_t>(), "labels"_a, "metadata"_a = py::str());
+        .def(construct_axes<axis::category_str, std::vector<std::string>>(), "labels"_a, "metadata"_a = py::str());
 
     register_axis<axis::category_str_growth>(ax, "category_str_growth", "Text label bins")
-        .def(py::init<std::vector<std::string>, metadata_t>(), "labels"_a, "metadata"_a = py::str())
-        // Add way to allow empty list of strings
+        .def(
+            construct_axes<axis::category_str_growth, std::vector<std::string>>(), "labels"_a, "metadata"_a = py::str())
         .def(py::init<>());
+
+    // TODO: Add way to allow empty lists as well.
 
     return ax;
 }
