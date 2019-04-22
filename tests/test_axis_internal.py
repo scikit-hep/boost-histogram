@@ -6,7 +6,7 @@ import numpy as np
 from numpy.testing import assert_array_equal
 
 
-@pytest.mark.parametrize("axtype", [bh.axis.regular_uoflow, bh.axis.regular_noflow])
+@pytest.mark.parametrize("axtype", [bh.axis.regular_uoflow, bh.axis.regular_uflow, bh.axis.regular_oflow, bh.axis.regular_noflow])
 @pytest.mark.parametrize("function", [lambda x: x,
                                        lambda x: bh.make_histogram(x).axis(0),
                                        ])
@@ -36,14 +36,29 @@ def test_axis_regular_extents():
     assert 12 == ax.size(flow=True)
     assert 11 == len(ax.edges())
     assert 13 == len(ax.edges(True))
+    assert 10 == len(ax.centers())
     assert ax.options() == bh.axis.options.underflow | bh.axis.options.overflow
+
+    ax = bh.axis.regular_uflow(10,0,1)
+    assert 11 == ax.size(flow=True)
+    assert 11 == len(ax.edges())
+    assert 12 == len(ax.edges(True))
+    assert 10 == len(ax.centers())
+    assert ax.options() == bh.axis.options.underflow
+
+    ax = bh.axis.regular_oflow(10,0,1)
+    assert 11 == ax.size(flow=True)
+    assert 11 == len(ax.edges())
+    assert 12 == len(ax.edges(True))
+    assert 10 == len(ax.centers())
+    assert ax.options() == bh.axis.options.overflow
 
     ax = bh.axis.regular_noflow(10,0,1)
     assert 10 == ax.size(flow=True)
-    assert ax.options() == bh.axis.options.none
     assert 11 == len(ax.edges())
     assert 11 == len(ax.edges(True))
     assert 10 == len(ax.centers())
+    assert ax.options() == bh.axis.options.none
 
 def test_axis_growth():
     ax = bh.axis.regular_growth(10,0,1)

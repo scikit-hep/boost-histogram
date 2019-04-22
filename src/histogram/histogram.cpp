@@ -19,13 +19,13 @@ py::module register_histograms(py::module &m) {
 
     // Fast specializations - uniform types
 
-    register_histogram<axes::regular, storage::unlimited>(
+    register_histogram<axes::regular_uoflow, storage::unlimited>(
         hist, "regular_unlimited", "N-dimensional histogram for real-valued data.");
 
-    register_histogram<axes::regular, storage::int_>(
+    register_histogram<axes::regular_uoflow, storage::int_>(
         hist, "regular_int", "N-dimensional histogram for int-valued data.");
 
-    auto regular_atomic_int = register_histogram<axes::regular, storage::atomic_int>(
+    auto regular_atomic_int = register_histogram<axes::regular_uoflow, storage::atomic_int>(
         hist, "regular_atomic_int", "N-dimensional histogram for atomic int-valued data.");
 
     register_histogram<axes::regular_noflow, storage::int_>(
