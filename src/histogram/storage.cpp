@@ -16,28 +16,24 @@ py::module register_storages(py::module &m) {
 
     // Fast storages
 
-    register_storage<storage::int_, unsigned>(storage, "int", "Integers in vectors storage type");
+    register_storage<storage::int_>(storage, "int", "Integers in vectors storage type");
 
-    py::class_<storage::double_>(storage, "double", "Weighted storage without variance type (fast but simple)")
-        .def(py::init<>());
+    register_storage<storage::double_>(storage, "double", "Weighted storage without variance type (fast but simple)");
 
-    py::class_<storage::atomic_int>(storage, "atomic_int", "Threadsafe (not growing axis) integer storage")
-        .def(py::init<>());
+    register_storage<storage::atomic_int>(storage, "atomic_int", "Threadsafe (not growing axis) integer storage");
 
     // Default storages
 
-    py::class_<storage::unlimited>(storage, "unlimited", "Optimized for unweighted histograms, adaptive")
-        .def(py::init<>());
+    register_storage<storage::unlimited>(storage, "unlimited", "Optimized for unweighted histograms, adaptive");
+    //.def(py::init<>());
 
-    py::class_<storage::weight>(storage, "weight", "Dense storage which tracks sums of weights and a variance estimate")
-        .def(py::init<>());
+    register_storage<storage::weight>(
+        storage, "weight", "Dense storage which tracks sums of weights and a variance estimate");
 
-    py::class_<storage::profile>(storage, "profile", "Dense storage which tracks means of samples in each cell")
-        .def(py::init<>());
+    register_storage<storage::profile>(storage, "profile", "Dense storage which tracks means of samples in each cell");
 
-    py::class_<storage::weighted_profile>(
-        storage, "weighted_profile", "Dense storage which tracks means of weighted samples in each cell")
-        .def(py::init<>());
+    register_storage<storage::weighted_profile>(
+        storage, "weighted_profile", "Dense storage which tracks means of weighted samples in each cell");
 
     return storage;
 }
