@@ -5,6 +5,7 @@ import math
 import boost.histogram as bh
 
 @pytest.mark.parametrize("axis,extent", ((bh.axis.regular_uoflow, 2),
+                                         (lambda *x: x, 2),
                                          (bh.axis.regular_noflow, 0)))
 def test_make_regular_1D(axis, extent):
     hist = bh.make_histogram(axis(3,2,5))
@@ -13,6 +14,16 @@ def test_make_regular_1D(axis, extent):
     assert hist.axis(0).size() == 3
     assert hist.axis(0).size(flow=True) == 3 + extent
     assert hist.axis(0).bin(1).center() == approx(3.5)
+
+def test_shortcuts():
+    hist = bh.histogram([1,2,3,4,5], (10,0,1))
+    assert hist.rank() == 2
+    assert isinstance(hist.axis(0), bh.axis.variable)
+    assert isinstance(hist.axis(0), bh.axis.variable_uoflow)
+    assert not isinstance(hist.axis(0), bh.axis.regular)
+    assert isinstance(hist.axis(1), bh.axis.regular)
+    assert isinstance(hist.axis(1), bh.axis.regular_uoflow)
+    assert not isinstance(hist.axis(1), bh.axis.variable)
 
 @pytest.mark.parametrize("axis,extent", ((bh.axis.regular_uoflow, 2),
                                          (bh.axis.regular_noflow, 0)))

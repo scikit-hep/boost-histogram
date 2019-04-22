@@ -8,6 +8,7 @@
 
 #include <boost/histogram/python/axis.hpp>
 #include <boost/histogram/python/histogram.hpp>
+#include <boost/histogram/python/kwargs.hpp>
 #include <boost/histogram/python/storage.hpp>
 #include <boost/histogram/python/try_cast.hpp>
 
@@ -20,8 +21,32 @@
 void register_make_histogram(py::module &m, py::module &hist) {
     m.def(
         "make_histogram",
-        [](py::args args, py::kwargs kwargs) -> py::object {
-            py::object storage = kwargs.contains("storage") ? kwargs["storage"] : py::cast(storage::int_());
+        [](py::args t_args, py::kwargs kwargs) -> py::object {
+            py::list args      = py::cast<py::list>(t_args);
+            py::object storage = optional_arg(kwargs, "storage", py::cast(storage::int_()));
+            finalize_args(kwargs);
+
+            // Process the args as necessary for extra shortcuts
+            for(size_t i = 0; i < args.size(); i++) {
+                // If length three tuples are provided, make regular bins
+                if(py::isinstance<py::tuple>(args[i])) {
+                    py::tuple arg = py::cast<py::tuple>(args[i]);
+                    if(arg.size() == 3) {
+                        args[i] = py::cast(new axis::regular_uoflow(py::cast<unsigned>(arg[0]),
+                                                                    py::cast<double>(arg[1]),
+                                                                    py::cast<double>(arg[2]),
+                                                                    py::str()),
+                                           py::return_value_policy::take_ownership);
+                    }
+
+                    // A list converts to a variable length array.
+                } else if(py::isinstance<py::list>(args[i])) {
+                    py::list arg = py::cast<py::list>(args[i]);
+                    args[i]      = py::cast(new axis::variable_uoflow(py::cast<std::vector<double>>(arg), py::str()),
+                                       py::return_value_policy::take_ownership);
+                }
+
+            }
 
             // We try each possible axes type that has high-performance single-type overloads.
 

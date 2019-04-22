@@ -30,7 +30,7 @@ def test_init():
         histogram(1)
     with pytest.raises(RuntimeError):
         histogram("bla")
-    with pytest.raises(RuntimeError):
+    with pytest.raises(ValueError):
         histogram([])
     with pytest.raises(RuntimeError):
         histogram(regular_uoflow)
@@ -38,9 +38,8 @@ def test_init():
         histogram(regular_uoflow())
     with pytest.raises(RuntimeError):
         histogram([integer_uoflow(-1, 1)])
-     # TODO: Should fail
-     # CLASSIC: with pytest.raises(ValueError):
-    histogram(integer_uoflow(-1, 1), unknown_keyword="nh")
+    with pytest.raises(KeyError):
+        histogram(integer_uoflow(-1, 1), unknown_keyword="nh")
 
     h = histogram(integer_uoflow(-1, 2))
     assert h.rank() == 1

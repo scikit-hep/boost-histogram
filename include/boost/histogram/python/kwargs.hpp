@@ -31,7 +31,7 @@ std::unique_ptr<T> optional_arg(py::kwargs &kwargs, const char *name) {
 template <typename T>
 T optional_arg(py::kwargs &kwargs, const char *name, T original_value) {
     if(kwargs.contains(name)) {
-        return py::cast<T>(kwargs[name]);
+        return py::cast<T>(kwargs.attr("pop")(name));
     } else {
         return original_value;
     }

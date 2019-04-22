@@ -9,10 +9,6 @@ Python bindings for [Boost::Histogram][] ([source][Boost::Histogram source]), a 
 >
 > Join the [discussion on gitter][gitter-link] to follow the development!
 
-[Boost::Histogram]:        https://www.boost.org/doc/libs/develop/libs/histogram/doc/html/index.html 
-[Boost::Histogram source]: https://www.boost.org/doc/libs/develop/libs/histogram/doc/html/index.html 
-[fastest libraries]:       https://iscinumpy.gitlab.io/post/histogram-speeds-in-python/
-
 
 
 ## Installation
@@ -36,8 +32,8 @@ hist = bh.histogram(bh.axis.regular(2, 0, 1),
                     bh.axis.regular(4, 0.0, 1.0))
 
 # Filling can be done with arrays, one per dimension
-hist([.3, .5, .2],
-     [.1, .4, .9])
+hist.fill([.3, .5, .2],
+          [.1, .4, .9])
 
 # Numpy array view into histogram counts, no overflow bins
 counts = hist.view()
@@ -46,18 +42,27 @@ counts = hist.view()
 ## Features
 
 * Many axis types (all support `metadata=...`)
-    * `bh.axis.regular(n, start, stop, flow=True, growth=False)`: shortcut
+    * `bh.axis.regular(n, start, stop, underflow=True, overflow=True, growth=False)`: shortcut to make the types below. `flow=False` is also supported.
         * `bh.axis.regular_uoflow(n, start, stop)`: `n` evenly spaced bins from `start` to `stop`
+        * `bh.axis.regular_uflow(n, start, stop)`: `n` evenly spaced bins from `start` to `stop` (no overflow)
+        * `bh.axis.regular_oflow(n, start, stop)`: `n` evenly spaced bins from `start` to `stop` (no underflow)
         * `bh.axis.regular_noflow(n, start, stop)`: `regular` but with no underflow or overflow bins
         * `bh.axis.regular_growth(n, start, stop)`: `regular` but grows if a value is added outside the range
     * `bh.axis.circular(n, start, stop)`: Value outside the range wrap into the range
     * `bh.axis.regular_log(n, start, stop)`: Regularly spaced values in log 10 scale
     * `bh.axis.regular_sqrt(n, start, stop)`: Regularly spaced value in sqrt scale
     * `bh.axis.regular_pow(n, start, stop, power)`: Regularly spaced value to some `power`
-    * `bh.axis.integer(start, stop)`: Special high-speed version of `regular` for evenly spaced bins of width 1
-    * `bh.axis.integer_noflow(start, stop)`: `integer`, but with no under/overflow bins
-    * `bh.axis.integer_growth(start, stop)`: `integer`, but will grow if new values are added
-    * `bh.axis.variable([start, edge1, edge2, ..., stop])`: Uneven bin spacing
+    * `bh.axis.integer(start, stop, underflow=True, overflow=True, growth=False)`: Special high-speed version of `regular` for evenly spaced bins of width 1
+        * `bh.axis.integer_uoflow(start, stop)`: `n` evenly spaced bins from `start` to `stop`
+        * `bh.axis.integer_uflow(start, stop)`: `n` evenly spaced bins from `start` to `stop` (no overflow)
+        * `bh.axis.integer_oflow(start, stop)`: `n` evenly spaced bins from `start` to `stop` (no underflow)
+        * `bh.axis.integer_noflow(start, stop)`: `integer` but with no underflow or overflow bins
+        * `bh.axis.integer_growth(start, stop)`: `integer` but grows if a value is added outside the range
+    * `bh.axis.variable([start, edge1, edge2, ..., stop], underflow=True, overflow=True)`: Uneven bin spacing
+        * `bh.axis.variable_uoflow([start, edge1, edge2, ..., stop])`: `n` evenly spaced bins from `start` to `stop`
+        * `bh.axis.variable_uflow([start, edge1, edge2, ..., stop])`: `n` evenly spaced bins from `start` to `stop` (no overflow)
+        * `bh.axis.variable_oflow([start, edge1, edge2, ..., stop])`: `n` evenly spaced bins from `start` to `stop` (no underflow)
+        * `bh.axis.variable_noflow([start, edge1, edge2, ..., stop])`: `variable` but with no underflow or overflow bins
     * `bh.axis.category_int([1, 2, ...])`: Integer bins
     * `bh.axis.category_int_growth([1, 2, ...])`: Integer bins where new items are added automatically
     * `bh.axis.category_str(["item1", "item2", ...])`: String bins
@@ -108,11 +113,11 @@ counts = hist.view()
 * Details
     * Use `bh.histogram(..., storage=...)` to make a histogram (there are several different types) 
     * Several common combinations are optimized, such as regular axes + int storage
+    * Regular axis can be made in `bh.histogram` using a tuple
+    * Variable axis can be made in `bh.histogram` using a list
 
 
 ## Supported platforms
-
-For a source build, for example from an "sdist" package, the only requirements are a C++14 compatible compiler. If you are using Python 2.7 on Windows, this can be done in theory but is challenging; please upgrade to Python 3.6 or newer. Check the PyBind11 documentation for [more help](https://pybind11.readthedocs.io/en/stable/faq.html#working-with-ancient-visual-studio-2009-builds-on-windows). On some Linux systems, you may need to use a newer compiler than the one your distribution ships with. 
 
 #### Binaries available:
 
@@ -125,17 +130,20 @@ The easiest way to get boost-histogram is to use a binary wheel. These are the s
 | macOS 10.9+ | 64-bit | 2.7, 3.6, 3.7 |
 | Windows | 64 & 32-bit | 3.6, 3.7 |
 
-#### Notes
 
 * Linux: I'm not supporting 3.4 because I have to build the Numpy wheels to do so.
 * manylinux1: Using a custom docker container with GCC 8.3; should work but can't be called directly other compiled extensions unless they do the same thing (think that's the main caveat). Supporting 32 bits because it's there.
 * manylinux2010: Requires pip 10+ and a version of Linux newer than 2010. This is very new technology.
-* MacOS: Using the dedicated 64 bit 10.9+ Python.org builds. Not supporting 3.5 because those no longer provide binaries (could add a 32+64 fat 10.6+ that really was 10.9+, but not worth it, IMO)
-* Windows:  older is hard to support for now due to MSVC, could be attempted later - PyBind11 is technically supposed to be able to do it.
+* MacOS: Using the dedicated 64 bit 10.9+ Python.org builds. Not supporting 3.5 because those no longer provide binaries (could add a 32+64 fat 10.6+ that really was 10.9+, but not worth it unless there is a need for it).
+* Windows: PyBind11 is able to compile with a newer copy of Visual Studio than Python 2.7's Visual Studio 2008; you might need to have the Visual Studio 2017 distributable though.
 
 If you are on a Linux system that is not part of the "many" in manylinux, such as Alpine or ClearLinux, building from source is usually fine, since the compilers on those systems are often quite new. It will just take a little longer to install when it's using the sdist instead of a wheel.
 
 Conda support is planned.
+
+#### Source builds
+
+For a source build, for example from an "sdist" package, the only requirements are a C++14 compatible compiler. If you are using Python 2.7 on Windows, you will need to use a recent version of Visual studio and force distutils to use it, or just upgrade to Python 3.6 or newer. Check the PyBind11 documentation for [more help](https://pybind11.readthedocs.io/en/stable/faq.html#working-with-ancient-visual-studio-2009-builds-on-windows). On some Linux systems, you may need to use a newer compiler than the one your distribution ships with. 
 
 ## Developing
 
@@ -170,6 +178,8 @@ Run the unit tests (requires pytest and numpy). Use `ctest` or `make test`, like
 
 ```bash
 make test
+# or
+python -m pytest
 ```
 
 The tests require `numpy`, `pytest`, and `pytest-benchmark`. If you are using Python 2, you will need `futures` as well.
@@ -205,7 +215,10 @@ end
 
 * [2019-4-15 IRIS-HEP Topical meeting](https://indico.cern.ch/event/803122/)
 
-[gitter-badge]: https://badges.gitter.im/HSF/PyHEP-histogramming.svg
-[gitter-link]:  https://gitter.im/HSF/PyHEP-histogramming?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
-[azure-badge]:  https://dev.azure.com/scikit-hep/boost-histogram/_apis/build/status/scikit-hep.boost-histogram?branchName=develop
-[azure-link]:   https://dev.azure.com/scikit-hep/boost-histogram/_build/latest?definitionId=2&branchName=develop
+[gitter-badge]:            https://badges.gitter.im/HSF/PyHEP-histogramming.svg
+[gitter-link]:             https://gitter.im/HSF/PyHEP-histogramming?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
+[azure-badge]:             https://dev.azure.com/scikit-hep/boost-histogram/_apis/build/status/scikit-hep.boost-histogram?branchName=develop
+[azure-link]:              https://dev.azure.com/scikit-hep/boost-histogram/_build/latest?definitionId=2&branchName=develop
+[Boost::Histogram]:        https://www.boost.org/doc/libs/1_70_0/libs/histogram/doc/html/index.html
+[Boost::Histogram source]: https://github.com/boostorg/histogram
+[fastest libraries]:       https://iscinumpy.gitlab.io/post/histogram-speeds-in-python/
