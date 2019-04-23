@@ -128,7 +128,7 @@ The easiest way to get boost-histogram is to use a binary wheel. These are the s
 | ManyLinux1 (custom GCC 8.3) | 64 & 32-bit | 2.7, 3.5, 3.6, 3.7 |
 | ManyLinux2010 | 64-bit | 2.7, 3.5, 3.6, 3.7 |
 | macOS 10.9+ | 64-bit | 2.7, 3.6, 3.7 |
-| Windows | 64 & 32-bit | 3.6, 3.7 |
+| Windows | 64 & 32-bit | 2.7, 3.6, 3.7 |
 
 
 * Linux: I'm not supporting 3.4 because I have to build the Numpy wheels to do so.
