@@ -2,10 +2,11 @@
 
 [![Gitter][gitter-badge]][gitter-link]
 [![Build Status][azure-badge]][azure-link]
+[![Documentation Status][rtd-badge]][rtd-link]
 
 Python bindings for [Boost::Histogram][] ([source][Boost::Histogram source]), a C++14 library. This should become one of the [fastest libraries][] for histogramming, while still providing the power of a full histogram object.
 
-> # Warning: This bindings are in progress and are not yet in an alpha stage.
+> ## Warning: These bindings are in progress and are not yet in a beta stage.
 >
 > Join the [discussion on gitter][gitter-link] to follow the development!
 
@@ -63,10 +64,11 @@ counts = hist.view()
         * `bh.axis.variable_uflow([start, edge1, edge2, ..., stop])`: `n` evenly spaced bins from `start` to `stop` (no overflow)
         * `bh.axis.variable_oflow([start, edge1, edge2, ..., stop])`: `n` evenly spaced bins from `start` to `stop` (no underflow)
         * `bh.axis.variable_noflow([start, edge1, edge2, ..., stop])`: `variable` but with no underflow or overflow bins
-    * `bh.axis.category_int([1, 2, ...])`: Integer bins
-    * `bh.axis.category_int_growth([1, 2, ...])`: Integer bins where new items are added automatically
-    * `bh.axis.category_str(["item1", "item2", ...])`: String bins
-    * `bh.axis.category_str_growth(["item1", "item2", ...])`: String bins where new items are added automatically
+    * `bh.axis.category([...], growth=False)`: Integer or string categories
+        * `bh.axis.category_int([1, 2, ...])`: Integer bins
+        * `bh.axis.category_int_growth([1, 2, ...])`: Integer bins where new items are added automatically
+        * `bh.axis.category_str(["item1", "item2", ...])`: String bins
+        * `bh.axis.category_str_growth(["item1", "item2", ...])`: String bins where new items are added automatically
 * Axis features:
     * `.bin(i)`: The bin or a bin view for continuous axis types
         * `.lower()`: The lower value
@@ -219,6 +221,9 @@ end
 [gitter-link]:             https://gitter.im/HSF/PyHEP-histogramming?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
 [azure-badge]:             https://dev.azure.com/scikit-hep/boost-histogram/_apis/build/status/scikit-hep.boost-histogram?branchName=develop
 [azure-link]:              https://dev.azure.com/scikit-hep/boost-histogram/_build/latest?definitionId=2&branchName=develop
+[rtd-badge]:               https://readthedocs.org/projects/boost-histogram/badge/?version=latest
+[rtd-link]:                https://boost-histogram.readthedocs.io/en/latest/?badge=latest
+
 [Boost::Histogram]:        https://www.boost.org/doc/libs/1_70_0/libs/histogram/doc/html/index.html
 [Boost::Histogram source]: https://github.com/boostorg/histogram
 [fastest libraries]:       https://iscinumpy.gitlab.io/post/histogram-speeds-in-python/
