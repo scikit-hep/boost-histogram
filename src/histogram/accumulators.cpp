@@ -15,9 +15,7 @@
 #include <boost/histogram/accumulators/weighted_mean.hpp>
 #include <boost/histogram/accumulators/weighted_sum.hpp>
 
-py::module register_accumulators(py::module &m) {
-    py::module accumulators = m.def_submodule("accumulators");
-
+void register_accumulators(py::module &accumulators) {
     using weighted_sum = bh::accumulators::weighted_sum<double>;
 
     register_accumulator<weighted_sum>(accumulators, "weighted_sum")
@@ -117,6 +115,4 @@ py::module register_accumulators(py::module &m) {
         .def_property_readonly("large", &sum::large)
 
         ;
-
-    return accumulators;
 }

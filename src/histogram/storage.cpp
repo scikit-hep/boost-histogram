@@ -11,9 +11,7 @@
 #include <boost/histogram.hpp>
 #include <boost/histogram/storage_adaptor.hpp>
 
-py::module register_storages(py::module &m) {
-    py::module storage = m.def_submodule("storage");
-
+void register_storages(py::module &storage) {
     // Fast storages
 
     register_storage<storage::int_>(storage, "int", "Integers in vectors storage type");
@@ -33,6 +31,4 @@ py::module register_storages(py::module &m) {
 
     register_storage<storage::weighted_profile>(
         storage, "weighted_profile", "Dense storage which tracks means of weighted samples in each cell");
-
-    return storage;
 }
