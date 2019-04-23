@@ -272,7 +272,39 @@ py::module register_axes(py::module &m) {
             construct_axes<axis::category_str_growth, std::vector<std::string>>(), "labels"_a, "metadata"_a = py::str())
         .def(py::init<>());
 
-    // TODO: Add way to allow empty lists as well.
+    ax.def(
+        "make_category",
+        [](py::object labels, metadata_t metadata, bool growth) -> py::object {
+            validate_metadata(metadata);
+
+            try {
+                auto int_values = py::cast<std::vector<int>>(labels);
+
+                if(growth) {
+                    return py::cast(axis::category_int_growth(int_values, metadata), py::return_value_policy::move);
+                } else {
+                    return py::cast(axis::category_int(int_values, metadata), py::return_value_policy::move);
+                }
+            } catch(const py::cast_error &) {
+                auto str_values = py::cast<std::vector<std::string>>(labels);
+
+                if(growth) {
+                    return py::cast(axis::category_str_growth(str_values, metadata), py::return_value_policy::move);
+                } else {
+                    return py::cast(axis::category_str(str_values, metadata), py::return_value_policy::move);
+                }
+            }
+        },
+        "labels"_a,
+        "metadata"_a = py::str(),
+        "growth"_a   = false,
+        "Make an category axis with a nice keyword argument for growth. Int and string supported.");
+
+    ax.attr("category") = factory_meta_py(ax.attr("make_category"),
+                                          py::make_tuple(ax.attr("category_int"),
+                                                         ax.attr("category_int_growth"),
+                                                         ax.attr("category_str"),
+                                                         ax.attr("category_str_growth")));
 
     return ax;
 }

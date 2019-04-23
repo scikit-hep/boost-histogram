@@ -21,3 +21,24 @@ def test_make_regular_growth():
     ax_reg = bh.axis.regular(10, 0, 1, growth=True)
     assert isinstance(ax_reg, bh.axis.regular_growth)
     assert isinstance(ax_reg, bh.axis.regular)
+
+def test_make_category_int():
+    ax = bh.axis.category([1,2,3])
+    assert isinstance(ax, bh.axis.category_int)
+    assert isinstance(ax, bh.axis.category)
+
+def test_make_category_int_growth():
+    ax = bh.axis.category([1,2,3], growth=True)
+    assert isinstance(ax, bh.axis.category_int_growth)
+    assert isinstance(ax, bh.axis.category)
+
+def test_make_category_str():
+    ax = bh.axis.category(["one", "two"])
+    assert isinstance(ax, bh.axis.category_str)
+    assert isinstance(ax, bh.axis.category)
+
+def test_make_category_str_growth():
+    ax = bh.axis.category(["one", "two"], growth=True)
+    assert isinstance(ax, bh.axis.category_str_growth)
+    assert isinstance(ax, bh.axis.category)
+

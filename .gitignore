@@ -33,6 +33,7 @@
 
 # Build directories
 /*build*
+/docs/_build/*
 
 # Python binary files
 *.pyc
