@@ -12,31 +12,11 @@
 
 #include <boost/histogram.hpp>
 
-py::module register_histograms(py::module &m) {
-    m.attr("BOOST_HISTOGRAM_DETAIL_AXES_LIMIT") = BOOST_HISTOGRAM_DETAIL_AXES_LIMIT;
-
-    py::module hist = m.def_submodule("hist");
-
-    // Fast specializations - uniform types
-
-    register_histogram<axes::regular_uoflow, storage::unlimited>(
-        hist, "regular_unlimited", "N-dimensional histogram for real-valued data.");
-
-    register_histogram<axes::regular_uoflow, storage::int_>(
-        hist, "regular_int", "N-dimensional histogram for int-valued data.");
-
-    auto regular_atomic_int = register_histogram<axes::regular_uoflow, storage::atomic_int>(
-        hist, "regular_atomic_int", "N-dimensional histogram for atomic int-valued data.");
-
-    register_histogram<axes::regular_noflow, storage::int_>(
-        hist, "regular_noflow_int", "N-dimensional histogram for int-valued data.");
-
-    // Completely general histograms
-
+void register_general_histograms(py::module &hist) {
     register_histogram<axes::any, storage::int_>(
         hist, "any_int", "N-dimensional histogram for int-valued data with any axis types.");
 
-    auto any_atomic_int = register_histogram<axes::any, storage::atomic_int>(
+    register_histogram<axes::any, storage::atomic_int>(
         hist, "any_atomic_int", "N-dimensional histogram for int-valued data with any axis types (threadsafe).");
 
     register_histogram<axes::any, storage::double_>(
@@ -56,6 +36,4 @@ py::module register_histograms(py::module &m) {
     // register_histogram_by_type<axes::any, bh::weighted_profile_storage>(hist,
     //    "any_weighted_profile",
     //    "N-dimensional histogram for weighted and sampled data with any axis types.");
-
-    return hist;
 }

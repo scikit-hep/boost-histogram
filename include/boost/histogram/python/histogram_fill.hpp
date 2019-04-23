@@ -40,7 +40,7 @@ struct [[gnu::visibility("hidden")]] fill_helper {
             ++size;
     }
 
-    // keep function small to minimize code bloat, it is instantiated 32 times :(
+    // keep function small to minimize code bloat, it is instantiated 16 times :(
     // TODO: solve this more efficiently on the lower Boost::Histogram level
     template <class N>
     void operator()(N) {

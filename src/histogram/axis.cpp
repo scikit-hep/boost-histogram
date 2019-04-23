@@ -11,17 +11,15 @@
 
 #include <vector>
 
-py::module register_axes(py::module &m) {
-    py::module ax = m.def_submodule("axis");
-
-    py::module opt = ax.def_submodule("options");
-
+void register_axes_options(py::module &opt) {
     opt.attr("none")      = (unsigned)bh::axis::option::none;
     opt.attr("underflow") = (unsigned)bh::axis::option::underflow;
     opt.attr("overflow")  = (unsigned)bh::axis::option::overflow;
     opt.attr("circular")  = (unsigned)bh::axis::option::circular;
     opt.attr("growth")    = (unsigned)bh::axis::option::growth;
+}
 
+void register_axes(py::module &ax) {
     // This factory makes a class that can be used to create axes and also be used in is_instance
     py::object factory_meta_py = py::module::import("boost.histogram_utils").attr("FactoryMeta");
 
@@ -305,6 +303,4 @@ py::module register_axes(py::module &m) {
                                                          ax.attr("category_int_growth"),
                                                          ax.attr("category_str"),
                                                          ax.attr("category_str_growth")));
-
-    return ax;
 }
