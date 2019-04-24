@@ -18,6 +18,7 @@ vals = np.random.normal(size=[10000000]).astype(np.float32)
 
 answer, _ = np.histogram(vals, bins=bins, range=ranges)
 
+@pytest.mark.benchmark(group='1d-fills')
 def test_numpy_perf_1d(benchmark):
     result, _ = benchmark(np.histogram, vals, bins=bins, range=ranges)
     assert_array_equal(result, answer)
@@ -43,6 +44,7 @@ histax = (
         (bh.hist.regular_int, regular_uoflow, 4),
         )
 
+@pytest.mark.benchmark(group='1d-fills')
 @pytest.mark.parametrize("hist, axis, fill", histax)
 def test_1d(benchmark, hist, axis, fill):
     result = benchmark(make_and_run_hist, hist, [axis(bins, *ranges)], vals, fill)
