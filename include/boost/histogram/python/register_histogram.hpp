@@ -57,32 +57,8 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
 
         .def(py::self + py::self)
 
-        .def("__eq__",
-             [](const histogram_t &self, const histogram_t &other) {
-                 if(self.rank() != other.rank())
-                     return false;
-
-                 for(unsigned i = 0; i < self.rank(); i++)
-                     if(!compare_axes_eq(self.axis(i), other.axis(i)))
-                         return false;
-
-                 return bh::unsafe_access::storage(self) == bh::unsafe_access::storage(other);
-             })
-        .def("__ne__",
-             [](const histogram_t &self, const histogram_t &other) {
-                 if(self.rank() != other.rank())
-                     return true;
-
-                 for(unsigned i = 0; i < self.rank(); i++)
-                     if(compare_axes_ne(self.axis(i), other.axis(i)))
-                         return true;
-
-                 return !(bh::unsafe_access::storage(self) == bh::unsafe_access::storage(other));
-             })
-
-        // Fall through for non-matching types
-        .def("__eq__", [](const histogram_t &, const py::object &) { return false; })
-        .def("__ne__", [](const histogram_t &, const py::object &) { return true; })
+        .def(py::self == py::self)
+        .def(py::self != py::self)
 
         ;
 
