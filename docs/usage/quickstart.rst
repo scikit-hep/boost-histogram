@@ -30,13 +30,6 @@ If you’d like to type less, you can leave out the keywords:
 
    hist = bh.histogram(bh.axis.regular(10, 0, 1))
 
-Since regular axes are so common, you can skip the regular entirely and
-just pass a tuple:
-
-.. code:: python
-
-   hist = bh.histogram((10, 0, 1))
-
 
 The exact same syntax is used for 1D, 2D, and ND histograms:
 
