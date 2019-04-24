@@ -52,22 +52,6 @@ void register_make_histogram(py::module &m, py::module &hist) {
                         throw py::type_error(
                             "Only (bins, start, stop) and (bins, start, stop, metadata) tuples accepted");
                     }
-
-                    // A list converts to a variable length array.
-                } else if(py::isinstance<py::list>(args[i])) {
-                    py::list arg = py::cast<py::list>(args[i]);
-                    if(arg.size() < 2) {
-                        throw py::type_error("Variable axes require at least two edges (probably more)");
-                    }
-                    try {
-                        py::cast<double>(arg[arg.size() - 1]);
-                        args[i] = py::cast(new axis::variable_uoflow(py::cast<std::vector<double>>(arg), py::str()),
-                                           py::return_value_policy::take_ownership);
-                    } catch(const py::cast_error &) {
-                        py::object metadata = arg.attr("pop")();
-                        args[i] = py::cast(new axis::variable_uoflow(py::cast<std::vector<double>>(arg), metadata),
-                                           py::return_value_policy::take_ownership);
-                    }
                 }
             }
 
