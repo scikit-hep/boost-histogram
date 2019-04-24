@@ -84,8 +84,11 @@ struct [[gnu::visibility("hidden")]] fill_helper_threaded {
             threadpool.emplace_back(std::move(task));
         }
 
-        for(auto &hp : histpool)
-            hist += hp.get();
+        for(auto &hp : histpool) {
+            auto& s = bh::unsafe_access::storage(hist);
+            auto rit = bh::unsafe_access::storage(hp.get()).begin();
+            std::for_each(s.begin(), s.end(), [&rit](auto&& x) { x += *rit++; });
+        }
 
         for(auto &t : threadpool)
             t.join();
