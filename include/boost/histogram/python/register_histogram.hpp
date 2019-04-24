@@ -11,9 +11,7 @@
 
 #include <boost/histogram/python/axis.hpp>
 #include <boost/histogram/python/histogram.hpp>
-#include <boost/histogram/python/histogram_atomic.hpp>
 #include <boost/histogram/python/histogram_fill.hpp>
-#include <boost/histogram/python/histogram_threaded.hpp>
 #include <boost/histogram/python/pickle.hpp>
 #include <boost/histogram/python/storage.hpp>
 
@@ -26,7 +24,9 @@
 
 #include <boost/mp11.hpp>
 
+#include <future>
 #include <sstream>
+#include <thread>
 #include <tuple>
 #include <vector>
 
@@ -202,21 +202,70 @@ void add_fill(std::true_type, py::class_<bh::histogram<A, S>> &hist) {
     hist.def(
         "fill",
         [](histogram_t &self, py::args args, py::kwargs kwargs) {
-            std::unique_ptr<size_t> threads = optional_arg<size_t>(kwargs, "threads");
-            std::unique_ptr<size_t> atomic  = optional_arg<size_t>(kwargs, "atomic");
+            std::unique_ptr<ssize_t> threads = optional_arg<ssize_t>(kwargs, "threads");
+            std::unique_ptr<ssize_t> atomic  = optional_arg<ssize_t>(kwargs, "atomic");
             finalize_args(kwargs);
+
+            auto filler = fill_helper<histogram_t>(self, args);
 
             if(threads && atomic)
                 throw py::key_error("Cannot have both atomic and threads in one fill call!");
-            else if(threads)
-                boost::mp11::mp_with_index<BOOST_HISTOGRAM_DETAIL_AXES_LIMIT>(
-                    args.size(), fill_helper_threaded<histogram_t>(self, args, *threads));
-            else if(atomic)
-                boost::mp11::mp_with_index<BOOST_HISTOGRAM_DETAIL_AXES_LIMIT>(
-                    args.size(), fill_helper_atomic<histogram_t>(self, args, *atomic));
-            else
-                boost::mp11::mp_with_index<BOOST_HISTOGRAM_DETAIL_AXES_LIMIT>(args.size(),
-                                                                              fill_helper<histogram_t>(self, args));
+            else if(threads) {
+                if(*threads == 0)
+                    *threads = std::thread::hardware_concurrency();
+
+                std::vector<std::thread> threadpool;
+                std::vector<fill_helper<histogram_t>> helpers;
+
+                for(ssize_t i = 0; i < *threads; i++) {
+                    helpers.emplace_back(filler.make_threaded(*threads, i));
+                }
+
+                {
+                    py::gil_scoped_release tmp;
+                    for(auto &helper : helpers) {
+                        threadpool.emplace_back([&helper, n = args.size()]() {
+                            boost::mp11::mp_with_index<BOOST_HISTOGRAM_DETAIL_AXES_LIMIT>(n, std::ref(helper));
+                        });
+                    }
+                }
+
+                for(auto &thread : threadpool)
+                    thread.join();
+
+                for(auto &helper : helpers) {
+                    auto &s  = bh::unsafe_access::storage(*filler.hist);
+                    auto rit = bh::unsafe_access::storage(*helper.hist).begin();
+                    std::for_each(s.begin(), s.end(), [&rit](auto &&x) { x += *rit++; });
+                }
+
+            } else if(atomic) {
+                if(*atomic == 0)
+                    *atomic = std::thread::hardware_concurrency();
+
+                std::vector<std::thread> threadpool;
+                std::vector<fill_helper<histogram_t>> helpers;
+
+                for(ssize_t i = 0; i < *atomic; i++) {
+                    helpers.emplace_back(filler.make_atomic(*atomic, i));
+                }
+
+                {
+                    py::gil_scoped_release tmp;
+                    for(auto &helper : helpers) {
+                        threadpool.emplace_back([&helper, n = args.size()]() {
+                            boost::mp11::mp_with_index<BOOST_HISTOGRAM_DETAIL_AXES_LIMIT>(n, std::ref(helper));
+                        });
+                    }
+                }
+
+                for(auto &thread : threadpool)
+                    thread.join();
+
+            } else {
+                py::gil_scoped_release tmp;
+                boost::mp11::mp_with_index<BOOST_HISTOGRAM_DETAIL_AXES_LIMIT>(args.size(), std::ref(filler));
+            }
         },
         "Insert data into histogram in threads (0 for machine cores). Keyword arguments: threads=N, atomic=N "
         "(exclusive)");
@@ -226,19 +275,48 @@ template <typename A, typename S>
 void add_fill(std::false_type, py::class_<bh::histogram<A, S>> &hist) {
     using histogram_t = bh::histogram<A, S>;
 
-    // generic threaded fill for 1 to N args
+    // generic threaded and atomic fill for 1 to N args
     hist.def(
         "fill",
         [](histogram_t &self, py::args args, py::kwargs kwargs) {
-            std::unique_ptr<size_t> threads = optional_arg<size_t>(kwargs, "threads");
+            std::unique_ptr<ssize_t> threads = optional_arg<ssize_t>(kwargs, "threads");
             finalize_args(kwargs);
 
-            if(threads)
-                boost::mp11::mp_with_index<BOOST_HISTOGRAM_DETAIL_AXES_LIMIT>(
-                    args.size(), fill_helper_threaded<histogram_t>(self, args, *threads));
-            else
-                boost::mp11::mp_with_index<BOOST_HISTOGRAM_DETAIL_AXES_LIMIT>(args.size(),
-                                                                              fill_helper<histogram_t>(self, args));
+            auto filler = fill_helper<histogram_t>(self, args);
+
+            if(threads) {
+                if(*threads == 0)
+                    *threads = std::thread::hardware_concurrency();
+
+                std::vector<std::thread> threadpool;
+                std::vector<fill_helper<histogram_t>> helpers;
+
+                for(ssize_t i = 0; i < *threads; i++) {
+                    helpers.emplace_back(filler.make_threaded(*threads, i));
+                }
+
+                {
+                    py::gil_scoped_release tmp;
+                    for(auto &helper : helpers) {
+                        threadpool.emplace_back([&helper, n = args.size()]() {
+                            boost::mp11::mp_with_index<BOOST_HISTOGRAM_DETAIL_AXES_LIMIT>(n, std::ref(helper));
+                        });
+                    }
+                }
+
+                for(auto &thread : threadpool)
+                    thread.join();
+
+                for(auto &helper : helpers) {
+                    auto &s  = bh::unsafe_access::storage(*filler.hist);
+                    auto rit = bh::unsafe_access::storage(*helper.hist).begin();
+                    std::for_each(s.begin(), s.end(), [&rit](auto &&x) { x += *rit++; });
+                }
+
+            } else {
+                py::gil_scoped_release tmp;
+                boost::mp11::mp_with_index<BOOST_HISTOGRAM_DETAIL_AXES_LIMIT>(args.size(), std::ref(filler));
+            }
         },
         "Insert data into histogram in threads (0 for machine cores). Keyword argument: threads=N");
 }
