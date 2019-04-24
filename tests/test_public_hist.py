@@ -30,13 +30,13 @@ def test_init():
         histogram(1)
     with pytest.raises(RuntimeError):
         histogram("bla")
-    with pytest.raises(TypeError):
+    with pytest.raises(RuntimeError):
         histogram([])
     with pytest.raises(RuntimeError):
         histogram(regular_uoflow)
     with pytest.raises(TypeError):
         histogram(regular_uoflow())
-    with pytest.raises(TypeError):
+    with pytest.raises(RuntimeError):
         histogram([integer_uoflow(-1, 1)])
     with pytest.raises(RuntimeError):
         histogram([integer_uoflow(-1, 1), integer_uoflow(-1, 1)])

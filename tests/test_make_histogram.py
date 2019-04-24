@@ -16,14 +16,12 @@ def test_make_regular_1D(axis, extent):
     assert hist.axis(0).bin(1).center() == approx(3.5)
 
 def test_shortcuts():
-    hist = bh.histogram([1,2,3,4,5], (10,0,1))
+    hist = bh.histogram((1,2,3), (10,0,1))
     assert hist.rank() == 2
-    assert isinstance(hist.axis(0), bh.axis.variable)
-    assert isinstance(hist.axis(0), bh.axis.variable_uoflow)
-    assert not isinstance(hist.axis(0), bh.axis.regular)
-    assert isinstance(hist.axis(1), bh.axis.regular)
-    assert isinstance(hist.axis(1), bh.axis.regular_uoflow)
-    assert not isinstance(hist.axis(1), bh.axis.variable)
+    for i in range(2):
+        assert isinstance(hist.axis(i), bh.axis.regular)
+        assert isinstance(hist.axis(i), bh.axis.regular_uoflow)
+        assert not isinstance(hist.axis(i), bh.axis.variable)
 
 
 def test_shortcuts_with_metadata():
@@ -35,11 +33,6 @@ def test_shortcuts_with_metadata():
     with pytest.raises(TypeError):
         bh.histogram((1,2,3,4,5))
 
-    bh.histogram([1,2,3,4,5,6])
-    bh.histogram([1,2,3,4,5,6, "that"])
-
-    with pytest.raises(RuntimeError):
-        bh.histogram([1,2,"this",3])
 
 
 @pytest.mark.parametrize("axis,extent", ((bh.axis.regular_uoflow, 2),
