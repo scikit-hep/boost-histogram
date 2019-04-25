@@ -58,39 +58,13 @@ decltype(auto) axis_to_bins(const A &self, bool flow) {
 
 inline bool PyObject_Check(void *value) { return value != nullptr; }
 
-using metadata_t = py::object;
+class metadata_t : public py::object {
+    PYBIND11_OBJECT_DEFAULT(metadata_t, object, PyObject_Check);
 
-// Make py::object's as metadata always compare true (check will happen later)
-namespace boost {
-namespace histogram {
-namespace detail {
-template <>
-constexpr bool relaxed_equal(const py::object &, const py::object &) noexcept {
-    return true;
-}
-} // namespace detail
-} // namespace histogram
-} // namespace boost
+    bool operator==(const metadata_t &other) const { return py::cast<bool>(this->attr("__eq__")(other)); }
 
-template <typename T>
-bool compare_axes_eq(const T &self, const T &other) {
-    auto op = py::module::import("operator");
-    if(py::cast<bool>(op.attr("eq")(self.metadata(), other.metadata()))) {
-        return self == other;
-    } else {
-        return false;
-    }
-}
-
-template <typename T>
-bool compare_axes_ne(const T &self, const T &other) {
-    auto op = py::module::import("operator");
-    if(py::cast<bool>(op.attr("ne")(self.metadata(), other.metadata()))) {
-        return true;
-    } else {
-        return self != other;
-    }
-}
+    bool operator!=(const metadata_t &other) const { return py::cast<bool>(this->attr("__ne__")(other)); }
+};
 
 namespace axis {
 

@@ -44,10 +44,11 @@ void register_make_histogram(py::module &m, py::module &hist) {
                         } catch(const py::cast_error &) {
                         }
 
-                        args[i] = py::cast(
-                            new axis::regular_uoflow(
-                                py::cast<unsigned>(arg[0]), py::cast<double>(arg[1]), py::cast<double>(arg[2]), arg[3]),
-                            py::return_value_policy::take_ownership);
+                        args[i] = py::cast(new axis::regular_uoflow(py::cast<unsigned>(arg[0]),
+                                                                    py::cast<double>(arg[1]),
+                                                                    py::cast<double>(arg[2]),
+                                                                    py::cast<metadata_t>(arg[3])),
+                                           py::return_value_policy::take_ownership);
                     } else {
                         throw py::type_error(
                             "Only (bins, start, stop) and (bins, start, stop, metadata) tuples accepted");

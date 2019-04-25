@@ -30,27 +30,15 @@ If you’d like to type less, you can leave out the keywords:
 
    hist = bh.histogram(bh.axis.regular(10, 0, 1))
 
-Since regular axes are so common, you can skip the regular entirely and
-just pass a tuple:
-
-.. code:: python
-
-   hist = bh.histogram((10, 0, 1))
-
-Likewise, for a variable axis, you can use a list:
-
-.. code:: python
-
-   hist = bh.histogram(bh.axis.variable([.1, .2, .3, .7, .9]))
-   hist = bh.histogram([.1, .2, .3, .7, .9]) # same
 
 The exact same syntax is used for 1D, 2D, and ND histograms:
 
 .. code:: python
 
-   hist2D = bh.histogram(
+   hist3D = bh.histogram(
        bh.axis.circular(10, 0, 100),
-       bh.axis.regular(10, 0.0, 10.0)
+       bh.axis.regular(10, 0.0, 10.0),
+       bh.axis.variable([1,2,3,4,5,5.5,6])
    )
 
 Filling a histogram
