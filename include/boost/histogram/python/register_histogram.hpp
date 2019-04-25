@@ -191,15 +191,55 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
 template <typename A, typename S>
 void add_fill(std::false_type /* normal fill support */,
               std::true_type /* atomic support */,
-              py::class_<bh::histogram<A, S>> &) {
-    std::cout << "empty fill" << std::endl;
+              py::class_<bh::histogram<A, S>> &hist) {
+    using histogram_t = bh::histogram<A, S>;
+
+    hist.def(
+        "fill",
+        [](histogram_t &self, py::args args, py::kwargs kwargs) {
+            py::array_t<double> weights      = required_arg<py::array_t<double>>(kwargs, "weight");
+            std::unique_ptr<ssize_t> threads = optional_arg<ssize_t>(kwargs, "threads");
+            std::unique_ptr<ssize_t> atomic  = optional_arg<ssize_t>(kwargs, "atomic");
+            finalize_args(kwargs);
+
+            auto filler = fill_helper_weights<histogram_t>(self, weights, args);
+
+            if(threads && atomic)
+                throw py::key_error("Cannot have both atomic and threads in one fill call!");
+            else if(threads) {
+                filler.fill_threaded(threads.get());
+            } else if(atomic) {
+                filler.fill_atomic(atomic.get());
+            } else {
+                filler.fill();
+            }
+        },
+        "Insert data into histogram in threads (0 for machine cores). Keyword arguments: weight, threads=N, atomic=N "
+        "(exclusive)");
 }
 
 template <typename A, typename S>
 void add_fill(std::false_type /* normal fill support */,
               std::false_type /* atomic support */,
-              py::class_<bh::histogram<A, S>> &) {
-    std::cout << "empty fill" << std::endl;
+              py::class_<bh::histogram<A, S>> &hist) {
+    using histogram_t = bh::histogram<A, S>;
+
+    hist.def(
+        "fill",
+        [](histogram_t &self, py::args args, py::kwargs kwargs) {
+            py::array_t<double> weights      = required_arg<py::array_t<double>>(kwargs, "weight");
+            std::unique_ptr<ssize_t> threads = optional_arg<ssize_t>(kwargs, "threads");
+            finalize_args(kwargs);
+
+            auto filler = fill_helper_weights<histogram_t>(self, weights, args);
+
+            if(threads) {
+                filler.fill_threaded(threads.get());
+            } else {
+                filler.fill();
+            }
+        },
+        "Insert data into histogram in threads (0 for machine cores). Keyword arguments: weight, threads=N");
 }
 
 // Atomic fill supported?

@@ -78,10 +78,15 @@ void register_make_histogram(py::module &m, py::module &hist) {
             // fallback to slower generic implementation
             auto axes = py::cast<axes::any>(args);
 
-            return try_cast<storage::int_, storage::double_, storage::unlimited, storage::weight, storage::atomic_int>(
-                storage, [&axes](auto &&storage) {
-                    return py::cast(bh::make_histogram_with(storage, axes), py::return_value_policy::move);
-                });
+            return try_cast<storage::int_,
+                            storage::double_,
+                            storage::unlimited,
+                            storage::weight,
+                            storage::atomic_int,
+                            storage::profile,
+                            storage::weighted_profile>(storage, [&axes](auto &&storage) {
+                return py::cast(bh::make_histogram_with(storage, axes), py::return_value_policy::move);
+            });
         },
         "Make any histogram");
 
