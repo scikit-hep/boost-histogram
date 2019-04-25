@@ -28,12 +28,10 @@ void register_general_histograms(py::module &hist) {
     register_histogram<axes::any, storage::weight>(
         hist, "any_weight", "N-dimensional histogram for weighted data with any axis types.");
 
-    // Requieres sampled fills
-    // register_histogram_by_type<axes::any, bh::profile_storage>(hist,
-    //    "any_profile",
-    //    "N-dimensional histogram for sampled data with any axis types.");
+    // Requires sampled fills
+    register_histogram<axes::any, bh::profile_storage>(
+        hist, "any_profile", "N-dimensional histogram for sampled data with any axis types.");
 
-    // register_histogram_by_type<axes::any, bh::weighted_profile_storage>(hist,
-    //    "any_weighted_profile",
-    //    "N-dimensional histogram for weighted and sampled data with any axis types.");
+    register_histogram<axes::any, bh::weighted_profile_storage>(
+        hist, "any_weighted_profile", "N-dimensional histogram for weighted and sampled data with any axis types.");
 }

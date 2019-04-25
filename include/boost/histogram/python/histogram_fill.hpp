@@ -81,13 +81,13 @@ struct [[gnu::visibility("hidden")]] fill_helper {
     // TODO: solve this more efficiently on the lower Boost::Histogram level
     template <class N>
     void operator()(N) {
-        using namespace boost::mp11;
         // N is a compile-time number with N == arrs.size()
         // Type: tuple<double, ..., double> (N times)
-        mp_repeat<std::tuple<double>, N> tp;
+        boost::mp11::mp_repeat<std::tuple<double>, N> tp;
+        using m_list = boost::mp11::mp_iota<N>; // list of integral constants
 
         for(std::size_t i = 0; i < (std::size_t)size; ++i) {
-            mp_for_each<mp_iota<N>>([&](auto I) {
+            boost::mp11::mp_for_each<m_list>([&](auto I) {
                 // I is mp_size_t<0>, mp_size_t<1>, ..., mp_size_t<N-1>
                 std::get<I>(tp) = data_ptrs[I][i];
             });
@@ -110,5 +110,37 @@ struct [[gnu::visibility("hidden")]] fill_helper {
 
         for(double xi : span{data_ptrs.front(), (std::size_t)size})
             (*hist)(xi); // throws invalid_argument if hist.rank() != 1
+    }
+
+    // keep function small to minimize code bloat, it is instantiated 16 times :(
+    // TODO: solve this more efficiently on the lower Boost::Histogram level
+    template <class N>
+    void operator()(N, const double *weight) {
+        // N is a compile-time number with N == arrs.size()
+        // Type: tuple<double, ..., double> (N times)
+        boost::mp11::mp_repeat<std::tuple<double>, N> tp;
+        using m_list = boost::mp11::mp_iota<N>; // list of integral constants
+
+        for(std::size_t i = 0; i < (std::size_t)size; ++i) {
+            boost::mp11::mp_for_each<m_list>([&](auto I) {
+                // I is mp_size_t<0>, mp_size_t<1>, ..., mp_size_t<N-1>
+                std::get<I>(tp) = data_ptrs[I][i];
+            });
+            (*hist)(tp, bh::weight(*weight++)); // throws invalid_argument if tup has wrong size
+        }
+    }
+
+    // specialization for N=0 to prevent compile-time error in histogram
+    void operator()(boost::mp11::mp_size_t<0>, const double *) {
+        throw std::invalid_argument("at least one argument required");
+    }
+
+    // specialization for N=1, implement potential optimizations here
+    void operator()(boost::mp11::mp_size_t<1>, const double *weight) {
+        const double *data = data_ptrs[0];
+        const double *end  = data_ptrs[0] + size;
+
+        for(; data != end; data++, weight++)
+            (*hist)(*data, bh::weight(*weight)); // throws invalid_argument if hist.rank() != 1
     }
 };
