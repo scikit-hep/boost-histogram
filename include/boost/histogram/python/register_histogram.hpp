@@ -171,62 +171,6 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
     return hist;
 }
 
-template <typename histogram_t, typename... Args>
-void fill_threaded(ssize_t *threads_ptr, fill_helper<histogram_t> &filler, size_t n, Args &&... args) {
-    ssize_t threads = threads_ptr == nullptr ? std::thread::hardware_concurrency() : *threads_ptr;
-
-    std::vector<std::thread> threadpool;
-    std::vector<fill_helper<histogram_t>> helpers;
-
-    for(ssize_t i = 0; i < threads; i++) {
-        helpers.emplace_back(filler.make_threaded(threads, i));
-    }
-
-    {
-        py::gil_scoped_release tmp;
-        for(auto &helper : helpers) {
-            threadpool.emplace_back([&helper, n, &args...]() {
-                boost::mp11::mp_with_index<BOOST_HISTOGRAM_DETAIL_AXES_LIMIT>(
-                    n, std::ref(helper), std::forward<Args>(args)...);
-            });
-        }
-    }
-
-    for(auto &thread : threadpool)
-        thread.join();
-
-    for(auto &helper : helpers) {
-        auto &s  = bh::unsafe_access::storage(*filler.hist);
-        auto rit = bh::unsafe_access::storage(*helper.hist).begin();
-        std::for_each(s.begin(), s.end(), [&rit](auto &&x) { x += *rit++; });
-    }
-}
-
-template <typename histogram_t, typename... Args>
-void fill_atomic(ssize_t *atomic_ptr, fill_helper<histogram_t> &filler, size_t n, Args &&... args) {
-    ssize_t threads = atomic_ptr == nullptr ? std::thread::hardware_concurrency() : *atomic_ptr;
-
-    std::vector<std::thread> threadpool;
-    std::vector<fill_helper<histogram_t>> helpers;
-
-    for(ssize_t i = 0; i < threads; i++) {
-        helpers.emplace_back(filler.make_atomic(threads, i));
-    }
-
-    {
-        py::gil_scoped_release tmp;
-        for(auto &helper : helpers) {
-            threadpool.emplace_back([&helper, n, &args...]() {
-                boost::mp11::mp_with_index<BOOST_HISTOGRAM_DETAIL_AXES_LIMIT>(
-                    n, std::ref(helper), std::forward<Args>(args)...);
-            });
-        }
-    }
-
-    for(auto &thread : threadpool)
-        thread.join();
-}
-
 template <typename A, typename S>
 void add_fill(std::false_type /* normal fill support */,
               std::true_type /* atomic support */,
@@ -261,14 +205,11 @@ void add_fill(std::true_type /* normal fill support */,
             if(threads && atomic)
                 throw py::key_error("Cannot have both atomic and threads in one fill call!");
             else if(threads) {
-                fill_threaded(threads.get(), filler, args.size());
-
+                filler.fill_threaded(threads.get());
             } else if(atomic) {
-                fill_atomic(atomic.get(), filler, args.size());
-
+                filler.fill_atomic(atomic.get());
             } else {
-                py::gil_scoped_release tmp;
-                boost::mp11::mp_with_index<BOOST_HISTOGRAM_DETAIL_AXES_LIMIT>(args.size(), std::ref(filler));
+                filler.fill();
             }
         },
         "Insert data into histogram in threads (0 for machine cores). Keyword arguments: threads=N, atomic=N "
@@ -291,11 +232,9 @@ void add_fill(std::true_type /* normal fill support */,
             auto filler = fill_helper<histogram_t>(self, args);
 
             if(threads) {
-                fill_threaded(threads.get(), filler, args.size());
-
+                filler.fill_threaded(threads.get());
             } else {
-                py::gil_scoped_release tmp;
-                boost::mp11::mp_with_index<BOOST_HISTOGRAM_DETAIL_AXES_LIMIT>(args.size(), std::ref(filler));
+                filler.fill();
             }
         },
         "Insert data into histogram in threads (0 for machine cores). Keyword argument: threads=N");

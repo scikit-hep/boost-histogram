@@ -16,6 +16,8 @@
 #include <tuple>
 #include <vector>
 
+#include <thread>
+
 template <class Histogram>
 struct [[gnu::visibility("hidden")]] fill_helper {
     Histogram *hist;
@@ -23,10 +25,11 @@ struct [[gnu::visibility("hidden")]] fill_helper {
     std::vector<py::array_t<double>> source_ptrs; // Stores a copy of converted values *if* conversion is neccesary
     std::vector<const double *> data_ptrs;        // The actually data is stored here
     ssize_t size = 1;                             // How many values to copy
+    size_t dim;                                   // Current number of dimensions to fill
 
     fill_helper(Histogram & h, py::args args)
         : hist(&h) {
-        size_t dim = args.size();
+        dim = args.size();
         if(dim == 0)
             throw std::invalid_argument("at least one argument required");
 
@@ -142,5 +145,73 @@ struct [[gnu::visibility("hidden")]] fill_helper {
 
         for(; data != end; data++, weight++)
             (*hist)(*data, bh::weight(*weight)); // throws invalid_argument if hist.rank() != 1
+    }
+
+    // Standard fill
+    template <typename... Args>
+    void fill(Args && ... args) {
+        py::gil_scoped_release tmp;
+        boost::mp11::mp_with_index<BOOST_HISTOGRAM_DETAIL_AXES_LIMIT>(
+            dim, std::ref(*this), std::forward<Args>(args)...);
+    }
+
+    // Threaded fill
+    template <typename... Args>
+    void fill_threaded(ssize_t * threads_ptr, Args && ... args) {
+        ssize_t threads = threads_ptr == nullptr ? std::thread::hardware_concurrency() : *threads_ptr;
+        size_t n        = dim;
+
+        std::vector<std::thread> threadpool;
+        std::vector<fill_helper<Histogram>> helpers;
+
+        for(ssize_t i = 0; i < threads; i++) {
+            helpers.emplace_back(make_threaded(threads, i));
+        }
+
+        {
+            py::gil_scoped_release tmp;
+            for(auto &helper : helpers) {
+                threadpool.emplace_back([&helper, n, &args...]() {
+                    boost::mp11::mp_with_index<BOOST_HISTOGRAM_DETAIL_AXES_LIMIT>(
+                        n, std::ref(helper), std::forward<Args>(args)...);
+                });
+            }
+        }
+
+        for(auto &thread : threadpool)
+            thread.join();
+
+        for(auto &helper : helpers) {
+            auto &s  = bh::unsafe_access::storage(*hist);
+            auto rit = bh::unsafe_access::storage(*helper.hist).begin();
+            std::for_each(s.begin(), s.end(), [&rit](auto &&x) { x += *rit++; });
+        }
+    }
+
+    // Atomic fill
+    template <typename... Args>
+    void fill_atomic(ssize_t * atomic_ptr, Args && ... args) {
+        ssize_t threads = atomic_ptr == nullptr ? std::thread::hardware_concurrency() : *atomic_ptr;
+        size_t n        = dim;
+
+        std::vector<std::thread> threadpool;
+        std::vector<fill_helper<Histogram>> helpers;
+
+        for(ssize_t i = 0; i < threads; i++) {
+            helpers.emplace_back(make_atomic(threads, i));
+        }
+
+        {
+            py::gil_scoped_release tmp;
+            for(auto &helper : helpers) {
+                threadpool.emplace_back([&helper, n, &args...]() {
+                    boost::mp11::mp_with_index<BOOST_HISTOGRAM_DETAIL_AXES_LIMIT>(
+                        n, std::ref(helper), std::forward<Args>(args)...);
+                });
+            }
+        }
+
+        for(auto &thread : threadpool)
+            thread.join();
     }
 };
