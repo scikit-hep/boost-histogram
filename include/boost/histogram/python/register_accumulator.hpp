@@ -8,7 +8,7 @@
 #include <boost/histogram/python/pybind11.hpp>
 #include <pybind11/operators.h>
 
-#include <boost/histogram/python/pickle.hpp>
+#include <boost/histogram/python/serializion.hpp>
 
 #include <utility>
 

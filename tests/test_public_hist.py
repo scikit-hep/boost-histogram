@@ -305,29 +305,47 @@ def test_operators():
     with pytest.raises(TypeError):
         h + h2
 
-# CLASSIC: reduce is not yet supported
-@pytest.mark.skip(message="Reductions not yet supported")
-def test_reduce_to(self):
+# CLASSIC: reduce_to -> project,
+def test_project():
     h = histogram(integer_uoflow(0, 2), integer_uoflow(1, 4))
     h.fill(0, 1)
     h.fill(0, 2)
     h.fill(1, 3)
 
-    h0 = h.reduce_to(0)
+    h0 = h.project(0)
     assert h0.rank() == 1
-    assert h0.axis() == integer_uoflow(0, 2)
+    assert h0.axis(0) == integer_uoflow(0, 2)
     assert [h0.at(i) for i in range(2)] == [2, 1]
 
-    h1 = h.reduce_to(1)
+    h1 = h.project(1)
     assert h1.rank() == 1
-    assert h1.axis() == integer_uoflow(1, 4)
+    assert h1.axis(0) == integer_uoflow(1, 4)
     assert [h1.at(i) for i in range(3)] == [1, 1, 1]
 
-    with pytest.raises(ValueError):
-        h.reduce_to(*range(100))
+    # CLASSIC: Was value error
+    with pytest.raises(IndexError):
+        h.project(*range(10))
 
-    with pytest.raises(ValueError):
-        h.reduce_to(2, 1)
+    with pytest.raises(IndexError):
+        h.project(2, 1)
+
+def test_shrink_1d():
+    h = histogram(regular_uoflow(20, 1, 5))
+    h.fill(1.1)
+    hs = h.shrink(0, 1, 2)
+    assert_array_equal(hs.view(), [1,0,0,0,0])
+
+def test_rebin_1d():
+    h = histogram(regular_uoflow(20, 1, 5))
+    h.fill(1.1)
+    hs = h.rebin(0, 4)
+    assert_array_equal(hs.view(), [1,0,0,0,0])
+
+def test_shrink_rebin_1d():
+    h = histogram(regular_uoflow(20, 0, 4))
+    h.fill(1.1)
+    hs = h.shrink_and_rebin(0, 1, 3, 2)
+    assert_array_equal(hs.view(), [1,0,0,0,0])
 
 
 # CLASSIC: This used to have metadata too, but that does not compare equal
