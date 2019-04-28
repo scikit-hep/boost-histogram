@@ -12,7 +12,7 @@
 #include <boost/histogram/python/axis.hpp>
 #include <boost/histogram/python/histogram.hpp>
 #include <boost/histogram/python/histogram_fill.hpp>
-#include <boost/histogram/python/pickle.hpp>
+#include <boost/histogram/python/serializion.hpp>
 #include <boost/histogram/python/storage.hpp>
 
 #include <boost/histogram.hpp>
@@ -137,19 +137,36 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
             },
             "flow"_a = false)
 
-        /* Broken: Does not work if any string axes present (even just in variant)
-         .def("rebin", [](const histogram_t &self, unsigned axis, unsigned merge){
-         return bh::algorithm::reduce(self, bh::algorithm::rebin(axis, merge));
-         }, "axis"_a, "merge"_a, "Rebin by merging bins. You must select an axis.")
+        /* Broken: Does not work if any string axes present (even just in variant) */
+        .def(
+            "rebin",
+            [](const histogram_t &self, unsigned axis, unsigned merge) {
+                return bh::algorithm::reduce(self, bh::algorithm::rebin(axis, merge));
+            },
+            "axis"_a,
+            "merge"_a,
+            "Rebin by merging bins. You must select an axis.")
 
-         .def("shrink", [](const histogram_t &self, unsigned axis, double lower, double upper){
-         return bh::algorithm::reduce(self, bh::algorithm::shrink(axis, lower, upper));
-         }, "axis"_a, "lower"_a, "upper"_a, "Shrink an axis. You must select an axis.")
+        .def(
+            "shrink",
+            [](const histogram_t &self, unsigned axis, double lower, double upper) {
+                return bh::algorithm::reduce(self, bh::algorithm::shrink(axis, lower, upper));
+            },
+            "axis"_a,
+            "lower"_a,
+            "upper"_a,
+            "Shrink an axis. You must select an axis.")
 
-         .def("shrink_and_rebin", [](const histogram_t &self, unsigned axis, double lower, double upper, unsigned
-         merge){ return bh::algorithm::reduce(self, bh::algorithm::shrink_and_rebin(axis, lower, upper, merge));
-         }, "axis"_a, "lower"_a, "upper"_a, "merge"_a, "Shrink an axis and rebin. You must select an axis.")
-         */
+        .def(
+            "shrink_and_rebin",
+            [](const histogram_t &self, unsigned axis, double lower, double upper, unsigned merge) {
+                return bh::algorithm::reduce(self, bh::algorithm::shrink_and_rebin(axis, lower, upper, merge));
+            },
+            "axis"_a,
+            "lower"_a,
+            "upper"_a,
+            "merge"_a,
+            "Shrink an axis and rebin. You must select an axis.")
 
         .def(
             "project",
@@ -166,7 +183,7 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
 
     using S_value = typename bh::detail::remove_cvref_t<S>::value_type;
 
-    add_fill(bh::detail::is_incrementable<S_value>{}, std::is_same<S, storage::atomic_int>{}, hist);
+    add_fill(bh::detail::has_operator_preincrement<S_value>{}, std::is_same<S, storage::atomic_int>{}, hist);
 
     return hist;
 }
