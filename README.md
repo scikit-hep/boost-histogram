@@ -67,8 +67,8 @@ counts = hist.view()
     * `bh.axis.category([...], growth=False)`: Integer or string categories
         * `bh.axis.category_int([1, 2, ...])`: Integer bins
         * `bh.axis.category_int_growth([1, 2, ...])`: Integer bins where new items are added automatically
-        * `bh.axis.category_str(["item1", "item2", ...])`: String bins
-        * `bh.axis.category_str_growth(["item1", "item2", ...])`: String bins where new items are added automatically
+        * `bh.axis.category_str(["item1", "item2", ...])`: WIP: String bins
+        * `bh.axis.category_str_growth(["item1", "item2", ...])`: WIP: String bins where new items are added automatically
 * Axis features:
     * `.bin(i)`: The bin or a bin view for continuous axis types
         * `.lower()`: The lower value
@@ -111,12 +111,13 @@ counts = hist.view()
     * `.axis(i)`: Get the `i`th axis
     * `.at(i, j, ...)`: Get the bin contents as a location 
     * `.sum()`: The total count of all bins
-    * `.project(ax1, ax2, ...)` Project down to listed axis (numbers)
+    * `.project(ax1, ax2, ...)`: Project down to listed axis (numbers)
+    * `.shrink(ax, lower, upper)`: Remove bins outside a range on a listed axis (number)
+    * `.rebin(ax, merge)`: Combine `merge` number of bins on a listed axis (number)
+    * `.shring_and_rebin(ax, lower, upper, merge)`: Shrink and rebin at the same time
 * Details
     * Use `bh.histogram(..., storage=...)` to make a histogram (there are several different types) 
     * Several common combinations are optimized, such as regular axes + int storage
-    * Regular axis can be made in `bh.histogram` using a tuple
-    * Variable axis can be made in `bh.histogram` using a list
 
 
 ## Supported platforms
@@ -136,8 +137,10 @@ The easiest way to get boost-histogram is to use a binary wheel. These are the s
 * Linux: I'm not supporting 3.4 because I have to build the Numpy wheels to do so.
 * manylinux1: Using a custom docker container with GCC 8.3; should work but can't be called directly other compiled extensions unless they do the same thing (think that's the main caveat). Supporting 32 bits because it's there.
 * manylinux2010: Requires pip 10+ and a version of Linux newer than 2010. This is very new technology.
-* MacOS: Using the dedicated 64 bit 10.9+ Python.org builds. Not supporting 3.5 because those no longer provide binaries (could add a 32+64 fat 10.6+ that really was 10.9+, but not worth it unless there is a need for it).
-* Windows: PyBind11 is able to compile with a newer copy of Visual Studio than Python 2.7's Visual Studio 2008; you might need to have the Visual Studio 2017 distributable though.
+* MacOS: Uses the dedicated 64 bit 10.9+ Python.org builds. We are not supporting 3.5 because those no longer provide binaries (could add a 32+64 fat 10.6+ that really was 10.9+, but not worth it unless there is a need for it).
+* Windows: PyBind11 requires compilation with a newer copy of Visual Studio than Python 2.7's Visual Studio 2008; you need to have the [Visual Studio 2015 distributable][msvc2015] installed (the dll is included in 2017 and 2019, as well).
+
+[msvc2017]: https://www.microsoft.com/en-us/download/details.aspx?id=48145
 
 If you are on a Linux system that is not part of the "many" in manylinux, such as Alpine or ClearLinux, building from source is usually fine, since the compilers on those systems are often quite new. It will just take a little longer to install when it's using the sdist instead of a wheel.
 
