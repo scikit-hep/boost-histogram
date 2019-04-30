@@ -5,12 +5,11 @@
 
 #include <boost/histogram/python/pybind11.hpp>
 
+#include <boost/histogram.hpp>
 #include <boost/histogram/python/axis.hpp>
 #include <boost/histogram/python/histogram.hpp>
 #include <boost/histogram/python/register_histogram.hpp>
 #include <boost/histogram/python/storage.hpp>
-
-#include <boost/histogram.hpp>
 
 void register_general_histograms(py::module &hist) {
     register_histogram<axes::any, storage::int_>(

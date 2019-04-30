@@ -4,18 +4,15 @@
 // file LICENSE or https://github.com/scikit-hep/boost-histogram for details.
 
 #include <boost/histogram/python/pybind11.hpp>
-#include <pybind11/operators.h>
 
+#include <boost/histogram.hpp>
 #include <boost/histogram/python/axis.hpp>
 #include <boost/histogram/python/histogram.hpp>
 #include <boost/histogram/python/kwargs.hpp>
 #include <boost/histogram/python/storage.hpp>
 #include <boost/histogram/python/try_cast.hpp>
-
-#include <boost/histogram.hpp>
-
 #include <boost/mp11.hpp>
-
+#include <pybind11/operators.h>
 #include <vector>
 
 void register_make_histogram(py::module &m, py::module &hist) {
@@ -23,11 +20,22 @@ void register_make_histogram(py::module &m, py::module &hist) {
         "_make_histogram",
         [](py::args t_args, py::kwargs kwargs) -> py::object {
             py::list args      = py::cast<py::list>(t_args);
-            py::object storage = optional_arg(kwargs, "storage", py::cast(storage::int_()));
+            py::object storage = optional_arg(kwargs, "storage", py::cast(storage::int_{}));
             // TODO: change this to be unlimited by default
+            std::unique_ptr<py::object> dtype = optional_arg(kwargs, "dtype");
             finalize_args(kwargs);
 
-            // HD: this should be done in Python
+            // Allow dtype to override if present
+            if(dtype) {
+                if(py::isinstance<py::int_>(*dtype)) {
+                    storage = py::cast(storage::int_{});
+                } else if(py::isinstance<py::float_>(*dtype)) {
+                    storage = py::cast(storage::double_{});
+                } else {
+                    throw py::type_error("dtype not supported - use storage= instead");
+                }
+            }
+
             // Process the args as necessary for extra shortcuts
             for(size_t i = 0; i < args.size(); i++) {
                 // If length three tuples are provided, make regular bins

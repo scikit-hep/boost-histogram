@@ -7,18 +7,16 @@
 
 #include <boost/histogram/python/pybind11.hpp>
 
-#include <pybind11/eval.h>
-#include <pybind11/numpy.h>
-#include <pybind11/operators.h>
-
-#include <boost/histogram/python/axis.hpp>
-#include <boost/histogram/python/serializion.hpp>
-
 #include <boost/histogram.hpp>
 #include <boost/histogram/axis/ostream.hpp>
 #include <boost/histogram/axis/traits.hpp>
-
+#include <boost/histogram/python/axis.hpp>
+#include <boost/histogram/python/bin_setup.hpp>
+#include <boost/histogram/python/serializion.hpp>
 #include <iostream>
+#include <pybind11/eval.h>
+#include <pybind11/numpy.h>
+#include <pybind11/operators.h>
 #include <sstream>
 #include <stdexcept>
 #include <type_traits>
@@ -53,15 +51,7 @@ py::class_<bh::axis::interval_view<A>> register_axis_iv(py::module &m, const cha
     using A_iv               = bh::axis::interval_view<A>;
     py::class_<A_iv> axis_iv = py::class_<A_iv>(m, name, "Lightweight bin view");
 
-    axis_iv.def("upper", &A_iv::upper)
-        .def("lower", &A_iv::lower)
-        .def("center", &A_iv::center)
-        .def("width", &A_iv::width)
-        .def(py::self == py::self)
-        .def(py::self != py::self)
-        .def("__repr__", [](const A_iv &self) {
-            return "<bin ["s + std::to_string(self.lower()) + ", "s + std::to_string(self.upper()) + "]>"s;
-        });
+    bin_setup(axis_iv);
 
     return axis_iv;
 }

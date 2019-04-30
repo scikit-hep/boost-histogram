@@ -45,7 +45,7 @@ py::array_t<double> axis_to_edges(const A &ax, bool flow) {
 
 template <class A>
 decltype(auto) axis_to_bins(const A &self, bool flow) {
-    std::vector<bh::python::remove_cvref_t<decltype(self.bin(0))>> out;
+    std::vector<bh::python::remove_cvref_t<decltype(self.bin(std::declval<int>()))>> out;
     bool overflow  = flow && (bh::axis::traits::options(self) & bh::axis::option::underflow);
     bool underflow = flow && (bh::axis::traits::options(self) & bh::axis::option::overflow);
 

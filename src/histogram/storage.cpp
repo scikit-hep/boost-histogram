@@ -5,10 +5,9 @@
 
 #include <boost/histogram/python/pybind11.hpp>
 
+#include <boost/histogram.hpp>
 #include <boost/histogram/python/register_storage.hpp>
 #include <boost/histogram/python/storage.hpp>
-
-#include <boost/histogram.hpp>
 #include <boost/histogram/storage_adaptor.hpp>
 
 void register_storages(py::module &storage) {
