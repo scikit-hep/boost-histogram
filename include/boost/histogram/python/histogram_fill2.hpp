@@ -10,6 +10,8 @@
 #include <boost/histogram/histogram.hpp>
 #include <boost/histogram/detail/axes.hpp>
 #include <boost/histogram/detail/meta.hpp>
+#include <boost/histogram/axis/traits.hpp>
+#include <boost/histogram/axis/option.hpp>
 
 #include <cassert>
 #include <algorithm>
@@ -68,20 +70,27 @@ template <class Axes>
 void fill_index_buffer(std::size_t offset, const std::size_t n,
                        Axes& axes, const py::object* values,
                        boost::histogram::axis::index_type* iter) {
-  using namespace boost::histogram;
+  namespace bh = boost::histogram;
   // no support for growing axis yet
-  assert(detail::has_growing_axis<Axes>::value == false);
+  assert(bh::detail::has_growing_axis<Axes>::value == false);
   unsigned i_axis = 0;
-  detail::for_each_axis(axes, [offset, n, iter, values, &i_axis](const auto& axis) {
-    using A = detail::remove_cvref_t<decltype(axis)>;
+  bh::detail::for_each_axis(axes, [offset, n, iter, values, &i_axis](const auto& axis) {
+    using A = bh::detail::remove_cvref_t<decltype(axis)>;
+    constexpr auto opt = bh::axis::traits::static_options<A>{};
+    constexpr int shift = opt & bh::axis::option::underflow ? 1 : 0;
     using T = py_array_type<A>;
     auto v = py::cast<py::array_t<T>>(values[i_axis]);
     if (v.ndim() == 1) {
-      std::transform(v.data() + offset, v.data() + offset + n, iter,
-                     [&axis](const T& x) { return axis.index(x); });
+      std::transform(
+        v.data() + offset, v.data() + offset + n, iter,
+          [&axis, shift](const T& t) {
+            return static_cast<std::size_t>(axis.index(t) + shift);
+          }
+        );
     } else {
-      assert(v.ndim() == 0);
-      std::fill(iter, iter + n, axis.index(v.data()[0]));
+      assert(v.ndim() == 0); // assert precondition: ndim either 0 or 1
+      std::fill(iter, iter + n,
+        static_cast<std::size_t>(axis.index(*v.data()) + shift));
     }
     ++i_axis;
   });
@@ -90,36 +99,37 @@ void fill_index_buffer(std::size_t offset, const std::size_t n,
 // this should go to boostorg/histogram
 template <class Axes>
 void fill_strides(const Axes& axes, std::size_t* strides) {
+  namespace bh = boost::histogram;
   strides[0] = 1;
-  boost::histogram::detail::for_each_axis(axes, [&strides](const auto& axis) {
-    *++strides = *strides * boost::histogram::axis::traits::extent(axis);
+  bh::detail::for_each_axis(axes, [&strides](const auto& ax) {
+    *++strides = *strides * bh::axis::traits::extent(ax);
   });
 }
 } // namespace impl
 
 template <class Histogram>
 void fill2(Histogram& h, py::args args, py::kwargs kwargs) {
-  using namespace boost::histogram;
+  namespace bh = boost::histogram;
 
   const unsigned rank = h.rank();
   if (rank != args.size())
     throw std::invalid_argument("number of arguments must match histogram rank");
 
-  auto& axes = unsafe_access::axes(h);
-  auto values = detail::make_stack_buffer<py::object>(axes);
+  auto& axes = bh::unsafe_access::axes(h);
+  auto values = bh::detail::make_stack_buffer<py::object>(axes);
   const std::size_t n_array = impl::normalize_input(axes, args, values.data());
 
   constexpr std::size_t n_index = 1 << 14;
-  boost::histogram::axis::index_type buffer[n_index];
-  const std::size_t max_size = n_index / detail::get_size(axes);
-  auto strides = detail::make_stack_buffer<std::size_t>(axes);
+  bh::axis::index_type buffer[n_index];
+  const std::size_t max_size = n_index / bh::detail::get_size(axes);
+  auto strides = bh::detail::make_stack_buffer<std::size_t>(axes);
   impl::fill_strides(axes, strides.data());
   std::size_t i_array = 0;
   while (i_array != n_array) {
     const std::size_t n = std::min(max_size, n_array - i_array);
     impl::fill_index_buffer(i_array, n, axes, values.data(), buffer);
     // buffer is structured: a0:i0, ... , a0:iN, a1:i0, ... , a1:iN, ...
-    auto& storage = unsafe_access::storage(h);
+    auto& storage = bh::unsafe_access::storage(h);
     for (std::size_t i = 0; i < n; ++i) {
       // calculate linear storage index manually
       std::size_t j = 0;
