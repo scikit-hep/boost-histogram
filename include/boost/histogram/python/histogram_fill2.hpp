@@ -15,15 +15,35 @@
 #include <algorithm>
 #include <stdexcept>
 
-namespace detail {
+namespace impl {
+
+template <class T>
+struct py_array_type_impl {
+  using type = T;
+};
+
+// specialization for category<std::string>
+template <>
+struct py_array_type_impl<std::string> {
+  using type = const char*;
+};
+
+template <class A>
+using py_array_type = typename py_array_type_impl<
+    boost::histogram::detail::remove_cvref_t<
+      boost::histogram::detail::arg_type<decltype(&A::index)>
+    >
+  >::type;
+  
 // convert all inputs to numpy arrays of the right axis type
-template <class Axes, class Values>
-std::size_t normalize_input(const Axes& axes, py::args args, Values& values) {
+template <class Axes>
+std::size_t normalize_input(const Axes& axes, py::args args, py::object* values) {
   using namespace boost::histogram;
   unsigned i_axis = 0;
   std::size_t n_array = 0;
-  detail::for_each_axis([&args, &values, &i_axis, &n_array](const auto& axis) mutable {
-    using T = detail::arg_type<detail::remove_cv_t<decltype(axis)>>;
+  detail::for_each_axis(axes, [&args, &values, &i_axis, &n_array](const auto& axis) {
+    using A = detail::remove_cvref_t<decltype(axis)>;
+    using T = py_array_type<A>;
     auto arr = py::cast<py::array_t<T>>(args[i_axis]);
     // allow arrays of dim 0 or dim == 1 with same length
     if (arr.ndim() == 1) {
@@ -40,18 +60,21 @@ std::size_t normalize_input(const Axes& axes, py::args args, Values& values) {
     }
     values[i_axis] = arr;
     ++i_axis;
-  }, axes);
+  });
   return n_array;
 }
 
-template <class Axes, class Values, class Buffer>
+template <class Axes>
 void fill_index_buffer(std::size_t offset, const std::size_t n,
-                       Axes& axes, const Values& values, BufferIterator iter) {
+                       Axes& axes, const py::object* values,
+                       boost::histogram::axis::index_type* iter) {
   using namespace boost::histogram;
-  assert(detail::has_growing_axis<Axes>::value == false, "no support for growing axis yet");
+  // no support for growing axis yet
+  assert(detail::has_growing_axis<Axes>::value == false);
   unsigned i_axis = 0;
-  detail::for_each_axis([&iter, &values, &i_axis, offset, n](auto& axis) mutable {
-    using T = detail::arg_type<detail::remove_cv_t<decltype(axis)>>;
+  detail::for_each_axis(axes, [offset, n, iter, values, &i_axis](const auto& axis) {
+    using A = detail::remove_cvref_t<decltype(axis)>;
+    using T = py_array_type<A>;
     auto v = py::cast<py::array_t<T>>(values[i_axis]);
     if (v.ndim() == 1) {
       std::transform(v.data() + offset, v.data() + offset + n, iter,
@@ -64,14 +87,15 @@ void fill_index_buffer(std::size_t offset, const std::size_t n,
   });
 }
 
+// this should go to boostorg/histogram
 template <class Axes>
 void fill_strides(const Axes& axes, std::size_t* strides) {
   strides[0] = 1;
-  detail::for_each_axis([&strides](const auto& axis) {
-    *++strides = *strides * axis::traits::extent(axis);
-  }, axes);
+  boost::histogram::detail::for_each_axis(axes, [&strides](const auto& axis) {
+    *++strides = *strides * boost::histogram::axis::traits::extent(axis);
+  });
 }
-} // namespace detail
+} // namespace impl
 
 template <class Histogram>
 void fill2(Histogram& h, py::args args, py::kwargs kwargs) {
@@ -83,28 +107,30 @@ void fill2(Histogram& h, py::args args, py::kwargs kwargs) {
 
   auto& axes = unsafe_access::axes(h);
   auto values = detail::make_stack_buffer<py::object>(axes);
-  const std::size_t n_array = detail::normalize_input(axes, args, values);
+  const std::size_t n_array = impl::normalize_input(axes, args, values.data());
 
-  constexpr std::size_t n_index = 1 << 16;
-  axis::index_type buffer[n_index];
+  constexpr std::size_t n_index = 1 << 14;
+  boost::histogram::axis::index_type buffer[n_index];
   const std::size_t max_size = n_index / detail::get_size(axes);
   auto strides = detail::make_stack_buffer<std::size_t>(axes);
-  detail::fill_strides(axes, strides);
-  while (i_array < n_array) {
+  impl::fill_strides(axes, strides.data());
+  std::size_t i_array = 0;
+  while (i_array != n_array) {
     const std::size_t n = std::min(max_size, n_array - i_array);
-    detail::fill_index_buffer(i_array, n, axes, values, n_array, buffer);
+    impl::fill_index_buffer(i_array, n, axes, values.data(), buffer);
     // buffer is structured: a0:i0, ... , a0:iN, a1:i0, ... , a1:iN, ...
     auto& storage = unsafe_access::storage(h);
     for (std::size_t i = 0; i < n; ++i) {
       // calculate linear storage index manually
       std::size_t j = 0;
-      auto iter = buffer + i;
+      auto bi = buffer + i;
       for (auto stride : strides) {
-        j += stride * *iter;
-        iter += n_iter;
+        j += stride * *bi;
+        bi += n;
       }
-      ++storage.at(j);
+      ++storage[j];
     }
+    i_array += n;
   }
 }
 
