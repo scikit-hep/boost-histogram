@@ -25,18 +25,20 @@ def test_1D_fill_int(hist_func):
     bins = 10
     ranges = (0, 1)
 
-    vals = (.15, .25, .25)
+    vals = 0.1 * np.arange(-3, 13)
 
     hist = hist_func([
         bh.axis.regular_uoflow(bins, *ranges)
         ])
     hist.fill(vals)
 
-    H =  np.array([0, 1, 2, 0, 0, 0, 0, 0, 0, 0])
+    expected = np.ones(12, dtype=int)
+    expected[0] = 3
+    expected[-1] = 3
 
-    assert_array_equal(np.asarray(hist), H)
-    assert_array_equal(hist.view(flow=False), H)
-    assert_array_equal(hist.view(flow=True)[1:-1], H)
+    assert_array_equal(np.asarray(hist), expected)
+    assert_array_equal(hist.view(flow=False), expected)
+    assert_array_equal(hist.view(flow=True)[1:-1], expected[1:-1])
 
     assert hist.axis(0).size() == bins
     assert hist.axis(0).size(flow=True) == bins + 2
