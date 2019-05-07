@@ -30,7 +30,6 @@ def test_1D_fill_int(hist_func):
     hist = hist_func([
         bh.axis.regular_uoflow(bins, *ranges)
         ])
-    # hist(vals)
     hist.fill(vals)
 
     expected = np.ones(12, dtype=int)
