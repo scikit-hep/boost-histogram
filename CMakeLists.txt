@@ -124,7 +124,8 @@ configure_file(
 include(CTest)
 
 function(python_import PACKAGE_NAME)
-    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import ${PACKAGE_NAME}" RESULT_VARIABLE RESULT_PRESENT)
+    string(REPLACE "-" "_" PYTHON_PACKAGE_NAME "${PACKAGE_NAME}")
+    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import ${PYTHON_PACKAGE_NAME}" RESULT_VARIABLE RESULT_PRESENT)
     if(RESULT_PRESENT)
         message(SEND_ERROR "You should pip install ${PACKAGE_NAME}")
     endif()
@@ -134,7 +135,7 @@ if(BUILD_TESTING)
 
     python_import(numpy)
     python_import(pytest)
-    python_import(pytest_benchmark)
+    python_import(pytest-benchmark)
 
     # Support for running from build directory
     file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/pytest.ini"
