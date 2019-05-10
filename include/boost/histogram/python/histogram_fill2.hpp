@@ -71,7 +71,7 @@ void fill_index_buffer(std::size_t offset,
     namespace bh = boost::histogram;
 
     unsigned i_axis = 0;
-    bh::detail::for_each_axis(axes, [offset, n, iter, values, &i_axis](const auto &axis) {
+    bh::detail::for_each_axis(axes, [offset, n, &iter, values, &i_axis](const auto &axis) {
         using A            = bh::detail::remove_cvref_t<decltype(axis)>;
         constexpr auto opt = bh::axis::traits::static_options<A>{};
         if(opt & bh::axis::option::growth)
@@ -87,6 +87,7 @@ void fill_index_buffer(std::size_t offset,
             assert(v.ndim() == 0); // assert precondition: ndim either 0 or 1
             std::fill(iter, iter + n, static_cast<std::size_t>(axis.index(*v.data()) + shift));
         }
+        iter += n;
         ++i_axis;
     });
 }
