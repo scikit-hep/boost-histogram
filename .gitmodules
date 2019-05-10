@@ -7,9 +7,6 @@
 [submodule "extern/core"]
 	path = extern/core
 	url = ../../boostorg/core.git
-[submodule "extern/iterator"]
-	path = extern/iterator
-	url = ../../boostorg/iterator.git
 [submodule "extern/mp11"]
 	path = extern/mp11
 	url = ../../boostorg/mp11.git
@@ -25,36 +22,3 @@
 [submodule "extern/callable_traits"]
 	path = extern/callable_traits
 	url = ../../boostorg/callable_traits.git
-[submodule "extern/variant"]
-	path = extern/variant
-	url = ../../boostorg/variant.git
-[submodule "extern/static_assert"]
-	path = extern/static_assert
-	url = ../../boostorg/static_assert.git
-[submodule "extern/mpl"]
-	path = extern/mpl
-	url = ../../boostorg/mpl.git
-[submodule "extern/preprocessor"]
-	path = extern/preprocessor
-	url = ../../boostorg/preprocessor.git
-[submodule "extern/type_traits"]
-	path = extern/type_traits
-	url = ../../boostorg/type_traits.git
-[submodule "extern/detail"]
-	path = extern/detail
-	url = ../../boostorg/detail.git
-[submodule "extern/move"]
-	path = extern/move
-	url = ../../boostorg/move.git
-[submodule "extern/type_index"]
-	path = extern/type_index
-	url = ../../boostorg/type_index.git
-[submodule "extern/container_hash"]
-	path = extern/container_hash
-	url = ../../boostorg/container_hash.git
-[submodule "extern/integer"]
-	path = extern/integer
-	url = ../../boostorg/integer.git
-[submodule "extern/utility"]
-	path = extern/utility
-	url = ../../boostorg/utility.git
