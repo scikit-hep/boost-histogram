@@ -45,7 +45,7 @@ def test_1D_fill_int(hist_func):
 
 @pytest.mark.parametrize("hist_func", methods)
 def test_2D_fill_int(hist_func):
-    bins = (10, 15)
+    bins = (3, 4)
     ranges = ((0, 3), (0, 2))
 
     vals = ((.15, .25, .25), (.35, .45, .45))
