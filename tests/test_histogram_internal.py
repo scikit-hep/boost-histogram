@@ -12,7 +12,7 @@ def test_1D_fill_unlimited():
     hist = bh.hist.regular_unlimited([
         bh.axis.regular_uoflow(bins, *ranges)
         ])
-    hist.fill(vals)
+    hist.fill2(vals)
 
 
 methods = [
@@ -30,7 +30,7 @@ def test_1D_fill_int(hist_func):
     hist = hist_func([
         bh.axis.regular_uoflow(bins, *ranges)
         ])
-    hist.fill(vals)
+    hist.fill2(vals)
 
     expected = np.ones(12, dtype=int)
     expected[0] = 3
@@ -54,7 +54,7 @@ def test_2D_fill_int(hist_func):
         bh.axis.regular_uoflow(bins[0], *ranges[0]),
         bh.axis.regular_uoflow(bins[1], *ranges[1]),
         ])
-    hist.fill(*vals)
+    hist.fill2(*vals)
 
     H = np.histogram2d(*vals, bins=bins, range=ranges)[0]
 
@@ -76,7 +76,7 @@ def test_edges_histogram():
         ])
 
     vals = (13,15,24,29)
-    hist.fill(vals)
+    hist.fill2(vals)
 
     bins = np.asarray(hist)
     assert_array_equal(bins, [0,2,2])
@@ -89,7 +89,7 @@ def test_int_histogram():
         ])
 
     vals = (1,2,3,4,5,6,7,8,9)
-    hist.fill(vals)
+    hist.fill2(vals)
 
     bins = np.asarray(hist)
     assert_array_equal(bins, [1,1,1,1])
@@ -121,7 +121,7 @@ def test_numpy_flow():
         for j in range(5):
             x,y = h.axis(0).bin(i).center(), h.axis(1).bin(j).center()
             v = i + j*10 + 1;
-            h.fill([x]*v,[y]*v)
+            h.fill2([x]*v,[y]*v)
 
     flow_true = h.to_numpy(True)[0][1:-1, 1:-1]
     flow_false = h.to_numpy(False)[0]
@@ -149,7 +149,7 @@ def test_numpy_compare():
             xs += [x]*v
             ys += [y]*v
 
-    h.fill(xs, ys)
+    h.fill2(xs, ys)
 
     H, E1, E2 = h.to_numpy()
 
@@ -165,9 +165,9 @@ def test_project():
     h1 = bh.hist.regular_int([bh.axis.regular_uoflow(5,0,1)])
 
     for x,y in ((.3,.3),(.7,.7),(.5,.6),(.23,.92),(.15,.32),(.43,.54)):
-        h.fill(x,y)
-        h0.fill(x)
-        h1.fill(y)
+        h.fill2(x,y)
+        h0.fill2(x)
+        h1.fill2(y)
 
     assert h.project(0, 1) == h
     assert h.project(0) == h0
@@ -179,7 +179,7 @@ def test_project():
 
 def test_sums():
     h = bh.histogram(bh.axis.regular_uoflow(4,0,1))
-    h.fill([.1,.2,.3,10])
+    h.fill2([.1,.2,.3,10])
 
     assert h.sum() == 3
     assert h.sum(flow=True) == 4
@@ -187,10 +187,10 @@ def test_sums():
 def test_int_cat_hist():
     h = bh.hist.any_int([bh.axis.category_int([1,2,3])])
 
-    h.fill(1)
-    h.fill(2)
-    h.fill(2.2)
-    h.fill(3)
+    h.fill2(1)
+    h.fill2(2)
+    h.fill2(2.2)
+    h.fill2(3)
 
     assert_array_equal(h.view(), [1,2,1])
     assert h.sum() == 4
