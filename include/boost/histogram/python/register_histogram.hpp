@@ -12,6 +12,7 @@
 #include <boost/histogram/python/axis.hpp>
 #include <boost/histogram/python/histogram.hpp>
 #include <boost/histogram/python/histogram_fill.hpp>
+#include <boost/histogram/python/histogram_fill2.hpp>
 #include <boost/histogram/python/serializion.hpp>
 #include <boost/histogram/python/storage.hpp>
 
@@ -69,113 +70,104 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
     def_optionally(hist, bh::detail::has_operator_rdiv<histogram_t, double>{}, py::self /= double());
     def_optionally(hist, bh::detail::has_operator_rdiv<histogram_t, double>{}, py::self / double());
 
-    hist.def(
-            "to_numpy",
-            [](histogram_t &h, bool flow) {
-                py::list listing;
+    hist.def("to_numpy",
+             [](histogram_t &h, bool flow) {
+                 py::list listing;
 
-                // Add the histogram as the first argument
-                py::array arr(make_buffer(h, flow));
-                listing.append(arr);
+                 // Add the histogram as the first argument
+                 py::array arr(make_buffer(h, flow));
+                 listing.append(arr);
 
-                // Add the axis edges
-                for(unsigned i = 0; i < h.rank(); i++) {
-                    const auto &ax = h.axis(i);
-                    listing.append(axis_to_edges(ax, flow));
-                }
+                 // Add the axis edges
+                 for(unsigned i = 0; i < h.rank(); i++) {
+                     const auto &ax = h.axis(i);
+                     listing.append(axis_to_edges(ax, flow));
+                 }
 
-                return py::cast<py::tuple>(listing);
-            },
-            "flow"_a = false,
-            "convert to a numpy style tuple of returns")
+                 return py::cast<py::tuple>(listing);
+             },
+             "flow"_a = false,
+             "convert to a numpy style tuple of returns")
 
-        .def(
-            "view",
-            [](histogram_t &h, bool flow) { return py::array(make_buffer(h, flow)); },
-            "flow"_a = false,
-            "Return a view into the data, optionally with overflow turned on")
+        .def("view",
+             [](histogram_t &h, bool flow) { return py::array(make_buffer(h, flow)); },
+             "flow"_a = false,
+             "Return a view into the data, optionally with overflow turned on")
 
-        .def(
-            "axis",
-            [](histogram_t &self, int i) {
-                unsigned ii = i < 0 ? self.rank() - (unsigned)std::abs(i) : (unsigned)i;
-                if(ii < self.rank())
-                    return self.axis(ii);
-                else
-                    throw std::out_of_range("The axis value must be less than the rank");
-            },
-            "Get N-th axis with runtime index",
-            "i"_a,
-            py::return_value_policy::move)
+        .def("axis",
+             [](histogram_t &self, int i) {
+                 unsigned ii = i < 0 ? self.rank() - (unsigned)std::abs(i) : (unsigned)i;
+                 if(ii < self.rank())
+                     return self.axis(ii);
+                 else
+                     throw std::out_of_range("The axis value must be less than the rank");
+             },
+             "Get N-th axis with runtime index",
+             "i"_a,
+             py::return_value_policy::move)
 
-        .def(
-            "at",
-            [](histogram_t &self, py::args &args) {
-                // Optimize for no dynamic?
-                auto int_args = py::cast<std::vector<int>>(args);
-                return self.at(int_args);
-            },
-            "Access bin counter at indices")
+        .def("at",
+             [](histogram_t &self, py::args &args) {
+                 // Optimize for no dynamic?
+                 auto int_args = py::cast<std::vector<int>>(args);
+                 return self.at(int_args);
+             },
+             "Access bin counter at indices")
 
         .def("__repr__", shift_to_string<histogram_t>())
 
-        .def(
-            "sum",
-            [](const histogram_t &self, bool flow) {
-                if(flow) {
-                    return bh::algorithm::sum(self);
-                } else {
-                    using T       = typename bh::histogram<A, S>::value_type;
-                    using AddType = boost::mp11::mp_if<std::is_arithmetic<T>, double, T>;
-                    using Sum     = boost::mp11::mp_if<std::is_arithmetic<T>, bh::accumulators::sum<double>, T>;
-                    Sum sum;
-                    for(auto x : bh::indexed(self))
-                        sum += (AddType)*x;
-                    using R = boost::mp11::mp_if<std::is_arithmetic<T>, double, T>;
-                    return static_cast<R>(sum);
-                }
-            },
-            "flow"_a = false)
+        .def("sum",
+             [](const histogram_t &self, bool flow) {
+                 if(flow) {
+                     return bh::algorithm::sum(self);
+                 } else {
+                     using T       = typename bh::histogram<A, S>::value_type;
+                     using AddType = boost::mp11::mp_if<std::is_arithmetic<T>, double, T>;
+                     using Sum     = boost::mp11::mp_if<std::is_arithmetic<T>, bh::accumulators::sum<double>, T>;
+                     Sum sum;
+                     for(auto x : bh::indexed(self))
+                         sum += (AddType)*x;
+                     using R = boost::mp11::mp_if<std::is_arithmetic<T>, double, T>;
+                     return static_cast<R>(sum);
+                 }
+             },
+             "flow"_a = false)
 
         /* Broken: Does not work if any string axes present (even just in variant) */
-        .def(
-            "rebin",
-            [](const histogram_t &self, unsigned axis, unsigned merge) {
-                return bh::algorithm::reduce(self, bh::algorithm::rebin(axis, merge));
-            },
-            "axis"_a,
-            "merge"_a,
-            "Rebin by merging bins. You must select an axis.")
+        .def("rebin",
+             [](const histogram_t &self, unsigned axis, unsigned merge) {
+                 return bh::algorithm::reduce(self, bh::algorithm::rebin(axis, merge));
+             },
+             "axis"_a,
+             "merge"_a,
+             "Rebin by merging bins. You must select an axis.")
 
-        .def(
-            "shrink",
-            [](const histogram_t &self, unsigned axis, double lower, double upper) {
-                return bh::algorithm::reduce(self, bh::algorithm::shrink(axis, lower, upper));
-            },
-            "axis"_a,
-            "lower"_a,
-            "upper"_a,
-            "Shrink an axis. You must select an axis.")
+        .def("shrink",
+             [](const histogram_t &self, unsigned axis, double lower, double upper) {
+                 return bh::algorithm::reduce(self, bh::algorithm::shrink(axis, lower, upper));
+             },
+             "axis"_a,
+             "lower"_a,
+             "upper"_a,
+             "Shrink an axis. You must select an axis.")
 
-        .def(
-            "shrink_and_rebin",
-            [](const histogram_t &self, unsigned axis, double lower, double upper, unsigned merge) {
-                return bh::algorithm::reduce(self, bh::algorithm::shrink_and_rebin(axis, lower, upper, merge));
-            },
-            "axis"_a,
-            "lower"_a,
-            "upper"_a,
-            "merge"_a,
-            "Shrink an axis and rebin. You must select an axis.")
+        .def("shrink_and_rebin",
+             [](const histogram_t &self, unsigned axis, double lower, double upper, unsigned merge) {
+                 return bh::algorithm::reduce(self, bh::algorithm::shrink_and_rebin(axis, lower, upper, merge));
+             },
+             "axis"_a,
+             "lower"_a,
+             "upper"_a,
+             "merge"_a,
+             "Shrink an axis and rebin. You must select an axis.")
 
-        .def(
-            "project",
-            [](const histogram_t &self, py::args values) {
-                // If static
-                // histogram<any_axis> any = self;
-                return bh::algorithm::project(self, py::cast<std::vector<unsigned>>(values));
-            },
-            "Project to a single axis or several axes on a multidiminsional histogram")
+        .def("project",
+             [](const histogram_t &self, py::args values) {
+                 // If static
+                 // histogram<any_axis> any = self;
+                 return bh::algorithm::project(self, py::cast<std::vector<unsigned>>(values));
+             },
+             "Project to a single axis or several axes on a multidiminsional histogram")
 
         .def(make_pickle<histogram_t>())
 
@@ -191,7 +183,7 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
 template <typename A, typename S>
 void add_fill(std::false_type /* normal fill support */,
               std::true_type /* atomic support */,
-              py::class_<bh::histogram<A, S>> &) {
+              py::class_<bh::histogram<A, S>> &hist) {
     std::cout << "empty fill" << std::endl;
 }
 
@@ -210,27 +202,27 @@ void add_fill(std::true_type /* normal fill support */,
     using histogram_t = bh::histogram<A, S>;
 
     // generic threaded and atomic fill for 1 to N args
-    hist.def(
-        "fill",
-        [](histogram_t &self, py::args args, py::kwargs kwargs) {
-            std::unique_ptr<ssize_t> threads = optional_arg<ssize_t>(kwargs, "threads");
-            std::unique_ptr<ssize_t> atomic  = optional_arg<ssize_t>(kwargs, "atomic");
-            finalize_args(kwargs);
+    hist.def("fill",
+             [](histogram_t &self, py::args args, py::kwargs kwargs) {
+                 std::unique_ptr<ssize_t> threads = optional_arg<ssize_t>(kwargs, "threads");
+                 std::unique_ptr<ssize_t> atomic  = optional_arg<ssize_t>(kwargs, "atomic");
+                 finalize_args(kwargs);
 
-            auto filler = fill_helper<histogram_t>(self, args);
+                 auto filler = fill_helper<histogram_t>(self, args);
 
-            if(threads && atomic)
-                throw py::key_error("Cannot have both atomic and threads in one fill call!");
-            else if(threads) {
-                filler.fill_threaded(threads.get());
-            } else if(atomic) {
-                filler.fill_atomic(atomic.get());
-            } else {
-                filler.fill();
-            }
-        },
-        "Insert data into histogram in threads (0 for machine cores). Keyword arguments: threads=N, atomic=N "
-        "(exclusive)");
+                 if(threads && atomic)
+                     throw py::key_error("Cannot have both atomic and threads in one fill call!");
+                 else if(threads) {
+                     filler.fill_threaded(threads.get());
+                 } else if(atomic) {
+                     filler.fill_atomic(atomic.get());
+                 } else {
+                     filler.fill();
+                 }
+             },
+             "Insert data into histogram in threads (0 for machine cores). Keyword arguments: threads=N, atomic=N "
+             "(exclusive)");
+    hist.def("fill2", fill2<histogram_t>);
 }
 
 template <typename A, typename S>
@@ -240,19 +232,19 @@ void add_fill(std::true_type /* normal fill support */,
     using histogram_t = bh::histogram<A, S>;
 
     // generic threaded and atomic fill for 1 to N args
-    hist.def(
-        "fill",
-        [](histogram_t &self, py::args args, py::kwargs kwargs) {
-            std::unique_ptr<ssize_t> threads = optional_arg<ssize_t>(kwargs, "threads");
-            finalize_args(kwargs);
+    hist.def("fill",
+             [](histogram_t &self, py::args args, py::kwargs kwargs) {
+                 std::unique_ptr<ssize_t> threads = optional_arg<ssize_t>(kwargs, "threads");
+                 finalize_args(kwargs);
 
-            auto filler = fill_helper<histogram_t>(self, args);
+                 auto filler = fill_helper<histogram_t>(self, args);
 
-            if(threads) {
-                filler.fill_threaded(threads.get());
-            } else {
-                filler.fill();
-            }
-        },
-        "Insert data into histogram in threads (0 for machine cores). Keyword argument: threads=N");
+                 if(threads) {
+                     filler.fill_threaded(threads.get());
+                 } else {
+                     filler.fill();
+                 }
+             },
+             "Insert data into histogram in threads (0 for machine cores). Keyword argument: threads=N");
+    hist.def("fill2", fill2<histogram_t>);
 }
