@@ -90,7 +90,6 @@ void fill_index_buffer(std::size_t offset,
     });
 }
 
-// this should go to boostorg/histogram
 template <class Axes>
 void fill_strides(const Axes &axes, std::size_t *strides) {
     namespace bh = boost::histogram;
@@ -129,7 +128,7 @@ void fill2(Histogram &h, py::args args, py::kwargs /* kwargs */) {
             // calculate linear storage index manually
             std::size_t j = 0;
             auto bi       = buffer + i;
-            for(auto stride : strides) {
+            for(std::size_t stride : strides) {
                 j += stride * static_cast<std::size_t>(*bi);
                 bi += n;
             }

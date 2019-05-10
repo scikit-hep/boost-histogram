@@ -69,7 +69,7 @@ option(BOOST_HISTOGRAM_ERRORS "Make warnings errors (for CI mostly)")
 
 # Adding warnings
 if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang" OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-    target_compile_options(histogram PRIVATE -Wall -Wextra -pedantic-errors -Wconversion)
+    target_compile_options(histogram PRIVATE -Wall -Wextra -pedantic-errors -Wconversion -Wsign-conversion)
     if(BOOST_HISTOGRAM_ERRORS)
         target_compile_options(histogram PRIVATE -Werror)
     endif()
