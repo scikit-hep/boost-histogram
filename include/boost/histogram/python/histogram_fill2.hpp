@@ -46,7 +46,7 @@ std::size_t normalize_input(const Axes &axes, py::args args, py::object *values)
         auto arr = py::cast<py::array_t<T>>(args[i_axis]);
         // allow arrays of dim 0 or dim == 1 with same length
         if(arr.ndim() == 1) {
-            const auto n = arr.shape()[0];
+            const auto n = static_cast<unsigned>(arr.shape()[0]);
             if(n_array != 0) {
                 if(n_array != n)
                     throw std::runtime_error("arrays must be scalars or have same length");
@@ -95,13 +95,15 @@ template <class Axes>
 void fill_strides(const Axes &axes, std::size_t *strides) {
     namespace bh = boost::histogram;
     strides[0]   = 1;
-    bh::detail::for_each_axis(axes,
-                              [&strides](const auto &ax) { *++strides = *strides * bh::axis::traits::extent(ax); });
+    bh::detail::for_each_axis(axes, [&strides](const auto &ax) {
+        const auto s = *strides * static_cast<std::size_t>(bh::axis::traits::extent(ax));
+        *++strides   = s;
+    });
 }
 } // namespace impl
 
 template <class Histogram>
-void fill2(Histogram &h, py::args args, py::kwargs kwargs) {
+void fill2(Histogram &h, py::args args, py::kwargs /* kwargs */) {
     namespace bh = boost::histogram;
 
     const unsigned rank = h.rank();
@@ -128,7 +130,7 @@ void fill2(Histogram &h, py::args args, py::kwargs kwargs) {
             std::size_t j = 0;
             auto bi       = buffer + i;
             for(auto stride : strides) {
-                j += stride * *bi;
+                j += stride * static_cast<std::size_t>(*bi);
                 bi += n;
             }
             ++storage[j];
