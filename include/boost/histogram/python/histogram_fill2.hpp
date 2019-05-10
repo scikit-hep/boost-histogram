@@ -69,12 +69,13 @@ void fill_index_buffer(std::size_t offset,
                        const py::object *values,
                        boost::histogram::axis::index_type *iter) {
     namespace bh = boost::histogram;
-    // no support for growing axis yet
-    assert(bh::detail::has_growing_axis<Axes>::value == false);
+
     unsigned i_axis = 0;
     bh::detail::for_each_axis(axes, [offset, n, iter, values, &i_axis](const auto &axis) {
-        using A             = bh::detail::remove_cvref_t<decltype(axis)>;
-        constexpr auto opt  = bh::axis::traits::static_options<A>{};
+        using A            = bh::detail::remove_cvref_t<decltype(axis)>;
+        constexpr auto opt = bh::axis::traits::static_options<A>{};
+        if(opt & bh::axis::option::growth)
+            throw std::runtime_error("no support for growing axis yet");
         constexpr int shift = opt & bh::axis::option::underflow ? 1 : 0;
         using T             = py_array_type<A>;
         auto v              = py::cast<py::array_t<T>>(values[i_axis]);
