@@ -123,9 +123,9 @@ void category<T, M, O, A>::serialize(Archive &ar, unsigned /* version */) {
     ar &serialization::make_nvp("meta", vec_meta_.second());
 }
 
-template <class... Ts>
-template <class Archive>
-void variant<Ts...>::serialize(Archive &ar, unsigned /* version */) {
+template <class Archive, class... Ts>
+void serialize(Archive &ar, variant<Ts...> &v, unsigned /* version */) {
+    auto &impl = unsafe_access::axis_variant_impl(v);
     ar &serialization::make_nvp("variant", impl);
 }
 } // namespace axis
