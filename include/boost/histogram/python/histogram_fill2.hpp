@@ -5,20 +5,20 @@
 
 #pragma once
 
-#include <boost/histogram/python/pybind11.hpp>
-#include <boost/histogram/python/kwargs.hpp>
 #include <boost/histogram/python/copyable_atomic.hpp>
+#include <boost/histogram/python/kwargs.hpp>
+#include <boost/histogram/python/pybind11.hpp>
 
-#include <boost/histogram/histogram.hpp>
+#include <boost/histogram/axis/option.hpp>
+#include <boost/histogram/axis/traits.hpp>
+#include <boost/histogram/axis/variant.hpp>
 #include <boost/histogram/detail/axes.hpp>
 #include <boost/histogram/detail/meta.hpp>
-#include <boost/histogram/axis/traits.hpp>
-#include <boost/histogram/axis/option.hpp>
-#include <boost/histogram/axis/variant.hpp>
+#include <boost/histogram/histogram.hpp>
 #include <boost/mp11.hpp>
 
-#include <cassert>
 #include <algorithm>
+#include <cassert>
 #include <stdexcept>
 #include <type_traits>
 
