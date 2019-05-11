@@ -213,7 +213,7 @@ struct index_with_invalid_state {
 
     std::size_t operator-(const index_with_invalid_state &x) const {
         assert(value >= x.value);
-        return (!is_valid() || !x.is_valid()) ? invalid_index : static_cast<std::size_t>(value - x.value);
+        return (is_valid() && x.is_valid()) ? static_cast<std::size_t>(value - x.value) : invalid_index;
     }
 
     std::size_t value;
