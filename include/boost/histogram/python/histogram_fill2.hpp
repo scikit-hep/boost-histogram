@@ -7,6 +7,7 @@
 
 #include <boost/histogram/python/pybind11.hpp>
 #include <boost/histogram/python/kwargs.hpp>
+#include <boost/histogram/python/copyable_atomic.hpp>
 
 #include <boost/histogram/histogram.hpp>
 #include <boost/histogram/detail/axes.hpp>
@@ -319,6 +320,17 @@ void fill_indices(
     });
 }
 
+// temporary fix of conversion warning, but integer storage should be removed instead
+template <class V, class T, class U>
+void forced_add(boost::mp11::mp_identity<V>, T &&t, U &&u) {
+    t += static_cast<V>(u);
+}
+
+template <class V, class T, class U>
+void forced_add(boost::mp11::mp_identity<copyable_atomic<V>>, T &&t, U &&u) {
+    t += static_cast<V>(u);
+}
+
 template <class Storage>
 struct storage_filler {
     Storage &storage;
@@ -351,7 +363,7 @@ struct storage_filler {
     void impl1(std::true_type, const index_with_invalid_state &j) {
         if(nr.weight_ptr) {
             if(j.is_valid())
-                storage[j.value] += *nr.weight_ptr;
+                forced_add(boost::mp11::mp_identity<T>{}, storage[j.value], *nr.weight_ptr);
             if(!nr.scalar_weight)
                 ++nr.weight_ptr;
         } else {
