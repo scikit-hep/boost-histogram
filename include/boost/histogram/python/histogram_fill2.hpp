@@ -97,69 +97,49 @@ std::size_t normalize_input(const Axes &axes, py::args args, py::object *values)
 // this class can be extended to also handle weights and samples
 template <class Axis, class Storage, class T>
 struct fill_1d_helper {
+    using axis_index_type = boost::histogram::axis::index_type;
     Axis &axis;
     Storage &storage;
 
     void operator()(const T &t) const {
         using Opt = bh::axis::traits::static_options<Axis>;
-        impl(Opt::test(bh::axis::option::underflow),
-             Opt::test(bh::axis::option::overflow),
-             Opt::test(bh::axis::option::growth),
-             t);
+        impl1(Opt::test(bh::axis::option::growth), t);
     }
 
-    void impl(std::false_type, std::false_type, std::false_type, const T &t) const {
+    void impl1(std::false_type, const T &t) const {
+        using Opt = bh::axis::traits::static_options<Axis>;
+
         const auto i = axis.index(t);
+        impl2(Opt::test(bh::axis::option::underflow), Opt::test(bh::axis::option::overflow), i);
+    }
+
+    void impl1(std::true_type, const T &t) const {
+        using Opt = bh::axis::traits::static_options<Axis>;
+
+        const auto i_s = axis.update(t);
+        if(i_s.second != 0)
+            boost::histogram::detail::grow_storage(std::forward_as_tuple(axis), storage, &i_s.second);
+
+        impl2(Opt::test(bh::axis::option::underflow), Opt::test(bh::axis::option::overflow), i_s.first);
+    }
+
+    void impl2(std::false_type, std::false_type, const axis_index_type i) const {
         if(0 <= i && i < axis.size())
             ++storage[static_cast<std::size_t>(i)];
     }
 
-    void impl(std::false_type, std::true_type, std::false_type, const T &t) const {
-        const auto i = axis.index(t);
+    void impl2(std::false_type, std::true_type, const axis_index_type i) const {
         if(0 <= i)
             ++storage[static_cast<std::size_t>(i)];
     }
 
-    void impl(std::true_type, std::false_type, std::false_type, const T &t) const {
-        const auto i = axis.index(t);
+    void impl2(std::true_type, std::false_type, const axis_index_type i) const {
         if(i < axis.size())
             ++storage[static_cast<std::size_t>(i + 1)];
     }
 
-    void impl(std::true_type, std::true_type, std::false_type, const T &t) const {
-        const auto i = axis.index(t);
+    void impl2(std::true_type, std::true_type, const axis_index_type i) const {
         ++storage[static_cast<std::size_t>(i + 1)];
-    }
-
-    void impl(std::false_type, std::false_type, std::true_type, const T &t) const {
-        const auto i_s = axis.update(t);
-        if(i_s.second != 0)
-            boost::histogram::detail::grow_storage(std::forward_as_tuple(axis), storage, &i_s.second);
-        if(0 <= i_s.first && i_s.first < axis.size())
-            ++storage[static_cast<std::size_t>(i_s.first)];
-    }
-
-    void impl(std::false_type, std::true_type, std::true_type, const T &t) const {
-        const auto i_s = axis.update(t);
-        if(i_s.second != 0)
-            boost::histogram::detail::grow_storage(std::forward_as_tuple(axis), storage, &i_s.second);
-        if(0 <= i_s.first)
-            ++storage[static_cast<std::size_t>(i_s.first)];
-    }
-
-    void impl(std::true_type, std::false_type, std::true_type, const T &t) const {
-        const auto i_s = axis.update(t);
-        if(i_s.second != 0)
-            boost::histogram::detail::grow_storage(std::forward_as_tuple(axis), storage, &i_s.second);
-        if(i_s.first < axis.size())
-            ++storage[static_cast<std::size_t>(i_s.first + 1)];
-    }
-
-    void impl(std::true_type, std::true_type, std::true_type, const T &t) const {
-        const auto i_s = axis.update(t);
-        if(i_s.second != 0)
-            boost::histogram::detail::grow_storage(std::forward_as_tuple(axis), storage, &i_s.second);
-        ++storage[static_cast<std::size_t>(i_s.first + 1)];
     }
 };
 
@@ -241,56 +221,36 @@ struct fill_indices_helper {
 
     void operator()(const T &t) {
         using Opt = bh::axis::traits::static_options<Axis>;
-        impl(Opt::test(bh::axis::option::underflow),
-             Opt::test(bh::axis::option::overflow),
-             Opt::test(bh::axis::option::growth),
-             t);
+        impl1(Opt::test(bh::axis::option::growth), t);
     }
 
-    void impl(std::false_type, std::false_type, std::false_type, const T &t) {
+    void impl1(std::false_type, const T &t) {
+        using Opt    = bh::axis::traits::static_options<Axis>;
         const auto i = axis.index(t);
+        impl2(Opt::test(bh::axis::option::underflow), Opt::test(bh::axis::option::overflow), i);
+    }
+
+    void impl1(std::true_type, const T &t) {
+        using Opt      = bh::axis::traits::static_options<Axis>;
+        const auto i_s = axis.update(t);
+        maybe_shift_previous_indices(iter, i_s.second);
+        impl2(Opt::test(bh::axis::option::underflow), Opt::test(bh::axis::option::overflow), i_s.first);
+    }
+
+    void impl2(std::false_type, std::false_type, const axis_index_type i) {
         *iter++ += (0 <= i && i < axis.size()) ? static_cast<std::size_t>(i) * stride : invalid_index;
     }
 
-    void impl(std::false_type, std::true_type, std::false_type, const T &t) {
-        const auto i = axis.index(t);
+    void impl2(std::false_type, std::true_type, const axis_index_type i) {
         *iter++ += 0 <= i ? static_cast<std::size_t>(i) * stride : invalid_index;
-        ;
     }
 
-    void impl(std::true_type, std::false_type, std::false_type, const T &t) {
-        const auto i = axis.index(t);
+    void impl2(std::true_type, std::false_type, const axis_index_type i) {
         *iter++ += i < axis.size() ? static_cast<std::size_t>(i + 1) * stride : invalid_index;
     }
 
-    void impl(std::true_type, std::true_type, std::false_type, const T &t) {
-        const auto i = axis.index(t);
+    void impl2(std::true_type, std::true_type, const axis_index_type i) {
         *iter++ += static_cast<std::size_t>(i + 1) * stride;
-    }
-
-    void impl(std::false_type, std::false_type, std::true_type, const T &t) {
-        const auto i_s = axis.update(t);
-        maybe_shift_previous_indices(iter, i_s.second);
-        *iter++ += (0 <= i_s.first && i_s.first < axis.size()) ? static_cast<std::size_t>(i_s.first) * stride
-                                                               : invalid_index;
-    }
-
-    void impl(std::false_type, std::true_type, std::true_type, const T &t) {
-        const auto i_s = axis.update(t);
-        maybe_shift_previous_indices(iter, i_s.second);
-        *iter++ += 0 <= i_s.first ? static_cast<std::size_t>(i_s.first) * stride : invalid_index;
-    }
-
-    void impl(std::true_type, std::false_type, std::true_type, const T &t) {
-        const auto i_s = axis.update(t);
-        maybe_shift_previous_indices(iter, i_s.second);
-        *iter++ += i_s.first < axis.size() ? static_cast<std::size_t>(i_s.first + 1) * stride : invalid_index;
-    }
-
-    void impl(std::true_type, std::true_type, std::true_type, const T &t) {
-        const auto i_s = axis.update(t);
-        maybe_shift_previous_indices(iter, i_s.second);
-        *iter++ += static_cast<std::size_t>(i_s.first + 1) * stride;
     }
 };
 
