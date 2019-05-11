@@ -89,16 +89,19 @@ std::size_t normalize_input(const Axes &axes, py::args args, py::object *values)
         } else if(x.ndim() > 1) {
             throw std::runtime_error("arrays must have dim 0 or 1");
         }
-        values[i_axis++] = x;
+        values[i_axis] = x;
+        ++i_axis;
     });
     // if all arguments are scalars, return 1
     return std::max(n_array, static_cast<std::size_t>(1));
 }
 
+// this class can be extended to also handle weights and samples
 template <class Axis, class Storage, class T>
 struct fill_1d_helper {
     Axis &axis;
     Storage &storage;
+
     void operator()(const T &t) const {
         using Opt = bh::axis::traits::static_options<Axis>;
         impl(Opt::test(bh::axis::option::underflow),
@@ -177,45 +180,148 @@ void fill_1d(const std::size_t n, Axes &axes, Storage &storage, const py::object
     });
 }
 
-template <class Axes>
-void fill_indices(std::size_t offset, const std::size_t n, Axes &axes, const py::object *values, std::size_t *iter) {
-    namespace bh = boost::histogram;
+static constexpr auto invalid_index = std::numeric_limits<std::size_t>::max();
 
-    unsigned i_axis    = 0;
+// std::size_t-like integer with a persistent invalid state, similar to NaN
+struct index_with_invalid_state {
+    bool is_valid() const { return value != invalid_index; }
+
+    index_with_invalid_state &operator=(const std::size_t x) {
+        value = x;
+        return *this;
+    }
+
+    index_with_invalid_state &operator+=(const std::size_t x) {
+        if(is_valid()) {
+            if(x == invalid_index)
+                value = invalid_index;
+            else
+                value += x;
+        }
+        return *this;
+    }
+
+    index_with_invalid_state &operator++() {
+        if(is_valid())
+            ++value;
+        return *this;
+    }
+
+    index_with_invalid_state &operator*(const std::size_t x) {
+        if(is_valid())
+            value *= x;
+        return *this;
+    }
+
+    std::size_t operator-(const index_with_invalid_state &x) const {
+        assert(value >= x.value);
+        return (is_valid() || x.is_valid()) ? invalid_index : static_cast<std::size_t>(value - x.value);
+    }
+
+    std::size_t value;
+};
+
+template <class Axis, class T>
+struct fill_indices_helper {
+    using axis_index_type = boost::histogram::axis::index_type;
+    Axis &axis;
+    const std::size_t stride;
+    using index_iterator = index_with_invalid_state *;
+    index_iterator begin, iter;
+
+    fill_indices_helper(Axis &a, std::size_t s, index_iterator i)
+        : axis(a)
+        , stride(s)
+        , begin(i)
+        , iter(i) {}
+
+    void maybe_shift_previous_indices(index_iterator iter, axis_index_type shift) {
+        if(shift > 0)
+            while(iter != begin)
+                *--iter += static_cast<std::size_t>(shift) * stride;
+    }
+
+    void operator()(const T &t) {
+        using Opt = bh::axis::traits::static_options<Axis>;
+        impl(Opt::test(bh::axis::option::underflow),
+             Opt::test(bh::axis::option::overflow),
+             Opt::test(bh::axis::option::growth),
+             t);
+    }
+
+    void impl(std::false_type, std::false_type, std::false_type, const T &t) {
+        const auto i = axis.index(t);
+        *iter++ += (0 <= i && i < axis.size()) ? static_cast<std::size_t>(i) * stride : invalid_index;
+    }
+
+    void impl(std::false_type, std::true_type, std::false_type, const T &t) {
+        const auto i = axis.index(t);
+        *iter++ += 0 <= i ? static_cast<std::size_t>(i) * stride : invalid_index;
+        ;
+    }
+
+    void impl(std::true_type, std::false_type, std::false_type, const T &t) {
+        const auto i = axis.index(t);
+        *iter++ += i < axis.size() ? static_cast<std::size_t>(i + 1) * stride : invalid_index;
+    }
+
+    void impl(std::true_type, std::true_type, std::false_type, const T &t) {
+        const auto i = axis.index(t);
+        *iter++ += static_cast<std::size_t>(i + 1) * stride;
+    }
+
+    void impl(std::false_type, std::false_type, std::true_type, const T &t) {
+        const auto i_s = axis.update(t);
+        maybe_shift_previous_indices(iter, i_s.second);
+        *iter++ += (0 <= i_s.first && i_s.first < axis.size()) ? static_cast<std::size_t>(i_s.first) * stride
+                                                               : invalid_index;
+    }
+
+    void impl(std::false_type, std::true_type, std::true_type, const T &t) {
+        const auto i_s = axis.update(t);
+        maybe_shift_previous_indices(iter, i_s.second);
+        *iter++ += 0 <= i_s.first ? static_cast<std::size_t>(i_s.first) * stride : invalid_index;
+    }
+
+    void impl(std::true_type, std::false_type, std::true_type, const T &t) {
+        const auto i_s = axis.update(t);
+        maybe_shift_previous_indices(iter, i_s.second);
+        *iter++ += i_s.first < axis.size() ? static_cast<std::size_t>(i_s.first + 1) * stride : invalid_index;
+    }
+
+    void impl(std::true_type, std::true_type, std::true_type, const T &t) {
+        const auto i_s = axis.update(t);
+        maybe_shift_previous_indices(iter, i_s.second);
+        *iter++ += static_cast<std::size_t>(i_s.first + 1) * stride;
+    }
+};
+
+// we use index == invalid_index to indicate that value was out of range
+template <class Axes>
+void fill_indices(
+    std::size_t offset, const std::size_t n, Axes &axes, const py::object *values, index_with_invalid_state *indices) {
+    namespace bh = boost::histogram;
+    std::fill(indices, indices + n, 0); // initialize to zero
+
     std::size_t stride = 1;
-    for_each_axis(axes, [offset, n, values, &iter, &i_axis, &stride](const auto &axis) {
+    for_each_axis(axes, [offset, n, &values, indices, &stride](auto &&axis) {
         using A = bh::detail::remove_cvref_t<decltype(axis)>;
         using T = py_array_type<A>;
 
-        constexpr auto opt = bh::axis::traits::static_options<A>{};
-        if(opt & bh::axis::option::growth)
-            throw std::runtime_error("no support for growing axis yet");
-        constexpr auto shift = opt & bh::axis::option::underflow ? 1 : 0;
-
-        const auto v = py::cast<py::array_t<T>>(values[i_axis]);
+        const auto v = py::cast<py::array_t<T>>(*values++);
         assert(v.ndim() < 2); // precondition: ndim either 0 or 1 after normalizing
-        const T *tp = v.data() + offset;
-        if(v.ndim() == 1) {
-            std::for_each(tp, tp + n, [&axis, shift, stride, &iter](const T &t) {
-                const auto i = axis.index(t) + shift;
-                if(i >= 0)
-                    *iter += static_cast<std::size_t>(i) * stride;
-                else
-                    *iter = 0;
-                ++iter;
-            });
+        const T *tp = v.data();
+        if(v.ndim() == 0) {
+            // only one value to compute
+            const auto old_value = *indices;
+            fill_indices_helper<A, T> h{axis, stride, indices};
+            h(*tp);
+            const auto new_value = *indices;
+            std::for_each(indices + 1, indices + n, [shift = new_value - old_value](auto &x) { x += shift; });
         } else {
-            const auto i = axis.index(*tp) + shift;
-            if(i >= 0)
-                std::for_each(
-                    iter, iter + n, [i, stride](std::size_t &j) { j += static_cast<std::size_t>(i) * stride; });
-            else
-                std::fill(iter, iter + n, 0);
+            tp += offset;
+            std::for_each(tp, tp + n, fill_indices_helper<A, T>{axis, stride, indices});
         }
-
-        stride *= static_cast<std::size_t>(bh::axis::traits::extent(axis));
-        iter += n;
-        ++i_axis;
     });
 }
 } // namespace detail
@@ -240,7 +346,7 @@ void fill2(Histogram &h, py::args args, py::kwargs /* kwargs */) {
         detail::fill_1d(n_array, axes, storage, values[0]);
     } else {
         constexpr std::size_t buffer_size = 1 << 14;
-        std::size_t indices[buffer_size];
+        detail::index_with_invalid_state indices[buffer_size];
 
         /*
           Parallelization options for generic case.
@@ -273,12 +379,11 @@ void fill2(Histogram &h, py::args args, py::kwargs /* kwargs */) {
         while(i_array != n_array) {
             const std::size_t n = std::min(buffer_size, n_array - i_array);
             // fill buffer of indices...
-            std::fill(indices, indices + n, 1); // initialize
             detail::fill_indices(i_array, n, axes, values.data(), indices);
             // ...and increment corresponding storage cells
-            std::for_each(indices, indices + n, [&storage](const std::size_t &j) {
-                if(j > 0)
-                    ++storage[static_cast<std::size_t>(j - 1)];
+            std::for_each(indices, indices + n, [&storage](const detail::index_with_invalid_state &j) {
+                if(j.is_valid())
+                    ++storage[j.value];
             });
             i_array += n;
         }
