@@ -53,22 +53,10 @@ target_include_directories(histogram SYSTEM PUBLIC
     extern/assert/include
     extern/callable_traits/include
     extern/config/include
-    extern/container_hash/include
     extern/core/include
-    extern/detail/include
     extern/histogram/include
-    extern/integer/include
-    extern/iterator/include
-    extern/move/include
     extern/mp11/include
-    extern/mpl/include
-    extern/preprocessor/include
-    extern/static_assert/include
     extern/throw_exception/include
-    extern/type_index/include
-    extern/type_traits/include
-    extern/utility/include
-    extern/variant/include
     )
 
 # This makes IDE's like XCode mimic the Boost Histogram structure
