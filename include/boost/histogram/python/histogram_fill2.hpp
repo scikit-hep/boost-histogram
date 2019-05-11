@@ -22,8 +22,6 @@
 
 namespace detail {
 
-// all for_each_axis* should be replaced once the functionality is implemented in boost::histogram
-
 template <class Axes, class F>
 void for_each_axis_impl(std::true_type, Axes &&axes, F &&f) {
     for(auto &&x : axes)
@@ -82,12 +80,12 @@ std::size_t normalize_input(const Axes &axes, py::args args, py::object *values)
             const auto n = static_cast<unsigned>(x.shape(0));
             if(n_array != 0) {
                 if(n_array != n)
-                    throw std::runtime_error("arrays must be scalars or have same length");
+                    throw std::invalid_argument("arrays must be broadcastable to same length");
             } else {
                 n_array = n;
             }
         } else if(x.ndim() > 1) {
-            throw std::runtime_error("arrays must have dim 0 or 1");
+            throw std::invalid_argument("arrays must have dim 0 or 1");
         }
         values[i_axis] = x;
         ++i_axis;
