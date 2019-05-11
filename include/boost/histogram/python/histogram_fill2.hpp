@@ -6,6 +6,7 @@
 #pragma once
 
 #include <boost/histogram/python/pybind11.hpp>
+#include <boost/histogram/python/kwargs.hpp>
 
 #include <boost/histogram/histogram.hpp>
 #include <boost/histogram/detail/axes.hpp>
@@ -20,12 +21,14 @@
 #include <stdexcept>
 #include <type_traits>
 
+namespace bh = boost::histogram;
+
 namespace detail {
 
 template <class Axes, class F>
 void for_each_axis_impl(std::true_type, Axes &&axes, F &&f) {
     for(auto &&x : axes)
-        boost::histogram::axis::visit(std::forward<F>(f), x);
+        bh::axis::visit(std::forward<F>(f), x);
 }
 
 template <class Axes, class F>
@@ -37,7 +40,7 @@ void for_each_axis_impl(std::false_type, Axes &&axes, F &&f) {
 template <class Axes, class F>
 void for_each_axis(Axes &&axes, F &&f) {
     using U = boost::mp11::mp_first<std::decay_t<Axes>>;
-    for_each_axis_impl(boost::histogram::detail::is_axis_variant<U>(), axes, std::forward<F>(f));
+    for_each_axis_impl(bh::detail::is_axis_variant<U>(), axes, std::forward<F>(f));
 }
 
 template <class... Ts, class F>
@@ -62,36 +65,65 @@ struct py_array_type_impl<std::string> {
 };
 
 template <class A>
-using py_array_type = typename py_array_type_impl<
-    boost::histogram::detail::remove_cvref_t<boost::histogram::detail::arg_type<decltype(&A::index)>>>::type;
+using py_array_type =
+    typename py_array_type_impl<bh::detail::remove_cvref_t<bh::detail::arg_type<decltype(&A::index)>>>::type;
 
-// convert all inputs to numpy arrays of the right axis type
+template <class T>
+std::pair<const T *, bool> normalize_array(std::size_t &size, py::array_t<T> &t) {
+    // allow arrays of dim 0 or dim == 1 with same length
+    switch(t.ndim()) {
+    case 0:
+        break;
+    case 1:
+        if(size == 0)
+            size = static_cast<std::size_t>(t.shape(0));
+        else if(size != static_cast<std::size_t>(t.shape(0)))
+            throw std::invalid_argument("arrays must be broadcastable to same length");
+        break;
+    default:
+        throw std::invalid_argument("arrays must have dim 0 or 1");
+    }
+    return std::make_pair(t.data(), t.ndim() == 0);
+}
+
+struct normalize_result {
+    const std::size_t size; // length of input
+    const bool scalar_weight, scalar_sample;
+    const double *weight_ptr;
+    const double *sample_ptr;
+};
+
+// - converts all inputs to numpy arrays of the right axis type
+// - casts weights and samples to double; could be refined to allow more types
+//   at the cost of more complex code
 template <class Axes>
-std::size_t normalize_input(const Axes &axes, py::args args, py::object *values) {
-    using namespace boost::histogram;
-    unsigned i_axis     = 0;
-    std::size_t n_array = 0;
-    for_each_axis(axes, [&args, &values, &i_axis, &n_array](const auto &axis) {
+normalize_result
+normalize_input(const Axes &axes, py::args args, py::object *values, py::object &weight, py::object &sample) {
+    unsigned iax     = 0;
+    std::size_t size = 0;
+    for_each_axis(axes, [&args, &values, &iax, &size](const auto &axis) {
         using A = bh::detail::remove_cvref_t<decltype(axis)>;
         using T = py_array_type<A>;
-        auto x  = py::cast<py::array_t<T>>(args[i_axis]);
-        // allow arrays of dim 0 or dim == 1 with same length
-        if(x.ndim() == 1) {
-            const auto n = static_cast<unsigned>(x.shape(0));
-            if(n_array != 0) {
-                if(n_array != n)
-                    throw std::invalid_argument("arrays must be broadcastable to same length");
-            } else {
-                n_array = n;
-            }
-        } else if(x.ndim() > 1) {
-            throw std::invalid_argument("arrays must have dim 0 or 1");
-        }
-        values[i_axis] = x;
-        ++i_axis;
+        auto a  = py::cast<py::array_t<T>>(args[iax]);
+        normalize_array(size, a);
+        values[iax] = a;
+        ++iax;
     });
-    // if all arguments are scalars, return 1
-    return std::max(n_array, static_cast<std::size_t>(1));
+
+    std::pair<const double *, bool> w, s;
+
+    if(!weight.is_none()) {
+        auto a = py::cast<py::array_t<double>>(weight);
+        w      = normalize_array(size, a);
+    }
+
+    if(!sample.is_none()) {
+        auto a = py::cast<py::array_t<double>>(sample);
+        s      = normalize_array(size, a);
+    }
+
+    // if all arguments are scalars, set size to 1
+    return normalize_result{std::max(size, static_cast<std::size_t>(1)), w.second, s.second, w.first, s.first};
 }
 
 // this class can be extended to also handle weights and samples
@@ -144,9 +176,13 @@ struct fill_1d_helper {
 };
 
 template <class Axes, class Storage>
-void fill_1d(const std::size_t n, Axes &axes, Storage &storage, const py::object values) {
-    namespace bh = boost::histogram;
-    for_each_axis(axes, [n, &storage, values](auto &&axis) {
+void fill_1d(Axes &axes, Storage &storage, const py::object values, const normalize_result &nr) {
+    if(nr.weight_ptr)
+        throw std::runtime_error("weights not yet supported");
+    if(nr.sample_ptr)
+        throw std::runtime_error("samples not yet supported");
+
+    for_each_axis(axes, [n = nr.size, &storage, values](auto &&axis) {
         using A = bh::detail::remove_cvref_t<decltype(axis)>;
         using T = detail::py_array_type<A>;
 
@@ -254,11 +290,9 @@ struct fill_indices_helper {
     }
 };
 
-// we use index == invalid_index to indicate that value was out of range
 template <class Axes>
 void fill_indices(
-    std::size_t offset, const std::size_t n, Axes &axes, const py::object *values, index_with_invalid_state *indices) {
-    namespace bh = boost::histogram;
+    index_with_invalid_state *indices, std::size_t offset, const std::size_t n, Axes &axes, const py::object *values) {
     std::fill(indices, indices + n, 0); // initialize to zero
 
     std::size_t stride = 1;
@@ -272,10 +306,10 @@ void fill_indices(
         if(v.ndim() == 0) {
             // only one value to compute
             const auto old_value = *indices;
-            fill_indices_helper<A, T> h{axis, stride, indices};
-            h(*tp);
-            const auto new_value = *indices;
-            std::for_each(indices + 1, indices + n, [shift = new_value - old_value](auto &x) { x += shift; });
+            fill_indices_helper<A, T>{axis, stride, indices}(*tp);
+            const auto new_value    = *indices;
+            const std::size_t shift = new_value - old_value;
+            std::for_each(indices + 1, indices + n, [shift](auto &x) { x += shift; });
         } else {
             tp += offset;
             std::for_each(tp, tp + n, fill_indices_helper<A, T>{axis, stride, indices});
@@ -284,12 +318,52 @@ void fill_indices(
         stride *= static_cast<std::size_t>(bh::axis::traits::extent(axis));
     });
 }
+
+template <class Storage>
+struct storage_filler {
+    Storage &storage;
+    const std::size_t offset;
+    normalize_result nr; // intentionally a copy
+
+    using T = typename Storage::value_type;
+
+    void operator()(const index_with_invalid_state &j) { impl1(bh::detail::has_operator_preincrement<T>{}, j); }
+
+    void impl1(std::false_type, const index_with_invalid_state &j) {
+        using Args = bh::detail::args_type<decltype(&T::operator())>;
+        impl2(boost::mp11::mp_size<Args>{}, j);
+    }
+
+    void impl2(boost::mp11::mp_size_t<0>, const index_with_invalid_state &j) {
+        if(nr.sample_ptr)
+            throw std::invalid_argument("accumulator doesn't accept samples");
+        if(nr.weight_ptr) {
+            if(j.is_valid())
+                storage[j.value](*nr.weight_ptr);
+            if(!nr.scalar_weight)
+                ++nr.weight_ptr;
+        } else {
+            if(j.is_valid())
+                storage[j.value]();
+        }
+    }
+
+    void impl1(std::true_type, const index_with_invalid_state &j) {
+        if(nr.weight_ptr) {
+            if(j.is_valid())
+                storage[j.value] += *nr.weight_ptr;
+            if(!nr.scalar_weight)
+                ++nr.weight_ptr;
+        } else {
+            if(j.is_valid())
+                ++storage[j.value];
+        }
+    }
+};
 } // namespace detail
 
 template <class Histogram>
-void fill2(Histogram &h, py::args args, py::kwargs /* kwargs */) {
-    namespace bh = boost::histogram;
-
+void fill2(Histogram &h, py::args args, py::kwargs kwargs) {
     const unsigned rank = h.rank();
     if(rank != args.size())
         throw std::invalid_argument("number of arguments must match histogram rank");
@@ -297,13 +371,16 @@ void fill2(Histogram &h, py::args args, py::kwargs /* kwargs */) {
     auto &axes    = bh::unsafe_access::axes(h);
     auto &storage = bh::unsafe_access::storage(h);
 
-    auto values               = bh::detail::make_stack_buffer<py::object>(axes);
-    const std::size_t n_array = detail::normalize_input(axes, args, values.data());
+    py::object weight = optional_arg(kwargs, "weight", py::none());
+    py::object sample = optional_arg(kwargs, "sample", py::none());
+
+    auto values   = bh::detail::make_stack_buffer<py::object>(axes);
+    const auto nr = detail::normalize_input(axes, args, values.data(), weight, sample);
 
     if(rank == 1) {
         // run faster implementation for 1D which doesn't need an index buffer
         // note: specialization for rank==2 could also be added
-        detail::fill_1d(n_array, axes, storage, values[0]);
+        detail::fill_1d(axes, storage, values[0], nr);
     } else {
         constexpr std::size_t buffer_size = 1 << 14;
         detail::index_with_invalid_state indices[buffer_size];
@@ -335,17 +412,13 @@ void fill2(Histogram &h, py::args args, py::kwargs /* kwargs */) {
 
           In all cases, growing axes cannot be parallelized.
         */
-        std::size_t i_array = 0;
-        while(i_array != n_array) {
-            const std::size_t n = std::min(buffer_size, n_array - i_array);
+        for(std::size_t offset = 0; offset < nr.size; offset += buffer_size) {
+            const std::size_t n = std::min(buffer_size, nr.size - offset);
             // fill buffer of indices...
-            detail::fill_indices(i_array, n, axes, values.data(), indices);
-            // ...and increment corresponding storage cells
-            std::for_each(indices, indices + n, [&storage](const detail::index_with_invalid_state &j) {
-                if(j.is_valid())
-                    ++storage[j.value];
-            });
-            i_array += n;
+            detail::fill_indices(indices, offset, n, axes, values.data());
+            // ...and fill corresponding storage cells
+            std::for_each(
+                indices, indices + n, detail::storage_filler<typename Histogram::storage_type>{storage, offset, nr});
         }
     }
 }
