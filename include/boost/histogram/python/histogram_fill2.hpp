@@ -322,6 +322,8 @@ void fill_indices(
             tp += offset;
             std::for_each(tp, tp + n, fill_indices_helper<A, T>{axis, stride, indices});
         }
+
+        stride *= static_cast<std::size_t>(bh::axis::traits::extent(axis));
     });
 }
 } // namespace detail
