@@ -5,6 +5,9 @@ import re
 import setuptools
 from setuptools import find_packages
 
+needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
+pytest_runner = ['pytest-runner'] if needs_pytest else []
+
 # Use -j N or set the environment variable NPY_NUM_BUILD_JOBS
 try:
     from numpy.distutils.ccompiler import CCompiler_compile
@@ -128,6 +131,7 @@ setup(
     test_suite="tests",
     install_requires=['numpy'],
     tests_require=extras['test'],
+    setup_requires=[] + pytest_runner,
     extras_require=extras,
     classifiers = [
           "Development Status :: 2 - Pre-Alpha",
