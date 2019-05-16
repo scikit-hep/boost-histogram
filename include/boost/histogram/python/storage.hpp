@@ -7,8 +7,8 @@
 
 #include <boost/histogram/python/pybind11.hpp>
 
-#include <boost/histogram/accumulators/thread_safe.hpp>
 #include <boost/histogram.hpp>
+#include <boost/histogram/accumulators/thread_safe.hpp>
 
 #include <cstdint>
 

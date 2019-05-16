@@ -5,10 +5,10 @@
 
 #pragma once
 
-#include <boost/histogram/python/pybind11.hpp>
 #include <boost/histogram.hpp>
-#include <boost/histogram/detail/meta.hpp>
 #include <boost/histogram/detail/axes.hpp>
+#include <boost/histogram/detail/meta.hpp>
+#include <boost/histogram/python/pybind11.hpp>
 #include <boost/histogram/unsafe_access.hpp>
 #include <type_traits>
 
