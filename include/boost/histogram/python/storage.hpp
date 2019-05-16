@@ -7,8 +7,7 @@
 
 #include <boost/histogram/python/pybind11.hpp>
 
-#include <boost/histogram/python/copyable_atomic.hpp>
-
+#include <boost/histogram/accumulators/thread_safe.hpp>
 #include <boost/histogram.hpp>
 
 #include <cstdint>
@@ -17,7 +16,7 @@ namespace storage {
 
 // Names match Python names
 using int_             = bh::dense_storage<uint64_t>;
-using atomic_int       = bh::dense_storage<copyable_atomic<uint64_t>>;
+using atomic_int       = bh::dense_storage<bh::accumulators::thread_safe<uint64_t>>;
 using double_          = bh::dense_storage<double>;
 using unlimited        = bh::unlimited_storage<>;
 using weight           = bh::weight_storage;

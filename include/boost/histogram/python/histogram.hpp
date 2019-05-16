@@ -6,59 +6,61 @@
 #pragma once
 
 #include <boost/histogram/python/pybind11.hpp>
-
 #include <boost/histogram.hpp>
-#include <boost/histogram/python/copyable_atomic.hpp>
+#include <boost/histogram/detail/meta.hpp>
+#include <boost/histogram/detail/axes.hpp>
+#include <boost/histogram/unsafe_access.hpp>
+#include <type_traits>
 
-#include <vector>
-
-template <typename T>
-struct remove_atomic {
-    using type = T;
+namespace pybind11 {
+template <class T>
+struct format_descriptor<bh::accumulators::thread_safe<T>> : format_descriptor<T> {
+    static_assert(std::is_standard_layout<bh::accumulators::thread_safe<T>>::value, "");
 };
+} // namespace pybind11
 
-template <>
-struct remove_atomic<copyable_atomic<uint64_t>> {
-    using type = std::uint64_t;
-};
+namespace detail {
 
-/// Build and return a buffer over the current data.
-/// Could be optimized using array and maximum number of dims.
-/// Flow controls whether under/over flow bins are present
-template <typename A, typename S>
-py::buffer_info make_buffer(bh::histogram<A, S> &h, bool flow) {
-    using in_storage_t       = typename bh::histogram<A, S>::value_type;
-    using in_storage_value_t = typename remove_atomic<in_storage_t>::type;
-
-    auto rank = h.rank();
-    std::vector<ssize_t> diminsions, strides;
-    ssize_t factor = 1;
-
-    ssize_t start   = 0;
-    ssize_t size_of = sizeof(in_storage_t);
-
-    for(unsigned i = 0; i < rank; i++) {
-        bool underflow     = bh::axis::traits::options(h.axis(i)) & bh::axis::option::underflow;
-        ssize_t extent_dim = bh::axis::traits::extent(h.axis(i));
-        ssize_t size_dim   = h.axis(i).size();
+template <class Axes, class T>
+py::buffer_info make_buffer_impl(const Axes &axes, bool flow, T *ptr) {
+    // strides are in bytes
+    auto shape     = bh::detail::make_stack_buffer<ssize_t>(axes);
+    auto strides   = bh::detail::make_stack_buffer<ssize_t>(axes);
+    ssize_t stride = sizeof(T);
+    unsigned rank  = 0;
+    char *start    = reinterpret_cast<char *>(ptr);
+    bh::detail::for_each_axis(axes, [&](const auto &axis) {
+        const bool underflow = bh::axis::traits::options(axis) & bh::axis::option::underflow;
         if(!flow && underflow)
-            start += factor;
-        diminsions.push_back(flow ? extent_dim : size_dim);
-        strides.push_back(factor * size_of);
-        factor *= extent_dim;
-    }
+            start += stride;
+        const auto extent = bh::axis::traits::extent(axis);
+        shape[rank]       = flow ? extent : axis.size();
+        strides[rank]     = stride;
+        stride *= extent;
+        ++rank;
+    });
 
-    return py::buffer_info(&(*h.begin()) + start,                               // Pointer to buffer
-                           sizeof(in_storage_t),                                // Size of one scalar
-                           py::format_descriptor<in_storage_value_t>::format(), // Python struct-style format descriptor
-                           rank,                                                // Number of dimensions
-                           diminsions,                                          // Buffer dimensions
-                           strides                                              // Strides (in bytes) for each index
+    return py::buffer_info(start,                              // Pointer to buffer
+                           sizeof(T),                          // Size of one scalar
+                           py::format_descriptor<T>::format(), // Python format descriptor
+                           rank,                               // Number of dimensions
+                           shape,                              // Buffer shape
+                           strides                             // Strides (in bytes) for each index
     );
 }
+} // namespace detail
 
-/// Unlimited storage does not support buffer access
-template <typename A>
+/// Build and return a buffer over the current data.
+/// Flow controls whether under/over flow bins are present
+template <class A, class T>
+py::buffer_info make_buffer(bh::histogram<A, bh::dense_storage<T>> &h, bool flow) {
+    const auto &axes = bh::unsafe_access::axes(h);
+    auto &storage    = bh::unsafe_access::storage(h);
+    return detail::make_buffer_impl(axes, flow, &storage[0]);
+}
+
+/// Unlimited storage does not support buffer access yet
+template <class A>
 py::buffer_info make_buffer(bh::histogram<A, bh::default_storage> &, bool) {
     return py::buffer_info();
 }
