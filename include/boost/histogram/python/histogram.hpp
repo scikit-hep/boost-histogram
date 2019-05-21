@@ -48,6 +48,16 @@ py::buffer_info make_buffer_impl(const Axes &axes, bool flow, T *ptr) {
                            strides                             // Strides (in bytes) for each index
     );
 }
+
+struct double_converter {
+    template <class T, class Buffer>
+    void operator()(T *tp, Buffer &b) const {
+        b.template make<double>(b.size, tp);
+    }
+
+    template <class Buffer>
+    void operator()(double *, Buffer &) const {} // nothing to do
+};
 } // namespace detail
 
 /// Build and return a buffer over the current data.
@@ -59,8 +69,19 @@ py::buffer_info make_buffer(bh::histogram<A, bh::dense_storage<T>> &h, bool flow
     return detail::make_buffer_impl(axes, flow, &storage[0]);
 }
 
-/// Unlimited storage does not support buffer access yet
-template <class A>
-py::buffer_info make_buffer(bh::histogram<A, bh::default_storage> &, bool) {
-    return py::buffer_info();
+/// Specialization for unlimited_buffer
+template <class A, class Allocator>
+py::buffer_info make_buffer(bh::histogram<A, bh::unlimited_storage<Allocator>> &h, bool flow) {
+    const auto &axes = bh::unsafe_access::axes(h);
+    auto &storage    = bh::unsafe_access::storage(h);
+    // User requested a view into the memory of unlimited storage. We convert
+    // the internal storage to double now to avoid the view becoming invalid
+    // upon changes to the histogram. This is the only way to provide a safe
+    // view, because we cannot automatically update the view when the
+    // underlying memory buffer changes. In practice it is ok, because users
+    // usually want to get the view after filling the histogram, and then the
+    // counts are usually converted to doubles for further processing anyway.
+    auto &buffer = bh::unsafe_access::unlimited_storage_buffer(storage);
+    buffer.visit(detail::double_converter(), buffer);
+    return detail::make_buffer_impl(axes, flow, static_cast<double *>(buffer.ptr));
 }
