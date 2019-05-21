@@ -4,19 +4,9 @@ import boost.histogram as bh
 import numpy as np
 from numpy.testing import assert_array_equal, assert_allclose
 
-
-def test_1D_fill_unlimited():
-    bins = 10
-    ranges = (0, 1)
-    vals = (.15, .25, .25)
-    hist = bh.hist.regular_unlimited([
-        bh.axis.regular_uoflow(bins, *ranges)
-        ])
-    hist.fill(vals)
-
-
 methods = [
     bh.hist.regular_int,
+    bh.hist.regular_unlimited,
     bh.hist.any_int,
 ]
 
