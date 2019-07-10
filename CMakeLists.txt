@@ -115,7 +115,7 @@ function(python_import PACKAGE_NAME)
     string(REPLACE "-" "_" PYTHON_PACKAGE_NAME "${PACKAGE_NAME}")
     execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import ${PYTHON_PACKAGE_NAME}" RESULT_VARIABLE RESULT_PRESENT)
     if(RESULT_PRESENT)
-        message(SEND_ERROR "You should pip install ${PACKAGE_NAME}")
+        message(SEND_ERROR "You should run something like \"${PYTHON_EXECUTABLE} -m pip install ${PACKAGE_NAME}\"")
     endif()
 endfunction()
 
