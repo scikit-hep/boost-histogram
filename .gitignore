@@ -43,3 +43,7 @@
 .ipynb_checkpoints
 /wheelhouse/*
 /dist/*
+
+# Other editor files
+*.swp
+*~

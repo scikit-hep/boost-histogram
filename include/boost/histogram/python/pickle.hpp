@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <boost/histogram/detail/meta.hpp>
+#include <boost/histogram/detail/detect.hpp>
 #include <boost/histogram/python/pybind11.hpp>
 
 #include <boost/assert.hpp>

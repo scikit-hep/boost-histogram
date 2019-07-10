@@ -57,6 +57,7 @@ target_include_directories(histogram SYSTEM PUBLIC
     extern/histogram/include
     extern/mp11/include
     extern/throw_exception/include
+    extern/variant2/include
     )
 
 # This makes IDE's like XCode mimic the Boost Histogram structure

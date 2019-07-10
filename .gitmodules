@@ -22,3 +22,6 @@
 [submodule "extern/callable_traits"]
 	path = extern/callable_traits
 	url = ../../boostorg/callable_traits.git
+[submodule "extern/variant2"]
+	path = extern/variant2
+	url = ../../boostorg/variant2.git
