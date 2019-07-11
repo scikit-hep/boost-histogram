@@ -76,7 +76,7 @@ if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang" OR "${CMAKE_CXX_COMPILER_ID}" MATC
     endif()
 
     # Python 2 will not be compatible with C++17, but let's not be reminded of that over and over again here.
-    if("${PYTHON_VERSION_MAJOR}" LESS 3)
+    if("${PYTHON_VERSION_MAJOR}" LESS 3 AND "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
          target_compile_options(histogram PRIVATE -Wno-deprecated-register)
     endif()
 elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
