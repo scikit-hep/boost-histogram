@@ -14,6 +14,7 @@
 #include <boost/histogram/python/histogram_fill.hpp>
 #include <boost/histogram/python/serializion.hpp>
 #include <boost/histogram/python/storage.hpp>
+#include <boost/histogram/python/typetools.hpp>
 
 #include <boost/histogram.hpp>
 #include <boost/histogram/algorithm/project.hpp>
@@ -129,7 +130,7 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
                     using AddType = boost::mp11::mp_if<std::is_arithmetic<T>, double, T>;
                     using Sum     = boost::mp11::mp_if<std::is_arithmetic<T>, bh::accumulators::sum<double>, T>;
                     Sum sum;
-                    for(auto x : bh::indexed(self))
+                    for(auto &&x : bh::indexed(self))
                         sum += (AddType)*x;
                     using R = boost::mp11::mp_if<std::is_arithmetic<T>, double, T>;
                     return static_cast<R>(sum);
@@ -181,7 +182,7 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
 
         ;
 
-    using S_value = typename bh::detail::remove_cvref_t<S>::value_type;
+    using S_value = typename bh::python::remove_cvref_t<S>::value_type;
 
     add_fill(bh::detail::has_operator_preincrement<S_value>{}, std::is_same<S, storage::atomic_int>{}, hist);
 

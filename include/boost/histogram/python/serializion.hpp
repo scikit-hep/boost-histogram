@@ -11,6 +11,7 @@
 #include <boost/histogram/python/pybind11.hpp>
 
 #include <boost/histogram/python/pickle.hpp>
+#include <boost/histogram/python/typetools.hpp>
 
 #include <boost/assert.hpp>
 #include <boost/histogram/accumulators/mean.hpp>
@@ -68,6 +69,13 @@ void weighted_mean<RealType>::serialize(Archive &ar, unsigned /* version */) {
     ar &serialization::make_nvp("weighted_mean", weighted_mean_);
     ar &serialization::make_nvp("sum_of_weighted_deltas_squared", sum_of_weighted_deltas_squared_);
 }
+
+template <class Archive, class T>
+void serialize(Archive &ar, thread_safe<T> &t, unsigned /* version */) {
+    T value = t;
+    ar &serialization::make_nvp("value", value);
+    t = value;
+}
 } // namespace accumulators
 
 namespace axis {
@@ -123,11 +131,6 @@ void category<T, M, O, A>::serialize(Archive &ar, unsigned /* version */) {
     ar &serialization::make_nvp("meta", vec_meta_.second());
 }
 
-template <class Archive, class... Ts>
-void serialize(Archive &ar, variant<Ts...> &v, unsigned /* version */) {
-    auto &impl = unsafe_access::axis_variant_impl(v);
-    ar &serialization::make_nvp("variant", impl);
-}
 } // namespace axis
 
 namespace detail {
@@ -171,7 +174,7 @@ void serialize(Archive &ar, unlimited_storage<Allocator> &s, unsigned /* version
         ar &serialization::make_nvp("size", size);
         helper.visit([&buffer, size](auto *tp) {
             BOOST_ASSERT(tp == nullptr);
-            using T = detail::remove_cvref_t<decltype(*tp)>;
+            using T = bh::python::remove_cvref_t<decltype(*tp)>;
             buffer.template make<T>(size);
         });
     } else {

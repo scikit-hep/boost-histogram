@@ -54,6 +54,7 @@ ext_modules = [
             'extern/mp11/include',
             'extern/pybind11/include',
             'extern/throw_exception/include',
+            'extern/variant2/include',
         ],
         language='c++'
     ),

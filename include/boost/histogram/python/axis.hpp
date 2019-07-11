@@ -5,9 +5,10 @@
 
 #pragma once
 
-#include <boost/histogram.hpp>
-
 #include <boost/histogram/python/pybind11.hpp>
+
+#include <boost/histogram.hpp>
+#include <boost/histogram/python/typetools.hpp>
 
 #include <tuple>
 #include <vector>
@@ -44,7 +45,7 @@ py::array_t<double> axis_to_edges(const A &ax, bool flow) {
 
 template <typename A>
 decltype(auto) axis_to_bins(const A &self, bool flow) {
-    std::vector<bh::detail::remove_cvref_t<decltype(self.bin(0))>> out;
+    std::vector<bh::python::remove_cvref_t<decltype(self.bin(0))>> out;
     bool overflow  = flow && (bh::axis::traits::options(self) & bh::axis::option::underflow);
     bool underflow = flow && (bh::axis::traits::options(self) & bh::axis::option::overflow);
 

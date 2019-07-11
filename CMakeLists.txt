@@ -57,6 +57,7 @@ target_include_directories(histogram SYSTEM PUBLIC
     extern/histogram/include
     extern/mp11/include
     extern/throw_exception/include
+    extern/variant2/include
     )
 
 # This makes IDE's like XCode mimic the Boost Histogram structure
@@ -75,7 +76,7 @@ if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang" OR "${CMAKE_CXX_COMPILER_ID}" MATC
     endif()
 
     # Python 2 will not be compatible with C++17, but let's not be reminded of that over and over again here.
-    if("${PYTHON_VERSION_MAJOR}" LESS 3)
+    if("${PYTHON_VERSION_MAJOR}" LESS 3 AND "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
          target_compile_options(histogram PRIVATE -Wno-deprecated-register)
     endif()
 elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
@@ -115,7 +116,7 @@ function(python_import PACKAGE_NAME)
     string(REPLACE "-" "_" PYTHON_PACKAGE_NAME "${PACKAGE_NAME}")
     execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import ${PYTHON_PACKAGE_NAME}" RESULT_VARIABLE RESULT_PRESENT)
     if(RESULT_PRESENT)
-        message(SEND_ERROR "You should pip install ${PACKAGE_NAME}")
+        message(SEND_ERROR "You should run something like \"${PYTHON_EXECUTABLE} -m pip install ${PACKAGE_NAME}\"")
     endif()
 endfunction()
 
