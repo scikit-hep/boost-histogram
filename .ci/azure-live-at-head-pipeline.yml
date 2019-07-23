@@ -1,0 +1,32 @@
+trigger: none
+pr: none
+
+schedules:
+- cron: "0 12 * * 0"
+  displayName: Weekly Sunday build
+  branches:
+    include:
+    - develop
+  always: true
+
+
+variables:
+  # This is the output name, - is replaced by _
+  package_name: boost_histogram
+
+jobs:
+
+
+- job: LinuxCMake
+  strategy:
+    matrix:
+      Python37:
+        python.version: '3.7'
+        python.architecture: 'x64'
+  pool:
+    vmImage: 'ubuntu-16.04'
+  steps:
+    - template: azure-setup.yml
+    - template: azure-live-at-head.yml
+    - template: azure-cmake-steps.yml
+
