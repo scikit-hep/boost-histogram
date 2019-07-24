@@ -1,0 +1,6 @@
+steps:
+
+- script: |
+    git submodule foreach "git checkout develop || git checkout master"
+    # Note: you need to add a git pull here if you are not on a clean checkout, but Azure always is
+  displayName: 'Live at head'
