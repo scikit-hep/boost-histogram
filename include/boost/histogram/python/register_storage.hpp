@@ -14,7 +14,7 @@
 #include <type_traits>
 
 /// Add helpers common to all storage types
-template <typename A>
+template <class A>
 py::class_<A> register_storage(py::module &m, const char *name, const char *desc) {
     using value_type = typename A::value_type;
 

@@ -31,7 +31,7 @@
 #include <tuple>
 #include <vector>
 
-template <typename A, typename S>
+template <class A, class S>
 py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *name, const char *desc) {
     using histogram_t = bh::histogram<A, S>;
 
@@ -189,14 +189,14 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
     return hist;
 }
 
-template <typename A, typename S>
+template <class A, class S>
 void add_fill(std::false_type /* normal fill support */,
               std::true_type /* atomic support */,
               py::class_<bh::histogram<A, S>> &) {
     std::cout << "empty fill" << std::endl;
 }
 
-template <typename A, typename S>
+template <class A, class S>
 void add_fill(std::false_type /* normal fill support */,
               std::false_type /* atomic support */,
               py::class_<bh::histogram<A, S>> &) {
@@ -204,7 +204,7 @@ void add_fill(std::false_type /* normal fill support */,
 }
 
 // Atomic fill supported?
-template <typename A, typename S>
+template <class A, class S>
 void add_fill(std::true_type /* normal fill support */,
               std::true_type /* atomic support */,
               py::class_<bh::histogram<A, S>> &hist) {
@@ -234,7 +234,7 @@ void add_fill(std::true_type /* normal fill support */,
         "(exclusive)");
 }
 
-template <typename A, typename S>
+template <class A, class S>
 void add_fill(std::true_type /* normal fill support */,
               std::false_type /* atomic support */,
               py::class_<bh::histogram<A, S>> &hist) {

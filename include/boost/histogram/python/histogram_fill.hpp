@@ -148,7 +148,7 @@ struct [[gnu::visibility("hidden")]] fill_helper {
     }
 
     // Standard fill
-    template <typename... Args>
+    template <class... Args>
     void fill(Args && ... args) {
         py::gil_scoped_release tmp;
         boost::mp11::mp_with_index<BOOST_HISTOGRAM_DETAIL_AXES_LIMIT>(
@@ -156,7 +156,7 @@ struct [[gnu::visibility("hidden")]] fill_helper {
     }
 
     // Threaded fill
-    template <typename... Args>
+    template <class... Args>
     void fill_threaded(ssize_t * threads_ptr, Args && ... args) {
         ssize_t threads = threads_ptr == nullptr ? std::thread::hardware_concurrency() : *threads_ptr;
         size_t n        = dim;
@@ -189,7 +189,7 @@ struct [[gnu::visibility("hidden")]] fill_helper {
     }
 
     // Atomic fill
-    template <typename... Args>
+    template <class... Args>
     void fill_atomic(ssize_t * atomic_ptr, Args && ... args) {
         ssize_t threads = atomic_ptr == nullptr ? std::thread::hardware_concurrency() : *atomic_ptr;
         size_t n        = dim;

@@ -8,7 +8,7 @@
 #include <boost/histogram/python/pybind11.hpp>
 
 /// Get and remove a value from a keyword argument dict
-template <typename T>
+template <class T>
 T required_arg(py::kwargs &kwargs, const char *name) {
     if(kwargs.contains(name)) {
         return py::cast<T>(kwargs.attr("pop")(name));
@@ -18,7 +18,7 @@ T required_arg(py::kwargs &kwargs, const char *name) {
 }
 
 /// Get and remove a value from a keyword argument dict, or return a empty pointer
-template <typename T>
+template <class T>
 std::unique_ptr<T> optional_arg(py::kwargs &kwargs, const char *name) {
     if(kwargs.contains(name)) {
         return std::make_unique<T>(py::cast<T>(kwargs.attr("pop")(name)));
@@ -28,7 +28,7 @@ std::unique_ptr<T> optional_arg(py::kwargs &kwargs, const char *name) {
 }
 
 /// Get and remove a value from a keyword argument dict with default
-template <typename T>
+template <class T>
 T optional_arg(py::kwargs &kwargs, const char *name, T original_value) {
     if(kwargs.contains(name)) {
         return py::cast<T>(kwargs.attr("pop")(name));

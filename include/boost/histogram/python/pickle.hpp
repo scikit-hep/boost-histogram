@@ -28,14 +28,14 @@ struct OutToTuple {
     using is_loading = std::false_type;
     py::tuple tuple;
 
-    template <typename T,
+    template <class T,
               std::enable_if_t<bh::has_method_serialize<T>::value && !bh::has_function_serialize<T>::value> * = nullptr>
     OutToTuple &operator&(T &&arg) {
         arg.serialize(*this, 0);
         return *this;
     }
 
-    template <typename T,
+    template <class T,
               std::enable_if_t<!bh::has_method_serialize<T>::value && bh::has_function_serialize<T>::value> * = nullptr>
     OutToTuple &operator&(T &&arg) {
         serialize(*this, arg, 0);
@@ -59,14 +59,14 @@ struct InFromTuple {
     InFromTuple(const py::tuple &tuple_)
         : tuple(tuple_) {}
 
-    template <typename T,
+    template <class T,
               std::enable_if_t<bh::has_method_serialize<T>::value && !bh::has_function_serialize<T>::value> * = nullptr>
     InFromTuple &operator&(T &&arg) {
         arg.serialize(*this, 0);
         return *this;
     }
 
-    template <typename T,
+    template <class T,
               std::enable_if_t<!bh::has_method_serialize<T>::value && bh::has_function_serialize<T>::value> * = nullptr>
     InFromTuple &operator&(T &&arg) {
         serialize(*this, arg, 0);
@@ -84,7 +84,7 @@ struct InFromTuple {
 };
 
 /// Make a pickle serializer with a given type
-template <typename T>
+template <class T>
 decltype(auto) make_pickle() {
     return py::pickle(
         [](const T &p) {
@@ -103,7 +103,7 @@ decltype(auto) make_pickle() {
 // This allows the serialization header to be as close as possible to the official one
 namespace serialization {
 
-template <typename T>
+template <class T>
 decltype(auto) make_nvp(const char *, T &&item) {
     return item;
 }
