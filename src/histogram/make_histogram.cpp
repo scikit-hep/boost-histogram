@@ -20,7 +20,7 @@
 
 void register_make_histogram(py::module &m, py::module &hist) {
     m.def(
-        "make_histogram",
+        "_make_histogram",
         [](py::args t_args, py::kwargs kwargs) -> py::object {
             py::list args      = py::cast<py::list>(t_args);
             py::object storage = optional_arg(kwargs, "storage", py::cast(storage::int_()));
@@ -88,7 +88,7 @@ void register_make_histogram(py::module &m, py::module &hist) {
     // This factory makes a class that can be used to create histograms and also be used in is_instance
     py::object factory_meta_py = py::module::import("boost.histogram_utils").attr("FactoryMeta");
 
-    m.attr("histogram") = factory_meta_py(m.attr("make_histogram"),
+    m.attr("histogram") = factory_meta_py(m.attr("_make_histogram"),
                                           py::make_tuple(hist.attr("regular_unlimited"),
                                                          hist.attr("regular_int"),
                                                          hist.attr("regular_atomic_int"),

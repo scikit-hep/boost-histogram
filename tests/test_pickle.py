@@ -83,7 +83,7 @@ def test_compare_copy_axis(metadata):
 # Special test: Deepcopy should change metadata id, copy should not
 @pytest.mark.parametrize("metadata", ({1:2}, [1,2,3]))
 def test_compare_copy_hist(metadata):
-    orig = bh.make_histogram(bh.axis.regular_noflow(4,0,2, metadata=metadata))
+    orig = bh._make_histogram(bh.axis.regular_noflow(4,0,2, metadata=metadata))
     new = copy.copy(orig)
     dnew = copy.deepcopy(orig)
 

@@ -59,7 +59,7 @@ void register_axes(py::module &ax) {
              "metadata"_a = py::str());
 
     ax.def(
-        "make_regular",
+        "_make_regular",
         [](unsigned n,
            double start,
            double stop,
@@ -101,7 +101,7 @@ void register_axes(py::module &ax) {
         "Make a regular axis with nice keyword arguments for underflow, overflow, and growth. "
         "Passing 'flow' will override underflow and overflow at the same time.");
 
-    ax.attr("regular") = factory_meta_py(ax.attr("make_regular"),
+    ax.attr("regular") = factory_meta_py(ax.attr("_make_regular"),
                                          py::make_tuple(ax.attr("regular_uoflow"),
                                                         ax.attr("regular_uflow"),
                                                         ax.attr("regular_oflow"),
@@ -160,7 +160,7 @@ void register_axes(py::module &ax) {
         .def(construct_axes<axis::variable_noflow, std::vector<double>>(), "edges"_a, "metadata"_a = py::str());
 
     ax.def(
-        "make_variable",
+        "_make_variable",
         [](std::vector<double> edges, metadata_t metadata, bool underflow, bool overflow, py::kwargs kwargs)
             -> py::object {
             validate_metadata(metadata);
@@ -191,7 +191,7 @@ void register_axes(py::module &ax) {
         "Make a variable binned axis with nice keyword arguments for underflow, overflow. "
         "Passing 'flow' will override underflow and overflow at the same time.");
 
-    ax.attr("variable") = factory_meta_py(ax.attr("make_variable"),
+    ax.attr("variable") = factory_meta_py(ax.attr("_make_variable"),
                                           py::make_tuple(ax.attr("variable_uoflow"),
                                                          ax.attr("variable_uflow"),
                                                          ax.attr("variable_oflow"),
@@ -213,7 +213,7 @@ void register_axes(py::module &ax) {
         .def(construct_axes<axis::integer_growth, int, int>(), "min"_a, "max"_a, "metadata"_a = py::str());
 
     ax.def(
-        "make_integer",
+        "_make_integer",
         [](int start, int stop, metadata_t metadata, bool underflow, bool overflow, bool growth, py::kwargs kwargs)
             -> py::object {
             validate_metadata(metadata);
@@ -248,7 +248,7 @@ void register_axes(py::module &ax) {
         "Make an integer axis with nice keyword arguments for underflow, overflow, and growth. "
         "Passing 'flow' will override underflow and overflow at the same time.");
 
-    ax.attr("integer") = factory_meta_py(ax.attr("make_integer"),
+    ax.attr("integer") = factory_meta_py(ax.attr("_make_integer"),
                                          py::make_tuple(ax.attr("integer_uoflow"),
                                                         ax.attr("integer_uflow"),
                                                         ax.attr("integer_oflow"),
@@ -271,7 +271,7 @@ void register_axes(py::module &ax) {
         .def(py::init<>());
 
     ax.def(
-        "make_category",
+        "_make_category",
         [](py::object labels, metadata_t metadata, bool growth) -> py::object {
             validate_metadata(metadata);
 
@@ -298,7 +298,7 @@ void register_axes(py::module &ax) {
         "growth"_a   = false,
         "Make an category axis with a nice keyword argument for growth. Int and string supported.");
 
-    ax.attr("category") = factory_meta_py(ax.attr("make_category"),
+    ax.attr("category") = factory_meta_py(ax.attr("_make_category"),
                                           py::make_tuple(ax.attr("category_int"),
                                                          ax.attr("category_int_growth"),
                                                          ax.attr("category_str"),

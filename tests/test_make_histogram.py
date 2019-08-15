@@ -8,7 +8,7 @@ import boost.histogram as bh
                                          (lambda *x: x, 2),
                                          (bh.axis.regular_noflow, 0)))
 def test_make_regular_1D(axis, extent):
-    hist = bh.make_histogram(axis(3,2,5))
+    hist = bh._make_histogram(axis(3,2,5))
 
     assert hist.rank() == 1
     assert hist.axis(0).size() == 3
@@ -38,7 +38,7 @@ def test_shortcuts_with_metadata():
 @pytest.mark.parametrize("axis,extent", ((bh.axis.regular_uoflow, 2),
                                          (bh.axis.regular_noflow, 0)))
 def test_make_regular_2D(axis, extent):
-    hist = bh.make_histogram(axis(3,2,5),
+    hist = bh._make_histogram(axis(3,2,5),
                              axis(5,1,6))
 
     assert hist.rank() == 2
@@ -56,7 +56,7 @@ def test_make_regular_2D(axis, extent):
                                      bh.storage.unlimited(),
                                      bh.storage.weight()))
 def test_make_any_hist(storage):
-    hist = bh.make_histogram(bh.axis.regular_uoflow(5,1,2),
+    hist = bh._make_histogram(bh.axis.regular_uoflow(5,1,2),
                              bh.axis.regular_noflow(6,2,3),
                              bh.axis.circular(8,3,4),
                              storage=storage)
@@ -74,11 +74,11 @@ def test_make_any_hist(storage):
 
 def test_make_any_hist_storage():
 
-    assert float != type(bh.make_histogram(bh.axis.regular_uoflow(5,1,2), storage=bh.storage.int()).at(0))
-    assert float == type(bh.make_histogram(bh.axis.regular_uoflow(5,1,2), storage=bh.storage.double()).at(0))
+    assert float != type(bh._make_histogram(bh.axis.regular_uoflow(5,1,2), storage=bh.storage.int()).at(0))
+    assert float == type(bh._make_histogram(bh.axis.regular_uoflow(5,1,2), storage=bh.storage.double()).at(0))
 
 def test_issue_axis_bin_swan():
-    hist = bh.make_histogram(bh.axis.regular_sqrt(10,0,10, metadata='x'),
+    hist = bh._make_histogram(bh.axis.regular_sqrt(10,0,10, metadata='x'),
                              bh.axis.circular(10,0,1, metadata='y'))
 
     b = hist.axis(1).bin(1)
@@ -107,14 +107,14 @@ options = (
 
 @pytest.mark.parametrize("histclass, ax, storage", options)
 def test_make_selection(histclass, ax, storage):
-    histogram = bh.make_histogram(ax, storage=storage())
+    histogram = bh._make_histogram(ax, storage=storage())
     assert isinstance(histogram, histclass)
 
-    histogram = bh.make_histogram(ax, ax, storage=storage())
+    histogram = bh._make_histogram(ax, ax, storage=storage())
     assert isinstance(histogram, histclass)
 
 
 def test_make_selection_special():
-    histogram = bh.make_histogram(bh.axis.regular_uoflow(5,1,2), bh.axis.regular_noflow(10,1,2))
+    histogram = bh._make_histogram(bh.axis.regular_uoflow(5,1,2), bh.axis.regular_noflow(10,1,2))
     assert isinstance(histogram, bh.hist.any_int)
 
