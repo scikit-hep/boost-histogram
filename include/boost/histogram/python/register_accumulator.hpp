@@ -12,7 +12,7 @@
 
 #include <utility>
 
-template <typename A, typename... Args>
+template <class A, class... Args>
 py::class_<A> register_accumulator(py::module acc, Args &&... args) {
     return py::class_<A>(acc, std::forward<Args>(args)...)
         .def(py::init<>())

@@ -20,7 +20,7 @@ except ImportError:
     import pickle
 
 # histogram -> boost.histogram
-# histogram -> make_histogram
+# histogram -> _make_histogram
 # .dim -> .rank()
 
 def test_init():

@@ -38,7 +38,7 @@ inline void validate_metadata(metadata_t v) {
 }
 
 /// Add a constructor for an axes, with smart handling for the metadata (will not allow numeric types)"
-template <typename T, typename... Args>
+template <class T, class... Args>
 decltype(auto) construct_axes() {
     return py::init([](Args... args, metadata_t v) {
         // Check for numeric v here
@@ -48,7 +48,7 @@ decltype(auto) construct_axes() {
 }
 
 /// Add helpers common to all types with a range of values
-template <typename A>
+template <class A>
 py::class_<bh::axis::interval_view<A>> register_axis_iv(py::module &m, const char *name) {
     using A_iv               = bh::axis::interval_view<A>;
     py::class_<A_iv> axis_iv = py::class_<A_iv>(m, name, "Lightweight bin view");
@@ -67,7 +67,7 @@ py::class_<bh::axis::interval_view<A>> register_axis_iv(py::module &m, const cha
 }
 
 /// Add items to an axis where the axis values are continious
-template <typename A, typename B>
+template <class A, class B>
 void add_to_axis(py::module m, const char *name, B &&axis, std::false_type) {
     axis.def("bin", &A::bin, "The bin details (center, lower, upper)", "idx"_a, py::keep_alive<0, 1>());
     axis.def(
@@ -96,7 +96,7 @@ void add_to_axis(py::module m, const char *name, B &&axis, std::false_type) {
 }
 
 /// Add items to an axis where the axis values are not continious (categories of strings, for example)
-template <typename A, typename B>
+template <class A, class B>
 void add_to_axis(py::module, const char *, B &&axis, std::true_type) {
     axis.def("bin", &A::bin, "The bin name", "idx"_a);
     axis.def(
@@ -107,7 +107,7 @@ void add_to_axis(py::module, const char *, B &&axis, std::true_type) {
 }
 
 /// Add helpers common to all axis types
-template <typename A, typename... Args>
+template <class A, class... Args>
 py::class_<A> register_axis(py::module &m, const char *name, Args &&... args) {
     py::class_<A> axis(m, name, std::forward<Args>(args)...);
 

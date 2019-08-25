@@ -8,7 +8,7 @@ from numpy.testing import assert_array_equal
 
 @pytest.mark.parametrize("axtype", [bh.axis.regular_uoflow, bh.axis.regular_uflow, bh.axis.regular_oflow, bh.axis.regular_noflow])
 @pytest.mark.parametrize("function", [lambda x: x,
-                                       lambda x: bh.make_histogram(x).axis(0),
+                                       lambda x: bh._make_histogram(x).axis(0),
                                        ])
 def test_axis_regular_uoflow(axtype, function):
     ax = function(axtype(10, 0, 1))

@@ -16,13 +16,13 @@
 /// Register bh::axis::variant as a variant for PyBind11
 namespace pybind11 {
 namespace detail {
-template <typename... Ts>
+template <class... Ts>
 struct type_caster<bh::axis::variant<Ts...>> : variant_caster<bh::axis::variant<Ts...>> {};
 } // namespace detail
 } // namespace pybind11
 
 /// Utility to convert an axis to edges array
-template <typename A>
+template <class A>
 py::array_t<double> axis_to_edges(const A &ax, bool flow) {
     unsigned overflow  = flow && (bh::axis::traits::options(ax) & bh::axis::option::underflow);
     unsigned underflow = flow && (bh::axis::traits::options(ax) & bh::axis::option::overflow);
@@ -43,7 +43,7 @@ py::array_t<double> axis_to_edges(const A &ax, bool flow) {
     return edges;
 }
 
-template <typename A>
+template <class A>
 decltype(auto) axis_to_bins(const A &self, bool flow) {
     std::vector<bh::python::remove_cvref_t<decltype(self.bin(0))>> out;
     bool overflow  = flow && (bh::axis::traits::options(self) & bh::axis::option::underflow);
