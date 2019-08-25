@@ -249,11 +249,26 @@ def test_add_2d_w(flow):
             assert h.at(i, j) == 2 * m[i][j]
 
 def test_repr():
-    h = histogram(regular_uoflow(10, 0, 1), integer_uoflow(0, 1))
+    h = histogram(regular_uoflow(3, 0, 1), integer_uoflow(0, 1))
     hr = repr(h)
     assert hr == '''histogram(
-  regular(10, 0, 1, options=underflow | overflow),
-  integer(0, 1, options=underflow | overflow)
+  regular(3, 0, 1, options=underflow | overflow),
+  integer(0, 1, options=underflow | overflow),
+  0: 0
+  1: 0
+  2: 0
+  3: 0
+  4: 0
+  5: 0
+  6: 0
+  7: 0
+  8: 0
+  9: 0
+  10: 0
+  11: 0
+  12: 0
+  13: 0
+  14: 0
 )'''
 
 def test_axis():
@@ -322,11 +337,10 @@ def test_project():
     assert h1.axis(0) == integer_uoflow(1, 4)
     assert [h1.at(i) for i in range(3)] == [1, 1, 1]
 
-    # CLASSIC: Was value error
-    with pytest.raises(IndexError):
+    with pytest.raises(ValueError):
         h.project(*range(10))
 
-    with pytest.raises(IndexError):
+    with pytest.raises(ValueError):
         h.project(2, 1)
 
 def test_shrink_1d():
@@ -654,4 +668,3 @@ def test_fill_with_numpy_array_1():
     assert a.at(0) == 3
     assert a.at(1) == 2
     assert a.at(2) == 3
-
