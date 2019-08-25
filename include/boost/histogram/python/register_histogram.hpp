@@ -5,13 +5,13 @@
 
 #pragma once
 
+#include <boost/core/ignore_unused.hpp>
 #include <boost/histogram/python/kwargs.hpp>
 #include <boost/histogram/python/pybind11.hpp>
 #include <pybind11/operators.h>
 
 #include <boost/histogram/python/axis.hpp>
 #include <boost/histogram/python/histogram.hpp>
-#include <boost/histogram/python/histogram_fill.hpp>
 #include <boost/histogram/python/serializion.hpp>
 #include <boost/histogram/python/storage.hpp>
 #include <boost/histogram/python/typetools.hpp>
@@ -178,82 +178,65 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
             },
             "Project to a single axis or several axes on a multidiminsional histogram")
 
+        .def(
+            "fill",
+            [](histogram_t &self, py::args args, py::kwargs kwargs) {
+                auto nthreads = optional_arg(kwargs, "threads", 0u);
+                boost::ignore_unused(nthreads); // currently not used
+                auto weight = optional_arg(kwargs, "weight", py::object());
+
+                using arrayd = py::array_t<double>;
+
+                // TODO: compute this typelist from the value types of the supported axes
+                using VArg = boost::variant2::variant<double, arrayd>;
+                auto vargs = bh::detail::make_stack_buffer<VArg>(bh::unsafe_access::axes(self));
+
+                if(args.size() != self.rank())
+                    throw std::invalid_argument("wrong number of args");
+
+                unsigned iarg = 0;
+                for(auto arg : args) {
+                    if(py::isinstance<int>(arg))
+                        vargs[iarg] = py::cast<double>(arg);
+                    else if(py::isinstance<double>(arg))
+                        vargs[iarg] = py::cast<double>(arg);
+                    else
+                        vargs[iarg] = py::cast<arrayd>(arg);
+                    ++iarg;
+                }
+
+                // TODO handle weights
+                using storage_t = typename histogram_t::storage_type;
+                bh::detail::static_if<boost::mp11::mp_or<std::is_same<storage_t, storage::profile>,
+                                                         std::is_same<storage_t, storage::weighted_profile>>>(
+                    [&](auto &h) {
+                        auto sample = required_arg<py::object>(kwargs, "sample");
+                        finalize_args(kwargs);
+                        auto sarray = py::cast<arrayd>(sample);
+                        // HD: this causes an error in boost::histogram, needs to be fixed
+                        // if(py::isinstance<double>(weight))
+                        //     h.fill(vargs, bh::sample(sarray), bh::weight(py::cast<double>(weight)));
+                        // else if(py::isinstance<arrayd>(weight))
+                        //     h.fill(vargs, bh::sample(sarray), bh::weight(py::cast<arrayd>(weight)));
+                        // else
+                        h.fill(vargs, bh::sample(sarray));
+                    },
+                    [&](auto &h) {
+                        finalize_args(kwargs);
+                        if(py::isinstance<double>(weight))
+                            h.fill(vargs, bh::weight(py::cast<double>(weight)));
+                        else if(py::isinstance<arrayd>(weight))
+                            h.fill(vargs, bh::weight(py::cast<arrayd>(weight)));
+                        else
+                            h.fill(vargs);
+                    },
+                    self);
+            },
+            "Insert data into the histogram")
+
         .def(make_pickle<histogram_t>())
 
         ;
 
-    using S_value = typename bh::python::remove_cvref_t<S>::value_type;
-
-    add_fill(bh::detail::has_operator_preincrement<S_value>{}, std::is_same<S, storage::atomic_int>{}, hist);
-
     return hist;
-}
-
-template <class A, class S>
-void add_fill(std::false_type /* normal fill support */,
-              std::true_type /* atomic support */,
-              py::class_<bh::histogram<A, S>> &) {
-    std::cout << "empty fill" << std::endl;
-}
-
-template <class A, class S>
-void add_fill(std::false_type /* normal fill support */,
-              std::false_type /* atomic support */,
-              py::class_<bh::histogram<A, S>> &) {
-    std::cout << "empty fill" << std::endl;
-}
-
-// Atomic fill supported?
-template <class A, class S>
-void add_fill(std::true_type /* normal fill support */,
-              std::true_type /* atomic support */,
-              py::class_<bh::histogram<A, S>> &hist) {
-    using histogram_t = bh::histogram<A, S>;
-
-    // generic threaded and atomic fill for 1 to N args
-    hist.def(
-        "fill",
-        [](histogram_t &self, py::args args, py::kwargs kwargs) {
-            std::unique_ptr<ssize_t> threads = optional_arg<ssize_t>(kwargs, "threads");
-            std::unique_ptr<ssize_t> atomic  = optional_arg<ssize_t>(kwargs, "atomic");
-            finalize_args(kwargs);
-
-            auto filler = fill_helper<histogram_t>(self, args);
-
-            if(threads && atomic)
-                throw py::key_error("Cannot have both atomic and threads in one fill call!");
-            else if(threads) {
-                filler.fill_threaded(threads.get());
-            } else if(atomic) {
-                filler.fill_atomic(atomic.get());
-            } else {
-                filler.fill();
-            }
-        },
-        "Insert data into histogram in threads (0 for machine cores). Keyword arguments: threads=N, atomic=N "
-        "(exclusive)");
-}
-
-template <class A, class S>
-void add_fill(std::true_type /* normal fill support */,
-              std::false_type /* atomic support */,
-              py::class_<bh::histogram<A, S>> &hist) {
-    using histogram_t = bh::histogram<A, S>;
-
-    // generic threaded and atomic fill for 1 to N args
-    hist.def(
-        "fill",
-        [](histogram_t &self, py::args args, py::kwargs kwargs) {
-            std::unique_ptr<ssize_t> threads = optional_arg<ssize_t>(kwargs, "threads");
-            finalize_args(kwargs);
-
-            auto filler = fill_helper<histogram_t>(self, args);
-
-            if(threads) {
-                filler.fill_threaded(threads.get());
-            } else {
-                filler.fill();
-            }
-        },
-        "Insert data into histogram in threads (0 for machine cores). Keyword argument: threads=N");
 }
