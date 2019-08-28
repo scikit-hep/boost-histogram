@@ -173,16 +173,14 @@ git submodule update --init --depth 10
 Make a build directory and run CMake. If you have a specific Python you want to use, add `-DPYTHON_EXECUTABLE=$(which python)` or similar to the CMake line.
 
 ```bash
-mkdir build
-cd build
-cmake ..
-make -j4
+cmake -S . -B build
+cmake --build build -j4
 ```
 
-Run the unit tests (requires pytest and numpy). Use `ctest` or `make test`, like this:
+Run the unit tests (requires pytest and numpy). Use `ctest` or `make test`, from the build directory, like this:
 
 ```bash
-make test
+ctest
 # or
 python -m pytest
 ```

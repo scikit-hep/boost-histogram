@@ -23,7 +23,7 @@ void register_make_histogram(py::module &m, py::module &hist) {
         "_make_histogram",
         [](py::args t_args, py::kwargs kwargs) -> py::object {
             py::list args      = py::cast<py::list>(t_args);
-            py::object storage = optional_arg(kwargs, "storage", py::cast(storage::int_()));
+            py::object storage = optional_arg(kwargs, "storage", py::cast(storage::unlimited()));
             finalize_args(kwargs);
 
             // HD: this should be done in Python
