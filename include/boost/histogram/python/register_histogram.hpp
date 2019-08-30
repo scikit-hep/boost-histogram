@@ -181,9 +181,8 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
         .def(
             "fill",
             [](histogram_t &self, py::args args, py::kwargs kwargs) {
-                auto nthreads = optional_arg(kwargs, "threads", 0u);
-                boost::ignore_unused(nthreads); // currently not used
-                auto weight = optional_arg(kwargs, "weight", py::object());
+                auto empty_weight = py::object();
+                auto weight = optional_arg(kwargs, "weight", empty_weight);
 
                 using arrayd = py::array_t<double>;
 
@@ -197,11 +196,11 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
                 unsigned iarg = 0;
                 for(auto arg : args) {
                     if(py::isinstance<int>(arg))
-                        vargs[iarg] = py::cast<double>(arg);
+                        vargs.at(iarg) = py::cast<double>(arg);
                     else if(py::isinstance<double>(arg))
-                        vargs[iarg] = py::cast<double>(arg);
+                        vargs.at(iarg) = py::cast<double>(arg);
                     else
-                        vargs[iarg] = py::cast<arrayd>(arg);
+                        vargs.at(iarg) = py::cast<arrayd>(arg);
                     ++iarg;
                 }
 
@@ -225,7 +224,7 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
                         finalize_args(kwargs);
                         if(py::isinstance<double>(weight))
                             h.fill(vargs, bh::weight(py::cast<double>(weight)));
-                        else if(py::isinstance<arrayd>(weight))
+                        else if(!weight.is(empty_weight) && py::isinstance<arrayd>(weight))
                             h.fill(vargs, bh::weight(py::cast<arrayd>(weight)));
                         else
                             h.fill(vargs);
