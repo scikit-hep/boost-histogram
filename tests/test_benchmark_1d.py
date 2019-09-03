@@ -23,14 +23,19 @@ def test_numpy_perf_1d(benchmark):
     result, _ = benchmark(np.histogram, vals, bins=bins, range=ranges)
     assert_array_equal(result, answer)
 
-def make_and_run_hist(flow):
-    histo = bh.histogram(regular(bins, *ranges, flow=flow))
+def make_and_run_hist(flow, storage):
+    histo = bh.histogram(regular(bins, *ranges, flow=flow), storage=storage())
     histo.fill(vals)
     return histo.view()
 
 
 @pytest.mark.benchmark(group='1d-fills')
-@pytest.mark.parametrize("flow", [True, False])
-def test_1d(benchmark, flow):
-    result = benchmark(make_and_run_hist, flow)
+@pytest.mark.parametrize("flow", (True, False))
+@pytest.mark.parametrize("storage", (bh.storage.int,
+                                     bh.storage.double,
+                                     bh.storage.unlimited,
+                                     # bh.storage.weight,
+                                     ))
+def test_1d(benchmark, flow, storage):
+    result = benchmark(make_and_run_hist, flow, storage)
     assert_allclose(result[:-1], answer[:-1], atol=2)

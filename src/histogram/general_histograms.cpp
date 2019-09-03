@@ -13,6 +13,9 @@
 #include <boost/histogram.hpp>
 
 void register_general_histograms(py::module &hist) {
+    register_histogram<axes::any, storage::int_>(
+      hist, "any_int", "N-dimensional histogram for unlimited size data with any axis types.");
+    
     register_histogram<axes::any, storage::unlimited>(
         hist, "any_unlimited", "N-dimensional histogram for unlimited size data with any axis types.");
 
