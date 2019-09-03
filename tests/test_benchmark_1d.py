@@ -1,10 +1,11 @@
 import pytest
 
-import numpy as np
 import boost.histogram as bh
+from boost.histogram.axis import regular
+
+import numpy as np
 from numpy.testing import assert_array_equal, assert_allclose
 
-from boost.histogram.axis import regular_uoflow, regular_noflow
 
 bins=100
 ranges=(-1,1)
@@ -23,29 +24,21 @@ def test_numpy_perf_1d(benchmark):
     result, _ = benchmark(np.histogram, vals, bins=bins, range=ranges)
     assert_array_equal(result, answer)
 
-def make_and_run_hist(hist, axes, vals, fill):
-    histo = hist(axes)
-    if fill is None:
-        histo.fill(vals)
-    elif fill < 0:
-        histo.fill(vals, atomic=-fill)
-    else:
-        histo.fill(vals, threads=fill)
-
+def make_and_run_hist(flow, storage):
+    histo = bh.histogram(regular(bins, *ranges, flow=flow), storage=storage())
+    histo.fill(vals)
     return histo.view()
 
-histax = (
-        (bh.hist.any_int, regular_uoflow, None),
-        (bh.hist.any_int, regular_noflow, None),
-        (bh.hist.regular_int, regular_uoflow, None),
-        (bh.hist.regular_noflow_int, regular_noflow, None),
-        (bh.hist.regular_atomic_int, regular_uoflow, None),
-        (bh.hist.regular_atomic_int, regular_uoflow, -4),
-        (bh.hist.regular_int, regular_uoflow, 4),
-        )
 
 @pytest.mark.benchmark(group='1d-fills')
-@pytest.mark.parametrize("hist, axis, fill", histax)
-def test_1d(benchmark, hist, axis, fill):
-    result = benchmark(make_and_run_hist, hist, [axis(bins, *ranges)], vals, fill)
+@pytest.mark.parametrize("flow", (True, False))
+@pytest.mark.parametrize("storage", (bh.storage.int,
+                                     bh.storage.double,
+                                     bh.storage.unlimited,
+                                     # bh.storage.weight,
+                                     ))
+def test_1d(benchmark, flow, storage):
+    result = benchmark(make_and_run_hist, flow, storage)
     assert_allclose(result[:-1], answer[:-1], atol=2)
+
+

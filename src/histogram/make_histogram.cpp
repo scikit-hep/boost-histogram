@@ -24,8 +24,10 @@ void register_make_histogram(py::module &m, py::module &hist) {
         [](py::args t_args, py::kwargs kwargs) -> py::object {
             py::list args      = py::cast<py::list>(t_args);
             py::object storage = optional_arg(kwargs, "storage", py::cast(storage::int_()));
+            // TODO: change this to be unlimited by default
             finalize_args(kwargs);
 
+            // HD: this should be done in Python
             // Process the args as necessary for extra shortcuts
             for(size_t i = 0; i < args.size(); i++) {
                 // If length three tuples are provided, make regular bins
@@ -56,29 +58,9 @@ void register_make_histogram(py::module &m, py::module &hist) {
                 }
             }
 
-            // We try each possible axes type that has high-performance single-type overloads.
-
-            try {
-                return try_cast<storage::int_, storage::atomic_int, storage::unlimited>(
-                    storage, [&args](auto &&storage) {
-                        auto reg = py::cast<axes::regular_uoflow>(args);
-                        return py::cast(bh::make_histogram_with(storage, reg), py::return_value_policy::move);
-                    });
-            } catch(const py::cast_error &) {
-            }
-
-            try {
-                return try_cast<storage::int_>(storage, [&args](auto &&storage) {
-                    auto reg = py::cast<axes::regular_noflow>(args);
-                    return py::cast(bh::make_histogram_with(storage, reg), py::return_value_policy::move);
-                });
-            } catch(const py::cast_error &) {
-            }
-
-            // fallback to slower generic implementation
             auto axes = py::cast<axes::any>(args);
 
-            return try_cast<storage::int_, storage::double_, storage::unlimited, storage::weight, storage::atomic_int>(
+            return try_cast<storage::unlimited, storage::double_, storage::int_, storage::atomic_int, storage::weight>(
                 storage, [&axes](auto &&storage) {
                     return py::cast(bh::make_histogram_with(storage, axes), py::return_value_policy::move);
                 });
@@ -89,13 +71,9 @@ void register_make_histogram(py::module &m, py::module &hist) {
     py::object factory_meta_py = py::module::import("boost.histogram_utils").attr("FactoryMeta");
 
     m.attr("histogram") = factory_meta_py(m.attr("_make_histogram"),
-                                          py::make_tuple(hist.attr("regular_unlimited"),
-                                                         hist.attr("regular_int"),
-                                                         hist.attr("regular_atomic_int"),
-                                                         hist.attr("regular_noflow_int"),
+                                          py::make_tuple(hist.attr("any_double"),
                                                          hist.attr("any_int"),
                                                          hist.attr("any_atomic_int"),
-                                                         hist.attr("any_double"),
                                                          hist.attr("any_unlimited"),
                                                          hist.attr("any_weight")));
 }

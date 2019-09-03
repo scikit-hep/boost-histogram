@@ -14,16 +14,16 @@
 
 void register_general_histograms(py::module &hist) {
     register_histogram<axes::any, storage::int_>(
-        hist, "any_int", "N-dimensional histogram for int-valued data with any axis types.");
+        hist, "any_int", "N-dimensional histogram for unlimited size data with any axis types.");
 
-    register_histogram<axes::any, storage::atomic_int>(
-        hist, "any_atomic_int", "N-dimensional histogram for int-valued data with any axis types (threadsafe).");
+    register_histogram<axes::any, storage::unlimited>(
+        hist, "any_unlimited", "N-dimensional histogram for unlimited size data with any axis types.");
 
     register_histogram<axes::any, storage::double_>(
         hist, "any_double", "N-dimensional histogram for real-valued data with weights with any axis types.");
 
-    register_histogram<axes::any, storage::unlimited>(
-        hist, "any_unlimited", "N-dimensional histogram for unlimited size data with any axis types.");
+    register_histogram<axes::any, storage::atomic_int>(
+        hist, "any_atomic_int", "N-dimensional histogram for threadsafe integer data with any axis types.");
 
     register_histogram<axes::any, storage::weight>(
         hist, "any_weight", "N-dimensional histogram for weighted data with any axis types.");

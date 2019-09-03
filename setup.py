@@ -38,7 +38,6 @@ ext_modules = [
         ['src/module.cpp',
          'src/histogram/version.cpp',
          'src/histogram/axis.cpp',
-         'src/histogram/fast_histograms.cpp',
          'src/histogram/general_histograms.cpp',
          'src/histogram/make_histogram.cpp',
          'src/histogram/storage.cpp',

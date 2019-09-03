@@ -5,8 +5,8 @@ import numpy as np
 from numpy.testing import assert_array_equal, assert_allclose
 
 methods = [
-    bh.hist.regular_int,
-    bh.hist.regular_unlimited,
+    bh.hist.any_double,
+    bh.hist.any_unlimited,
     bh.hist.any_int,
 ]
 
@@ -103,7 +103,7 @@ def test_growing_histogram():
     assert hist.size() == 15
 
 def test_numpy_flow():
-    h = bh.hist.regular_int([bh.axis.regular_uoflow(10,0,1), bh.axis.regular_uoflow(5,0,1)])
+    h = bh.hist.any_int([bh.axis.regular_uoflow(10,0,1), bh.axis.regular_uoflow(5,0,1)])
 
     for i in range(10):
         for j in range(5):
@@ -126,7 +126,7 @@ def test_numpy_flow():
 
 
 def test_numpy_compare():
-    h = bh.hist.regular_int([bh.axis.regular_uoflow(10,0,1), bh.axis.regular_uoflow(5,0,1)])
+    h = bh.hist.any_int([bh.axis.regular_uoflow(10,0,1), bh.axis.regular_uoflow(5,0,1)])
 
     xs = []
     ys = []
@@ -148,9 +148,9 @@ def test_numpy_compare():
     assert_allclose(E2, nE2)
 
 def test_project():
-    h = bh.hist.regular_int([bh.axis.regular_uoflow(10,0,1), bh.axis.regular_uoflow(5,0,1)])
-    h0 = bh.hist.regular_int([bh.axis.regular_uoflow(10,0,1)])
-    h1 = bh.hist.regular_int([bh.axis.regular_uoflow(5,0,1)])
+    h = bh.hist.any_int([bh.axis.regular_uoflow(10,0,1), bh.axis.regular_uoflow(5,0,1)])
+    h0 = bh.hist.any_int([bh.axis.regular_uoflow(10,0,1)])
+    h1 = bh.hist.any_int([bh.axis.regular_uoflow(5,0,1)])
 
     for x,y in ((.3,.3),(.7,.7),(.5,.6),(.23,.92),(.15,.32),(.43,.54)):
         h.fill(x,y)

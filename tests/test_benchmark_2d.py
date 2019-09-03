@@ -4,7 +4,7 @@ import numpy as np
 from numpy.testing import assert_array_equal
 
 import boost.histogram as bh
-from boost.histogram.axis import regular_uoflow, regular_noflow
+from boost.histogram.axis import regular
 
 bins=(100, 100)
 ranges=((-1,1),(-1,1))
@@ -24,31 +24,22 @@ def test_numpy_perf_2d(benchmark):
     result, _, _ = benchmark(np.histogram2d, *vals, bins=bins, range=ranges)
     assert_array_equal(result, answer)
 
-def make_and_run_hist(hist, axes, vals, fill):
-    histo = hist(axes)
+def make_and_run_hist(flow, storage):
 
-    if fill is None:
-        histo.fill(*vals)
-    elif fill < 0:
-        histo.fill(*vals, atomic=-fill)
-    else:
-        histo.fill(*vals, threads=fill)
-
+    histo = bh.histogram(regular(bins[0], *ranges[0], flow=flow),
+                         regular(bins[1], *ranges[1], flow=flow),
+                         storage=storage())
+    histo.fill(*vals)
     return histo.view()
 
-histax = (
-        (bh.hist.any_int, regular_uoflow, None),
-        (bh.hist.any_int, regular_noflow, None),
-        (bh.hist.regular_int, regular_uoflow, None),
-        (bh.hist.regular_noflow_int, regular_noflow, None),
-        (bh.hist.regular_atomic_int, regular_uoflow, None),
-        (bh.hist.regular_atomic_int, regular_uoflow, -4),
-        (bh.hist.regular_int, regular_uoflow, 4),
-        )
-
 @pytest.mark.benchmark(group='2d-fills')
-@pytest.mark.parametrize("hist, axis, fill", histax)
-def test_2d(benchmark, hist, axis, fill):
-    result = benchmark(make_and_run_hist, hist, [axis(bins[0], *ranges[0]), axis(bins[1], *ranges[1])], vals, fill)
+@pytest.mark.parametrize("flow", (True, False))
+@pytest.mark.parametrize("storage", (bh.storage.int,
+                                     bh.storage.double,
+                                     bh.storage.unlimited,
+                                     #bh.storage.weight,
+                                     ))
+def test_2d(benchmark, flow, storage):
+    result = benchmark(make_and_run_hist, flow, storage)
     assert_array_equal(result[:-1,:-1], answer[:-1,:-1])
 
