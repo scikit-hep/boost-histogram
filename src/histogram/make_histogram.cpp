@@ -60,24 +60,20 @@ void register_make_histogram(py::module &m, py::module &hist) {
 
             auto axes = py::cast<axes::any>(args);
 
-            return try_cast<storage::unlimited,
-                            storage::double_,
-                            storage::int_,
-                            storage::atomic_int,
-                            storage::weight>(storage, [&axes](auto &&storage) {
-                return py::cast(bh::make_histogram_with(storage, axes), py::return_value_policy::move);
-            });
+            return try_cast<storage::unlimited, storage::double_, storage::int_, storage::atomic_int, storage::weight>(
+                storage, [&axes](auto &&storage) {
+                    return py::cast(bh::make_histogram_with(storage, axes), py::return_value_policy::move);
+                });
         },
         "Make any histogram");
 
     // This factory makes a class that can be used to create histograms and also be used in is_instance
     py::object factory_meta_py = py::module::import("boost.histogram_utils").attr("FactoryMeta");
 
-    m.attr("histogram")
-        = factory_meta_py(m.attr("_make_histogram"),
-                          py::make_tuple(hist.attr("any_double"),
-                                         hist.attr("any_int"),
-                                         hist.attr("any_atomic_int"),
-                                         hist.attr("any_unlimited"),
-                                         hist.attr("any_weight")));
+    m.attr("histogram") = factory_meta_py(m.attr("_make_histogram"),
+                                          py::make_tuple(hist.attr("any_double"),
+                                                         hist.attr("any_int"),
+                                                         hist.attr("any_atomic_int"),
+                                                         hist.attr("any_unlimited"),
+                                                         hist.attr("any_weight")));
 }

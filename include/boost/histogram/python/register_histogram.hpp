@@ -182,7 +182,7 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
             "fill",
             [](histogram_t &self, py::args args, py::kwargs kwargs) {
                 auto empty_weight = py::object();
-                auto weight = optional_arg(kwargs, "weight", empty_weight);
+                auto weight       = optional_arg(kwargs, "weight", empty_weight);
 
                 using arrayd = py::array_t<double>;
 
@@ -196,7 +196,7 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
                 unsigned iarg = 0;
                 for(auto arg : args) {
                     if(py::isinstance<py::buffer>(arg) || py::hasattr(arg, "__iter__")) {
-                        auto tmp = py::cast<arrayd>(arg);
+                        auto tmp       = py::cast<arrayd>(arg);
                         vargs.at(iarg) = tmp;
                         if(tmp.ndim() != 1)
                             throw std::invalid_argument("All arrays must be 1D");
