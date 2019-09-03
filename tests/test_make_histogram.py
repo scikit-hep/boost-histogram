@@ -92,10 +92,10 @@ def test_issue_axis_bin_swan():
 
 
 options = (
-        (bh.hist.regular_unlimited, bh.axis.regular_uoflow(5,1,2), bh.storage.unlimited),
-        (bh.hist.regular_int, bh.axis.regular_uoflow(5,1,2), bh.storage.int),
-        (bh.hist.regular_atomic_int, bh.axis.regular_uoflow(5,1,2), bh.storage.atomic_int),
-        (bh.hist.regular_noflow_int, bh.axis.regular_noflow(5,1,2), bh.storage.int),
+        (bh.hist.any_unlimited, bh.axis.regular_uoflow(5,1,2), bh.storage.unlimited),
+        (bh.hist.any_int, bh.axis.regular_uoflow(5,1,2), bh.storage.int),
+        (bh.hist.any_atomic_int, bh.axis.regular_uoflow(5,1,2), bh.storage.atomic_int),
+        (bh.hist.any_int, bh.axis.regular_noflow(5,1,2), bh.storage.int),
         (bh.hist.any_double, bh.axis.regular_uoflow(5,1,2), bh.storage.double),
         (bh.hist.any_weight, bh.axis.regular_uoflow(5,1,2), bh.storage.weight),
         (bh.hist.any_int, bh.axis.integer_uoflow(0,5), bh.storage.int),
@@ -117,4 +117,3 @@ def test_make_selection(histclass, ax, storage):
 def test_make_selection_special():
     histogram = bh._make_histogram(bh.axis.regular_uoflow(5,1,2), bh.axis.regular_noflow(10,1,2))
     assert isinstance(histogram, bh.hist.any_int)
-

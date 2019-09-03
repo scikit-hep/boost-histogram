@@ -23,7 +23,8 @@ void register_make_histogram(py::module &m, py::module &hist) {
         "_make_histogram",
         [](py::args t_args, py::kwargs kwargs) -> py::object {
             py::list args      = py::cast<py::list>(t_args);
-            py::object storage = optional_arg(kwargs, "storage", py::cast(storage::unlimited()));
+            py::object storage = optional_arg(kwargs, "storage", py::cast(storage::int_()));
+            // TODO: change this to be unlimited by default
             finalize_args(kwargs);
 
             // HD: this should be done in Python
@@ -59,7 +60,11 @@ void register_make_histogram(py::module &m, py::module &hist) {
 
             auto axes = py::cast<axes::any>(args);
 
-            return try_cast<storage::unlimited, storage::double_, storage::int_, storage::weight>(storage, [&axes](auto &&storage) {
+            return try_cast<storage::unlimited,
+                            storage::double_,
+                            storage::int_,
+                            storage::atomic_int,
+                            storage::weight>(storage, [&axes](auto &&storage) {
                 return py::cast(bh::make_histogram_with(storage, axes), py::return_value_policy::move);
             });
         },
@@ -70,5 +75,9 @@ void register_make_histogram(py::module &m, py::module &hist) {
 
     m.attr("histogram")
         = factory_meta_py(m.attr("_make_histogram"),
-                          py::make_tuple(hist.attr("any_double"), hist.attr("any_unlimited"), hist.attr("any_weight")));
+                          py::make_tuple(hist.attr("any_double"),
+                                         hist.attr("any_int"),
+                                         hist.attr("any_atomic_int"),
+                                         hist.attr("any_unlimited"),
+                                         hist.attr("any_weight")));
 }

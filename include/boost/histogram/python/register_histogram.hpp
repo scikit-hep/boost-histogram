@@ -191,16 +191,18 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
                 auto vargs = bh::detail::make_stack_buffer<VArg>(bh::unsafe_access::axes(self));
 
                 if(args.size() != self.rank())
-                    throw std::invalid_argument("wrong number of args");
+                    throw std::invalid_argument("Wrong number of args");
 
                 unsigned iarg = 0;
                 for(auto arg : args) {
-                    if(py::isinstance<int>(arg))
+                    if(py::isinstance<py::buffer>(arg) || py::hasattr(arg, "__iter__")) {
+                        auto tmp = py::cast<arrayd>(arg);
+                        vargs.at(iarg) = tmp;
+                        if(tmp.ndim() != 1)
+                            throw std::invalid_argument("All arrays must be 1D");
+                    } else {
                         vargs.at(iarg) = py::cast<double>(arg);
-                    else if(py::isinstance<double>(arg))
-                        vargs.at(iarg) = py::cast<double>(arg);
-                    else
-                        vargs.at(iarg) = py::cast<arrayd>(arg);
+                    }
                     ++iarg;
                 }
 
