@@ -1,10 +1,11 @@
 import pytest
 
-import numpy as np
 import boost.histogram as bh
+from boost.histogram.axis import regular
+
+import numpy as np
 from numpy.testing import assert_array_equal, assert_allclose
 
-from boost.histogram.axis import regular
 
 bins=100
 ranges=(-1,1)
@@ -39,3 +40,5 @@ def make_and_run_hist(flow, storage):
 def test_1d(benchmark, flow, storage):
     result = benchmark(make_and_run_hist, flow, storage)
     assert_allclose(result[:-1], answer[:-1], atol=2)
+
+

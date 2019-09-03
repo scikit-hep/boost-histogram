@@ -224,12 +224,18 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
                     },
                     [&](auto &h) {
                         finalize_args(kwargs);
-                        if(py::isinstance<double>(weight))
-                            h.fill(vargs, bh::weight(py::cast<double>(weight)));
-                        else if(!weight.is(empty_weight) && py::isinstance<arrayd>(weight))
-                            h.fill(vargs, bh::weight(py::cast<arrayd>(weight)));
-                        else
+                        if(weight.is(empty_weight)) {
+                            py::gil_scoped_release tmp;
                             h.fill(vargs);
+                        } else if(py::isinstance<py::buffer>(weight) || py::hasattr(weight, "__iter__")) {
+                            auto weight_arr = py::cast<arrayd>(weight);
+                            py::gil_scoped_release tmp;
+                            h.fill(vargs, bh::weight(weight_arr));
+                        } else {
+                            auto weight_val = py::cast<double>(weight);
+                            py::gil_scoped_release tmp;
+                            h.fill(vargs, bh::weight(weight_val));
+                        }
                     },
                     self);
             },
