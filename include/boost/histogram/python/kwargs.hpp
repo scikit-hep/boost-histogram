@@ -27,6 +27,15 @@ std::unique_ptr<T> optional_arg(py::kwargs &kwargs, const char *name) {
     }
 }
 
+/// Get and remove a value from a keyword argument dict, or return a empty pointer
+inline std::unique_ptr<py::object> optional_arg(py::kwargs &kwargs, const char *name) {
+    if(kwargs.contains(name)) {
+        return std::make_unique<py::object>(kwargs.attr("pop")(name));
+    } else {
+        return std::unique_ptr<py::object>();
+    }
+}
+
 /// Get and remove a value from a keyword argument dict with default
 template <class T>
 T optional_arg(py::kwargs &kwargs, const char *name, T original_value) {

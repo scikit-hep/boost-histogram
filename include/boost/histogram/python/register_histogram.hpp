@@ -5,28 +5,26 @@
 
 #pragma once
 
-#include <boost/core/ignore_unused.hpp>
 #include <boost/histogram/python/kwargs.hpp>
 #include <boost/histogram/python/pybind11.hpp>
-#include <pybind11/operators.h>
-
-#include <boost/histogram/python/axis.hpp>
-#include <boost/histogram/python/histogram.hpp>
-#include <boost/histogram/python/serializion.hpp>
-#include <boost/histogram/python/storage.hpp>
-#include <boost/histogram/python/typetools.hpp>
 
 #include <boost/histogram.hpp>
 #include <boost/histogram/algorithm/project.hpp>
 #include <boost/histogram/algorithm/sum.hpp>
 #include <boost/histogram/axis/ostream.hpp>
 #include <boost/histogram/ostream.hpp>
+#include <boost/histogram/python/axis.hpp>
+#include <boost/histogram/python/histogram.hpp>
+#include <boost/histogram/python/indexed.hpp>
+#include <boost/histogram/python/kwargs.hpp>
+#include <boost/histogram/python/serializion.hpp>
+#include <boost/histogram/python/storage.hpp>
 #include <boost/histogram/unsafe_access.hpp>
-
 #include <boost/mp11.hpp>
-
 #include <future>
+#include <pybind11/operators.h>
 #include <sstream>
+#include <string>
 #include <thread>
 #include <tuple>
 #include <vector>
@@ -244,6 +242,19 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
         .def(make_pickle<histogram_t>())
 
         ;
+
+    hist.def(
+        "indexed",
+        [](histogram_t &self, bool flow) {
+            return make_repeatable_iterator(self, flow ? bh::coverage::all : bh::coverage::inner);
+        },
+        "flow"_a = false,
+        "Set up an iterator, returns a special accessor for bin info and content",
+        py::keep_alive<0, 1>());
+
+    register_ufunc_tools(hist);
+
+    register_indexed<histogram_t>(m, name);
 
     return hist;
 }

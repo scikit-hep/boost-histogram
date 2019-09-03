@@ -4,9 +4,6 @@
 // file LICENSE or https://github.com/scikit-hep/boost-histogram for details.
 
 #include <boost/histogram/python/pybind11.hpp>
-#include <pybind11/operators.h>
-
-#include <boost/histogram/python/register_accumulator.hpp>
 
 #include <boost/histogram.hpp>
 #include <boost/histogram/accumulators/mean.hpp>
@@ -14,6 +11,8 @@
 #include <boost/histogram/accumulators/sum.hpp>
 #include <boost/histogram/accumulators/weighted_mean.hpp>
 #include <boost/histogram/accumulators/weighted_sum.hpp>
+#include <boost/histogram/python/register_accumulator.hpp>
+#include <pybind11/operators.h>
 
 void register_accumulators(py::module &accumulators) {
     using weighted_sum = bh::accumulators::weighted_sum<double>;

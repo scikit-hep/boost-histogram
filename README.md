@@ -115,6 +115,13 @@ counts = hist.view()
     * `.shrink(ax, lower, upper)`: Remove bins outside a range on a listed axis (number)
     * `.rebin(ax, merge)`: Combine `merge` number of bins on a listed axis (number)
     * `.shring_and_rebin(ax, lower, upper, merge)`: Shrink and rebin at the same time
+    * `.indexed(flow=False)`: Iterate over the bins with a special "indexed" iterator
+        * `ind.content`: The contents of a bin (set or get)
+        * `ind.bin(N)`: The Nth bin (has the normal `.center`, `.lower`, `.upper`, and `.width`)
+        * `ind.bins()`: A list of bins
+        * `ind.centers()`: The centers of each bin
+        * `ind.index(N)`: The index of the Nth bin
+        * `ind.indices()`: A list of indices
 * Details
     * Use `bh.histogram(..., storage=...)` to make a histogram (there are several different types) 
     * Several common combinations are optimized, such as regular axes + int storage

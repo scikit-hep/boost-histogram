@@ -8,7 +8,6 @@
 #include <boost/histogram/python/axis.hpp>
 #include <boost/histogram/python/kwargs.hpp>
 #include <boost/histogram/python/register_axis.hpp>
-
 #include <vector>
 
 void register_axes_options(py::module &opt) {

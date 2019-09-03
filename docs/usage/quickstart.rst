@@ -63,6 +63,23 @@ Accessing the contents
 
 You can directly give a histogram to anything that expects a Python
 buffer, such as ``np.asarray``. You can also use ``hist.view()`` to get
-a numpy array. Most methods like ``.view()`` offer an optional keyword
+a numpy array - currently limited to simple storage types, like int and double.
+Most methods like ``.view()`` offer an optional keyword
 argument that you can pass, ``flow=True``, to enable the under and
 overflow bins (disabled by default).
+
+A very powerful way to access the bins is with the indexed iterator. For example,
+if you want to initialize the contents of every bin to a function, you could do:
+
+.. code:: python
+
+   def f(x, y):
+       return x**2 + y**2 # Any function here
+
+   hist = bh.histogram(bh.axis.regular(10, 0.0, 1.0),
+                       bh.axis.regular(10, 0, 10),
+                       storage=bh.storage.double())
+   
+   for ind in hist.indexed():
+       ind.content = f(*ind.centers())
+
