@@ -409,7 +409,7 @@ def test_pickle_1():
                     a.fill(i, j, k, l, weight=5)
 
     io = BytesIO()
-    pickle.dump(a, io)
+    pickle.dump(a, io, protocol=-1)
     io.seek(0)
     b = pickle.load(io)
 
