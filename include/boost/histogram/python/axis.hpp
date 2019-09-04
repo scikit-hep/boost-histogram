@@ -127,8 +127,4 @@ using any = std::vector<bh::axis::variant<axis::_regular_uoflow,
                                           axis::_category_str,
                                           axis::_category_str_growth>>;
 
-// Specialization for some speed improvement
-using _regular_uoflow = std::vector<axis::_regular_uoflow>;
-using _regular_noflow = std::vector<axis::_regular_noflow>;
-
 } // namespace axes
