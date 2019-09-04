@@ -42,10 +42,10 @@ void register_make_histogram(py::module &m, py::module &hist) {
                 if(py::isinstance<py::tuple>(args[i])) {
                     py::tuple arg = py::cast<py::tuple>(args[i]);
                     if(arg.size() == 3) {
-                        args[i] = py::cast(new axis::regular_uoflow(py::cast<unsigned>(arg[0]),
-                                                                    py::cast<double>(arg[1]),
-                                                                    py::cast<double>(arg[2]),
-                                                                    py::str()),
+                        args[i] = py::cast(new axis::_regular_uoflow(py::cast<unsigned>(arg[0]),
+                                                                     py::cast<double>(arg[1]),
+                                                                     py::cast<double>(arg[2]),
+                                                                     py::str()),
                                            py::return_value_policy::take_ownership);
                     } else if(arg.size() == 4) {
                         try {
@@ -54,10 +54,10 @@ void register_make_histogram(py::module &m, py::module &hist) {
                         } catch(const py::cast_error &) {
                         }
 
-                        args[i] = py::cast(new axis::regular_uoflow(py::cast<unsigned>(arg[0]),
-                                                                    py::cast<double>(arg[1]),
-                                                                    py::cast<double>(arg[2]),
-                                                                    py::cast<metadata_t>(arg[3])),
+                        args[i] = py::cast(new axis::_regular_uoflow(py::cast<unsigned>(arg[0]),
+                                                                     py::cast<double>(arg[1]),
+                                                                     py::cast<double>(arg[2]),
+                                                                     py::cast<metadata_t>(arg[3])),
                                            py::return_value_policy::take_ownership);
                     } else {
                         throw py::type_error(

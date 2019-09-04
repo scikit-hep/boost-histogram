@@ -71,64 +71,64 @@ namespace axis {
 
 // These match the Python names
 
-using regular_uoflow = bh::axis::regular<double, bh::use_default, metadata_t>;
-using regular_uflow  = bh::axis::regular<double, bh::use_default, metadata_t, bh::axis::option::underflow_t>;
-using regular_oflow  = bh::axis::regular<double, bh::use_default, metadata_t, bh::axis::option::overflow_t>;
-using regular_noflow = bh::axis::regular<double, bh::use_default, metadata_t, bh::axis::option::none_t>;
-using regular_growth = bh::axis::regular<double, bh::use_default, metadata_t, bh::axis::option::growth_t>;
+using _regular_uoflow = bh::axis::regular<double, bh::use_default, metadata_t>;
+using _regular_uflow  = bh::axis::regular<double, bh::use_default, metadata_t, bh::axis::option::underflow_t>;
+using _regular_oflow  = bh::axis::regular<double, bh::use_default, metadata_t, bh::axis::option::overflow_t>;
+using _regular_noflow = bh::axis::regular<double, bh::use_default, metadata_t, bh::axis::option::none_t>;
+using _regular_growth = bh::axis::regular<double, bh::use_default, metadata_t, bh::axis::option::growth_t>;
 
 using circular     = bh::axis::circular<double, metadata_t>;
 using regular_log  = bh::axis::regular<double, bh::axis::transform::log, metadata_t>;
 using regular_sqrt = bh::axis::regular<double, bh::axis::transform::sqrt, metadata_t>;
 using regular_pow  = bh::axis::regular<double, bh::axis::transform::pow, metadata_t>;
 
-using variable_uoflow = bh::axis::variable<double, metadata_t>;
-using variable_uflow  = bh::axis::variable<double, metadata_t, bh::axis::option::underflow_t>;
-using variable_oflow  = bh::axis::variable<double, metadata_t, bh::axis::option::overflow_t>;
-using variable_noflow = bh::axis::variable<double, metadata_t, bh::axis::option::none_t>;
+using _variable_uoflow = bh::axis::variable<double, metadata_t>;
+using _variable_uflow  = bh::axis::variable<double, metadata_t, bh::axis::option::underflow_t>;
+using _variable_oflow  = bh::axis::variable<double, metadata_t, bh::axis::option::overflow_t>;
+using _variable_noflow = bh::axis::variable<double, metadata_t, bh::axis::option::none_t>;
 
-using integer_uoflow = bh::axis::integer<int, metadata_t>;
-using integer_uflow  = bh::axis::integer<int, metadata_t, bh::axis::option::underflow_t>;
-using integer_oflow  = bh::axis::integer<int, metadata_t, bh::axis::option::overflow_t>;
-using integer_noflow = bh::axis::integer<int, metadata_t, bh::axis::option::none_t>;
-using integer_growth = bh::axis::integer<int, metadata_t, bh::axis::option::growth_t>;
+using _integer_uoflow = bh::axis::integer<int, metadata_t>;
+using _integer_uflow  = bh::axis::integer<int, metadata_t, bh::axis::option::underflow_t>;
+using _integer_oflow  = bh::axis::integer<int, metadata_t, bh::axis::option::overflow_t>;
+using _integer_noflow = bh::axis::integer<int, metadata_t, bh::axis::option::none_t>;
+using _integer_growth = bh::axis::integer<int, metadata_t, bh::axis::option::growth_t>;
 
-using category_int        = bh::axis::category<int, metadata_t>;
-using category_int_growth = bh::axis::category<int, metadata_t, bh::axis::option::growth_t>;
+using _category_int        = bh::axis::category<int, metadata_t>;
+using _category_int_growth = bh::axis::category<int, metadata_t, bh::axis::option::growth_t>;
 
-using category_str        = bh::axis::category<std::string, metadata_t>;
-using category_str_growth = bh::axis::category<std::string, metadata_t, bh::axis::option::growth_t>;
+using _category_str        = bh::axis::category<std::string, metadata_t>;
+using _category_str_growth = bh::axis::category<std::string, metadata_t, bh::axis::option::growth_t>;
 
 } // namespace axis
 
 namespace axes {
 
 // The following list is all types supported
-using any = std::vector<bh::axis::variant<axis::regular_uoflow,
-                                          axis::regular_uflow,
-                                          axis::regular_oflow,
-                                          axis::regular_noflow,
-                                          axis::regular_growth,
+using any = std::vector<bh::axis::variant<axis::_regular_uoflow,
+                                          axis::_regular_uflow,
+                                          axis::_regular_oflow,
+                                          axis::_regular_noflow,
+                                          axis::_regular_growth,
                                           axis::circular,
                                           axis::regular_log,
                                           axis::regular_pow,
                                           axis::regular_sqrt,
-                                          axis::variable_uoflow,
-                                          axis::variable_oflow,
-                                          axis::variable_uflow,
-                                          axis::variable_noflow,
-                                          axis::integer_uoflow,
-                                          axis::integer_oflow,
-                                          axis::integer_uflow,
-                                          axis::integer_noflow,
-                                          axis::integer_growth,
-                                          axis::category_int,
-                                          axis::category_int_growth,
-                                          axis::category_str,
-                                          axis::category_str_growth>>;
+                                          axis::_variable_uoflow,
+                                          axis::_variable_oflow,
+                                          axis::_variable_uflow,
+                                          axis::_variable_noflow,
+                                          axis::_integer_uoflow,
+                                          axis::_integer_oflow,
+                                          axis::_integer_uflow,
+                                          axis::_integer_noflow,
+                                          axis::_integer_growth,
+                                          axis::_category_int,
+                                          axis::_category_int_growth,
+                                          axis::_category_str,
+                                          axis::_category_str_growth>>;
 
 // Specialization for some speed improvement
-using regular_uoflow = std::vector<axis::regular_uoflow>;
-using regular_noflow = std::vector<axis::regular_noflow>;
+using _regular_uoflow = std::vector<axis::_regular_uoflow>;
+using _regular_noflow = std::vector<axis::_regular_noflow>;
 
 } // namespace axes

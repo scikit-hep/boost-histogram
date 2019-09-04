@@ -44,31 +44,31 @@ counts = hist.view()
 
 * Many axis types (all support `metadata=...`)
     * `bh.axis.regular(n, start, stop, underflow=True, overflow=True, growth=False)`: shortcut to make the types below. `flow=False` is also supported.
-        * `bh.axis.regular_uoflow(n, start, stop)`: `n` evenly spaced bins from `start` to `stop`
-        * `bh.axis.regular_uflow(n, start, stop)`: `n` evenly spaced bins from `start` to `stop` (no overflow)
-        * `bh.axis.regular_oflow(n, start, stop)`: `n` evenly spaced bins from `start` to `stop` (no underflow)
-        * `bh.axis.regular_noflow(n, start, stop)`: `regular` but with no underflow or overflow bins
-        * `bh.axis.regular_growth(n, start, stop)`: `regular` but grows if a value is added outside the range
+        * `bh.axis._regular_uoflow(n, start, stop)`: `n` evenly spaced bins from `start` to `stop`
+        * `bh.axis._regular_uflow(n, start, stop)`: `n` evenly spaced bins from `start` to `stop` (no overflow)
+        * `bh.axis._regular_oflow(n, start, stop)`: `n` evenly spaced bins from `start` to `stop` (no underflow)
+        * `bh.axis._regular_noflow(n, start, stop)`: `regular` but with no underflow or overflow bins
+        * `bh.axis._regular_growth(n, start, stop)`: `regular` but grows if a value is added outside the range
     * `bh.axis.circular(n, start, stop)`: Value outside the range wrap into the range
     * `bh.axis.regular_log(n, start, stop)`: Regularly spaced values in log 10 scale
     * `bh.axis.regular_sqrt(n, start, stop)`: Regularly spaced value in sqrt scale
     * `bh.axis.regular_pow(n, start, stop, power)`: Regularly spaced value to some `power`
     * `bh.axis.integer(start, stop, underflow=True, overflow=True, growth=False)`: Special high-speed version of `regular` for evenly spaced bins of width 1
-        * `bh.axis.integer_uoflow(start, stop)`: `n` evenly spaced bins from `start` to `stop`
-        * `bh.axis.integer_uflow(start, stop)`: `n` evenly spaced bins from `start` to `stop` (no overflow)
-        * `bh.axis.integer_oflow(start, stop)`: `n` evenly spaced bins from `start` to `stop` (no underflow)
-        * `bh.axis.integer_noflow(start, stop)`: `integer` but with no underflow or overflow bins
-        * `bh.axis.integer_growth(start, stop)`: `integer` but grows if a value is added outside the range
+        * `bh.axis._integer_uoflow(start, stop)`: `n` evenly spaced bins from `start` to `stop`
+        * `bh.axis._integer_uflow(start, stop)`: `n` evenly spaced bins from `start` to `stop` (no overflow)
+        * `bh.axis._integer_oflow(start, stop)`: `n` evenly spaced bins from `start` to `stop` (no underflow)
+        * `bh.axis._integer_noflow(start, stop)`: `integer` but with no underflow or overflow bins
+        * `bh.axis._integer_growth(start, stop)`: `integer` but grows if a value is added outside the range
     * `bh.axis.variable([start, edge1, edge2, ..., stop], underflow=True, overflow=True)`: Uneven bin spacing
-        * `bh.axis.variable_uoflow([start, edge1, edge2, ..., stop])`: `n` evenly spaced bins from `start` to `stop`
-        * `bh.axis.variable_uflow([start, edge1, edge2, ..., stop])`: `n` evenly spaced bins from `start` to `stop` (no overflow)
-        * `bh.axis.variable_oflow([start, edge1, edge2, ..., stop])`: `n` evenly spaced bins from `start` to `stop` (no underflow)
-        * `bh.axis.variable_noflow([start, edge1, edge2, ..., stop])`: `variable` but with no underflow or overflow bins
+        * `bh.axis._variable_uoflow([start, edge1, edge2, ..., stop])`: `n` evenly spaced bins from `start` to `stop`
+        * `bh.axis._variable_uflow([start, edge1, edge2, ..., stop])`: `n` evenly spaced bins from `start` to `stop` (no overflow)
+        * `bh.axis._variable_oflow([start, edge1, edge2, ..., stop])`: `n` evenly spaced bins from `start` to `stop` (no underflow)
+        * `bh.axis._variable_noflow([start, edge1, edge2, ..., stop])`: `variable` but with no underflow or overflow bins
     * `bh.axis.category([...], growth=False)`: Integer or string categories
-        * `bh.axis.category_int([1, 2, ...])`: Integer bins
-        * `bh.axis.category_int_growth([1, 2, ...])`: Integer bins where new items are added automatically
-        * `bh.axis.category_str(["item1", "item2", ...])`: WIP: String bins
-        * `bh.axis.category_str_growth(["item1", "item2", ...])`: WIP: String bins where new items are added automatically
+        * `bh.axis._category_int([1, 2, ...])`: Integer bins
+        * `bh.axis._category_int_growth([1, 2, ...])`: Integer bins where new items are added automatically
+        * `bh.axis._category_str(["item1", "item2", ...])`: WIP: String bins
+        * `bh.axis._category_str_growth(["item1", "item2", ...])`: WIP: String bins where new items are added automatically
 * Axis features:
     * `.bin(i)`: The bin or a bin view for continuous axis types
         * `.lower()`: The lower value

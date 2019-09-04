@@ -3,12 +3,12 @@ from pytest import approx
 
 
 from boost.histogram import histogram
-from boost.histogram.axis import (regular_uoflow, regular_noflow,
+from boost.histogram.axis import (_regular_uoflow, _regular_noflow,
                                   regular_log, regular_sqrt,
                                   regular_pow, circular,
-                                  variable, integer_uoflow,
-                                  integer_noflow, integer_growth,
-                                  category_int as category)
+                                  variable, _integer_uoflow,
+                                  _integer_noflow, _integer_growth,
+                                  _category_int as category)
 # TODO: import the public names only, not private ones (and make private names actually private)
 import boost.histogram as bh
 
@@ -26,7 +26,7 @@ except ImportError:
 
 def test_init():
     histogram()
-    histogram(integer_uoflow(-1, 1))
+    histogram(_integer_uoflow(-1, 1))
     with pytest.raises(RuntimeError):
         histogram(1)
     with pytest.raises(RuntimeError):
@@ -34,27 +34,27 @@ def test_init():
     with pytest.raises(RuntimeError):
         histogram([])
     with pytest.raises(RuntimeError):
-        histogram(regular_uoflow)
+        histogram(_regular_uoflow)
     with pytest.raises(TypeError):
-        histogram(regular_uoflow())
+        histogram(_regular_uoflow())
     with pytest.raises(RuntimeError):
-        histogram([integer_uoflow(-1, 1)])
+        histogram([_integer_uoflow(-1, 1)])
     with pytest.raises(RuntimeError):
-        histogram([integer_uoflow(-1, 1), integer_uoflow(-1, 1)])
+        histogram([_integer_uoflow(-1, 1), _integer_uoflow(-1, 1)])
     with pytest.raises(KeyError):
-        histogram(integer_uoflow(-1, 1), unknown_keyword="nh")
+        histogram(_integer_uoflow(-1, 1), unknown_keyword="nh")
 
-    h = histogram(integer_uoflow(-1, 2))
+    h = histogram(_integer_uoflow(-1, 2))
     assert h.rank() == 1
-    assert h.axis(0) == integer_uoflow(-1, 2)
+    assert h.axis(0) == _integer_uoflow(-1, 2)
     assert h.axis(0).size(flow=True) == 5
     assert h.axis(0).size() == 3
-    assert h != histogram(regular_uoflow(1, -1, 1))
-    assert h != histogram(integer_uoflow(-1, 1, metadata="ia"))
+    assert h != histogram(_regular_uoflow(1, -1, 1))
+    assert h != histogram(_integer_uoflow(-1, 1, metadata="ia"))
 
 
 def test_copy():
-    a = histogram(integer_uoflow(-1, 1))
+    a = histogram(_integer_uoflow(-1, 1))
     import copy
     b = copy.copy(a)
     assert a == b
@@ -67,7 +67,7 @@ def test_copy():
 
 def test_fill_int_1d():
 
-    h = histogram(integer_uoflow(-1, 2))
+    h = histogram(_integer_uoflow(-1, 2))
     assert isinstance(h, bh.hist.any_int)
     assert isinstance(h, histogram)
 
@@ -103,7 +103,7 @@ def test_fill_int_1d():
 
 @pytest.mark.parametrize("flow", [True, False])
 def test_fill_1d(flow):
-    h = histogram(regular_uoflow(3, -1, 2) if flow else regular_noflow(3, -1, 2))
+    h = histogram(_regular_uoflow(3, -1, 2) if flow else _regular_noflow(3, -1, 2))
     with pytest.raises(ValueError):
         h.fill()
     with pytest.raises(ValueError):
@@ -136,7 +136,7 @@ def test_fill_1d(flow):
         assert get(h, 3) == 1
 
 def test_growth():
-    h = histogram(integer_uoflow(-1, 2))
+    h = histogram(_integer_uoflow(-1, 2))
     h.fill(-1)
     h.fill(1)
     h.fill(1)
@@ -154,8 +154,8 @@ def test_growth():
 
 @pytest.mark.parametrize("flow", [True, False])
 def test_fill_2d(flow):
-    h = histogram((integer_uoflow if flow else integer_noflow)(-1, 2),
-                  (regular_uoflow if flow else regular_noflow)(4, -2, 2))
+    h = histogram((_integer_uoflow if flow else _integer_noflow)(-1, 2),
+                  (_regular_uoflow if flow else _regular_noflow)(4, -2, 2))
     h.fill(-1, -2)
     h.fill(-1, -1)
     h.fill(0, 0)
@@ -184,8 +184,8 @@ def test_fill_2d(flow):
 
 @pytest.mark.parametrize("flow", [True, False])
 def test_add_2d(flow):
-    h = histogram((integer_uoflow if flow else integer_noflow)(-1, 2),
-                  (regular_uoflow if flow else regular_noflow)(4, -2, 2))
+    h = histogram((_integer_uoflow if flow else _integer_noflow)(-1, 2),
+                  (_regular_uoflow if flow else _regular_noflow)(4, -2, 2))
     assert isinstance(h, histogram)
 
     h.fill(-1, -2)
@@ -209,8 +209,8 @@ def test_add_2d(flow):
             assert h.at(i, j) == 2 * m[i][j]
 
 def test_add_2d_bad():
-    a = histogram(integer_uoflow(-1, 1))
-    b = histogram(regular_uoflow(3, -1, 1))
+    a = histogram(_integer_uoflow(-1, 1))
+    b = histogram(_regular_uoflow(3, -1, 1))
 
     with pytest.raises(ValueError):
         a += b
@@ -220,8 +220,8 @@ def test_add_2d_bad():
 @pytest.mark.skip()
 @pytest.mark.parametrize("flow", [True, False])
 def test_add_2d_w(flow):
-    h = histogram((integer_uoflow if flow else integer_noflow)(-1, 2),
-                  (regular_uoflow if flow else regular_noflow)(4, -2, 2))
+    h = histogram((_integer_uoflow if flow else _integer_noflow)(-1, 2),
+                  (_regular_uoflow if flow else _regular_noflow)(4, -2, 2))
     h.fill(-1, -2)
     h.fill(-1, -1)
     h.fill(0, 0)
@@ -236,8 +236,8 @@ def test_add_2d_w(flow):
          [0, 1, 0, 0, 0, 0],
          [0, 0, 0, 0, 0, 0]]
 
-    h2 = histogram((integer_uoflow if flow else integer_noflow)(-1, 2),
-                  (regular_uoflow if flow else regular_noflow)(4, -2, 2))
+    h2 = histogram((_integer_uoflow if flow else _integer_noflow)(-1, 2),
+                  (_regular_uoflow if flow else _regular_noflow)(4, -2, 2))
     h2(0, 0, weight=0)
 
     h2 += h
@@ -250,7 +250,7 @@ def test_add_2d_w(flow):
             assert h.at(i, j) == 2 * m[i][j]
 
 def test_repr():
-    h = histogram(regular_uoflow(3, 0, 1), integer_uoflow(0, 1))
+    h = histogram(_regular_uoflow(3, 0, 1), _integer_uoflow(0, 1))
     hr = repr(h)
     assert hr == '''histogram(
   regular(3, 0, 1, options=underflow | overflow),
@@ -273,7 +273,7 @@ def test_repr():
 )'''
 
 def test_axis():
-    axes = (regular_uoflow(10, 0, 1), integer_uoflow(0, 1))
+    axes = (_regular_uoflow(10, 0, 1), _integer_uoflow(0, 1))
     h = histogram(*axes)
     for i, a in enumerate(axes):
         assert h.axis(i) == a
@@ -287,11 +287,11 @@ def test_axis():
 # CLASSIC: This used to only fail when accessing, now fails in creation
 def test_overflow():
     with pytest.raises(RuntimeError):
-        h = histogram(*[regular_uoflow(1, 0, 1) for i in range(50)])
+        h = histogram(*[_regular_uoflow(1, 0, 1) for i in range(50)])
 
 
 def test_out_of_range():
-    h = histogram(regular_uoflow(3, 0, 1))
+    h = histogram(_regular_uoflow(3, 0, 1))
     h.fill(-1)
     h.fill(2)
     assert h.at(-1) == 1
@@ -307,7 +307,7 @@ def test_out_of_range():
 
 # CLASSIC: This used to have variance
 def test_operators():
-    h = histogram(integer_uoflow(0, 2))
+    h = histogram(_integer_uoflow(0, 2))
     h.fill(0)
     h += h
     assert h.at(0) == 2
@@ -317,25 +317,25 @@ def test_operators():
     assert h.at(1) == 0
     assert (h + h).at(0) == (h * 2).at(0)
     assert (h + h).at(0) == (2 * h).at(0)
-    h2 = histogram(regular_uoflow(2, 0, 2))
+    h2 = histogram(_regular_uoflow(2, 0, 2))
     with pytest.raises(ValueError):
         h + h2
 
 # CLASSIC: reduce_to -> project,
 def test_project():
-    h = histogram(integer_uoflow(0, 2), integer_uoflow(1, 4))
+    h = histogram(_integer_uoflow(0, 2), _integer_uoflow(1, 4))
     h.fill(0, 1)
     h.fill(0, 2)
     h.fill(1, 3)
 
     h0 = h.project(0)
     assert h0.rank() == 1
-    assert h0.axis(0) == integer_uoflow(0, 2)
+    assert h0.axis(0) == _integer_uoflow(0, 2)
     assert [h0.at(i) for i in range(2)] == [2, 1]
 
     h1 = h.project(1)
     assert h1.rank() == 1
-    assert h1.axis(0) == integer_uoflow(1, 4)
+    assert h1.axis(0) == _integer_uoflow(1, 4)
     assert [h1.at(i) for i in range(3)] == [1, 1, 1]
 
     with pytest.raises(ValueError):
@@ -345,19 +345,19 @@ def test_project():
         h.project(2, 1)
 
 def test_shrink_1d():
-    h = histogram(regular_uoflow(20, 1, 5))
+    h = histogram(_regular_uoflow(20, 1, 5))
     h.fill(1.1)
     hs = h.shrink(0, 1, 2)
     assert_array_equal(hs.view(), [1,0,0,0,0])
 
 def test_rebin_1d():
-    h = histogram(regular_uoflow(20, 1, 5))
+    h = histogram(_regular_uoflow(20, 1, 5))
     h.fill(1.1)
     hs = h.rebin(0, 4)
     assert_array_equal(hs.view(), [1,0,0,0,0])
 
 def test_shrink_rebin_1d():
-    h = histogram(regular_uoflow(20, 0, 4))
+    h = histogram(_regular_uoflow(20, 0, 4))
     h.fill(1.1)
     hs = h.shrink_and_rebin(0, 1, 3, 2)
     assert_array_equal(hs.view(), [1,0,0,0,0])
@@ -366,8 +366,8 @@ def test_shrink_rebin_1d():
 # CLASSIC: This used to have metadata too, but that does not compare equal
 def test_pickle_0():
     a = histogram(category([0, 1, 2]),
-                  integer_uoflow(0, 20),
-                  regular_noflow(20, 0.0, 20.0),
+                  _integer_uoflow(0, 20),
+                  _regular_noflow(20, 0.0, 20.0),
                   variable([0.0, 1.0, 2.0]),
                   circular(4, 2*np.pi))
     for i in range(a.axis(0).size(flow=True)):
@@ -397,8 +397,8 @@ def test_pickle_0():
 @pytest.mark.skip(message="Requires weighted fills / type")
 def test_pickle_1():
     a = histogram(category([0, 1, 2]),
-                  integer_uoflow(0, 3, metadata='ia'),
-                  regular_noflow(4, 0.0, 4.0),
+                  _integer_uoflow(0, 3, metadata='ia'),
+                  _regular_noflow(4, 0.0, 4.0),
                   variable([0.0, 1.0, 2.0]))
     assert isinstance(a, bh.hist.any_int)
     assert isinstance(a, histogram)
@@ -429,7 +429,7 @@ def test_pickle_1():
 # Numpy tests
 
 def test_numpy_conversion_0():
-    a = histogram(integer_noflow(0, 3))
+    a = histogram(_integer_noflow(0, 3))
     a.fill(0)
     for i in range(5):
         a.fill(1)
@@ -457,7 +457,7 @@ def test_numpy_conversion_0():
 
 @pytest.mark.skip(message="Requires weighted fills / type")
 def test_numpy_conversion_1():
-    a = histogram(integer_uoflow(0, 3))
+    a = histogram(_integer_uoflow(0, 3))
     for i in range(10):
         a.fill(1, weight=3)
     c = np.array(a)  # a copy
@@ -467,9 +467,9 @@ def test_numpy_conversion_1():
     assert_array_equal(v, c)
 
 def test_numpy_conversion_2():
-    a = histogram(integer_noflow(0, 2),
-                  integer_noflow(0, 3),
-                  integer_noflow(0, 4))
+    a = histogram(_integer_noflow(0, 2),
+                  _integer_noflow(0, 3),
+                  _integer_noflow(0, 4))
     r = np.zeros((2, 3, 4), dtype=np.int8)
     for i in range(a.axis(0).size(flow=True)):
         for j in range(a.axis(1).size(flow=True)):
@@ -494,9 +494,9 @@ def test_numpy_conversion_2():
 
 @pytest.mark.skip(message="Requires weighted fills / type")
 def test_numpy_conversion_3():
-    a = histogram(integer_uoflow(0, 2),
-                  integer_uoflow(0, 3),
-                  integer_uoflow(0, 4))
+    a = histogram(_integer_uoflow(0, 2),
+                  _integer_uoflow(0, 3),
+                  _integer_uoflow(0, 4))
     r = np.zeros((2, 4, 5, 6))
     for i in range(a.axis(0).size(flow=True)):
         for j in range(a.axis(1).size(flow=True)):
@@ -518,8 +518,8 @@ def test_numpy_conversion_3():
     assert_array_equal(v, r)
 
 def test_numpy_conversion_4():
-    a = histogram(integer_noflow(0, 2),
-                  integer_noflow(0, 4))
+    a = histogram(_integer_noflow(0, 2),
+                  _integer_noflow(0, 4))
     a1 = np.asarray(a)
     assert a1.dtype == np.uint64 # CLASSIC: np.uint8
     assert a1.shape == (2, 4)
@@ -534,8 +534,8 @@ def test_numpy_conversion_4():
 
 @pytest.mark.skip(message="This require multiprecision storage")
 def test_numpy_conversion_5():
-    a = histogram(integer_noflow(0, 3),
-                  integer_noflow(0, 2))
+    a = histogram(_integer_noflow(0, 3),
+                  _integer_noflow(0, 2))
     a.fill(0, 0)
     for i in range(80):
         a = a + a
@@ -559,8 +559,8 @@ def test_numpy_conversion_5():
     assert a1[2, 1] == 5
 
 def test_numpy_conversion_6():
-    a = integer_uoflow(0, 2)
-    b = regular_uoflow(2, 0, 2)
+    a = _integer_uoflow(0, 2)
+    b = _regular_uoflow(2, 0, 2)
     c = variable([0, 1, 2])
     ref = np.array((0., 1., 2.))
     assert_array_equal(a.bins(), [0, 1])
@@ -578,7 +578,7 @@ def test_numpy_conversion_6():
 def test_fill_with_numpy_array_0():
     def ar(*args):
         return np.array(args, dtype=float)
-    a = histogram(integer_noflow(0, 3))
+    a = histogram(_integer_noflow(0, 3))
     a.fill(ar(-1, 0, 1, 2, 1))
     a.fill((4, -1, 0, 1, 2))
     assert a.at(0) == 2
@@ -597,8 +597,8 @@ def test_fill_with_numpy_array_0():
     with pytest.raises(ValueError):
         a.at(1, 2)
 
-    a = histogram(integer_noflow(0, 2),
-                  regular_noflow(2, 0, 2))
+    a = histogram(_integer_noflow(0, 2),
+                  _regular_noflow(2, 0, 2))
     a.fill(ar(-1, 0, 1), ar(-1., 1., 0.1))
     assert a.at(0, 0) == 0
     assert a.at(0, 1) == 1
@@ -619,7 +619,7 @@ def test_fill_with_numpy_array_0():
     with pytest.raises(ValueError):
         a.at(1, 2, 3)
 
-    a = histogram(integer_noflow(0, 3))
+    a = histogram(_integer_noflow(0, 3))
     a.fill(ar(0, 0, 1, 2, 1, 0, 2, 2))
     assert a.at(0) == 3
     assert a.at(1) == 2
@@ -629,7 +629,7 @@ def test_fill_with_numpy_array_0():
 def test_fill_with_numpy_array_1():
     def ar(*args):
         return np.array(args, dtype=float)
-    a = histogram(integer_uoflow(0, 3))
+    a = histogram(_integer_uoflow(0, 3))
     v = ar(-1, 0, 1, 2, 3, 4)
     w = ar( 2, 3, 4, 5, 6, 7)  # noqa
     a.fill(v, weight=w)
@@ -660,14 +660,14 @@ def test_fill_with_numpy_array_1():
     with pytest.raises(ValueError):
         a.fill((1, 2), weight=([1, 1], [2, 2]))
 
-    a = histogram(integer_noflow(0, 2),
-                  regular_noflow(2, 0, 2))
+    a = histogram(_integer_noflow(0, 2),
+                  _regular_noflow(2, 0, 2))
     a.fill((-1, 0, 1), (-1, 1, 0.1))
     assert a.at(0, 0) == 0
     assert a.at(0, 1) == 1
     assert a.at(1, 0) == 1
     assert a.at(1, 1) == 0
-    a = histogram(integer_noflow(0, 3))
+    a = histogram(_integer_noflow(0, 3))
     a.fill((0, 0, 1, 2))
     a.fill((1, 0, 2, 2))
     assert a.at(0) == 3
