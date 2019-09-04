@@ -5,7 +5,8 @@
 
 #include <boost/histogram/python/pybind11.hpp>
 
-#include <boost/histogram.hpp>
+#include <boost/histogram/histogram.hpp>
+#include <boost/histogram/make_histogram.hpp>
 #include <boost/histogram/python/axis.hpp>
 #include <boost/histogram/python/histogram.hpp>
 #include <boost/histogram/python/kwargs.hpp>

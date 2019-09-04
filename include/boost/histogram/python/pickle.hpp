@@ -6,8 +6,9 @@
 
 #pragma once
 
-#include <boost/histogram/detail/detect.hpp>
 #include <boost/histogram/python/pybind11.hpp>
+
+#include <boost/histogram/detail/detect.hpp>
 
 #include <boost/assert.hpp>
 #include <boost/mp11/tuple.hpp>
