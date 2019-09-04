@@ -79,9 +79,9 @@ void register_make_histogram(py::module &m, py::module &hist) {
     py::object factory_meta_py = py::module::import("boost.histogram_utils").attr("FactoryMeta");
 
     m.attr("histogram") = factory_meta_py(m.attr("_make_histogram"),
-                                          py::make_tuple(hist.attr("any_double"),
-                                                         hist.attr("any_int"),
-                                                         hist.attr("any_atomic_int"),
-                                                         hist.attr("any_unlimited"),
-                                                         hist.attr("any_weight")));
+                                          py::make_tuple(hist.attr("_any_double"),
+                                                         hist.attr("_any_int"),
+                                                         hist.attr("_any_atomic_int"),
+                                                         hist.attr("_any_unlimited"),
+                                                         hist.attr("_any_weight")));
 }

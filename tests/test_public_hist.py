@@ -68,7 +68,7 @@ def test_copy():
 def test_fill_int_1d():
 
     h = histogram(_integer_uoflow(-1, 2))
-    assert isinstance(h, bh.hist.any_int)
+    assert isinstance(h, bh.hist._any_int)
     assert isinstance(h, histogram)
 
     with pytest.raises(ValueError):
@@ -400,7 +400,7 @@ def test_pickle_1():
                   _integer_uoflow(0, 3, metadata='ia'),
                   _regular_noflow(4, 0.0, 4.0),
                   variable([0.0, 1.0, 2.0]))
-    assert isinstance(a, bh.hist.any_int)
+    assert isinstance(a, bh.hist._any_int)
     assert isinstance(a, histogram)
 
     for i in range(a.axis(0).size(flow=True)):

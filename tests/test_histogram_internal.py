@@ -5,9 +5,9 @@ import numpy as np
 from numpy.testing import assert_array_equal, assert_allclose
 
 methods = [
-    bh.hist.any_double,
-    bh.hist.any_unlimited,
-    bh.hist.any_int,
+    bh.hist._any_double,
+    bh.hist._any_unlimited,
+    bh.hist._any_int,
 ]
 
 @pytest.mark.parametrize("hist_func", methods)
@@ -59,7 +59,7 @@ def test_2D_fill_int(hist_func):
 
 def test_edges_histogram():
     edges = (1, 12, 22, 79)
-    hist = bh.hist.any_int([
+    hist = bh.hist._any_int([
         bh.axis.variable(edges)
         ])
 
@@ -72,7 +72,7 @@ def test_edges_histogram():
     assert_array_equal(hist.view(flow=False), [0,2,2])
 
 def test_int_histogram():
-    hist = bh.hist.any_int([
+    hist = bh.hist._any_int([
         bh.axis._integer_uoflow(3,7)
         ])
 
@@ -86,7 +86,7 @@ def test_int_histogram():
 
 
 def test_str_categories_histogram():
-    hist = bh.hist.any_int([
+    hist = bh.hist._any_int([
         bh.axis._category_str(["a", "b", "c"])
         ])
 
@@ -94,7 +94,7 @@ def test_str_categories_histogram():
     # Can't fill yet
 
 def test_growing_histogram():
-    hist = bh.hist.any_int([
+    hist = bh.hist._any_int([
         bh.axis._regular_growth(10,0,1)
         ])
 
@@ -103,7 +103,7 @@ def test_growing_histogram():
     assert hist.size() == 15
 
 def test_numpy_flow():
-    h = bh.hist.any_int([bh.axis._regular_uoflow(10,0,1), bh.axis._regular_uoflow(5,0,1)])
+    h = bh.hist._any_int([bh.axis._regular_uoflow(10,0,1), bh.axis._regular_uoflow(5,0,1)])
 
     for i in range(10):
         for j in range(5):
@@ -126,7 +126,7 @@ def test_numpy_flow():
 
 
 def test_numpy_compare():
-    h = bh.hist.any_int([bh.axis._regular_uoflow(10,0,1), bh.axis._regular_uoflow(5,0,1)])
+    h = bh.hist._any_int([bh.axis._regular_uoflow(10,0,1), bh.axis._regular_uoflow(5,0,1)])
 
     xs = []
     ys = []
@@ -148,9 +148,9 @@ def test_numpy_compare():
     assert_allclose(E2, nE2)
 
 def test_project():
-    h = bh.hist.any_int([bh.axis._regular_uoflow(10,0,1), bh.axis._regular_uoflow(5,0,1)])
-    h0 = bh.hist.any_int([bh.axis._regular_uoflow(10,0,1)])
-    h1 = bh.hist.any_int([bh.axis._regular_uoflow(5,0,1)])
+    h = bh.hist._any_int([bh.axis._regular_uoflow(10,0,1), bh.axis._regular_uoflow(5,0,1)])
+    h0 = bh.hist._any_int([bh.axis._regular_uoflow(10,0,1)])
+    h1 = bh.hist._any_int([bh.axis._regular_uoflow(5,0,1)])
 
     for x,y in ((.3,.3),(.7,.7),(.5,.6),(.23,.92),(.15,.32),(.43,.54)):
         h.fill(x,y)
@@ -173,7 +173,7 @@ def test_sums():
     assert h.sum(flow=True) == 4
 
 def test_int_cat_hist():
-    h = bh.hist.any_int([bh.axis._category_int([1,2,3])])
+    h = bh.hist._any_int([bh.axis._category_int([1,2,3])])
 
     h.fill(1)
     h.fill(2)

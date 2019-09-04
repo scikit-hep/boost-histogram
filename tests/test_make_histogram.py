@@ -92,17 +92,17 @@ def test_issue_axis_bin_swan():
 
 
 options = (
-        (bh.hist.any_unlimited, bh.axis._regular_uoflow(5,1,2), bh.storage.unlimited),
-        (bh.hist.any_int, bh.axis._regular_uoflow(5,1,2), bh.storage.int),
-        (bh.hist.any_atomic_int, bh.axis._regular_uoflow(5,1,2), bh.storage.atomic_int),
-        (bh.hist.any_int, bh.axis._regular_noflow(5,1,2), bh.storage.int),
-        (bh.hist.any_double, bh.axis._regular_uoflow(5,1,2), bh.storage.double),
-        (bh.hist.any_weight, bh.axis._regular_uoflow(5,1,2), bh.storage.weight),
-        (bh.hist.any_int, bh.axis._integer_uoflow(0,5), bh.storage.int),
-        (bh.hist.any_atomic_int, bh.axis._integer_uoflow(0,5), bh.storage.atomic_int),
-        (bh.hist.any_double, bh.axis._integer_uoflow(0,5), bh.storage.double),
-        (bh.hist.any_unlimited, bh.axis._integer_uoflow(0,5), bh.storage.unlimited),
-        (bh.hist.any_weight, bh.axis._integer_uoflow(0,5), bh.storage.weight),
+        (bh.hist._any_unlimited, bh.axis._regular_uoflow(5,1,2), bh.storage.unlimited),
+        (bh.hist._any_int, bh.axis._regular_uoflow(5,1,2), bh.storage.int),
+        (bh.hist._any_atomic_int, bh.axis._regular_uoflow(5,1,2), bh.storage.atomic_int),
+        (bh.hist._any_int, bh.axis._regular_noflow(5,1,2), bh.storage.int),
+        (bh.hist._any_double, bh.axis._regular_uoflow(5,1,2), bh.storage.double),
+        (bh.hist._any_weight, bh.axis._regular_uoflow(5,1,2), bh.storage.weight),
+        (bh.hist._any_int, bh.axis._integer_uoflow(0,5), bh.storage.int),
+        (bh.hist._any_atomic_int, bh.axis._integer_uoflow(0,5), bh.storage.atomic_int),
+        (bh.hist._any_double, bh.axis._integer_uoflow(0,5), bh.storage.double),
+        (bh.hist._any_unlimited, bh.axis._integer_uoflow(0,5), bh.storage.unlimited),
+        (bh.hist._any_weight, bh.axis._integer_uoflow(0,5), bh.storage.weight),
         )
 
 @pytest.mark.parametrize("histclass, ax, storage", options)
@@ -116,4 +116,4 @@ def test_make_selection(histclass, ax, storage):
 
 def test_make_selection_special():
     histogram = bh._make_histogram(bh.axis._regular_uoflow(5,1,2), bh.axis._regular_noflow(10,1,2))
-    assert isinstance(histogram, bh.hist.any_int)
+    assert isinstance(histogram, bh.hist._any_int)

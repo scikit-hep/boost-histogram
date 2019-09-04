@@ -73,11 +73,11 @@ base = print_timer(setup_1d,
 
 
 print_timer(setup_1d,
-    'hist = bh.hist.any_int([bh.axis._regular_uoflow(bins, *ranges)]); hist.fill(vals)',
+    'hist = bh.hist._any_int([bh.axis._regular_uoflow(bins, *ranges)]); hist.fill(vals)',
     name='Any', storage='int', fill='', flow='yes', base=base)
 
 print_timer(setup_1d,
-    'hist = bh.hist.any_int([bh.axis._regular_noflow(bins, *ranges)]); hist.fill(vals)',
+    'hist = bh.hist._any_int([bh.axis._regular_noflow(bins, *ranges)]); hist.fill(vals)',
     name='Any', storage='int', fill='', flow='no', base=base)
 
 
@@ -117,11 +117,11 @@ base = print_timer(setup_2d,
     name='Numpy', storage='uint64', fill='', flow='no')
 
 print_timer(setup_2d,
-    'hist = bh.hist.any_int([bh.axis._regular_uoflow(bins[0], *ranges[0]), bh.axis._regular_uoflow(bins[1], *ranges[1])]); hist.fill(*vals)',
+    'hist = bh.hist._any_int([bh.axis._regular_uoflow(bins[0], *ranges[0]), bh.axis._regular_uoflow(bins[1], *ranges[1])]); hist.fill(*vals)',
     name='Any', storage='int', fill='', flow='yes', base=base)
 
 print_timer(setup_2d,
-    'hist = bh.hist.any_int([bh.axis._regular_noflow(bins[0], *ranges[0]), bh.axis._regular_noflow(bins[1], *ranges[1])]); hist.fill(*vals)',
+    'hist = bh.hist._any_int([bh.axis._regular_noflow(bins[0], *ranges[0]), bh.axis._regular_noflow(bins[1], *ranges[1])]); hist.fill(*vals)',
     name='Any', storage='int', fill='', flow='no', base=base)
 
 print_timer(setup_2d,
