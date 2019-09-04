@@ -1,18 +1,13 @@
 import pytest
 from pytest import approx
 
-from boost.histogram.axis import (regular, regular_growth,
-                                  regular_uoflow, regular_uflow,
-                                  regular_oflow, regular_noflow,
+import boost.histogram.axis as bha
+from boost.histogram.axis import (regular, 
                                   regular_log, regular_sqrt,
                                   regular_pow, circular,
                                   variable,
-                                  variable_uoflow, variable_uflow,
-                                  variable_oflow, variable_noflow,
-                                  integer, integer_growth,
-                                  integer_uoflow, integer_oflow,
-                                  integer_uflow, integer_noflow,
-                                  category_int as category)
+                                  integer,
+                                  category)
 
 import numpy as np
 from numpy.testing import assert_array_equal, assert_allclose
@@ -24,7 +19,7 @@ ABC = abc.ABCMeta('ABC', (object,), {'__slots__': ()})
 
 # histogram -> boost.histogram
 # regular(..., noflow=False) -> regular_ouflow(...)
-# regular(..., noflow=True) -> regular_noflow(...)
+# regular(..., noflow=True) -> _regular_noflow(...)
 # label -> metadata
 # len(ax) -> ax.size(flow=False)
 # ax.extent() -> ax.size(flow=True)
@@ -63,75 +58,75 @@ class Axis(ABC):
 class TestRegular(Axis):
 
     def test_shortcut(self):
-        assert isinstance(regular(1,2,3), regular_uoflow)
+        assert isinstance(regular(1,2,3), bha._regular_uoflow)
         assert isinstance(regular(1,2,3), regular)
 
-        assert isinstance(regular(1,2,3, overflow=False), regular_uflow)
+        assert isinstance(regular(1,2,3, overflow=False), bha._regular_uflow)
         assert isinstance(regular(1,2,3, overflow=False), regular)
 
-        assert isinstance(regular(1,2,3, underflow=False), regular_oflow)
+        assert isinstance(regular(1,2,3, underflow=False), bha._regular_oflow)
         assert isinstance(regular(1,2,3, underflow=False), regular)
 
-        assert isinstance(regular(1,2,3, flow=False), regular_noflow)
+        assert isinstance(regular(1,2,3, flow=False), bha._regular_noflow)
         assert isinstance(regular(1,2,3, flow=False), regular)
 
-        assert isinstance(regular(1,2,3, underflow=False, overflow=False), regular_noflow)
-        assert isinstance(regular(1,2,3, underflow=False, overflow=False, flow=True), regular_uoflow)
+        assert isinstance(regular(1,2,3, underflow=False, overflow=False), bha._regular_noflow)
+        assert isinstance(regular(1,2,3, underflow=False, overflow=False, flow=True), bha._regular_uoflow)
 
-        assert isinstance(regular(1,2,3, growth=True), regular_growth)
+        assert isinstance(regular(1,2,3, growth=True), bha._regular_growth)
         assert isinstance(regular(1,2,3, growth=True), regular)
 
 
     def test_init(self):
         # Should not throw
-        regular_uoflow(1, 1.0, 2.0)
-        regular_uoflow(1, 1.0, 2.0, metadata="ra")
-        regular_noflow(1, 1.0, 2.0)
-        regular_noflow(1, 1.0, 2.0, metadata="ra")
+        regular(1, 1.0, 2.0, flow=True)
+        regular(1, 1.0, 2.0, flow=True, metadata="ra")
+        regular(1, 1.0, 2.0, flow=False)
+        regular(1, 1.0, 2.0, flow=False, metadata="ra")
         regular_log(1, 1.0, 2.0)
         regular_sqrt(1, 1.0, 2.0)
         regular_pow(1, 1.0, 2.0, 1.5)
 
         with pytest.raises(TypeError):
-            regular_uoflow()
+            regular()
         with pytest.raises(TypeError):
-            regular_uoflow()
+            bha._regular_uoflow()
         with pytest.raises(TypeError):
-            regular_uoflow(1)
+            regular(1)
         with pytest.raises(TypeError):
-            regular_uoflow(1, 1.0)
+            regular(1, 1.0)
         with pytest.raises(ValueError):
-            regular_uoflow(0, 1.0, 2.0)
+            regular(0, 1.0, 2.0)
         with pytest.raises(TypeError):
-            regular_uoflow("1", 1.0, 2.0)
+            regular("1", 1.0, 2.0)
         with pytest.raises(Exception):
-            regular_uoflow(-1, 1.0, 2.0)
+            regular(-1, 1.0, 2.0)
         # CLASSIC
         #with pytest.raises(ValueError):
-        regular_uoflow(1, 2.0, 1.0)
+        regular(1, 2.0, 1.0)
 
         with pytest.raises(ValueError):
-            regular_uoflow(1, 1.0, 1.0)
+            regular(1, 1.0, 1.0)
 
         with pytest.raises(TypeError):
-            regular_uoflow(1, 1.0, 2.0, metadata=0)
+            regular(1, 1.0, 2.0, metadata=0)
 
 
 
-        with pytest.raises(TypeError):
-            regular_uoflow(1, 1.0, 2.0, bad_keyword="ra")
+        with pytest.raises(KeyError):
+            regular(1, 1.0, 2.0, bad_keyword="ra")
         with pytest.raises(TypeError):
             regular_pow(1, 1.0, 2.0)
 
-        a = regular_uoflow(4, 1.0, 2.0)
-        assert a == regular_uoflow(4, 1.0, 2.0)
-        assert a != regular_uoflow(3, 1.0, 2.0)
-        assert a != regular_uoflow(4, 1.1, 2.0)
-        assert a != regular_uoflow(4, 1.0, 2.1)
+        a = regular(4, 1.0, 2.0)
+        assert a == regular(4, 1.0, 2.0)
+        assert a != regular(3, 1.0, 2.0)
+        assert a != regular(4, 1.1, 2.0)
+        assert a != regular(4, 1.0, 2.1)
 
 
     def test_len(self):
-        a = regular_uoflow(4, 1.0, 2.0)
+        a = regular(4, 1.0, 2.0)
         # CLASSIC: Not explicit
         # assert len(a) == 4
 
@@ -139,16 +134,16 @@ class TestRegular(Axis):
         assert a.size(flow=True) == 6
 
     def test_repr(self):
-        ax = regular_uoflow(4, 1.1, 2.2)
+        ax = regular(4, 1.1, 2.2)
         assert repr(ax) == "regular(4, 1.1, 2.2, options=underflow | overflow)"
 
-        ax = regular_uoflow(4, 1.1, 2.2, metadata='ra')
+        ax = regular(4, 1.1, 2.2, metadata='ra')
         assert repr(ax) == 'regular(4, 1.1, 2.2, metadata="ra", options=underflow | overflow)'
 
-        ax = regular_noflow(4, 1.1, 2.2)
+        ax = regular(4, 1.1, 2.2, flow=False)
         assert repr(ax) == "regular(4, 1.1, 2.2, options=none)"
 
-        ax = regular_noflow(4, 1.1, 2.2, metadata='ra')
+        ax = regular(4, 1.1, 2.2, metadata='ra', flow=False)
         assert repr(ax) == 'regular(4, 1.1, 2.2, metadata="ra", options=none)'
 
         ax = regular_log(4, 1.1, 2.2)
@@ -163,7 +158,7 @@ class TestRegular(Axis):
 
     def test_getitem(self):
         v = [1.0, 1.25, 1.5, 1.75, 2.0]
-        a = regular_uoflow(4, 1.0, 2.0)
+        a = regular(4, 1.0, 2.0)
         for i in range(4):
             a.bin(i).lower() == approx(v[i])
             a.bin(i).upper() == approx(v[i+1])
@@ -183,14 +178,14 @@ class TestRegular(Axis):
 
     def test_iter(self):
         v = np.array([1.0, 1.25, 1.5, 1.75, 2.0])
-        a = regular_uoflow(4, 1.0, 2.0)
+        a = regular(4, 1.0, 2.0)
         assert_array_equal(a.edges(), v)
 
         c = (v[:-1] + v[1:])/2
         assert_allclose(a.centers(), c)
 
     def test_index(self):
-        a = regular_uoflow(4, 1.0, 2.0)
+        a = regular(4, 1.0, 2.0)
 
         assert a.index(-1) == -1
         assert a.index(0.99) == -1
@@ -206,7 +201,7 @@ class TestRegular(Axis):
         assert a.index(20) == 4
 
     def test_reversed_index(self):
-        a = regular_uoflow(4, 2.0, 1.0)
+        a = regular(4, 2.0, 1.0)
 
         assert a.index(-1) == 4
         assert a.index(0.99) == 4
@@ -361,20 +356,20 @@ class TestCircular(Axis):
 
 class TestVariable(Axis):
     def test_shortcut(self):
-        assert isinstance(variable([1,2,3]), variable_uoflow)
+        assert isinstance(variable([1,2,3]), bha._variable_uoflow)
         assert isinstance(variable([1,2,3]), variable)
 
-        assert isinstance(variable([1,2,3], overflow=False), variable_uflow)
+        assert isinstance(variable([1,2,3], overflow=False), bha._variable_uflow)
         assert isinstance(variable([1,2,3], overflow=False), variable)
 
-        assert isinstance(variable([1,2,3], underflow=False), variable_oflow)
+        assert isinstance(variable([1,2,3], underflow=False), bha._variable_oflow)
         assert isinstance(variable([1,2,3], underflow=False), variable)
 
-        assert isinstance(variable([1,2,3], flow=False), variable_noflow)
+        assert isinstance(variable([1,2,3], flow=False), bha._variable_noflow)
         assert isinstance(variable([1,2,3], flow=False), variable)
 
-        assert isinstance(variable([1,2,3], underflow=False, overflow=False), variable_noflow)
-        assert isinstance(variable([1,2,3], underflow=False, overflow=False, flow=True), variable_uoflow)
+        assert isinstance(variable([1,2,3], underflow=False, overflow=False), bha._variable_noflow)
+        assert isinstance(variable([1,2,3], underflow=False, overflow=False, flow=True), bha._variable_uoflow)
 
     def test_init(self):
         variable([0, 1])
@@ -457,74 +452,75 @@ class TestVariable(Axis):
 
 class TestInteger:
     def test_shortcut(self):
-        assert isinstance(integer(1, 3), integer_uoflow)
+        assert isinstance(integer(1, 3), bha._integer_uoflow)
         assert isinstance(integer(1, 3), integer)
 
-        assert isinstance(integer(1, 3, overflow=False), integer_uflow)
+        assert isinstance(integer(1, 3, overflow=False), bha._integer_uflow)
         assert isinstance(integer(1, 3, overflow=False), integer)
 
-        assert isinstance(integer(1, 3, underflow=False), integer_oflow)
+        assert isinstance(integer(1, 3, underflow=False), bha._integer_oflow)
         assert isinstance(integer(1, 3, underflow=False), integer)
 
-        assert isinstance(integer(1, 3, flow=False), integer_noflow)
+        assert isinstance(integer(1, 3, flow=False), bha._integer_noflow)
         assert isinstance(integer(1, 3, flow=False), integer)
 
-        assert isinstance(integer(1, 3, underflow=False, overflow=False), integer_noflow)
-        assert isinstance(integer(1, 3, underflow=False, overflow=False, flow=True), integer_uoflow)
+        assert isinstance(integer(1, 3, underflow=False, overflow=False), bha._integer_noflow)
+        assert isinstance(integer(1, 3, underflow=False, overflow=False, flow=True), bha._integer_uoflow)
 
-        assert isinstance(integer(1, 3, growth=True), integer_growth)
+        assert isinstance(integer(1, 3, growth=True), bha._integer_growth)
         assert isinstance(integer(1, 3, growth=True), integer)
 
     def test_init(self):
-        integer_uoflow(-1, 2)
-        integer_noflow(-1, 2)
-        integer_growth(-1, 2)
+        integer(-1, 2, flow=True)
+        integer(-1, 2, flow=False)
+        integer(-1, 2 , growth=True)
+        
         with pytest.raises(TypeError):
-            integer_uoflow()
+            integer()
         with pytest.raises(TypeError):
-            integer_uoflow(1)
+            integer(1)
         with pytest.raises(TypeError):
-            integer_uoflow("1", 2)
+            integer("1", 2)
         with pytest.raises(ValueError):
-            integer_uoflow(2, -1)
+            integer(2, -1)
 
         with pytest.raises(TypeError):
-            integer_uoflow(1, 2, 3)
+            integer(1, 2, 3)
 
-        assert integer_uoflow(-1, 2) == integer_uoflow(-1, 2)
-        assert integer_uoflow(-1, 2) != integer_uoflow(-1, 2, metadata="Other")
-        assert integer_noflow(-1, 2) != integer_uoflow(-1, 2)
+        assert integer(-1, 2) == integer(-1, 2)
+        assert integer(-1, 2) != integer(-1, 2, metadata="Other")
+        assert integer(-1, 2, flow=True) != integer(-1, 2, flow=False)
 
     def test_len(self):
-        assert integer_uoflow(-1, 3).size() ==  4
-        assert integer_uoflow(-1, 3).size(flow=True) ==  6
-        assert integer_noflow(-1, 3).size() ==  4
-        assert integer_noflow(-1, 3).size(flow=True) ==  4
-        assert integer_growth(-1, 3).size() ==  4
-        assert integer_growth(-1, 3).size(flow=True) ==  4
+        assert integer(-1, 3, flow=True).size() == 4
+        assert integer(-1, 3, flow=True).size(flow=True) == 6
+        assert integer(-1, 3, flow=False).size() == 4
+        assert integer(-1, 3, flow=False).size(flow=True) == 4
+        assert integer(-1, 3, growth=True).size() == 4
+        assert integer(-1, 3, growth=True).size(flow=True) == 4
 
     def test_repr(self):
-        a = integer_uoflow(-1, 1)
+        a = integer(-1, 1)
         assert repr(a) == 'integer(-1, 1, options=underflow | overflow)'
 
-        a = integer_uoflow(-1, 1, metadata="hi")
+        a = integer(-1, 1, metadata="hi")
         assert repr(a) == 'integer(-1, 1, metadata="hi", options=underflow | overflow)'
 
-        a = integer_noflow(-1, 1)
+        a = integer(-1, 1, flow=False)
         assert repr(a) == 'integer(-1, 1, options=none)'
 
-        a = integer_growth(-1, 1)
+        a = integer(-1, 1, growth=True)
         assert repr(a) == 'integer(-1, 1, options=growth)'
 
     def test_label(self):
-        a = integer_uoflow(-1, 2, metadata="foo")
+        a = integer(-1, 2, metadata="foo")
         assert a.metadata == "foo"
         a.metadata = "bar"
         assert a.metadata == "bar"
 
     def test_getitem(self):
         v = [-1, 0, 1, 2, 3]
-        a = integer_uoflow(-1, 3)
+        a = integer(-1, 3)
         for i in range(5):
             assert a.bin(i) == v[i]
         assert a.bin(-1) == -2 ** 31
@@ -532,11 +528,11 @@ class TestInteger:
 
     def test_iter(self):
         v = np.array([-1, 0, 1, 2])
-        a = integer_uoflow(-1, 3)
+        a = integer(-1, 3)
         assert_array_equal(a.bins(), v)
 
     def test_index(self):
-        a = integer_uoflow(-1, 3)
+        a = integer(-1, 3)
         assert a.index(-3) == -1
         assert a.index(-2) == -1
         assert a.index(-1) == 0
@@ -552,11 +548,13 @@ class TestCategory(Axis):
     def test_init(self):
         category([1, 2, 3])
         category([1, 2, 3], metadata="ca")
+        
+        # Basic string support
+        category(["1"])
+
         with pytest.raises(TypeError):
             category()
-        with pytest.raises(TypeError):
-            category(["1"])
-        with pytest.raises(TypeError):
+        with pytest.raises(RuntimeError):
             category([1, "2"])
         with pytest.raises(TypeError):
             category([1, 2], metadata=1)

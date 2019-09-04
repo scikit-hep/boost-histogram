@@ -14,7 +14,7 @@ Python bindings for [Boost::Histogram][] ([source][Boost::Histogram source]), a 
 
 ## Installation
 
-This library is under development, but you can install directly from github if you would like. You need a C++14 compiler and Python 2.7--3.7. Boost 1.70 is not required or needed (this only depends on included header-only dependencies).
+This library is under development, but you can install directly from github if you would like. You need a C++14 compiler and Python 2.7--3.7. Boost 1.71 is not required or needed (this only depends on included header-only dependencies).
 All the normal best-practices for Python apply; you should be in a virtual environment, otherwise add `--user`, etc.
 
 ```bash
@@ -44,31 +44,13 @@ counts = hist.view()
 
 * Many axis types (all support `metadata=...`)
     * `bh.axis.regular(n, start, stop, underflow=True, overflow=True, growth=False)`: shortcut to make the types below. `flow=False` is also supported.
-        * `bh.axis.regular_uoflow(n, start, stop)`: `n` evenly spaced bins from `start` to `stop`
-        * `bh.axis.regular_uflow(n, start, stop)`: `n` evenly spaced bins from `start` to `stop` (no overflow)
-        * `bh.axis.regular_oflow(n, start, stop)`: `n` evenly spaced bins from `start` to `stop` (no underflow)
-        * `bh.axis.regular_noflow(n, start, stop)`: `regular` but with no underflow or overflow bins
-        * `bh.axis.regular_growth(n, start, stop)`: `regular` but grows if a value is added outside the range
     * `bh.axis.circular(n, start, stop)`: Value outside the range wrap into the range
     * `bh.axis.regular_log(n, start, stop)`: Regularly spaced values in log 10 scale
     * `bh.axis.regular_sqrt(n, start, stop)`: Regularly spaced value in sqrt scale
     * `bh.axis.regular_pow(n, start, stop, power)`: Regularly spaced value to some `power`
     * `bh.axis.integer(start, stop, underflow=True, overflow=True, growth=False)`: Special high-speed version of `regular` for evenly spaced bins of width 1
-        * `bh.axis.integer_uoflow(start, stop)`: `n` evenly spaced bins from `start` to `stop`
-        * `bh.axis.integer_uflow(start, stop)`: `n` evenly spaced bins from `start` to `stop` (no overflow)
-        * `bh.axis.integer_oflow(start, stop)`: `n` evenly spaced bins from `start` to `stop` (no underflow)
-        * `bh.axis.integer_noflow(start, stop)`: `integer` but with no underflow or overflow bins
-        * `bh.axis.integer_growth(start, stop)`: `integer` but grows if a value is added outside the range
     * `bh.axis.variable([start, edge1, edge2, ..., stop], underflow=True, overflow=True)`: Uneven bin spacing
-        * `bh.axis.variable_uoflow([start, edge1, edge2, ..., stop])`: `n` evenly spaced bins from `start` to `stop`
-        * `bh.axis.variable_uflow([start, edge1, edge2, ..., stop])`: `n` evenly spaced bins from `start` to `stop` (no overflow)
-        * `bh.axis.variable_oflow([start, edge1, edge2, ..., stop])`: `n` evenly spaced bins from `start` to `stop` (no underflow)
-        * `bh.axis.variable_noflow([start, edge1, edge2, ..., stop])`: `variable` but with no underflow or overflow bins
-    * `bh.axis.category([...], growth=False)`: Integer or string categories
-        * `bh.axis.category_int([1, 2, ...])`: Integer bins
-        * `bh.axis.category_int_growth([1, 2, ...])`: Integer bins where new items are added automatically
-        * `bh.axis.category_str(["item1", "item2", ...])`: WIP: String bins
-        * `bh.axis.category_str_growth(["item1", "item2", ...])`: WIP: String bins where new items are added automatically
+    * `bh.axis.category([...], growth=False)`: Integer or (WIP) string categories
 * Axis features:
     * `.bin(i)`: The bin or a bin view for continuous axis types
         * `.lower()`: The lower value
@@ -98,6 +80,7 @@ counts = hist.view()
     * `bh.accumulator.sum`: High accuracy sum (Neumaier)
     * `bh.accumulator.mean`: Running count, mean, and variance (Welfords's incremental algorithm)
 * Histogram operations
+    * `.fill(arr, ..., weight=...)` Fill with N arrays or single values
     * `(a, b, ...)`: Fill with arrays or single values
     * `+`: Add two histograms
     * `.rank()`: The number of dimensions
@@ -214,7 +197,7 @@ This will checkout new versions of the dependencies. Example given using the fis
 for f in *
     cd $f
     git fetch
-    git checkout boost-1.70.0 || echo "Not found"
+    git checkout boost-1.71.0 || echo "Not found"
     cd ..
 end
 ```
@@ -232,6 +215,6 @@ end
 [rtd-badge]:               https://readthedocs.org/projects/boost-histogram/badge/?version=latest
 [rtd-link]:                https://boost-histogram.readthedocs.io/en/latest/?badge=latest
 
-[Boost::Histogram]:        https://www.boost.org/doc/libs/1_70_0/libs/histogram/doc/html/index.html
+[Boost::Histogram]:        https://www.boost.org/doc/libs/1_71_0/libs/histogram/doc/html/index.html
 [Boost::Histogram source]: https://github.com/boostorg/histogram
 [fastest libraries]:       https://iscinumpy.gitlab.io/post/histogram-speeds-in-python/

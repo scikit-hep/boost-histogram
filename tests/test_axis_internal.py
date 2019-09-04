@@ -6,11 +6,11 @@ import numpy as np
 from numpy.testing import assert_array_equal
 
 
-@pytest.mark.parametrize("axtype", [bh.axis.regular_uoflow, bh.axis.regular_uflow, bh.axis.regular_oflow, bh.axis.regular_noflow])
+@pytest.mark.parametrize("axtype", [bh.axis._regular_uoflow, bh.axis._regular_uflow, bh.axis._regular_oflow, bh.axis._regular_noflow])
 @pytest.mark.parametrize("function", [lambda x: x,
                                        lambda x: bh._make_histogram(x).axis(0),
                                        ])
-def test_axis_regular_uoflow(axtype, function):
+def test_axis__regular_uoflow(axtype, function):
     ax = function(axtype(10, 0, 1))
 
     assert 3 == ax.index(.34)
@@ -32,28 +32,28 @@ def test_axis_regular_uoflow(axtype, function):
         assert b.upper() == approx(v + .1)
 
 def test_axis_regular_extents():
-    ax = bh.axis.regular_uoflow(10,0,1)
+    ax = bh.axis._regular_uoflow(10,0,1)
     assert 12 == ax.size(flow=True)
     assert 11 == len(ax.edges())
     assert 13 == len(ax.edges(True))
     assert 10 == len(ax.centers())
     assert ax.options() == bh.axis.options.underflow | bh.axis.options.overflow
 
-    ax = bh.axis.regular_uflow(10,0,1)
+    ax = bh.axis._regular_uflow(10,0,1)
     assert 11 == ax.size(flow=True)
     assert 11 == len(ax.edges())
     assert 12 == len(ax.edges(True))
     assert 10 == len(ax.centers())
     assert ax.options() == bh.axis.options.underflow
 
-    ax = bh.axis.regular_oflow(10,0,1)
+    ax = bh.axis._regular_oflow(10,0,1)
     assert 11 == ax.size(flow=True)
     assert 11 == len(ax.edges())
     assert 12 == len(ax.edges(True))
     assert 10 == len(ax.centers())
     assert ax.options() == bh.axis.options.overflow
 
-    ax = bh.axis.regular_noflow(10,0,1)
+    ax = bh.axis._regular_noflow(10,0,1)
     assert 10 == ax.size(flow=True)
     assert 11 == len(ax.edges())
     assert 11 == len(ax.edges(True))
@@ -61,7 +61,7 @@ def test_axis_regular_extents():
     assert ax.options() == bh.axis.options.none
 
 def test_axis_growth():
-    ax = bh.axis.regular_growth(10,0,1)
+    ax = bh.axis._regular_growth(10,0,1)
     ax.index(.7)
     ax.index(1.2)
     assert ax.size() == 10
@@ -73,7 +73,7 @@ def test_axis_growth():
     assert len(ax.centers()) == 13
 
 def test_axis_growth_cat():
-    ax = bh.axis.category_str_growth(["This"])
+    ax = bh.axis._category_str_growth(["This"])
     assert ax.size() == 1
     ax.update("That")
     assert ax.size() == 2
@@ -97,8 +97,8 @@ def test_axis_circular():
     assert ax.options() == bh.axis.options.circular | bh.axis.options.overflow
 
 normal_axs = [
-    bh.axis.regular_uoflow,
-    bh.axis.regular_noflow,
+    bh.axis._regular_uoflow,
+    bh.axis._regular_noflow,
     bh.axis.circular,
     bh.axis.regular_log,
     bh.axis.regular_sqrt,
@@ -119,14 +119,14 @@ def test_regular_axis_repr(axis):
     assert ax.metadata == 'That'
 
 def test_metadata_compare():
-    ax1 = bh.axis.regular_uoflow(1,2,3, metadata=[1,])
-    ax2 = bh.axis.regular_uoflow(1,2,3, metadata=[1,])
+    ax1 = bh.axis._regular_uoflow(1,2,3, metadata=[1,])
+    ax2 = bh.axis._regular_uoflow(1,2,3, metadata=[1,])
 
     assert ax1 == ax2
 
 def test_metadata_compare_neq():
-    ax1 = bh.axis.regular_uoflow(1,2,3, metadata=[1,])
-    ax2 = bh.axis.regular_uoflow(1,2,3, metadata=[2,])
+    ax1 = bh.axis._regular_uoflow(1,2,3, metadata=[1,])
+    ax2 = bh.axis._regular_uoflow(1,2,3, metadata=[2,])
 
     assert ax1 != ax2
 
@@ -138,7 +138,7 @@ def test_any_metadata(axis):
     assert ax.metadata == 64
 
 def test_cat_str():
-    ax = bh.axis.category_str(["a", "b", "c"])
+    ax = bh.axis._category_str(["a", "b", "c"])
     assert ax.bin(0) == "a"
     assert ax.bin(1) == "b"
     assert ax.bin(2) == "c"
@@ -146,7 +146,7 @@ def test_cat_str():
     assert ax.index("b") == 1
 
 def test_cat_int():
-    ax = bh.axis.category_int([1,2,3])
+    ax = bh.axis._category_int([1,2,3])
     assert ax.bin(0) == 1
     assert ax.bin(1) == 2
     assert ax.bin(2) == 3

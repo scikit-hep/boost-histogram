@@ -42,10 +42,10 @@ void register_make_histogram(py::module &m, py::module &hist) {
                 if(py::isinstance<py::tuple>(args[i])) {
                     py::tuple arg = py::cast<py::tuple>(args[i]);
                     if(arg.size() == 3) {
-                        args[i] = py::cast(new axis::regular_uoflow(py::cast<unsigned>(arg[0]),
-                                                                    py::cast<double>(arg[1]),
-                                                                    py::cast<double>(arg[2]),
-                                                                    py::str()),
+                        args[i] = py::cast(new axis::_regular_uoflow(py::cast<unsigned>(arg[0]),
+                                                                     py::cast<double>(arg[1]),
+                                                                     py::cast<double>(arg[2]),
+                                                                     py::str()),
                                            py::return_value_policy::take_ownership);
                     } else if(arg.size() == 4) {
                         try {
@@ -54,10 +54,10 @@ void register_make_histogram(py::module &m, py::module &hist) {
                         } catch(const py::cast_error &) {
                         }
 
-                        args[i] = py::cast(new axis::regular_uoflow(py::cast<unsigned>(arg[0]),
-                                                                    py::cast<double>(arg[1]),
-                                                                    py::cast<double>(arg[2]),
-                                                                    py::cast<metadata_t>(arg[3])),
+                        args[i] = py::cast(new axis::_regular_uoflow(py::cast<unsigned>(arg[0]),
+                                                                     py::cast<double>(arg[1]),
+                                                                     py::cast<double>(arg[2]),
+                                                                     py::cast<metadata_t>(arg[3])),
                                            py::return_value_policy::take_ownership);
                     } else {
                         throw py::type_error(
@@ -79,9 +79,9 @@ void register_make_histogram(py::module &m, py::module &hist) {
     py::object factory_meta_py = py::module::import("boost.histogram_utils").attr("FactoryMeta");
 
     m.attr("histogram") = factory_meta_py(m.attr("_make_histogram"),
-                                          py::make_tuple(hist.attr("any_double"),
-                                                         hist.attr("any_int"),
-                                                         hist.attr("any_atomic_int"),
-                                                         hist.attr("any_unlimited"),
-                                                         hist.attr("any_weight")));
+                                          py::make_tuple(hist.attr("_any_double"),
+                                                         hist.attr("_any_int"),
+                                                         hist.attr("_any_atomic_int"),
+                                                         hist.attr("_any_unlimited"),
+                                                         hist.attr("_any_weight")));
 }

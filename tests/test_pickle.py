@@ -36,19 +36,19 @@ def test_accumulators(accum, args, copy_fn):
 
 
 axes_creations = (
-        (bh.axis.regular_uoflow,      (4, 2, 4)),
-        (bh.axis.regular_growth,      (4, 2, 4)),
-        (bh.axis.regular_noflow,      (4, 2, 4)),
+        (bh.axis._regular_uoflow,      (4, 2, 4)),
+        (bh.axis._regular_growth,      (4, 2, 4)),
+        (bh.axis._regular_noflow,      (4, 2, 4)),
         (bh.axis.regular_log,         (4, 2, 4)),
         (bh.axis.regular_sqrt,        (4, 2, 4)),
         (bh.axis.regular_pow,         (4, 2, 4, 0.5)),
         (bh.axis.circular,            (4, 2, 4)),
         (bh.axis.variable,            ([1, 2, 3, 4],)),
-        (bh.axis.integer_uoflow,      (1, 4)),
-        (bh.axis.category_int,        ([1, 2, 3],)),
-        (bh.axis.category_int_growth, ([1, 2, 3],)),
-        (bh.axis.category_str,        (["1", "2", "3"],)),
-        (bh.axis.category_str_growth, (["1", "2", "3"],)),
+        (bh.axis._integer_uoflow,      (1, 4)),
+        (bh.axis._category_int,        ([1, 2, 3],)),
+        (bh.axis._category_int_growth, ([1, 2, 3],)),
+        (bh.axis._category_str,        (["1", "2", "3"],)),
+        (bh.axis._category_str_growth, (["1", "2", "3"],)),
         )
 
 
@@ -72,7 +72,7 @@ def test_metadata_str(axis, args, copy_fn):
 # Special test: Deepcopy should change metadata id, copy should not
 @pytest.mark.parametrize("metadata", ({1:2}, [1,2,3]))
 def test_compare_copy_axis(metadata):
-    orig = bh.axis.regular_noflow(4,0,2, metadata=metadata)
+    orig = bh.axis._regular_noflow(4,0,2, metadata=metadata)
     new = copy.copy(orig)
     dnew = copy.deepcopy(orig)
 
@@ -83,7 +83,7 @@ def test_compare_copy_axis(metadata):
 # Special test: Deepcopy should change metadata id, copy should not
 @pytest.mark.parametrize("metadata", ({1:2}, [1,2,3]))
 def test_compare_copy_hist(metadata):
-    orig = bh._make_histogram(bh.axis.regular_noflow(4,0,2, metadata=metadata))
+    orig = bh._make_histogram(bh.axis._regular_noflow(4,0,2, metadata=metadata))
     new = copy.copy(orig)
     dnew = copy.deepcopy(orig)
 
@@ -126,7 +126,7 @@ def test_histogram_regular(copy_fn):
 
 @pytest.mark.parametrize("copy_fn", copies)
 def test_histogram_fancy(copy_fn):
-    hist = bh.histogram(bh.axis.regular_noflow(4,1,2), bh.axis.integer_uoflow(0, 6))
+    hist = bh.histogram(bh.axis._regular_noflow(4,1,2), bh.axis._integer_uoflow(0, 6))
 
     new = copy_fn(hist)
     assert hist == new
