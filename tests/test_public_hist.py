@@ -8,11 +8,12 @@ from boost.histogram.axis import (regular, integer,
                                   regular_pow, circular,
                                   variable,
                                   category)
-# TODO: import the public names only, not private ones (and make private names actually private)
+
 import boost.histogram as bh
 
 import numpy as np
 from numpy.testing import assert_array_equal
+from io import BytesIO
 
 try:
     import cPickle as pickle
@@ -214,9 +215,6 @@ def test_add_2d_bad():
     with pytest.raises(ValueError):
         a += b
 
-# WEIGHTED FILLS NOT SUPPORTED YET
-# CLASSIC
-@pytest.mark.skip()
 @pytest.mark.parametrize("flow", [True, False])
 def test_add_2d_w(flow):
     h = histogram(integer(-1, 2, flow=flow),
@@ -237,7 +235,7 @@ def test_add_2d_w(flow):
 
     h2 = histogram(integer(-1, 2, flow=flow),
                    regular(4, -2, 2, flow=flow))
-    h2(0, 0, weight=0)
+    h2.fill(0, 0, weight=0)
 
     h2 += h
     h2 += h
@@ -393,7 +391,6 @@ def test_pickle_0():
     assert a.sum() == b.sum()
     assert a == b
 
-@pytest.mark.skip(message="Requires weighted fills / type")
 def test_pickle_1():
     a = histogram(category([0, 1, 2]),
                   integer(0, 3, metadata='ia'),
@@ -417,13 +414,13 @@ def test_pickle_1():
     b = pickle.load(io)
 
     assert id(a) != id(b)
-    assert a.dim, b.dim
+    assert a.rank == b.rank
     assert a.axis(0) == b.axis(0)
     assert a.axis(1) == b.axis(1)
     assert a.axis(2) == b.axis(2)
     assert a.axis(3) == b.axis(3)
     assert a.sum() == b.sum()
-    assert a == b # Note: metadata may be an issue here
+    assert a == b
 
 # Numpy tests
 
@@ -454,15 +451,15 @@ def test_numpy_conversion_0():
     # view does not follow underlying switch in word size
     # assert not np.all(c, v)
 
-@pytest.mark.skip(message="Requires weighted fills / type")
 def test_numpy_conversion_1():
+    # CLASSIC: was weight array
     a = histogram(integer(0, 3))
     for i in range(10):
         a.fill(1, weight=3)
     c = np.array(a)  # a copy
     v = np.asarray(a)  # a view
-    assert c.dtype == np.float64
-    assert_array_equal(c, np.array(((0, 30, 0, 0, 0), (0, 90, 0, 0, 0))))
+    assert c.dtype == np.uint64 # CLASSIC: np.float64
+    assert_array_equal(c, np.array((0, 30, 0)))
     assert_array_equal(v, c)
 
 def test_numpy_conversion_2():
@@ -491,30 +488,32 @@ def test_numpy_conversion_2():
     assert_array_equal(c, r)
     assert_array_equal(v, r)
 
-@pytest.mark.skip(message="Requires weighted fills / type")
 def test_numpy_conversion_3():
     a = histogram(integer(0, 2),
                   integer(0, 3),
-                  integer(0, 4))
-    r = np.zeros((2, 4, 5, 6))
-    for i in range(a.axis(0).size(flow=True)):
-        for j in range(a.axis(1).size(flow=True)):
-            for k in range(a.axis(2).size(flow=True)):
-                a.fill(i, j, k, weight=i + j + k)
-                r[0, i, j, k] = i + j + k
-                r[1, i, j, k] = (i + j + k)**2
-    c = np.array(a)  # a copy
-    v = np.asarray(a)  # a view
+                  integer(0, 4),
+                  storage=bh.storage.double())
 
-    c2 = np.zeros((2, 4, 5, 6))
+    r = np.zeros((4, 5, 6))
     for i in range(a.axis(0).size(flow=True)):
         for j in range(a.axis(1).size(flow=True)):
             for k in range(a.axis(2).size(flow=True)):
-                c2[0, i, j, k] = a.at(i, j, k)
+                a.fill(i-1, j-1, k-1, weight=i + j + k)
+                r[i, j, k] = i + j + k
+    c = a.view(flow=True)
+
+    c2 = np.zeros((4, 5, 6))
+    for i in range(a.axis(0).size(flow=True)):
+        for j in range(a.axis(1).size(flow=True)):
+            for k in range(a.axis(2).size(flow=True)):
+                c2[i, j, k] = a.at(i-1, j-1, k-1)
 
     assert_array_equal(c, c2)
     assert_array_equal(c, r)
-    assert_array_equal(v, r)
+
+    assert a.sum() == approx(144)
+    assert a.sum(flow=True) == approx(720)
+    assert c.sum() == approx(720)
 
 def test_numpy_conversion_4():
     a = histogram(integer(0, 2, flow=False),
@@ -531,10 +530,10 @@ def test_numpy_conversion_4():
     # Compare sum methods
     assert b.sum() == np.asarray(b).sum()
 
-@pytest.mark.skip(message="This require multiprecision storage")
 def test_numpy_conversion_5():
     a = histogram(integer(0, 3, flow=False),
-                  integer(0, 2, flow=False))
+                  integer(0, 2, flow=False),
+                  storage=bh.storage.unlimited())
     a.fill(0, 0)
     for i in range(80):
         a = a + a
@@ -548,7 +547,7 @@ def test_numpy_conversion_5():
         a.fill(1, 1)
     for i in range(5):
         a.fill(2, 1)
-    a1 = np.asarray(a)
+    a1 = a.view()
     assert a1.shape == (3, 2)
     assert a1[0, 0] == float(2 ** 80)
     assert a1[1, 0] == 1
@@ -624,37 +623,46 @@ def test_fill_with_numpy_array_0():
     assert a.at(1) == 2
     assert a.at(2) == 3
 
-@pytest.mark.skip(message="Weighting (pun) for weighted fills")
 def test_fill_with_numpy_array_1():
     def ar(*args):
         return np.array(args, dtype=float)
-    a = histogram(integer(0, 3))
+
+    a = histogram(integer(0, 3), storage=bh.storage.weight())
     v = ar(-1, 0, 1, 2, 3, 4)
     w = ar( 2, 3, 4, 5, 6, 7)  # noqa
     a.fill(v, weight=w)
     a.fill((0, 1), weight=(2, 3))
-    assert a.at(-1) == 2
-    assert a.at(0) == 5
-    assert a.at(1) == 7
-    assert a.at(2) == 5
-    # assert a.at(-1).variance == 4
-    # assert a.at(0).variance == 13
-    # assert a.at(1).variance == 25
-    # assert a.at(2).variance == 25
+
+    assert a.at(-1) == bh.accumulators.weighted_sum(2,4)
+    assert a.at(0) == bh.accumulators.weighted_sum(5, 13)
+    assert a.at(1) == bh.accumulators.weighted_sum(7, 25)
+    assert a.at(2) == bh.accumulators.weighted_sum(5, 25)
+
+    assert a.at(-1).value == 2
+    assert a.at(0).value == 5
+    assert a.at(1).value == 7
+    assert a.at(2).value == 5
+    
+    assert a.at(-1).variance == 4
+    assert a.at(0).variance == 13
+    assert a.at(1).variance == 25
+    assert a.at(2).variance == 25
+
 
     a.fill((1, 2), weight=1)
-    a.fill(0, weight=(1, 2))
-    assert a.at(0) == 8
-    assert a.at(1) == 8
-    assert a.at(2) == 6
+    a.fill(0, weight=1)
+    a.fill(0, weight=2)
+    assert a.at(0).value == 8
+    assert a.at(1).value == 8
+    assert a.at(2).value == 6
 
-    with pytest.raises(ValueError):
+    with pytest.raises(KeyError):
         a.fill((1, 2), foo=(1, 1))
     with pytest.raises(ValueError):
         a.fill((1, 2), weight=(1,))
     with pytest.raises(ValueError):
         a.fill((1, 2), weight="ab")
-    with pytest.raises(ValueError):
+    with pytest.raises(KeyError):
         a.fill((1, 2), weight=(1, 1), foo=1)
     with pytest.raises(ValueError):
         a.fill((1, 2), weight=([1, 1], [2, 2]))
