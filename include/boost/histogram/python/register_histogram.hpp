@@ -96,7 +96,7 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
 
         .def(
             "axis",
-            [](histogram_t &self, int i) {
+            [](const histogram_t &self, int i) {
                 unsigned ii = i < 0 ? self.rank() - (unsigned)std::abs(i) : (unsigned)i;
                 if(ii < self.rank())
                     return self.axis(ii);
@@ -109,7 +109,7 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
 
         .def(
             "at",
-            [](histogram_t &self, py::args &args) {
+            [](const histogram_t &self, py::args &args) {
                 // Optimize for no dynamic?
                 auto int_args = py::cast<std::vector<int>>(args);
                 return self.at(int_args);
@@ -117,6 +117,19 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
             "Access bin counter at indices")
 
         .def("__repr__", shift_to_string<histogram_t>())
+    
+        .def("__getitem__", [](const histogram_t &self, py::object index) {
+            py::list tmpindexes;
+            tmpindexes.append(index);
+            py::tuple indexes = py::cast<py::tuple>(py::isinstance<py::tuple>(index) ? index : tmpindexes);
+            
+            if(indexes.size() != self.rank())
+                throw std::out_of_range("You must provide the same number of indexes as the rank of the histogram");
+            
+            auto int_args = py::cast<std::vector<int>>(indexes);
+            return self.at(int_args);
+            
+        })
 
         .def(
             "sum",

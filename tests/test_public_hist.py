@@ -85,7 +85,7 @@ def test_fill_int_1d():
         h.at(0, foo=None)
     with pytest.raises(ValueError):
         h.at(0, 1)
-    with pytest.raises(TypeError):
+    with pytest.raises(IndexError):
         h[0, 1]
 
     for get in (lambda h, arg: h.at(arg),):
@@ -119,7 +119,7 @@ def test_fill_1d(flow):
         h.at(0, foo=None)
     with pytest.raises(ValueError):
         h.at(0, 1)
-    with pytest.raises(TypeError):
+    with pytest.raises(IndexError):
         h[0, 1]
 
     for get in (lambda h, arg: h.at(arg),):
