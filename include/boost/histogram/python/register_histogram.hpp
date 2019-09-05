@@ -19,6 +19,7 @@
 #include <boost/histogram/python/kwargs.hpp>
 #include <boost/histogram/python/serializion.hpp>
 #include <boost/histogram/python/storage.hpp>
+#include <boost/histogram/python/variant.hpp>
 #include <boost/histogram/unsafe_access.hpp>
 #include <boost/mp11.hpp>
 #include <future>
@@ -117,19 +118,76 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
             "Access bin counter at indices")
 
         .def("__repr__", shift_to_string<histogram_t>())
-    
-        .def("__getitem__", [](const histogram_t &self, py::object index) {
-            py::list tmpindexes;
-            tmpindexes.append(index);
-            py::tuple indexes = py::cast<py::tuple>(py::isinstance<py::tuple>(index) ? index : tmpindexes);
-            
-            if(indexes.size() != self.rank())
-                throw std::out_of_range("You must provide the same number of indexes as the rank of the histogram");
-            
-            auto int_args = py::cast<std::vector<int>>(indexes);
-            return self.at(int_args);
-            
-        })
+
+        .def(
+            "__getitem__",
+            [](const histogram_t &self,
+               py::object index) -> boost::variant2::variant<typename histogram_t::value_type, histogram_t> {
+                py::list tmpindexes;
+                tmpindexes.append(index);
+                py::tuple indexes = py::cast<py::tuple>(py::isinstance<py::tuple>(index) ? index : tmpindexes);
+
+                if(indexes.size() != self.rank())
+                    throw std::out_of_range("You must provide the same number of indices as the rank of the histogram");
+
+                try {
+                    auto int_args = py::cast<std::vector<int>>(indexes);
+                    return self.at(int_args);
+                } catch(const py::cast_error &) {
+                }
+
+                std::vector<bh::algorithm::reduce_option> slices;
+                for(unsigned int i = 0; i < indexes.size(); i++) {
+                    auto ind = indexes[i];
+                    if(!py::isinstance<py::slice>(ind))
+                        throw std::out_of_range(
+                            "Invalid arguments as an index, use all integers or all slices, and do not mix");
+
+                    py::object start = ind.attr("start");
+                    py::object stop  = ind.attr("stop");
+                    py::object step  = ind.attr("step");
+
+                    // : means take all from axis
+                    if(start.is_none() && stop.is_none() && step.is_none()) {
+                        continue;
+                    } else {
+                        // Start can be none, integer, or loc(double)
+                        bh::axis::index_type begin
+                            = start.is_none() ? 0
+                                              : (py::hasattr(start, "value")
+                                                     ? self.axis().index(py::cast<double>(start.attr("value")))
+                                                     : py::cast<bh::axis::index_type>(start));
+
+                        // Stop can be none, integer, or loc(double)
+                        bh::axis::index_type end = stop.is_none()
+                                                       ? self.axis(i).size()
+                                                       : (py::hasattr(stop, "value")
+                                                              ? self.axis().index(py::cast<double>(stop.attr("value")))
+                                                              : py::cast<bh::axis::index_type>(stop));
+
+                        unsigned merge = 1;
+                        if(step.is_none()) {
+                            merge = 1;
+                        } else if(!py::hasattr(step, "projection")) {
+                            throw std::out_of_range("The third argument to a slice must be rebin or projection");
+                        } else if(py::cast<bool>(step.attr("projection")) == true) {
+                            throw std::out_of_range("Currently projection is not supported");
+                        } else {
+                            if(!py::hasattr(step, "factor"))
+                                throw std::out_of_range("Invalid rebin, must have .factor set to an integer");
+                            merge = py::cast<unsigned>(step.attr("factor"));
+                        }
+
+                        slices.push_back(bh::algorithm::slice_and_rebin(i, begin, end, merge));
+                    }
+                }
+
+                return bh::algorithm::reduce(self, slices);
+                // Ellipsis is not yet supported
+                // Projection is not supported
+                // Using loc in simple indexing is not supported
+                // Setting is not supported
+            })
 
         .def(
             "sum",

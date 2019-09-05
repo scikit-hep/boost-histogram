@@ -36,6 +36,7 @@ ext_modules = [
     Extension(
         'boost.histogram',
         ['src/module.cpp',
+         'src/utils.cpp',
          'src/histogram/version.cpp',
          'src/histogram/algorithm.cpp',
          'src/histogram/axis.cpp',

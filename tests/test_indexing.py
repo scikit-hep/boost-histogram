@@ -32,4 +32,15 @@ def test_2D_get_bin():
         h[1]
 
 
+def test_get_1D_histogram():
+    h = bh.histogram(bh.axis.regular(10, 0, 1))
+    h.fill([.25, .25, .25, .15])
+
+    h2 = h[:]
+
+    assert h == h2
+
+    h.fill(.75)
+
+    assert h != h2
 

@@ -14,6 +14,7 @@ void register_polymorphic_bin(py::module &);
 void register_general_histograms(py::module &);
 void register_make_histogram(py::module &, py::module &);
 void register_accumulators(py::module &);
+void register_utils(py::module &);
 
 PYBIND11_MODULE(histogram, m) {
     register_version(m);
@@ -36,4 +37,6 @@ PYBIND11_MODULE(histogram, m) {
 
     py::module algorithm = m.def_submodule("algorithm");
     register_algorithms(algorithm);
+
+    register_utils(m);
 }
