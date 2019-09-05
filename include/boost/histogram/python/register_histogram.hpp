@@ -136,42 +136,16 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
             },
             "flow"_a = false)
 
-        /* Broken: Does not work if any string axes present (even just in variant) */
         .def(
-            "rebin",
-            [](const histogram_t &self, unsigned axis, unsigned merge) {
-                return bh::algorithm::reduce(self, bh::algorithm::rebin(axis, merge));
+            "reduce",
+            [](const histogram_t &self, py::args args) {
+                return bh::algorithm::reduce(self, py::cast<std::vector<bh::algorithm::reduce_option>>(args));
             },
-            "axis"_a,
-            "merge"_a,
-            "Rebin by merging bins. You must select an axis.")
-
-        .def(
-            "shrink",
-            [](const histogram_t &self, unsigned axis, double lower, double upper) {
-                return bh::algorithm::reduce(self, bh::algorithm::shrink(axis, lower, upper));
-            },
-            "axis"_a,
-            "lower"_a,
-            "upper"_a,
-            "Shrink an axis. You must select an axis.")
-
-        .def(
-            "shrink_and_rebin",
-            [](const histogram_t &self, unsigned axis, double lower, double upper, unsigned merge) {
-                return bh::algorithm::reduce(self, bh::algorithm::shrink_and_rebin(axis, lower, upper, merge));
-            },
-            "axis"_a,
-            "lower"_a,
-            "upper"_a,
-            "merge"_a,
-            "Shrink an axis and rebin. You must select an axis.")
+            "Reduce based on one or more reduce_option")
 
         .def(
             "project",
             [](const histogram_t &self, py::args values) {
-                // If static
-                // histogram<any_axis> any = self;
                 return bh::algorithm::project(self, py::cast<std::vector<unsigned>>(values));
             },
             "Project to a single axis or several axes on a multidiminsional histogram")

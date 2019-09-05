@@ -37,6 +37,7 @@ ext_modules = [
         'boost.histogram',
         ['src/module.cpp',
          'src/histogram/version.cpp',
+         'src/histogram/algorithm.cpp',
          'src/histogram/axis.cpp',
          'src/histogram/polymorphic_bin.cpp',
          'src/histogram/general_histograms.cpp',

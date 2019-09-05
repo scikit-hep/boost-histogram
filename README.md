@@ -95,9 +95,7 @@ counts = hist.view()
     * `.at(i, j, ...)`: Get the bin contents as a location 
     * `.sum()`: The total count of all bins
     * `.project(ax1, ax2, ...)`: Project down to listed axis (numbers)
-    * `.shrink(ax, lower, upper)`: Remove bins outside a range on a listed axis (number)
-    * `.rebin(ax, merge)`: Combine `merge` number of bins on a listed axis (number)
-    * `.shring_and_rebin(ax, lower, upper, merge)`: Shrink and rebin at the same time
+    * `.reduce(ax, reduce_option, ...)`: shrink, rebin, or slice, or any combination
     * `.indexed(flow=False)`: Iterate over the bins with a special "indexed" iterator
         * `ind.content`: The contents of a bin (set or get)
         * `ind.bin(N)`: The Nth bin (has the normal `.center`, `.lower`, `.upper`, and `.width`)

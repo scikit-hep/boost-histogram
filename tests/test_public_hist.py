@@ -344,19 +344,19 @@ def test_project():
 def test_shrink_1d():
     h = histogram(regular(20, 1, 5))
     h.fill(1.1)
-    hs = h.shrink(0, 1, 2)
+    hs = h.reduce(bh.algorithm.shrink(0, 1, 2))
     assert_array_equal(hs.view(), [1,0,0,0,0])
 
 def test_rebin_1d():
     h = histogram(regular(20, 1, 5))
     h.fill(1.1)
-    hs = h.rebin(0, 4)
+    hs = h.reduce(bh.algorithm.rebin(0, 4))
     assert_array_equal(hs.view(), [1,0,0,0,0])
 
 def test_shrink_rebin_1d():
     h = histogram(regular(20, 0, 4))
     h.fill(1.1)
-    hs = h.shrink_and_rebin(0, 1, 3, 2)
+    hs = h.reduce(bh.algorithm.shrink_and_rebin(0, 1, 3, 2))
     assert_array_equal(hs.view(), [1,0,0,0,0])
 
 
