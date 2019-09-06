@@ -6,6 +6,7 @@
 #include <boost/histogram/python/pybind11.hpp>
 
 void register_version(py::module &);
+void register_algorithms(py::module &);
 void register_storages(py::module &);
 void register_axes(py::module &);
 void register_axes_options(py::module &);
@@ -13,6 +14,7 @@ void register_polymorphic_bin(py::module &);
 void register_general_histograms(py::module &);
 void register_make_histogram(py::module &, py::module &);
 void register_accumulators(py::module &);
+void register_utils(py::module &);
 
 PYBIND11_MODULE(histogram, m) {
     register_version(m);
@@ -32,4 +34,9 @@ PYBIND11_MODULE(histogram, m) {
 
     py::module accumulators = m.def_submodule("accumulators");
     register_accumulators(accumulators);
+
+    py::module algorithm = m.def_submodule("algorithm");
+    register_algorithms(algorithm);
+
+    register_utils(m);
 }

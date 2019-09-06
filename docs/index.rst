@@ -6,6 +6,10 @@
 Welcome to boost-histogram's documentation!
 ===========================================
 
+Boost-histogram (`source <https://github.com/scikit-hep/boost-histogram>`_) is a Python package providing Python bindings for Boost.Histogram_ (`source <https://github.com/boostorg/histogram>`_).
+
+.. _Boost.Histogram: https://www.boost.org/doc/libs/1_71_0/libs/histogram/doc/html/index.html
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
@@ -13,6 +17,7 @@ Welcome to boost-histogram's documentation!
    usage/installation
    usage/quickstart
    usage/axes
+   usage/indexing
 
 
 

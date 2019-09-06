@@ -10,6 +10,7 @@
 
 #include <boost/histogram.hpp>
 #include <boost/histogram/algorithm/project.hpp>
+#include <boost/histogram/algorithm/reduce.hpp>
 #include <boost/histogram/algorithm/sum.hpp>
 #include <boost/histogram/axis/ostream.hpp>
 #include <boost/histogram/ostream.hpp>
@@ -18,7 +19,9 @@
 #include <boost/histogram/python/indexed.hpp>
 #include <boost/histogram/python/kwargs.hpp>
 #include <boost/histogram/python/serializion.hpp>
+#include <boost/histogram/python/shared_histogram.hpp>
 #include <boost/histogram/python/storage.hpp>
+#include <boost/histogram/python/variant.hpp>
 #include <boost/histogram/unsafe_access.hpp>
 #include <boost/mp11.hpp>
 #include <future>
@@ -32,6 +35,7 @@
 template <class A, class S>
 py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *name, const char *desc) {
     using histogram_t = bh::histogram<A, S>;
+    namespace bv2     = boost::variant2;
 
     py::class_<histogram_t> hist(m, name, desc, py::buffer_protocol());
 
@@ -96,7 +100,7 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
 
         .def(
             "axis",
-            [](histogram_t &self, int i) {
+            [](const histogram_t &self, int i) {
                 unsigned ii = i < 0 ? self.rank() - (unsigned)std::abs(i) : (unsigned)i;
                 if(ii < self.rank())
                     return self.axis(ii);
@@ -109,7 +113,7 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
 
         .def(
             "at",
-            [](histogram_t &self, py::args &args) {
+            [](const histogram_t &self, py::args &args) {
                 // Optimize for no dynamic?
                 auto int_args = py::cast<std::vector<int>>(args);
                 return self.at(int_args);
@@ -117,6 +121,56 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
             "Access bin counter at indices")
 
         .def("__repr__", shift_to_string<histogram_t>())
+
+        .def(
+            "__getitem__",
+            [](const histogram_t &self,
+               py::object index) -> bv2::variant<typename histogram_t::value_type, histogram_t> {
+                // If this is not a tuple (>1D), make it a tuple of 1D
+                // Then, convert tuples to list
+                py::list indexes;
+                if(py::isinstance<py::tuple>(index))
+                    indexes = py::cast<py::tuple>(index);
+                else
+                    indexes.append(index);
+
+                // Expand ... to :
+                indexes = expand_ellipsis(indexes, self.rank());
+
+                if(indexes.size() != self.rank())
+                    throw std::out_of_range("You must provide the same number of indices as the rank of the histogram");
+
+                // Allow [bh.loc(...)] to work
+                for(py::size_t i = 0; i < indexes.size(); i++) {
+                    if(py::hasattr(indexes[i], "value"))
+                        indexes[i]
+                            = self.axis(static_cast<unsigned>(i)).index(py::cast<double>(indexes[i].attr("value")));
+                }
+
+                // If this is (now) all integers, return the bin contents
+                try {
+                    auto int_args = py::cast<std::vector<int>>(indexes);
+                    return self.at(int_args);
+                } catch(const py::cast_error &) {
+                }
+
+                // Compute needed slices and projections
+                std::vector<bh::algorithm::reduce_option> slices;
+                std::vector<unsigned> projections;
+                std::tie(slices, projections) = get_slices(
+                    indexes,
+                    [&self](bh::axis::index_type i, double val) {
+                        return self.axis(static_cast<unsigned>(i)).index(val);
+                    },
+                    [&self](bh::axis::index_type i) { return self.axis(static_cast<unsigned>(i)).size(); });
+
+                if(projections.empty())
+                    return bh::algorithm::reduce(self, slices);
+                else {
+                    auto reduced = bh::algorithm::reduce(self, slices);
+                    return bh::algorithm::project(self, projections);
+                }
+            })
 
         .def(
             "sum",
@@ -136,42 +190,16 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
             },
             "flow"_a = false)
 
-        /* Broken: Does not work if any string axes present (even just in variant) */
         .def(
-            "rebin",
-            [](const histogram_t &self, unsigned axis, unsigned merge) {
-                return bh::algorithm::reduce(self, bh::algorithm::rebin(axis, merge));
+            "reduce",
+            [](const histogram_t &self, py::args args) {
+                return bh::algorithm::reduce(self, py::cast<std::vector<bh::algorithm::reduce_option>>(args));
             },
-            "axis"_a,
-            "merge"_a,
-            "Rebin by merging bins. You must select an axis.")
-
-        .def(
-            "shrink",
-            [](const histogram_t &self, unsigned axis, double lower, double upper) {
-                return bh::algorithm::reduce(self, bh::algorithm::shrink(axis, lower, upper));
-            },
-            "axis"_a,
-            "lower"_a,
-            "upper"_a,
-            "Shrink an axis. You must select an axis.")
-
-        .def(
-            "shrink_and_rebin",
-            [](const histogram_t &self, unsigned axis, double lower, double upper, unsigned merge) {
-                return bh::algorithm::reduce(self, bh::algorithm::shrink_and_rebin(axis, lower, upper, merge));
-            },
-            "axis"_a,
-            "lower"_a,
-            "upper"_a,
-            "merge"_a,
-            "Shrink an axis and rebin. You must select an axis.")
+            "Reduce based on one or more reduce_option")
 
         .def(
             "project",
             [](const histogram_t &self, py::args values) {
-                // If static
-                // histogram<any_axis> any = self;
                 return bh::algorithm::project(self, py::cast<std::vector<unsigned>>(values));
             },
             "Project to a single axis or several axes on a multidiminsional histogram")
@@ -208,7 +236,7 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
                 using storage_t = typename histogram_t::storage_type;
                 bh::detail::static_if<boost::mp11::mp_or<std::is_same<storage_t, storage::profile>,
                                                          std::is_same<storage_t, storage::weighted_profile>>>(
-                    [&](auto &h) {
+                    [&kwargs, &vargs](auto &h) {
                         auto sample = required_arg<py::object>(kwargs, "sample");
                         finalize_args(kwargs);
                         auto sarray = py::cast<arrayd>(sample);
@@ -220,7 +248,7 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
                         // else
                         h.fill(vargs, bh::sample(sarray));
                     },
-                    [&](auto &h) {
+                    [&kwargs, &weight, &empty_weight, &vargs](auto &h) {
                         finalize_args(kwargs);
                         if(weight.is(empty_weight)) {
                             py::gil_scoped_release tmp;

@@ -5,8 +5,7 @@
 // (See accompanying file LICENSE_1_0.txt
 // or copy at http://www.boost.org/LICENSE_1_0.txt)
 
-#ifndef BOOST_HISTOGRAM_PICKLE_HPP
-#define BOOST_HISTOGRAM_PICKLE_HPP
+#pragma once
 
 #include <boost/histogram/python/pybind11.hpp>
 
@@ -192,5 +191,3 @@ void serialize(Archive &ar, histogram<A, S> &h, unsigned /* version */) {
 
 } // namespace histogram
 } // namespace boost
-
-#endif
