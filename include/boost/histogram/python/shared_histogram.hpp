@@ -15,3 +15,5 @@ std::vector<bh::algorithm::reduce_option>
 get_slices(py::tuple index,
            std::function<bh::axis::index_type(bh::axis::index_type, double)> index_self,
            std::function<bh::axis::index_type(bh::axis::index_type)> size_self);
+
+py::list expand_ellipsis(py::list indexes, py::size_t rank);

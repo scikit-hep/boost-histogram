@@ -20,7 +20,7 @@ void register_utils(py::module &m) {
 
     py::class_<rebin>(m, "rebin")
         .def(py::init<unsigned>())
-        .def_property_readonly_static("projection", []() { return false; })
+        .def_property_readonly_static("projection", [](py::object /* self */) { return false; })
         .def_readwrite("factor", &rebin::factor);
 
     py::class_<project>(m, "_project").def(py::init<>()).def_property_readonly_static("projection", []() {

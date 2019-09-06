@@ -34,6 +34,7 @@
 template <class A, class S>
 py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *name, const char *desc) {
     using histogram_t = bh::histogram<A, S>;
+    namespace bv2     = boost::variant2;
 
     py::class_<histogram_t> hist(m, name, desc, py::buffer_protocol());
 
@@ -123,10 +124,17 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
         .def(
             "__getitem__",
             [](const histogram_t &self,
-               py::object index) -> boost::variant2::variant<typename histogram_t::value_type, histogram_t> {
-                py::list tmpindexes;
-                tmpindexes.append(index);
-                py::tuple indexes = py::cast<py::tuple>(py::isinstance<py::tuple>(index) ? index : tmpindexes);
+               py::object index) -> bv2::variant<typename histogram_t::value_type, histogram_t> {
+                // If this is not a tuple (>1D), make it a tuple of 1D
+                // Then, convert tuples to list
+                py::list indexes;
+                if(py::isinstance<py::tuple>(index))
+                    indexes = py::cast<py::tuple>(index);
+                else
+                    indexes.append(index);
+
+                // Expand ... to :
+                indexes = expand_ellipsis(indexes, self.rank());
 
                 if(indexes.size() != self.rank())
                     throw std::out_of_range("You must provide the same number of indices as the rank of the histogram");

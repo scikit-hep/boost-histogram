@@ -44,3 +44,40 @@ def test_get_1D_histogram():
 
     assert h != h2
 
+def test_get_1D_slice():
+    h1 = bh.histogram(bh.axis.regular(10, 0, 1))
+    h2 = bh.histogram(bh.axis.regular(5, 0, .5))
+    h1.fill([.25, .25, .25, .15])
+    h2.fill([.25, .25, .25, .15])
+
+    assert h1 != h2
+    assert h1[:5] == h2
+    assert h1[:bh.loc(.5)] == h2
+    assert h1[2:4] == h2[2:4]
+    assert h1[bh.loc(.2):bh.loc(.4)] == h2[bh.loc(.2):bh.loc(.4)]
+
+    assert len(h1[2:4].view()) == 2
+    assert len(h1[2:4:bh.rebin(2)].view()) == 1
+
+
+def test_ellipsis():
+
+    h = bh.histogram(bh.axis.regular(10, 0, 1), bh.axis.regular(10, 0, 1))
+    
+    assert h == h[...]
+    assert h == h[:,...]
+    assert h == h[...,:]
+    assert h == h[:,:,...]
+    assert h == h[:,...,:]
+    assert h == h[...,:,:]
+
+    with pytest.raises(IndexError):
+        h[:,:,:,...]
+    with pytest.raises(IndexError):
+        h[:,:,...,:]
+    with pytest.raises(IndexError):
+        h[...,:,:,:]
+    with pytest.raises(IndexError):
+        h[...,...]
+
+    assert h[2:4,...] == h[2:4,:]

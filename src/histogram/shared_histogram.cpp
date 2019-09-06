@@ -54,3 +54,42 @@ get_slices(py::tuple indexes,
 
     return slices;
 }
+
+py::list expand_ellipsis(py::list indexes, py::size_t rank) {
+    py::size_t ellipis_index = 0;
+    bool ellipsis_found      = false;
+    for(py::size_t i = 0; i < indexes.size(); i++) {
+        if(py::cast<std::string>(indexes[i].attr("__class__").attr("__name__")) == "ellipsis") {
+            if(ellipsis_found)
+                throw std::out_of_range("an index can only have a single ellipsis ('...')");
+            ellipsis_found = true;
+            ellipis_index  = i;
+        }
+    }
+
+    if(ellipsis_found) {
+        if(indexes.size() > rank + 1)
+            throw std::out_of_range("IndexError: too many indices for histogram");
+        py::size_t additional = rank + 1 - indexes.size();
+
+        py::list new_list;
+
+        // The first part of the list should identical, up to the ellipsis
+        for(py::size_t i = 0; i < ellipis_index; i++)
+            new_list.append(indexes[i]);
+
+        // Fill out the ellipsis with empty slices
+        // py::object builtins = py::import( ? "" : "")
+        py::dict builtins = py::cast<py::dict>(py::handle(PyEval_GetBuiltins()));
+        for(py::size_t i = 0; i < additional; i++)
+            new_list.append(builtins["slice"](py::none()));
+
+        // Add the parts after the ellipsis
+        for(py::size_t i = ellipis_index + 1; i < indexes.size(); i++)
+            new_list.append(indexes[i]);
+
+        return new_list;
+    } else {
+        return indexes;
+    }
+}
