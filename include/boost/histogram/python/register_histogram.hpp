@@ -139,6 +139,12 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
                 if(indexes.size() != self.rank())
                     throw std::out_of_range("You must provide the same number of indices as the rank of the histogram");
 
+                for(py::size_t i = 0; i < indexes.size(); i++) {
+                    if(py::hasattr(indexes[i], "value"))
+                        indexes[i]
+                            = self.axis(static_cast<unsigned>(i)).index(py::cast<double>(indexes[i].attr("value")));
+                }
+
                 try {
                     auto int_args = py::cast<std::vector<int>>(indexes);
                     return self.at(int_args);
@@ -223,7 +229,7 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
                 using storage_t = typename histogram_t::storage_type;
                 bh::detail::static_if<boost::mp11::mp_or<std::is_same<storage_t, storage::profile>,
                                                          std::is_same<storage_t, storage::weighted_profile>>>(
-                    [&](auto &h) {
+                    [&kwargs, &vargs](auto &h) {
                         auto sample = required_arg<py::object>(kwargs, "sample");
                         finalize_args(kwargs);
                         auto sarray = py::cast<arrayd>(sample);
@@ -235,7 +241,7 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
                         // else
                         h.fill(vargs, bh::sample(sarray));
                     },
-                    [&](auto &h) {
+                    [&kwargs, &weight, &empty_weight, &vargs](auto &h) {
                         finalize_args(kwargs);
                         if(weight.is(empty_weight)) {
                             py::gil_scoped_release tmp;
