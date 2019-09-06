@@ -2,12 +2,16 @@ import pytest
 from pytest import approx
 
 import boost.histogram.axis as bha
-from boost.histogram.axis import (regular, 
-                                  regular_log, regular_sqrt,
-                                  regular_pow, circular,
-                                  variable,
-                                  integer,
-                                  category)
+from boost.histogram.axis import (
+    regular,
+    regular_log,
+    regular_sqrt,
+    regular_pow,
+    circular,
+    variable,
+    integer,
+    category,
+)
 
 import numpy as np
 from numpy.testing import assert_array_equal, assert_allclose
@@ -15,7 +19,7 @@ from numpy.testing import assert_array_equal, assert_allclose
 import abc
 
 # compatible with Python 2 *and* 3:
-ABC = abc.ABCMeta('ABC', (object,), {'__slots__': ()})
+ABC = abc.ABCMeta("ABC", (object,), {"__slots__": ()})
 
 # histogram -> boost.histogram
 # regular(..., noflow=False) -> regular_ouflow(...)
@@ -27,8 +31,8 @@ ABC = abc.ABCMeta('ABC', (object,), {'__slots__': ()})
 # Circular is very different (Boost::Histogram change)
 # Variable and category take an array/list now
 
-class Axis(ABC):
 
+class Axis(ABC):
     @abc.abstractmethod
     def test_init(self):
         pass
@@ -54,28 +58,30 @@ class Axis(ABC):
         pass
 
 
-
 class TestRegular(Axis):
-
     def test_shortcut(self):
-        assert isinstance(regular(1,2,3), bha._regular_uoflow)
-        assert isinstance(regular(1,2,3), regular)
+        assert isinstance(regular(1, 2, 3), bha._regular_uoflow)
+        assert isinstance(regular(1, 2, 3), regular)
 
-        assert isinstance(regular(1,2,3, overflow=False), bha._regular_uflow)
-        assert isinstance(regular(1,2,3, overflow=False), regular)
+        assert isinstance(regular(1, 2, 3, overflow=False), bha._regular_uflow)
+        assert isinstance(regular(1, 2, 3, overflow=False), regular)
 
-        assert isinstance(regular(1,2,3, underflow=False), bha._regular_oflow)
-        assert isinstance(regular(1,2,3, underflow=False), regular)
+        assert isinstance(regular(1, 2, 3, underflow=False), bha._regular_oflow)
+        assert isinstance(regular(1, 2, 3, underflow=False), regular)
 
-        assert isinstance(regular(1,2,3, flow=False), bha._regular_noflow)
-        assert isinstance(regular(1,2,3, flow=False), regular)
+        assert isinstance(regular(1, 2, 3, flow=False), bha._regular_noflow)
+        assert isinstance(regular(1, 2, 3, flow=False), regular)
 
-        assert isinstance(regular(1,2,3, underflow=False, overflow=False), bha._regular_noflow)
-        assert isinstance(regular(1,2,3, underflow=False, overflow=False, flow=True), bha._regular_uoflow)
+        assert isinstance(
+            regular(1, 2, 3, underflow=False, overflow=False), bha._regular_noflow
+        )
+        assert isinstance(
+            regular(1, 2, 3, underflow=False, overflow=False, flow=True),
+            bha._regular_uoflow,
+        )
 
-        assert isinstance(regular(1,2,3, growth=True), bha._regular_growth)
-        assert isinstance(regular(1,2,3, growth=True), regular)
-
+        assert isinstance(regular(1, 2, 3, growth=True), bha._regular_growth)
+        assert isinstance(regular(1, 2, 3, growth=True), regular)
 
     def test_init(self):
         # Should not throw
@@ -102,7 +108,7 @@ class TestRegular(Axis):
         with pytest.raises(Exception):
             regular(-1, 1.0, 2.0)
         # CLASSIC
-        #with pytest.raises(ValueError):
+        # with pytest.raises(ValueError):
         regular(1, 2.0, 1.0)
 
         with pytest.raises(ValueError):
@@ -110,8 +116,6 @@ class TestRegular(Axis):
 
         with pytest.raises(TypeError):
             regular(1, 1.0, 2.0, metadata=0)
-
-
 
         with pytest.raises(KeyError):
             regular(1, 1.0, 2.0, bad_keyword="ra")
@@ -123,7 +127,6 @@ class TestRegular(Axis):
         assert a != regular(3, 1.0, 2.0)
         assert a != regular(4, 1.1, 2.0)
         assert a != regular(4, 1.0, 2.1)
-
 
     def test_len(self):
         a = regular(4, 1.0, 2.0)
@@ -137,31 +140,36 @@ class TestRegular(Axis):
         ax = regular(4, 1.1, 2.2)
         assert repr(ax) == "regular(4, 1.1, 2.2, options=underflow | overflow)"
 
-        ax = regular(4, 1.1, 2.2, metadata='ra')
-        assert repr(ax) == 'regular(4, 1.1, 2.2, metadata="ra", options=underflow | overflow)'
+        ax = regular(4, 1.1, 2.2, metadata="ra")
+        assert (
+            repr(ax)
+            == 'regular(4, 1.1, 2.2, metadata="ra", options=underflow | overflow)'
+        )
 
         ax = regular(4, 1.1, 2.2, flow=False)
         assert repr(ax) == "regular(4, 1.1, 2.2, options=none)"
 
-        ax = regular(4, 1.1, 2.2, metadata='ra', flow=False)
+        ax = regular(4, 1.1, 2.2, metadata="ra", flow=False)
         assert repr(ax) == 'regular(4, 1.1, 2.2, metadata="ra", options=none)'
 
         ax = regular_log(4, 1.1, 2.2)
-        assert repr(ax) == 'regular_log(4, 1.1, 2.2, options=underflow | overflow)'
+        assert repr(ax) == "regular_log(4, 1.1, 2.2, options=underflow | overflow)"
 
         ax = regular_sqrt(3, 1.1, 2.2)
-        assert repr(ax) == 'regular_sqrt(3, 1.1, 2.2, options=underflow | overflow)'
+        assert repr(ax) == "regular_sqrt(3, 1.1, 2.2, options=underflow | overflow)"
 
         ax = regular_pow(4, 1.1, 2.2, 0.5)
-        assert repr(ax) == 'regular_pow(4, 1.1, 2.2, options=underflow | overflow, power=0.5)'
-
+        assert (
+            repr(ax)
+            == "regular_pow(4, 1.1, 2.2, options=underflow | overflow, power=0.5)"
+        )
 
     def test_getitem(self):
         v = [1.0, 1.25, 1.5, 1.75, 2.0]
         a = regular(4, 1.0, 2.0)
         for i in range(4):
             a.bin(i).lower() == approx(v[i])
-            a.bin(i).upper() == approx(v[i+1])
+            a.bin(i).upper() == approx(v[i + 1])
         assert a.bin(-1).lower() == -float("infinity")
         assert a.bin(4).upper() == float("infinity")
 
@@ -181,7 +189,7 @@ class TestRegular(Axis):
         a = regular(4, 1.0, 2.0)
         assert_array_equal(a.edges(), v)
 
-        c = (v[:-1] + v[1:])/2
+        c = (v[:-1] + v[1:]) / 2
         assert_allclose(a.centers(), c)
 
     def test_index(self):
@@ -216,7 +224,6 @@ class TestRegular(Axis):
         assert a.index(2.000) == 0
         assert a.index(20) == -1
 
-
     def test_log_transform(self):
         a = regular_log(2, 1e0, 1e2)
 
@@ -250,10 +257,7 @@ class TestRegular(Axis):
         assert a.bin(1).upper(), approx(9.0)
 
 
-
-
 class TestCircular(Axis):
-
     def test_init(self):
         # Should not throw
 
@@ -295,25 +299,25 @@ class TestCircular(Axis):
         ax = circular(4, 1.1, 2.2)
         assert repr(ax) == "regular(4, 1.1, 2.2, options=overflow | circular)"
 
-        ax = circular(4, 1.1, 2.2, metadata='hi')
-        assert repr(ax) == 'regular(4, 1.1, 2.2, metadata="hi", options=overflow | circular)'
+        ax = circular(4, 1.1, 2.2, metadata="hi")
+        assert (
+            repr(ax)
+            == 'regular(4, 1.1, 2.2, metadata="hi", options=overflow | circular)'
+        )
 
         ax = circular(4, 2.0)
         assert repr(ax) == "regular(4, 0, 2, options=overflow | circular)"
 
-        ax = circular(4, 2.0, metadata='hi')
-        assert repr(ax) == 'regular(4, 0, 2, metadata="hi", options=overflow | circular)'
-
+        ax = circular(4, 2.0, metadata="hi")
+        assert (
+            repr(ax) == 'regular(4, 0, 2, metadata="hi", options=overflow | circular)'
+        )
 
     def test_getitem(self):
-        v = [1.0,
-             1.0 + 0.5 * np.pi,
-             1.0 + np.pi,
-             1.0 + 1.5 * np.pi,
-             1.0 + 2.0 * np.pi]
+        v = [1.0, 1.0 + 0.5 * np.pi, 1.0 + np.pi, 1.0 + 1.5 * np.pi, 1.0 + 2.0 * np.pi]
 
         # CLASSIC: Used to be 1 (phase 2pi automatic?)
-        a = circular(4, 1, 1+np.pi*2)
+        a = circular(4, 1, 1 + np.pi * 2)
 
         for i in range(4):
             assert a.bin(i).lower() == v[i]
@@ -322,22 +326,19 @@ class TestCircular(Axis):
         # CLASSIC: Out of range used to raise
         # TODO: test out of range
 
-
     def test_iter(self):
-        v = np.array([1.0,
-             1.0 + 0.5 * np.pi,
-             1.0 + np.pi,
-             1.0 + 1.5 * np.pi,
-             1.0 + 2.0 * np.pi])
+        v = np.array(
+            [1.0, 1.0 + 0.5 * np.pi, 1.0 + np.pi, 1.0 + 1.5 * np.pi, 1.0 + 2.0 * np.pi]
+        )
 
-        a = circular(4, 1, 1+np.pi*2)
+        a = circular(4, 1, 1 + np.pi * 2)
         assert_array_equal(a.edges(), v)
 
-        c = (v[:-1] + v[1:])/2
+        c = (v[:-1] + v[1:]) / 2
         assert_allclose(a.centers(), c)
 
     def test_index(self):
-        a = circular(4, 1, 1+np.pi*2)
+        a = circular(4, 1, 1 + np.pi * 2)
         d = 0.5 * np.pi
         assert a.index(0.99 - 4 * d) == 3
         assert a.index(0.99 - 3 * d) == 0
@@ -356,20 +357,25 @@ class TestCircular(Axis):
 
 class TestVariable(Axis):
     def test_shortcut(self):
-        assert isinstance(variable([1,2,3]), bha._variable_uoflow)
-        assert isinstance(variable([1,2,3]), variable)
+        assert isinstance(variable([1, 2, 3]), bha._variable_uoflow)
+        assert isinstance(variable([1, 2, 3]), variable)
 
-        assert isinstance(variable([1,2,3], overflow=False), bha._variable_uflow)
-        assert isinstance(variable([1,2,3], overflow=False), variable)
+        assert isinstance(variable([1, 2, 3], overflow=False), bha._variable_uflow)
+        assert isinstance(variable([1, 2, 3], overflow=False), variable)
 
-        assert isinstance(variable([1,2,3], underflow=False), bha._variable_oflow)
-        assert isinstance(variable([1,2,3], underflow=False), variable)
+        assert isinstance(variable([1, 2, 3], underflow=False), bha._variable_oflow)
+        assert isinstance(variable([1, 2, 3], underflow=False), variable)
 
-        assert isinstance(variable([1,2,3], flow=False), bha._variable_noflow)
-        assert isinstance(variable([1,2,3], flow=False), variable)
+        assert isinstance(variable([1, 2, 3], flow=False), bha._variable_noflow)
+        assert isinstance(variable([1, 2, 3], flow=False), variable)
 
-        assert isinstance(variable([1,2,3], underflow=False, overflow=False), bha._variable_noflow)
-        assert isinstance(variable([1,2,3], underflow=False, overflow=False, flow=True), bha._variable_uoflow)
+        assert isinstance(
+            variable([1, 2, 3], underflow=False, overflow=False), bha._variable_noflow
+        )
+        assert isinstance(
+            variable([1, 2, 3], underflow=False, overflow=False, flow=True),
+            bha._variable_uoflow,
+        )
 
     def test_init(self):
         variable([0, 1])
@@ -404,9 +410,11 @@ class TestVariable(Axis):
         ax = variable([-0.1, 0.2])
         assert repr(ax) == "variable(-0.1, 0.2, options=underflow | overflow)"
 
-        ax = variable([-0.1, 0.2], metadata='hi')
-        assert repr(ax) == 'variable(-0.1, 0.2, metadata="hi", options=underflow | overflow)'
-
+        ax = variable([-0.1, 0.2], metadata="hi")
+        assert (
+            repr(ax)
+            == 'variable(-0.1, 0.2, metadata="hi", options=underflow | overflow)'
+        )
 
     def test_getitem(self):
         v = [-0.1, 0.2, 0.3]
@@ -426,14 +434,13 @@ class TestVariable(Axis):
         assert a.bin(-2).upper() == -float("infinity")
         assert a.bin(3).lower() == float("infinity")
 
-
     def test_iter(self):
         v = np.array([-0.1, 0.2, 0.3])
         a = variable(v)
 
         assert_array_equal(a.edges(), v)
 
-        c = (v[:-1] + v[1:])/2
+        c = (v[:-1] + v[1:]) / 2
         assert_allclose(a.centers(), c)
 
     def test_index(self):
@@ -450,6 +457,7 @@ class TestVariable(Axis):
         assert a.index(0.31) == 2
         assert a.index(10) == 2
 
+
 class TestInteger:
     def test_shortcut(self):
         assert isinstance(integer(1, 3), bha._integer_uoflow)
@@ -464,8 +472,13 @@ class TestInteger:
         assert isinstance(integer(1, 3, flow=False), bha._integer_noflow)
         assert isinstance(integer(1, 3, flow=False), integer)
 
-        assert isinstance(integer(1, 3, underflow=False, overflow=False), bha._integer_noflow)
-        assert isinstance(integer(1, 3, underflow=False, overflow=False, flow=True), bha._integer_uoflow)
+        assert isinstance(
+            integer(1, 3, underflow=False, overflow=False), bha._integer_noflow
+        )
+        assert isinstance(
+            integer(1, 3, underflow=False, overflow=False, flow=True),
+            bha._integer_uoflow,
+        )
 
         assert isinstance(integer(1, 3, growth=True), bha._integer_growth)
         assert isinstance(integer(1, 3, growth=True), integer)
@@ -473,8 +486,8 @@ class TestInteger:
     def test_init(self):
         integer(-1, 2, flow=True)
         integer(-1, 2, flow=False)
-        integer(-1, 2 , growth=True)
-        
+        integer(-1, 2, growth=True)
+
         with pytest.raises(TypeError):
             integer()
         with pytest.raises(TypeError):
@@ -501,16 +514,16 @@ class TestInteger:
 
     def test_repr(self):
         a = integer(-1, 1)
-        assert repr(a) == 'integer(-1, 1, options=underflow | overflow)'
+        assert repr(a) == "integer(-1, 1, options=underflow | overflow)"
 
         a = integer(-1, 1, metadata="hi")
         assert repr(a) == 'integer(-1, 1, metadata="hi", options=underflow | overflow)'
 
         a = integer(-1, 1, flow=False)
-        assert repr(a) == 'integer(-1, 1, options=none)'
+        assert repr(a) == "integer(-1, 1, options=none)"
 
         a = integer(-1, 1, growth=True)
-        assert repr(a) == 'integer(-1, 1, options=growth)'
+        assert repr(a) == "integer(-1, 1, options=growth)"
 
     def test_label(self):
         a = integer(-1, 2, metadata="foo")
@@ -544,11 +557,10 @@ class TestInteger:
 
 
 class TestCategory(Axis):
-
     def test_init(self):
         category([1, 2, 3])
         category([1, 2, 3], metadata="ca")
-        
+
         # Basic string support
         category(["1"])
 
@@ -565,16 +577,15 @@ class TestCategory(Axis):
         assert category([1, 2, 3]) != category([1, 3, 2])
 
     def test_len(self):
-        assert category([1,2,3]).size() == 3
-        assert category([1,2,3]).size(flow=True) == 4
+        assert category([1, 2, 3]).size() == 3
+        assert category([1, 2, 3]).size(flow=True) == 4
 
     def test_repr(self):
-        ax = category([1,2,3])
+        ax = category([1, 2, 3])
         assert repr(ax) == "category(1, 2, 3, options=overflow)"
 
-        ax = category([1,2,3], metadata='hi')
+        ax = category([1, 2, 3], metadata="hi")
         assert repr(ax) == 'category(1, 2, 3, metadata="hi", options=overflow)'
-
 
     def test_getitem(self):
         c = [1, 2, 3]
@@ -585,7 +596,6 @@ class TestCategory(Axis):
 
         # CLASSIC: out of range used to throw
         # TODO: Check out of range bin values
-
 
     def test_iter(self):
         c = [1, 2, 3]
@@ -604,4 +614,3 @@ class TestCategory(Axis):
         assert a.index(1) == 0
         assert a.index(2) == 1
         assert a.index(3) == 2
-

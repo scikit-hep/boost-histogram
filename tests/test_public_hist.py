@@ -3,11 +3,16 @@ from pytest import approx
 
 
 from boost.histogram import histogram
-from boost.histogram.axis import (regular, integer,
-                                  regular_log, regular_sqrt,
-                                  regular_pow, circular,
-                                  variable,
-                                  category)
+from boost.histogram.axis import (
+    regular,
+    integer,
+    regular_log,
+    regular_sqrt,
+    regular_pow,
+    circular,
+    variable,
+    category,
+)
 
 import boost.histogram as bh
 
@@ -23,6 +28,7 @@ except ImportError:
 # histogram -> boost.histogram
 # histogram -> _make_histogram
 # .dim -> .rank()
+
 
 def test_init():
     histogram()
@@ -56,6 +62,7 @@ def test_init():
 def test_copy():
     a = histogram(integer(-1, 1))
     import copy
+
     b = copy.copy(a)
     assert a == b
     assert id(a) != id(b)
@@ -89,13 +96,13 @@ def test_fill_int_1d():
         h[0, 1]
 
     for get in (lambda h, arg: h.at(arg),):
-               # lambda h, arg: h[arg]):
+        # lambda h, arg: h[arg]):
         assert get(h, 0) == 2
         assert get(h, 1) == 1
         assert get(h, 2) == 3
-        #assert get(h, 0).variance == 2
-        #assert get(h, 1).variance == 1
-        #assert get(h, 2).variance == 3
+        # assert get(h, 0).variance == 2
+        # assert get(h, 1).variance == 1
+        # assert get(h, 2).variance == 3
 
         assert get(h, -1) == 1
         assert get(h, 3) == 1
@@ -112,8 +119,8 @@ def test_fill_1d(flow):
         h.fill(x)
 
     assert h.sum() == 6
-    assert h.sum(flow=True) == 6 + 2*flow
-    assert h.axis(0).size(flow=True) == 3 + 2*flow
+    assert h.sum(flow=True) == 6 + 2 * flow
+    assert h.axis(0).size(flow=True) == 3 + 2 * flow
 
     with pytest.raises(TypeError):
         h.at(0, foo=None)
@@ -123,17 +130,18 @@ def test_fill_1d(flow):
         h[0, 1]
 
     for get in (lambda h, arg: h.at(arg),):
-               # lambda h, arg: h[arg]):
+        # lambda h, arg: h[arg]):
         assert get(h, 0) == 2
         assert get(h, 1) == 1
         assert get(h, 2) == 3
-        #assert get(h, 0).variance == 2
-        #assert get(h, 1).variance == 1
-        #assert get(h, 2).variance == 3
+        # assert get(h, 0).variance == 2
+        # assert get(h, 1).variance == 1
+        # assert get(h, 2).variance == 3
 
     if flow is True:
         assert get(h, -1) == 1
         assert get(h, 3) == 1
+
 
 def test_growth():
     h = histogram(integer(-1, 2))
@@ -154,8 +162,7 @@ def test_growth():
 
 @pytest.mark.parametrize("flow", [True, False])
 def test_fill_2d(flow):
-    h = histogram(integer(-1, 2, flow=flow),
-                  regular(4, -2, 2, flow=flow))
+    h = histogram(integer(-1, 2, flow=flow), regular(4, -2, 2, flow=flow))
     h.fill(-1, -2)
     h.fill(-1, -1)
     h.fill(0, 0)
@@ -169,14 +176,16 @@ def test_fill_2d(flow):
     with pytest.raises(Exception):
         h.fill(1, 2, 3)
 
-    m = [[1, 1, 0, 0, 0, 0],
-         [0, 0, 1, 1, 0, 1],
-         [0, 0, 1, 0, 0, 0],
-         [0, 1, 0, 0, 0, 0],
-         [0, 0, 0, 0, 0, 0]]
+    m = [
+        [1, 1, 0, 0, 0, 0],
+        [0, 0, 1, 1, 0, 1],
+        [0, 0, 1, 0, 0, 0],
+        [0, 1, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0],
+    ]
 
     for get in (lambda h, x, y: h.at(x, y),):
-                # lambda h, x, y: h[x, y]):
+        # lambda h, x, y: h[x, y]):
         for i in range(-flow, h.axis(0).size() + flow):
             for j in range(-flow, h.axis(1).size() + flow):
                 assert get(h, i, j) == m[i][j]
@@ -184,8 +193,7 @@ def test_fill_2d(flow):
 
 @pytest.mark.parametrize("flow", [True, False])
 def test_add_2d(flow):
-    h = histogram(integer(-1, 2, flow=flow),
-                  regular(4, -2, 2, flow=flow))
+    h = histogram(integer(-1, 2, flow=flow), regular(4, -2, 2, flow=flow))
     assert isinstance(h, histogram)
 
     h.fill(-1, -2)
@@ -196,17 +204,20 @@ def test_add_2d(flow):
     h.fill(3, -1)
     h.fill(0, -3)
 
-    m = [[1, 1, 0, 0, 0, 0],
-         [0, 0, 1, 1, 0, 1],
-         [0, 0, 1, 0, 0, 0],
-         [0, 1, 0, 0, 0, 0],
-         [0, 0, 0, 0, 0, 0]]
+    m = [
+        [1, 1, 0, 0, 0, 0],
+        [0, 0, 1, 1, 0, 1],
+        [0, 0, 1, 0, 0, 0],
+        [0, 1, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0],
+    ]
 
     h += h
 
     for i in range(-flow, h.axis(0).size() + flow):
         for j in range(-flow, h.axis(1).size() + flow):
             assert h.at(i, j) == 2 * m[i][j]
+
 
 def test_add_2d_bad():
     a = histogram(integer(-1, 1))
@@ -215,10 +226,10 @@ def test_add_2d_bad():
     with pytest.raises(ValueError):
         a += b
 
+
 @pytest.mark.parametrize("flow", [True, False])
 def test_add_2d_w(flow):
-    h = histogram(integer(-1, 2, flow=flow),
-                  regular(4, -2, 2, flow=flow))
+    h = histogram(integer(-1, 2, flow=flow), regular(4, -2, 2, flow=flow))
     h.fill(-1, -2)
     h.fill(-1, -1)
     h.fill(0, 0)
@@ -227,14 +238,15 @@ def test_add_2d_w(flow):
     h.fill(3, -1)
     h.fill(0, -3)
 
-    m = [[1, 1, 0, 0, 0, 0],
-         [0, 0, 1, 1, 0, 1],
-         [0, 0, 1, 0, 0, 0],
-         [0, 1, 0, 0, 0, 0],
-         [0, 0, 0, 0, 0, 0]]
+    m = [
+        [1, 1, 0, 0, 0, 0],
+        [0, 0, 1, 1, 0, 1],
+        [0, 0, 1, 0, 0, 0],
+        [0, 1, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0],
+    ]
 
-    h2 = histogram(integer(-1, 2, flow=flow),
-                   regular(4, -2, 2, flow=flow))
+    h2 = histogram(integer(-1, 2, flow=flow), regular(4, -2, 2, flow=flow))
     h2.fill(0, 0, weight=0)
 
     h2 += h
@@ -246,10 +258,13 @@ def test_add_2d_w(flow):
         for j in range(-flow, h.axis(1).size() + flow):
             assert h.at(i, j) == 2 * m[i][j]
 
+
 def test_repr():
     h = histogram(regular(3, 0, 1), integer(0, 1))
     hr = repr(h)
-    assert hr == '''histogram(
+    assert (
+        hr
+        == """histogram(
   regular(3, 0, 1, options=underflow | overflow),
   integer(0, 1, options=underflow | overflow),
   0: 0
@@ -267,7 +282,9 @@ def test_repr():
   12: 0
   13: 0
   14: 0
-)'''
+)"""
+    )
+
 
 def test_axis():
     axes = (regular(10, 0, 1), integer(0, 1))
@@ -279,7 +296,8 @@ def test_axis():
     assert h.axis(-1) == axes[-1]
     assert h.axis(-2) == axes[-2]
     with pytest.raises(IndexError):
-            h.axis(-3)
+        h.axis(-3)
+
 
 # CLASSIC: This used to only fail when accessing, now fails in creation
 def test_overflow():
@@ -297,10 +315,11 @@ def test_out_of_range():
         h.at(-2)
     with pytest.raises(IndexError):
         h.at(4)
-    #with pytest.raises(IndexError):
+    # with pytest.raises(IndexError):
     #    h.at(-2).variance
-    #with pytest.raises(IndexError):
+    # with pytest.raises(IndexError):
     #    h.at(4).variance
+
 
 # CLASSIC: This used to have variance
 def test_operators():
@@ -317,6 +336,7 @@ def test_operators():
     h2 = histogram(regular(2, 0, 2))
     with pytest.raises(ValueError):
         h + h2
+
 
 # CLASSIC: reduce_to -> project,
 def test_project():
@@ -341,32 +361,37 @@ def test_project():
     with pytest.raises(ValueError):
         h.project(2, 1)
 
+
 def test_shrink_1d():
     h = histogram(regular(20, 1, 5))
     h.fill(1.1)
     hs = h.reduce(bh.algorithm.shrink(0, 1, 2))
-    assert_array_equal(hs.view(), [1,0,0,0,0])
+    assert_array_equal(hs.view(), [1, 0, 0, 0, 0])
+
 
 def test_rebin_1d():
     h = histogram(regular(20, 1, 5))
     h.fill(1.1)
     hs = h.reduce(bh.algorithm.rebin(0, 4))
-    assert_array_equal(hs.view(), [1,0,0,0,0])
+    assert_array_equal(hs.view(), [1, 0, 0, 0, 0])
+
 
 def test_shrink_rebin_1d():
     h = histogram(regular(20, 0, 4))
     h.fill(1.1)
     hs = h.reduce(bh.algorithm.shrink_and_rebin(0, 1, 3, 2))
-    assert_array_equal(hs.view(), [1,0,0,0,0])
+    assert_array_equal(hs.view(), [1, 0, 0, 0, 0])
 
 
 # CLASSIC: This used to have metadata too, but that does not compare equal
 def test_pickle_0():
-    a = histogram(category([0, 1, 2]),
-                  integer(0, 20),
-                  regular(20, 0.0, 20.0, flow=False),
-                  variable([0.0, 1.0, 2.0]),
-                  circular(4, 2*np.pi))
+    a = histogram(
+        category([0, 1, 2]),
+        integer(0, 20),
+        regular(20, 0.0, 20.0, flow=False),
+        variable([0.0, 1.0, 2.0]),
+        circular(4, 2 * np.pi),
+    )
     for i in range(a.axis(0).size(flow=True)):
         a.fill(i, 0, 0, 0, 0)
         for j in range(a.axis(1).size(flow=True)):
@@ -378,7 +403,7 @@ def test_pickle_0():
                     for m in range(a.axis(4).size(flow=True)):
                         a.fill(i, j, k, l, m * 0.5 * np.pi)
 
-    io = pickle.dumps(a,-1)
+    io = pickle.dumps(a, -1)
     b = pickle.loads(io)
 
     assert id(a) != id(b)
@@ -391,11 +416,14 @@ def test_pickle_0():
     assert a.sum() == b.sum()
     assert a == b
 
+
 def test_pickle_1():
-    a = histogram(category([0, 1, 2]),
-                  integer(0, 3, metadata='ia'),
-                  regular(4, 0.0, 4.0, flow=False),
-                  variable([0.0, 1.0, 2.0]))
+    a = histogram(
+        category([0, 1, 2]),
+        integer(0, 3, metadata="ia"),
+        regular(4, 0.0, 4.0, flow=False),
+        variable([0.0, 1.0, 2.0]),
+    )
     assert isinstance(a, bh.hist._any_int)
     assert isinstance(a, histogram)
 
@@ -422,7 +450,9 @@ def test_pickle_1():
     assert a.sum() == b.sum()
     assert a == b
 
+
 # Numpy tests
+
 
 def test_numpy_conversion_0():
     a = histogram(integer(0, 3, flow=False))
@@ -433,7 +463,7 @@ def test_numpy_conversion_0():
     v = np.asarray(a)  # a view
 
     for t in (c, v):
-        assert t.dtype == np.uint64 # CLASSIC: np.uint8
+        assert t.dtype == np.uint64  # CLASSIC: np.uint8
         assert_array_equal(t, (1, 5, 0))
 
     for i in range(10):
@@ -446,10 +476,11 @@ def test_numpy_conversion_0():
         a.fill(1)
     c = np.array(a)
 
-    assert c.dtype == np.uint64 # CLASSIC: np.uint16
+    assert c.dtype == np.uint64  # CLASSIC: np.uint16
     assert_array_equal(c, (1, 260, 10))
     # view does not follow underlying switch in word size
     # assert not np.all(c, v)
+
 
 def test_numpy_conversion_1():
     # CLASSIC: was weight array
@@ -458,14 +489,15 @@ def test_numpy_conversion_1():
         a.fill(1, weight=3)
     c = np.array(a)  # a copy
     v = np.asarray(a)  # a view
-    assert c.dtype == np.uint64 # CLASSIC: np.float64
+    assert c.dtype == np.uint64  # CLASSIC: np.float64
     assert_array_equal(c, np.array((0, 30, 0)))
     assert_array_equal(v, c)
 
+
 def test_numpy_conversion_2():
-    a = histogram(integer(0, 2, flow=False),
-                  integer(0, 3, flow=False),
-                  integer(0, 4, flow=False))
+    a = histogram(
+        integer(0, 2, flow=False), integer(0, 3, flow=False), integer(0, 4, flow=False)
+    )
     r = np.zeros((2, 3, 4), dtype=np.int8)
     for i in range(a.axis(0).size(flow=True)):
         for j in range(a.axis(1).size(flow=True)):
@@ -488,17 +520,17 @@ def test_numpy_conversion_2():
     assert_array_equal(c, r)
     assert_array_equal(v, r)
 
+
 def test_numpy_conversion_3():
-    a = histogram(integer(0, 2),
-                  integer(0, 3),
-                  integer(0, 4),
-                  storage=bh.storage.double())
+    a = histogram(
+        integer(0, 2), integer(0, 3), integer(0, 4), storage=bh.storage.double()
+    )
 
     r = np.zeros((4, 5, 6))
     for i in range(a.axis(0).size(flow=True)):
         for j in range(a.axis(1).size(flow=True)):
             for k in range(a.axis(2).size(flow=True)):
-                a.fill(i-1, j-1, k-1, weight=i + j + k)
+                a.fill(i - 1, j - 1, k - 1, weight=i + j + k)
                 r[i, j, k] = i + j + k
     c = a.view(flow=True)
 
@@ -506,7 +538,7 @@ def test_numpy_conversion_3():
     for i in range(a.axis(0).size(flow=True)):
         for j in range(a.axis(1).size(flow=True)):
             for k in range(a.axis(2).size(flow=True)):
-                c2[i, j, k] = a.at(i-1, j-1, k-1)
+                c2[i, j, k] = a.at(i - 1, j - 1, k - 1)
 
     assert_array_equal(c, c2)
     assert_array_equal(c, r)
@@ -515,11 +547,11 @@ def test_numpy_conversion_3():
     assert a.sum(flow=True) == approx(720)
     assert c.sum() == approx(720)
 
+
 def test_numpy_conversion_4():
-    a = histogram(integer(0, 2, flow=False),
-                  integer(0, 4, flow=False))
+    a = histogram(integer(0, 2, flow=False), integer(0, 4, flow=False))
     a1 = np.asarray(a)
-    assert a1.dtype == np.uint64 # CLASSIC: np.uint8
+    assert a1.dtype == np.uint64  # CLASSIC: np.uint8
     assert a1.shape == (2, 4)
 
     b = histogram()
@@ -530,10 +562,13 @@ def test_numpy_conversion_4():
     # Compare sum methods
     assert b.sum() == np.asarray(b).sum()
 
+
 def test_numpy_conversion_5():
-    a = histogram(integer(0, 3, flow=False),
-                  integer(0, 2, flow=False),
-                  storage=bh.storage.unlimited())
+    a = histogram(
+        integer(0, 3, flow=False),
+        integer(0, 2, flow=False),
+        storage=bh.storage.unlimited(),
+    )
     a.fill(0, 0)
     for i in range(80):
         a = a + a
@@ -556,17 +591,18 @@ def test_numpy_conversion_5():
     assert a1[1, 1] == 4
     assert a1[2, 1] == 5
 
+
 def test_numpy_conversion_6():
     a = integer(0, 2)
     b = regular(2, 0, 2)
     c = variable([0, 1, 2])
-    ref = np.array((0., 1., 2.))
+    ref = np.array((0.0, 1.0, 2.0))
     assert_array_equal(a.bins(), [0, 1])
     assert_array_equal(b.edges(), ref)
     assert_array_equal(c.edges(), ref)
 
-    d = circular(4, 0, 2*np.pi)
-    ref = np.array((0., 0.5 * np.pi, np.pi, 1.5 * np.pi, 2.0 * np.pi))
+    d = circular(4, 0, 2 * np.pi)
+    ref = np.array((0.0, 0.5 * np.pi, np.pi, 1.5 * np.pi, 2.0 * np.pi))
     assert_array_equal(d.edges(), ref)
     e = category([1, 2])
     ref = np.array((1, 2))
@@ -576,6 +612,7 @@ def test_numpy_conversion_6():
 def test_fill_with_numpy_array_0():
     def ar(*args):
         return np.array(args, dtype=float)
+
     a = histogram(integer(0, 3, flow=False))
     a.fill(ar(-1, 0, 1, 2, 1))
     a.fill((4, -1, 0, 1, 2))
@@ -595,9 +632,8 @@ def test_fill_with_numpy_array_0():
     with pytest.raises(ValueError):
         a.at(1, 2)
 
-    a = histogram(integer(0, 2, flow=False),
-                  regular(2, 0, 2, flow=False))
-    a.fill(ar(-1, 0, 1), ar(-1., 1., 0.1))
+    a = histogram(integer(0, 2, flow=False), regular(2, 0, 2, flow=False))
+    a.fill(ar(-1, 0, 1), ar(-1.0, 1.0, 0.1))
     assert a.at(0, 0) == 0
     assert a.at(0, 1) == 1
     assert a.at(1, 0) == 1
@@ -608,7 +644,7 @@ def test_fill_with_numpy_array_0():
         a.fill(1)
     with pytest.raises(ValueError):
         a.fill([1, 0, 2], [1, 1])
-    
+
     # This actually broadcasts
     a.fill([1, 0], [1])
 
@@ -623,17 +659,18 @@ def test_fill_with_numpy_array_0():
     assert a.at(1) == 2
     assert a.at(2) == 3
 
+
 def test_fill_with_numpy_array_1():
     def ar(*args):
         return np.array(args, dtype=float)
 
     a = histogram(integer(0, 3), storage=bh.storage.weight())
     v = ar(-1, 0, 1, 2, 3, 4)
-    w = ar( 2, 3, 4, 5, 6, 7)  # noqa
+    w = ar(2, 3, 4, 5, 6, 7)  # noqa
     a.fill(v, weight=w)
     a.fill((0, 1), weight=(2, 3))
 
-    assert a.at(-1) == bh.accumulators.weighted_sum(2,4)
+    assert a.at(-1) == bh.accumulators.weighted_sum(2, 4)
     assert a.at(0) == bh.accumulators.weighted_sum(5, 13)
     assert a.at(1) == bh.accumulators.weighted_sum(7, 25)
     assert a.at(2) == bh.accumulators.weighted_sum(5, 25)
@@ -642,12 +679,11 @@ def test_fill_with_numpy_array_1():
     assert a.at(0).value == 5
     assert a.at(1).value == 7
     assert a.at(2).value == 5
-    
+
     assert a.at(-1).variance == 4
     assert a.at(0).variance == 13
     assert a.at(1).variance == 25
     assert a.at(2).variance == 25
-
 
     a.fill((1, 2), weight=1)
     a.fill(0, weight=1)
@@ -667,8 +703,7 @@ def test_fill_with_numpy_array_1():
     with pytest.raises(ValueError):
         a.fill((1, 2), weight=([1, 1], [2, 2]))
 
-    a = histogram(integer(0, 2, flow=False),
-                  regular(2, 0, 2, flow=False))
+    a = histogram(integer(0, 2, flow=False), regular(2, 0, 2, flow=False))
     a.fill((-1, 0, 1), (-1, 1, 0.1))
     assert a.at(0, 0) == 0
     assert a.at(0, 1) == 1

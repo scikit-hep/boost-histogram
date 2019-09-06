@@ -11,7 +11,7 @@ from functools import partial
 @pytest.mark.benchmark(group="threaded-fill-1d")
 @pytest.mark.parametrize("method", [thread_fill, classic_fill, atomic_fill])
 def test_threads(benchmark, method):
-    axes = [bh.axis.regular(1000,0,1)]
+    axes = [bh.axis.regular(1000, 0, 1)]
     hist_linear = bh._make_histogram(*axes)
 
     vals = np.random.rand(100000)
@@ -23,9 +23,9 @@ def test_threads(benchmark, method):
     assert_array_equal(hist_linear, hist_atomic)
 
 
-@pytest.mark.parametrize("threads", [1,2,4,7])
+@pytest.mark.parametrize("threads", [1, 2, 4, 7])
 def test_threaded_builtin(threads):
-    axes = [bh.axis.regular(1000,0,1)]
+    axes = [bh.axis.regular(1000, 0, 1)]
     hist_atomic1 = bh._make_histogram(*axes, storage=bh.storage.atomic_int())
 
     vals = np.random.rand(10000)
@@ -34,5 +34,3 @@ def test_threaded_builtin(threads):
     hist_atomic2 = atomic_fill(axes, 4, vals)
 
     assert_array_equal(hist_atomic1, hist_atomic2)
-
-
