@@ -5,11 +5,14 @@
 
 #include <boost/histogram/python/shared_histogram.hpp>
 
-std::vector<bh::algorithm::reduce_option>
+std::tuple<std::vector<bh::algorithm::reduce_option>, std::vector<unsigned>>
 get_slices(py::tuple indexes,
            std::function<bh::axis::index_type(bh::axis::index_type, double)> index_self,
            std::function<bh::axis::index_type(bh::axis::index_type)> size_self) {
-    std::vector<bh::algorithm::reduce_option> slices;
+    std::tuple<std::vector<bh::algorithm::reduce_option>, std::vector<unsigned>> mytuple;
+    std::vector<bh::algorithm::reduce_option> &slices = std::get<0>(mytuple);
+    std::vector<unsigned> &projections                = std::get<1>(mytuple);
+
     for(bh::axis::index_type i = 0; static_cast<unsigned>(i) < indexes.size(); i++) {
         auto ind = indexes[static_cast<pybind11::size_t>(i)];
         if(!py::isinstance<py::slice>(ind))
@@ -23,6 +26,23 @@ get_slices(py::tuple indexes,
         if(start.is_none() && stop.is_none() && step.is_none()) {
             continue;
         } else {
+            unsigned merge = 1;
+            if(step.is_none()) {
+                merge = 1;
+            } else if(!py::hasattr(step, "projection")) {
+                throw std::out_of_range("The third argument to a slice must be rebin or projection");
+            } else if(py::cast<bool>(step.attr("projection")) == true) {
+                projections.emplace_back(i);
+                if(start.is_none() && stop.is_none())
+                    continue;
+                else
+                    throw std::out_of_range("Currently cut projection is not supported");
+            } else {
+                if(!py::hasattr(step, "factor"))
+                    throw std::out_of_range("Invalid rebin, must have .factor set to an integer");
+                merge = py::cast<unsigned>(step.attr("factor"));
+            }
+
             // Start can be none, integer, or loc(double)
             bh::axis::index_type begin
                 = start.is_none() ? 0
@@ -35,24 +55,11 @@ get_slices(py::tuple indexes,
                                  : (py::hasattr(stop, "value") ? index_self(i, py::cast<double>(stop.attr("value")))
                                                                : py::cast<bh::axis::index_type>(stop));
 
-            unsigned merge = 1;
-            if(step.is_none()) {
-                merge = 1;
-            } else if(!py::hasattr(step, "projection")) {
-                throw std::out_of_range("The third argument to a slice must be rebin or projection");
-            } else if(py::cast<bool>(step.attr("projection")) == true) {
-                throw std::out_of_range("Currently projection is not supported");
-            } else {
-                if(!py::hasattr(step, "factor"))
-                    throw std::out_of_range("Invalid rebin, must have .factor set to an integer");
-                merge = py::cast<unsigned>(step.attr("factor"));
-            }
-
             slices.push_back(bh::algorithm::slice_and_rebin(static_cast<unsigned>(i), begin, end, merge));
         }
     }
 
-    return slices;
+    return mytuple;
 }
 
 py::list expand_ellipsis(py::list indexes, py::size_t rank) {

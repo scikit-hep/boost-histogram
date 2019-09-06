@@ -9,9 +9,10 @@
 
 #include <boost/histogram/algorithm/reduce.hpp>
 #include <functional>
+#include <tuple>
 #include <vector>
 
-std::vector<bh::algorithm::reduce_option>
+std::tuple<std::vector<bh::algorithm::reduce_option>, std::vector<unsigned>>
 get_slices(py::tuple index,
            std::function<bh::axis::index_type(bh::axis::index_type, double)> index_self,
            std::function<bh::axis::index_type(bh::axis::index_type)> size_self);

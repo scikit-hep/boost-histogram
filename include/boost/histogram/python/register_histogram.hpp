@@ -10,6 +10,7 @@
 
 #include <boost/histogram.hpp>
 #include <boost/histogram/algorithm/project.hpp>
+#include <boost/histogram/algorithm/reduce.hpp>
 #include <boost/histogram/algorithm/sum.hpp>
 #include <boost/histogram/axis/ostream.hpp>
 #include <boost/histogram/ostream.hpp>
@@ -139,30 +140,36 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
                 if(indexes.size() != self.rank())
                     throw std::out_of_range("You must provide the same number of indices as the rank of the histogram");
 
+                // Allow [bh.loc(...)] to work
                 for(py::size_t i = 0; i < indexes.size(); i++) {
                     if(py::hasattr(indexes[i], "value"))
                         indexes[i]
                             = self.axis(static_cast<unsigned>(i)).index(py::cast<double>(indexes[i].attr("value")));
                 }
 
+                // If this is (now) all integers, return the bin contents
                 try {
                     auto int_args = py::cast<std::vector<int>>(indexes);
                     return self.at(int_args);
                 } catch(const py::cast_error &) {
                 }
 
-                std::vector<bh::algorithm::reduce_option> slices = get_slices(
+                // Compute needed slices and projections
+                std::vector<bh::algorithm::reduce_option> slices;
+                std::vector<unsigned> projections;
+                std::tie(slices, projections) = get_slices(
                     indexes,
                     [&self](bh::axis::index_type i, double val) {
                         return self.axis(static_cast<unsigned>(i)).index(val);
                     },
                     [&self](bh::axis::index_type i) { return self.axis(static_cast<unsigned>(i)).size(); });
 
-                return bh::algorithm::reduce(self, slices);
-                // Ellipsis is not yet supported
-                // Projection is not supported
-                // Using loc in simple indexing is not supported
-                // Setting is not supported
+                if(projections.empty())
+                    return bh::algorithm::reduce(self, slices);
+                else {
+                    auto reduced = bh::algorithm::reduce(self, slices);
+                    return bh::algorithm::project(self, projections);
+                }
             })
 
         .def(

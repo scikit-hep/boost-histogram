@@ -89,3 +89,15 @@ def test_ellipsis():
         h[..., ...]
 
     assert h[2:4, ...] == h[2:4, :]
+
+
+def test_basic_projection():
+    h2 = bh.histogram(bh.axis.regular(10, 0, 1), bh.axis.regular(10, 0, 1))
+    h1 = bh.histogram(bh.axis.regular(10, 0, 1))
+
+    contents = [[2, 2, 2, 3, 4, 5, 6], [1, 2, 2, 3, 2, 1, 2]]
+
+    h1.fill(contents[0])
+    h2.fill(*contents)
+
+    assert h1 == h2[:, :: bh.project]

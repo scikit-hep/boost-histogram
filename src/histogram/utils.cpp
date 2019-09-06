@@ -23,9 +23,9 @@ void register_utils(py::module &m) {
         .def_property_readonly_static("projection", [](py::object /* self */) { return false; })
         .def_readwrite("factor", &rebin::factor);
 
-    py::class_<project>(m, "_project").def(py::init<>()).def_property_readonly_static("projection", []() {
-        return true;
-    });
+    py::class_<project>(m, "_project")
+        .def(py::init<>())
+        .def_property_readonly_static("projection", [](py::object /* self */) { return true; });
 
     m.attr("project") = project{};
 }
