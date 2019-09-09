@@ -21,13 +21,6 @@ void register_algorithms(py::module &algorithm) {
         "Reduce a histogram with one or more reduce_options",
         "histogram"_a);
 
-    algorithm.def(
-        "indexed",
-        [](py::object item, bool flow) { return item.attr("indexed")("flow"_a = flow); },
-        "histogram"_a,
-        "flow"_a = false,
-        "Set up an iterator, returns a special accessor for bin info and content");
-
     py::class_<bh::algorithm::reduce_option>(algorithm, "reduce_option")
         .def(py::init<unsigned, bool, bh::axis::index_type, bh::axis::index_type, bool, double, double, unsigned>(),
              "iaxis"_a,

@@ -522,8 +522,9 @@ def test_numpy_conversion_2():
 
 
 def test_numpy_conversion_3():
+    # It's okay to forget the () on a storage
     a = histogram(
-        integer(0, 2), integer(0, 3), integer(0, 4), storage=bh.storage.double()
+        integer(0, 2), integer(0, 3), integer(0, 4), storage=bh.storage.double
     )
 
     r = np.zeros((4, 5, 6))
