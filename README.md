@@ -14,7 +14,7 @@ Python bindings for [Boost::Histogram][] ([source][Boost::Histogram source]), a 
 
 ## Installation
 
-This library is under development, but you can install directly from github if you would like. You need a C++14 compiler and Python 2.7--3.7. Boost 1.71 is not required or needed (this only depends on included header-only dependencies).
+This library is under development, but you can install directly from GitHub if you would like. You need a C++14 compiler and Python 2.7--3.7. Boost 1.71 is not required or needed (this only depends on included header-only dependencies).
 All the normal best-practices for Python apply; you should be in a virtual environment, otherwise add `--user`, etc.
 
 ```bash
@@ -71,9 +71,9 @@ counts = hist.view()
     * `bh.storage.double`: Doubles for weighted values
     * `bh.storage.unlimited`: Starts small, but can go up to unlimited precision ints or doubles.
     * `bh.storage.atomic_int`: Threadsafe filling, for higher performance on multhreaded backends. Does not support growing axis in threads.
-    * `bh.storage.weight`: WIP
-    * `bh.storage.profile`: WIP
-    * `bh.storage.weighted_profile`: WIP
+    * `bh.storage.weight`: Stores a weight and sum of weights squared.
+    * `bh.storage.profile`: Accepts a sample and computes the mean of the samples.
+    * `bh.storage.weighted_profile`: Accepts a sample and a weight. It computes the weighted mean of the samples.
 * Accumulators
     * `bh.accumulator.weighted_sum`: Tracks a weighted sum and variance
     * `bh.accumulator.weighted_mean`: Tracks a weighted sum, mean, and variance (West's incremental algorithm)
@@ -98,10 +98,8 @@ counts = hist.view()
     * `.reduce(ax, reduce_option, ...)`: shrink, rebin, or slice, or any combination
     * `.indexed(flow=False)`: Iterate over the bins with a special "indexed" iterator
         * `ind.content`: The contents of a bin (set or get)
-        * `ind.bin(N)`: The Nth bin (has the normal `.center`, `.lower`, `.upper`, and `.width`)
         * `ind.bins()`: A list of bins
         * `ind.centers()`: The centers of each bin
-        * `ind.index(N)`: The index of the Nth bin
         * `ind.indices()`: A list of indices
 * Details
     * Use `bh.histogram(..., storage=...)` to make a histogram (there are several different types) 

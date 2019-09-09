@@ -1,7 +1,12 @@
 Indexing
 ========
 
-This is the proposal for Histogram indexing that was implemented in boost-histogram.
+This is the design document for Unified Histogram Indexing (UHI).  Much of the original plan is now implemented in boost-histogram.
+Other histogramming libraries can implement support for this as well, and the "tag" functors, like ``project`` and ``loc`` can be
+used between libraries.
+
+The following examples assume you have imported ``loc``, ``project``, ``rebin``, and ``end`` from boost-histogram or any other
+library that implements UHI.
 
 Access:
 ^^^^^^^
@@ -23,11 +28,11 @@ Slicing:
    h2 = h[::project]     # Projection operations
    h2 = h[::rebin(2)]    # Modification operations (rebin)
    h2 = h[a:b:rebin(2)]  # Modifications can combine with slices
-   h2 = h[0:end:project] # Special end functor is easy to write
    h2 = h[a:b, ...]      # Ellipsis work just like normal numpy
 
    # Not yet supported!
    h2 = h[a:b:project] # Adding endpoints to projection operations removes under or overflow from the calculation
+   h2 = h[0:end:project] # Special end functor (TBD)
    h2 = h[0:len(h2.axis(0)):project] # Projection without flow bins
 
 Setting (Not yet supported)
@@ -74,7 +79,7 @@ Rejected proposals or proposals for future consideration, maybe ``hist``-only:
 Implementation notes
 --------------------
 
-loc, rebin, and project are *not* tags, or special types, but rather
+loc, rebin, and project are *not* unique tags, or special types, but rather
 APIs for classes. New versions of these could be added, and
 implementations could be shared among Histogram libraries. For clarity,
 the following code is written in Python 3.6+. `Prototype
