@@ -146,6 +146,8 @@ void register_indexed(py::module &m, std::string name) {
         "content",
         [](const indexed_t &self) { return self.get_content(); },
         [](indexed_t &self, typename histogram_t::value_type value) { self.get_content() = value; });
+
+    indexed.def("__getattr__", [](indexed_t &self, py::str name) { return py::cast(self).attr("content").attr(name); });
 }
 
 template <class histogram_t>
