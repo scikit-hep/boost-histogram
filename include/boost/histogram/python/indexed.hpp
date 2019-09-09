@@ -7,7 +7,6 @@
 
 #include <boost/histogram/python/pybind11.hpp>
 
-#include <boost/histogram.hpp>
 #include <boost/histogram/indexed.hpp>
 #include <boost/histogram/python/typetools.hpp>
 #include <pybind11/numpy.h>

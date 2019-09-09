@@ -5,7 +5,6 @@
 
 #include <boost/histogram/python/pybind11.hpp>
 
-#include <boost/histogram.hpp>
 #include <boost/histogram/accumulators/mean.hpp>
 #include <boost/histogram/accumulators/ostream.hpp>
 #include <boost/histogram/accumulators/sum.hpp>

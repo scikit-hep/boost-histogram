@@ -7,7 +7,7 @@
 
 #include <boost/histogram/python/pybind11.hpp>
 
-#include <boost/histogram.hpp>
+#include <boost/histogram/axis.hpp>
 #include <boost/histogram/python/typetools.hpp>
 
 #include <tuple>

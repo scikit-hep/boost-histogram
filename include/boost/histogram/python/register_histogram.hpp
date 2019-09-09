@@ -8,11 +8,11 @@
 #include <boost/histogram/python/kwargs.hpp>
 #include <boost/histogram/python/pybind11.hpp>
 
-#include <boost/histogram.hpp>
 #include <boost/histogram/algorithm/project.hpp>
 #include <boost/histogram/algorithm/reduce.hpp>
 #include <boost/histogram/algorithm/sum.hpp>
 #include <boost/histogram/axis/ostream.hpp>
+#include <boost/histogram/histogram.hpp>
 #include <boost/histogram/ostream.hpp>
 #include <boost/histogram/python/axis.hpp>
 #include <boost/histogram/python/histogram.hpp>
