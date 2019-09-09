@@ -69,10 +69,15 @@ void register_make_histogram(py::module &m, py::module &hist) {
 
             auto axes = py::cast<axes::any>(args);
 
-            return try_cast<storage::unlimited, storage::double_, storage::int_, storage::atomic_int, storage::weight>(
-                storage, [&axes](auto &&storage) {
-                    return py::cast(bh::make_histogram_with(storage, axes), py::return_value_policy::move);
-                });
+            return try_cast<storage::unlimited,
+                            storage::double_,
+                            storage::int_,
+                            storage::atomic_int,
+                            storage::weight,
+                            storage::profile,
+                            storage::weighted_profile>(storage, [&axes](auto &&storage) {
+                return py::cast(bh::make_histogram_with(storage, axes), py::return_value_policy::move);
+            });
         },
         "Make any histogram");
 
