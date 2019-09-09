@@ -23,6 +23,6 @@ def test_profile_hist():
         ind, = x.indices()
 
         assert res["bin"] == ind
-        assert res["count"] == x.count
-        assert approx(res["value"]) == x.value
-        assert approx(res["variance"]) == x.variance
+        assert res["count"] == x.content.count
+        assert approx(res["value"]) == x.content.value
+        assert approx(res["variance"]) == x.content.variance
