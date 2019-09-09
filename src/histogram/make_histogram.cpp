@@ -5,6 +5,7 @@
 
 #include <boost/histogram/python/pybind11.hpp>
 
+#include <boost/histogram/accumulators.hpp>
 #include <boost/histogram/histogram.hpp>
 #include <boost/histogram/make_histogram.hpp>
 #include <boost/histogram/python/axis.hpp>
@@ -22,6 +23,13 @@ void register_make_histogram(py::module &m, py::module &hist) {
         [](py::args t_args, py::kwargs kwargs) -> py::object {
             py::list args      = py::cast<py::list>(t_args);
             py::object storage = optional_arg(kwargs, "storage", py::cast(storage::int_{}));
+
+            // Allow a user to forget to add () when calling bh.storage.item
+            try {
+                storage = storage();
+            } catch(const py::error_already_set &) {
+            }
+
             // TODO: change this to be unlimited by default
             std::unique_ptr<py::object> dtype = optional_arg(kwargs, "dtype");
             finalize_args(kwargs);
