@@ -18,6 +18,7 @@ Boost-histogram (`source <https://github.com/scikit-hep/boost-histogram>`_) is a
    usage/quickstart
    usage/axes
    usage/indexing
+   usage/comparison
 
 
 

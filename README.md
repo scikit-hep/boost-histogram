@@ -21,6 +21,8 @@ All the normal best-practices for Python apply; you should be in a virtual envir
 python -m pip install git+https://github.com/scikit-hep/boost-histogram.git@develop
 ```
 
+For the moment, you need to uninstall and reinstall to ensure you have the latest version - pip will not rebuild if it thinks the version number has not changed. In the future, this may be addressed differently in boost-histogram.
+
 ## Usage
 
 This is a suggested example of usage.
@@ -126,7 +128,7 @@ The easiest way to get boost-histogram is to use a binary wheel. These are the s
 * MacOS: Uses the dedicated 64 bit 10.9+ Python.org builds. We are not supporting 3.5 because those no longer provide binaries (could add a 32+64 fat 10.6+ that really was 10.9+, but not worth it unless there is a need for it).
 * Windows: PyBind11 requires compilation with a newer copy of Visual Studio than Python 2.7's Visual Studio 2008; you need to have the [Visual Studio 2015 distributable][msvc2015] installed (the dll is included in 2017 and 2019, as well).
 
-[msvc2017]: https://www.microsoft.com/en-us/download/details.aspx?id=48145
+[msvc2015]: https://www.microsoft.com/en-us/download/details.aspx?id=48145
 
 If you are on a Linux system that is not part of the "many" in manylinux, such as Alpine or ClearLinux, building from source is usually fine, since the compilers on those systems are often quite new. It will just take a little longer to install when it's using the sdist instead of a wheel.
 
