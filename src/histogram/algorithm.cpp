@@ -17,7 +17,7 @@ void register_algorithms(py::module &algorithm) {
 
     algorithm.def(
         "reduce",
-        [](py::object item, py::args args) { return item.attr("reduce")(args); },
+        [](py::object item, py::args args) { return item.attr("reduce")(*args); },
         "Reduce a histogram with one or more reduce_options",
         "histogram"_a);
 

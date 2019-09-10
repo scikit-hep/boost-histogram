@@ -362,6 +362,13 @@ def test_project():
         h.project(2, 1)
 
 
+def test_shrink_1d_external_reduce():
+    h = histogram(regular(20, 1, 5))
+    h.fill(1.1)
+    hs = bh.algorithm.reduce(h, bh.algorithm.shrink(0, 1, 2))
+    assert_array_equal(hs.view(), [1, 0, 0, 0, 0])
+
+
 def test_shrink_1d():
     h = histogram(regular(20, 1, 5))
     h.fill(1.1)
