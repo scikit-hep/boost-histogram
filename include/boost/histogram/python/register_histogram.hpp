@@ -21,8 +21,8 @@
 #include <boost/histogram/python/serializion.hpp>
 #include <boost/histogram/python/shared_histogram.hpp>
 #include <boost/histogram/python/storage.hpp>
-#include <boost/histogram/python/variant.hpp>
 #include <boost/histogram/python/typetools.hpp>
+#include <boost/histogram/python/variant.hpp>
 #include <boost/histogram/unsafe_access.hpp>
 #include <boost/mp11.hpp>
 #include <future>
