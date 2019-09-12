@@ -185,8 +185,10 @@ def test_int_cat_hist():
 
     h.fill(1)
     h.fill(2)
-    h.fill(2.2)
     h.fill(3)
 
-    assert_array_equal(h.view(), [1, 2, 1])
-    assert h.sum() == 4
+    assert_array_equal(h.view(), [1, 1, 1])
+    assert h.sum() == 3
+
+    with pytest.raises(RuntimeError):
+        h.fill(0.5)
