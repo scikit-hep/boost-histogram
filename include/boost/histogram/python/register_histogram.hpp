@@ -56,7 +56,7 @@ void set_varg(boost::mp11::mp_identity<T>, VArg &v, const Arg &x) {
         v = py::cast<T>(x);
 }
 
-// specialization for string (this is very inefficient)
+// specialization for string (HD: this is very inefficient and will be made more efficient in the future)
 template <class VArg, class Arg>
 void set_varg(boost::mp11::mp_identity<std::string>, VArg &v, const Arg &x) {
     if(py::isinstance<py::str>(x))
@@ -289,28 +289,14 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
                         if(sarray.ndim() != 1)
                             throw std::invalid_argument("Sample array must be 1D");
 
-                        // HD: can we release the lock? sarray is a Python object, could this cause trouble?
+                        // HD: is it safe to release the gil? sarray is a Python object, could this cause trouble?
                         py::gil_scoped_release lock;
-
-                        // HD: This causes an error in boost::histogram, needs to be fixed
-                        // HS: Currently splitting this and ignoring weights - would be simpler if
-                        // Boost.Histogram accepts weights for profile storage
-                        bh::detail::static_if<std::is_same<storage_t, storage::profile>>(
-                            [&sarray, &vargs, &weight, &has_weight](auto &h) {
-                                if(has_weight)
-                                    throw std::invalid_argument("Profile storage does not support weighted fills, "
-                                                                "please use weighted profile storage");
-                                h.fill(vargs, bh::sample(sarray));
-                            },
-                            [&sarray, &vargs, &weight, &has_weight](auto &h) {
-                                if(has_weight)
-                                    bv2::visit([&h, &vargs, &sarray](
-                                                   const auto &w) { h.fill(vargs, bh::sample(sarray), bh::weight(w)); },
-                                               weight);
-                                else
-                                    h.fill(vargs, bh::sample(sarray));
-                            },
-                            h);
+                        if(has_weight)
+                            bv2::visit([&h, &vargs, &sarray](
+                                           const auto &w) { h.fill(vargs, bh::sample(sarray), bh::weight(w)); },
+                                       weight);
+                        else
+                            h.fill(vargs, bh::sample(sarray));
                     },
                     [&kwargs, &vargs, &weight, &has_weight](auto &h) {
                         finalize_args(kwargs);
