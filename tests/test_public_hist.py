@@ -75,7 +75,6 @@ def test_copy():
 def test_fill_int_1d():
 
     h = histogram(integer(-1, 2))
-    assert isinstance(h, bh.hist._any_int)
     assert isinstance(h, histogram)
 
     with pytest.raises(ValueError):
@@ -362,6 +361,13 @@ def test_project():
         h.project(2, 1)
 
 
+def test_shrink_1d_external_reduce():
+    h = histogram(regular(20, 1, 5))
+    h.fill(1.1)
+    hs = bh.algorithm.reduce(h, bh.algorithm.shrink(0, 1, 2))
+    assert_array_equal(hs.view(), [1, 0, 0, 0, 0])
+
+
 def test_shrink_1d():
     h = histogram(regular(20, 1, 5))
     h.fill(1.1)
@@ -424,7 +430,6 @@ def test_pickle_1():
         regular(4, 0.0, 4.0, flow=False),
         variable([0.0, 1.0, 2.0]),
     )
-    assert isinstance(a, bh.hist._any_int)
     assert isinstance(a, histogram)
 
     for i in range(a.axis(0).size(flow=True)):
@@ -463,7 +468,7 @@ def test_numpy_conversion_0():
     v = np.asarray(a)  # a view
 
     for t in (c, v):
-        assert t.dtype == np.uint64  # CLASSIC: np.uint8
+        assert t.dtype == np.double  # CLASSIC: np.uint8
         assert_array_equal(t, (1, 5, 0))
 
     for i in range(10):
@@ -476,7 +481,7 @@ def test_numpy_conversion_0():
         a.fill(1)
     c = np.array(a)
 
-    assert c.dtype == np.uint64  # CLASSIC: np.uint16
+    assert c.dtype == np.double  # CLASSIC: np.uint16
     assert_array_equal(c, (1, 260, 10))
     # view does not follow underlying switch in word size
     # assert not np.all(c, v)
@@ -489,7 +494,7 @@ def test_numpy_conversion_1():
         a.fill(1, weight=3)
     c = np.array(a)  # a copy
     v = np.asarray(a)  # a view
-    assert c.dtype == np.uint64  # CLASSIC: np.float64
+    assert c.dtype == np.double  # CLASSIC: np.float64
     assert_array_equal(c, np.array((0, 30, 0)))
     assert_array_equal(v, c)
 
@@ -552,7 +557,7 @@ def test_numpy_conversion_3():
 def test_numpy_conversion_4():
     a = histogram(integer(0, 2, flow=False), integer(0, 4, flow=False))
     a1 = np.asarray(a)
-    assert a1.dtype == np.uint64  # CLASSIC: np.uint8
+    assert a1.dtype == np.double  # CLASSIC: np.uint8
     assert a1.shape == (2, 4)
 
     b = histogram()

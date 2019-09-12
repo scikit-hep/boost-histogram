@@ -140,4 +140,4 @@ def test_make_selection_special():
     histogram = bh._make_histogram(
         bh.axis._regular_uoflow(5, 1, 2), bh.axis._regular_noflow(10, 1, 2)
     )
-    assert isinstance(histogram, bh.hist._any_int)
+    assert isinstance(histogram, bh.hist._any_double)
