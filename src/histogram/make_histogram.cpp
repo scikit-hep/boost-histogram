@@ -31,15 +31,15 @@ void register_make_histogram(py::module &m, py::module &hist) {
             }
 
             // TODO: change this to be unlimited by default
-            std::unique_ptr<py::object> dtype = optional_arg(kwargs, "dtype");
+            auto dtype = optional_arg(kwargs, "dtype");
             finalize_args(kwargs);
 
             // Allow dtype to override if present
-            if(dtype) {
-                if(py::isinstance<py::int_>(*dtype)) {
-                    storage = py::cast(storage::int_{});
-                } else if(py::isinstance<py::float_>(*dtype)) {
+            if(!dtype.is_none()) {
+                if(py::isinstance<py::float_>(dtype)) {
                     storage = py::cast(storage::double_{});
+                } else if(py::isinstance<py::int_>(*dtype)) {
+                    storage = py::cast(storage::int_{});
                 } else {
                     throw py::type_error("dtype not supported - use storage= instead");
                 }
