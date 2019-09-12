@@ -270,7 +270,7 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
                 bool has_weight = false;
                 bv2::variant<py::array_t<double>, double> weight; // default constructed as empty array
                 {
-                    auto w = optional_arg(kwargs, "weight", py::none());
+                    auto w = optional_arg<py::object>(kwargs, "weight", py::none());
                     if(!w.is_none()) {
                         has_weight = true;
                         if(detail::is_pyiterable(w))
