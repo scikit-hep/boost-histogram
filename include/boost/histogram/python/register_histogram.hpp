@@ -37,6 +37,9 @@ namespace detail {
 template <class T, class... Us>
 using is_one_of = boost::mp11::mp_contains<boost::mp11::mp_list<Us...>, T>;
 
+template <class Axis>
+using get_axis_value_type = boost::histogram::python::remove_cvref_t<decltype(std::declval<Axis>().value(0))>;
+
 template <class T>
 bool is_pyiterable(const T &t) {
     return py::isinstance<py::buffer>(t) || py::hasattr(t, "__iter__");
@@ -241,8 +244,15 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
                 if(args.size() != self.rank())
                     throw std::invalid_argument("Wrong number of args");
 
-                // value types are double, int, std::string (keep in sync with types in axes::any)
-                // std::vector<std::string> is for passing strings (inefficiently)
+                namespace bmp = boost::mp11;
+                static_assert(
+                    bmp::mp_empty<bmp::mp_set_difference<
+                        bmp::mp_unique<bmp::mp_transform<::detail::get_axis_value_type, bmp::mp_first<axes::any>>>,
+                        bmp::mp_list<double, int, std::string>>>::value,
+                    "supported value types are double, int, std::string; new axis was added with different value type");
+
+                // HD: std::vector<std::string> is for passing strings, this very very inefficient but works at least
+                // I need to change something in boost::histogram to make passing strings from a numpy array efficient
                 using varg_t = boost::variant2::
                     variant<py::array_t<double>, double, py::array_t<int>, int, std::vector<std::string>, std::string>;
                 auto vargs = bh::detail::make_stack_buffer<varg_t>(bh::unsafe_access::axes(self));
