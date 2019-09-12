@@ -23,6 +23,7 @@ void register_make_histogram(py::module &m, py::module &hist) {
         [](py::args t_args, py::kwargs kwargs) -> py::object {
             py::list args      = py::cast<py::list>(t_args);
             py::object storage = optional_arg(kwargs, "storage", py::cast(storage::double_{}));
+            finalize_args(kwargs);
 
             // Allow a user to forget to add () when calling bh.storage.item
             // HD: I am very conflicted over this. It is handy, but blurs the distinction between classes and objects.
