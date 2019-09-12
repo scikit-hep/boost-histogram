@@ -25,24 +25,14 @@ void register_make_histogram(py::module &m, py::module &hist) {
             py::object storage = optional_arg(kwargs, "storage", py::cast(storage::double_{}));
 
             // Allow a user to forget to add () when calling bh.storage.item
+            // HD: I am very conflicted over this. It is handy, but blurs the distinction between classes and objects.
+            // For pedagogical reasons, I am against that. "Cuteness hurts",
+            // http://www.gotw.ca/publications/advice97.htm, and this looks too cute. Furthermore, there is a reason why
+            // I require the user to pass an instance and not just a type or enum. A storage may be run-time
+            // configurable. Passing an instance allows to pass options via the ctor of the storage.
             try {
                 storage = storage();
             } catch(const py::error_already_set &) {
-            }
-
-            // TODO: change this to be unlimited by default
-            auto dtype = optional_arg(kwargs, "dtype");
-            finalize_args(kwargs);
-
-            // Allow dtype to override if present
-            if(!dtype.is_none()) {
-                if(py::isinstance<py::float_>(dtype)) {
-                    storage = py::cast(storage::double_{});
-                } else if(py::isinstance<py::int_>(*dtype)) {
-                    storage = py::cast(storage::int_{});
-                } else {
-                    throw py::type_error("dtype not supported - use storage= instead");
-                }
             }
 
             // Process the args as necessary for extra shortcuts
