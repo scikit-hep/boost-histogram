@@ -270,7 +270,7 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
                 bool has_weight = false;
                 bv2::variant<py::array_t<double>, double> weight; // default constructed as empty array
                 {
-                    auto w = optional_arg<py::object>(kwargs, "weight", py::none());
+                    auto w = optional_arg(kwargs, "weight");
                     if(!w.is_none()) {
                         has_weight = true;
                         if(detail::is_pyiterable(w))
@@ -283,7 +283,7 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
                 using storage_t = typename histogram_t::storage_type;
                 bh::detail::static_if<detail::is_one_of<storage_t, storage::profile, storage::weighted_profile>>(
                     [&kwargs, &vargs, &weight, &has_weight](auto &h) {
-                        auto s = required_arg<py::object>(kwargs, "sample");
+                        auto s = required_arg(kwargs, "sample");
                         finalize_args(kwargs);
 
                         auto sarray = py::cast<py::array_t<double>>(s);

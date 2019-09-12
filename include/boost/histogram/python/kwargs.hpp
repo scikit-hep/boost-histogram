@@ -8,7 +8,7 @@
 #include <boost/histogram/python/pybind11.hpp>
 
 /// Get and remove a value from a keyword argument dict
-template <class T>
+template <class T = py::object>
 T required_arg(py::kwargs &kwargs, const char *name) {
     if(kwargs.contains(name)) {
         return py::cast<T>(kwargs.attr("pop")(name));
