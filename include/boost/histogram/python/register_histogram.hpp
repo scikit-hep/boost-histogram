@@ -22,6 +22,7 @@
 #include <boost/histogram/python/shared_histogram.hpp>
 #include <boost/histogram/python/storage.hpp>
 #include <boost/histogram/python/variant.hpp>
+#include <boost/histogram/python/typetools.hpp>
 #include <boost/histogram/unsafe_access.hpp>
 #include <boost/mp11.hpp>
 #include <future>
@@ -31,6 +32,40 @@
 #include <thread>
 #include <tuple>
 #include <vector>
+
+namespace detail {
+template <class T, class... Us>
+using is_one_of = boost::mp11::mp_contains<boost::mp11::mp_list<Us...>, T>;
+
+// this or something similar should move to boost::histogram::axis::traits
+template <class Axis>
+using get_axis_value_type = boost::histogram::python::remove_cvref_t<decltype(std::declval<Axis>().value(0))>;
+
+template <class T>
+bool is_pyiterable(const T &t) {
+    return py::isinstance<py::buffer>(t) || py::hasattr(t, "__iter__");
+}
+
+template <class T, class VArg, class Arg>
+void set_varg(boost::mp11::mp_identity<T>, VArg &v, const Arg &x) {
+    if(is_pyiterable(x)) {
+        auto arr = py::cast<py::array_t<T>>(x);
+        if(arr.ndim() != 1)
+            throw std::invalid_argument("All arrays must be 1D");
+        v = arr;
+    } else
+        v = py::cast<T>(x);
+}
+
+// specialization for string (HD: this is very inefficient and will be made more efficient in the future)
+template <class VArg, class Arg>
+void set_varg(boost::mp11::mp_identity<std::string>, VArg &v, const Arg &x) {
+    if(py::isinstance<py::str>(x))
+        v = py::cast<std::string>(x);
+    else
+        v = py::cast<std::vector<std::string>>(x);
+}
+} // namespace detail
 
 template <class A, class S>
 py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *name, const char *desc) {
@@ -207,81 +242,69 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
         .def(
             "fill",
             [](histogram_t &self, py::args args, py::kwargs kwargs) {
-                auto empty_weight = py::object();
-                auto weight       = optional_arg(kwargs, "weight", empty_weight);
-                bool has_weight   = !weight.is(empty_weight);
-
-                using arrayd = py::array_t<double>;
-
-                // TODO: compute this typelist from the value types of the supported axes
-                using VArg = boost::variant2::variant<double, arrayd>;
-                auto vargs = bh::detail::make_stack_buffer<VArg>(bh::unsafe_access::axes(self));
-
                 if(args.size() != self.rank())
                     throw std::invalid_argument("Wrong number of args");
 
-                unsigned iarg = 0;
-                for(auto arg : args) {
-                    if(py::isinstance<py::buffer>(arg) || py::hasattr(arg, "__iter__")) {
-                        auto tmp    = py::cast<arrayd>(arg);
-                        vargs[iarg] = tmp;
-                        if(tmp.ndim() != 1)
-                            throw std::invalid_argument("All arrays must be 1D");
-                    } else {
-                        vargs.at(iarg) = py::cast<double>(arg);
-                    }
-                    ++iarg;
+                namespace bmp = boost::mp11;
+                static_assert(
+                    bmp::mp_empty<bmp::mp_set_difference<
+                        bmp::mp_unique<bmp::mp_transform<::detail::get_axis_value_type, bmp::mp_first<axes::any>>>,
+                        bmp::mp_list<double, int, std::string>>>::value,
+                    "supported value types are double, int, std::string; new axis was added with different value type");
+
+                // HD: std::vector<std::string> is for passing strings, this very very inefficient but works at least
+                // I need to change something in boost::histogram to make passing strings from a numpy array efficient
+                using varg_t = boost::variant2::
+                    variant<py::array_t<double>, double, py::array_t<int>, int, std::vector<std::string>, std::string>;
+                auto vargs = bh::detail::make_stack_buffer<varg_t>(bh::unsafe_access::axes(self));
+
+                {
+                    auto args_it  = args.begin();
+                    auto vargs_it = vargs.begin();
+                    self.for_each_axis([&args_it, &vargs_it](const auto &ax) {
+                        using T = typename bh::python::remove_cvref_t<decltype(ax.value(0))>;
+                        detail::set_varg(boost::mp11::mp_identity<T>{}, *vargs_it++, *args_it++);
+                    });
                 }
 
-                using array_or_double_t = bv2::variant<arrayd, double>;
-
-                // This will be 0.0 if no weight is passed; in this case, *do not use*
-                // Using 0.0 instead of 1.0 ensures tests fail if this is used
-                array_or_double_t weight_result
-                    = !has_weight ? array_or_double_t{0.0}
-                                  : (py::isinstance<py::buffer>(weight) || py::hasattr(weight, "__iter__")
-                                         ? array_or_double_t{py::cast<arrayd>(weight)}
-                                         : array_or_double_t{py::cast<double>(weight)});
+                bool has_weight = false;
+                bv2::variant<py::array_t<double>, double> weight; // default constructed as empty array
+                {
+                    auto w = optional_arg(kwargs, "weight");
+                    if(!w.is_none()) {
+                        has_weight = true;
+                        if(detail::is_pyiterable(w))
+                            weight = py::cast<py::array_t<double>>(w);
+                        else
+                            weight = py::cast<double>(w);
+                    }
+                }
 
                 using storage_t = typename histogram_t::storage_type;
-                bh::detail::static_if<boost::mp11::mp_or<std::is_same<storage_t, storage::profile>,
-                                                         std::is_same<storage_t, storage::weighted_profile>>>(
-                    [&kwargs, &vargs, &weight_result, &has_weight](auto &h) {
-                        auto sample = required_arg<py::object>(kwargs, "sample");
+                bh::detail::static_if<detail::is_one_of<storage_t, storage::profile, storage::weighted_profile>>(
+                    [&kwargs, &vargs, &weight, &has_weight](auto &h) {
+                        auto s = required_arg(kwargs, "sample");
                         finalize_args(kwargs);
 
-                        auto sarray = py::cast<arrayd>(sample);
+                        auto sarray = py::cast<py::array_t<double>>(s);
                         if(sarray.ndim() != 1)
                             throw std::invalid_argument("Sample array must be 1D");
 
+                        // HD: is it safe to release the gil? sarray is a Python object, could this cause trouble?
                         py::gil_scoped_release lock;
-
-                        // HD: This causes an error in boost::histogram, needs to be fixed
-                        // HS: Currently splitting this and ignoring weights - would be simpler if
-                        // Boost.Histogram accepts weights for profile storage
-                        bh::detail::static_if<std::is_same<storage_t, storage::profile>>(
-                            [&sarray, &vargs, &has_weight](auto &hh) {
-                                if(has_weight)
-                                    throw std::invalid_argument("Profile storage does not support weighted fills, "
-                                                                "please use weighted profile storage");
-                                hh.fill(vargs, bh::sample(sarray));
-                            },
-                            [&sarray, &vargs, &weight_result, &has_weight](auto &hh) {
-                                if(has_weight)
-                                    bv2::visit([&hh, &vargs, &sarray](
-                                                   auto &&x) { hh.fill(vargs, bh::sample(sarray), bh::weight(x)); },
-                                               weight_result);
-                                else
-                                    hh.fill(vargs, bh::sample(sarray));
-                            },
-                            h);
+                        if(has_weight)
+                            bv2::visit([&h, &vargs, &sarray](
+                                           const auto &w) { h.fill(vargs, bh::sample(sarray), bh::weight(w)); },
+                                       weight);
+                        else
+                            h.fill(vargs, bh::sample(sarray));
                     },
-                    [&kwargs, &weight_result, &has_weight, &vargs](auto &h) {
+                    [&kwargs, &vargs, &weight, &has_weight](auto &h) {
                         finalize_args(kwargs);
 
                         py::gil_scoped_release lock;
                         if(has_weight)
-                            bv2::visit([&h, &vargs](auto &&x) { h.fill(vargs, bh::weight(x)); }, weight_result);
+                            bv2::visit([&h, &vargs](const auto &w) { h.fill(vargs, bh::weight(w)); }, weight);
                         else
                             h.fill(vargs);
                     },

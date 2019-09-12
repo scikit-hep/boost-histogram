@@ -9,22 +9,22 @@ variables:
 
 jobs:
 
-- job: Formatting
-  pool:
-    vmImage: 'ubuntu-16.04'
-  steps:
-    - script: scripts/check_style_docker.sh
-      displayName: Check format
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: '3.7'
-        architecture: 'x64'
-    - script: python -m pip install black
-      displayName: Install Python formatter
-    - script: python -m black tests/test_*.py
-      displayName: Run Python formatter
-    - script: git diff --exit-code --color
-      displayName: Python format changes
+# - job: Formatting
+#   pool:
+#     vmImage: 'ubuntu-16.04'
+#   steps:
+#     - script: scripts/check_style_docker.sh
+#       displayName: Check format
+#     - task: UsePythonVersion@0
+#       inputs:
+#         versionSpec: '3.7'
+#         architecture: 'x64'
+#     - script: python -m pip install black
+#       displayName: Install Python formatter
+#     - script: python -m black tests/test_*.py
+#       displayName: Run Python formatter
+#     - script: git diff --exit-code --color
+#       displayName: Python format changes
 
 - job: LinuxSDist
   pool:
@@ -73,4 +73,3 @@ jobs:
     - template: azure-setup.yml
     - template: azure-steps.yml
     - template: azure-publish-dist.yml
-
