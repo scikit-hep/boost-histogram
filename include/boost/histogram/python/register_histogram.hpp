@@ -37,6 +37,7 @@ namespace detail {
 template <class T, class... Us>
 using is_one_of = boost::mp11::mp_contains<boost::mp11::mp_list<Us...>, T>;
 
+// this or something similar should move to boost::histogram::axis::traits
 template <class Axis>
 using get_axis_value_type = boost::histogram::python::remove_cvref_t<decltype(std::declval<Axis>().value(0))>;
 

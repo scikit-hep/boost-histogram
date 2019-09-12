@@ -394,7 +394,7 @@ def test_pickle_0():
     a = histogram(
         category([0, 1, 2]),
         integer(0, 20),
-        regular(20, 0.0, 20.0, flow=False),
+        regular(2, 0.0, 20.0, flow=False),
         variable([0.0, 1.0, 2.0]),
         circular(4, 2 * np.pi),
     )
@@ -721,3 +721,21 @@ def test_fill_with_numpy_array_1():
     assert a.at(0) == 3
     assert a.at(1) == 2
     assert a.at(2) == 3
+
+
+def test_fill_with_numpy_array_2():
+    a = histogram(category(["A", "B"]))
+    a.fill(("A", "B", "C"))
+    a.fill(np.array(("D", "A"), dtype="S5"))
+    assert a.at(0) == 2
+    assert a.at(1) == 1
+    assert a.at(2) == 2
+
+    b = histogram(integer(0, 2, flow=False), category(["A", "B"]))
+    b.fill((1, 0, 10), ("C", "B", "A"))
+    assert b.at(0, 0) == 0
+    assert b.at(1, 0) == 0
+    assert b.at(0, 1) == 1
+    assert b.at(1, 1) == 0
+    assert b.at(0, 2) == 0
+    assert b.at(1, 2) == 1
