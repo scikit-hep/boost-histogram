@@ -69,13 +69,12 @@ void register_axes(py::module &ax) {
            py::kwargs kwargs) -> py::object {
             validate_metadata(metadata);
 
-            std::unique_ptr<bool> flow = optional_arg<bool>(kwargs, "flow");
+            auto flow = optional_arg(kwargs, "flow");
             finalize_args(kwargs);
 
             // Allow "flow" to override
-            if(flow) {
-                underflow = *flow;
-                overflow  = *flow;
+            if(!flow.is_none()) {
+                underflow = overflow = py::cast<bool>(flow);
             }
 
             if(growth) {
@@ -164,13 +163,12 @@ void register_axes(py::module &ax) {
             -> py::object {
             validate_metadata(metadata);
 
-            std::unique_ptr<bool> flow = optional_arg<bool>(kwargs, "flow");
+            auto flow = optional_arg(kwargs, "flow");
             finalize_args(kwargs);
 
             // Allow "flow" to override
-            if(flow) {
-                underflow = *flow;
-                overflow  = *flow;
+            if(!flow.is_none()) {
+                underflow = overflow = py::cast<bool>(flow);
             }
 
             if(underflow && overflow) {
@@ -217,13 +215,12 @@ void register_axes(py::module &ax) {
             -> py::object {
             validate_metadata(metadata);
 
-            std::unique_ptr<bool> flow = optional_arg<bool>(kwargs, "flow");
+            auto flow = optional_arg(kwargs, "flow");
             finalize_args(kwargs);
 
             // Allow "flow" to override
-            if(flow) {
-                underflow = *flow;
-                overflow  = *flow;
+            if(!flow.is_none()) {
+                underflow = overflow = py::cast<bool>(flow);
             }
 
             if(growth) {
