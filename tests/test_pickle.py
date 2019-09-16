@@ -26,6 +26,16 @@ accumulators = (
 
 copies = (copy.copy, copy.deepcopy)
 
+storages = (
+    bh.storage.atomic_int,
+    bh.storage.double,
+    bh.storage.int,
+    bh.storage.profile,
+    bh.storage.unlimited,
+    bh.storage.weight,
+    bh.storage.weighted_profile,
+)
+
 
 @pytest.mark.parametrize("accum,args", accumulators)
 @pytest.mark.parametrize("copy_fn", copies)
@@ -105,15 +115,9 @@ def test_metadata_any(axis, args, copy_fn):
 
 
 @pytest.mark.parametrize("copy_fn", copies)
-def test_storage_int(copy_fn):
-    storage = bh.storage.int()
-    storage.push_back(1)
-    storage.push_back(3)
-    storage.push_back(2)
-
-    assert storage[0] == 1
-    assert storage[1] == 3
-    assert storage[2] == 2
+@pytest.mark.parametrize("storage", storages)
+def test_storage_int(copy_fn, storage):
+    storage = storage()
 
     new = copy_fn(storage)
     assert storage == new
