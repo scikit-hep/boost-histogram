@@ -7,9 +7,9 @@
 
 #include <boost/histogram/python/pybind11.hpp>
 
-#include <boost/histogram/axis/ostream.hpp>
 #include <boost/histogram/axis/traits.hpp>
 #include <boost/histogram/python/axis.hpp>
+#include <boost/histogram/python/axis_ostream.hpp>
 #include <boost/histogram/python/bin_setup.hpp>
 #include <boost/histogram/python/serializion.hpp>
 
