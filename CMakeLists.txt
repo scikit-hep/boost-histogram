@@ -31,7 +31,7 @@ file(GLOB_RECURSE BOOST_HIST_PY_HEADERS "include/*.hpp")
 
 # List the source files for the Python extension
 # On some backends (like make), this will regenerate if a file was added/removed
-file(GLOB_RECURSE
+file(GLOB
     BOOST_HIST_PY_SRC
     CONFIGURE_DEPENDS
     src/*.cpp
