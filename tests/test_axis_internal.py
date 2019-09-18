@@ -1,7 +1,7 @@
 import pytest
 from pytest import approx
 
-import boost.histogram as bh
+import boost_histogram as bh
 import numpy as np
 from numpy.testing import assert_array_equal
 
@@ -9,16 +9,14 @@ from numpy.testing import assert_array_equal
 @pytest.mark.parametrize(
     "axtype",
     [
-        bh.axis._regular_uoflow,
-        bh.axis._regular_uflow,
-        bh.axis._regular_oflow,
-        bh.axis._regular_noflow,
+        bh.core.axis._regular_uoflow,
+        bh.core.axis._regular_uflow,
+        bh.core.axis._regular_oflow,
+        bh.core.axis._regular_noflow,
     ],
 )
-@pytest.mark.parametrize(
-    "function", [lambda x: x, lambda x: bh._make_histogram(x).axis(0)]
-)
-def test_axis__regular_uoflow(axtype, function):
+@pytest.mark.parametrize("function", [lambda x: x, lambda x: bh.histogram(x).axis(0)])
+def test_axis_regular_uoflow(axtype, function):
     ax = function(axtype(10, 0, 1))
 
     assert 3 == ax.index(0.34)
@@ -41,28 +39,28 @@ def test_axis__regular_uoflow(axtype, function):
 
 
 def test_axis_regular_extents():
-    ax = bh.axis._regular_uoflow(10, 0, 1)
+    ax = bh.axis.regular(10, 0, 1)
     assert 12 == ax.size(flow=True)
     assert 11 == len(ax.edges())
     assert 13 == len(ax.edges(True))
     assert 10 == len(ax.centers())
     assert ax.options() == bh.axis.options.underflow | bh.axis.options.overflow
 
-    ax = bh.axis._regular_uflow(10, 0, 1)
+    ax = bh.axis.regular(10, 0, 1, overflow=False)
     assert 11 == ax.size(flow=True)
     assert 11 == len(ax.edges())
     assert 12 == len(ax.edges(True))
     assert 10 == len(ax.centers())
     assert ax.options() == bh.axis.options.underflow
 
-    ax = bh.axis._regular_oflow(10, 0, 1)
+    ax = bh.axis.regular(10, 0, 1, underflow=False)
     assert 11 == ax.size(flow=True)
     assert 11 == len(ax.edges())
     assert 12 == len(ax.edges(True))
     assert 10 == len(ax.centers())
     assert ax.options() == bh.axis.options.overflow
 
-    ax = bh.axis._regular_noflow(10, 0, 1)
+    ax = bh.axis.regular(10, 0, 1, flow=False)
     assert 10 == ax.size(flow=True)
     assert 11 == len(ax.edges())
     assert 11 == len(ax.edges(True))
@@ -71,7 +69,7 @@ def test_axis_regular_extents():
 
 
 def test_axis_growth():
-    ax = bh.axis._regular_growth(10, 0, 1)
+    ax = bh.axis.regular(10, 0, 1, growth=True)
     ax.index(0.7)
     ax.index(1.2)
     assert ax.size() == 10
@@ -84,7 +82,7 @@ def test_axis_growth():
 
 
 def test_axis_growth_cat():
-    ax = bh.axis._category_str_growth(["This"])
+    ax = bh.axis.category(["This"], growth=True)
     assert ax.size() == 1
     ax.update("That")
     assert ax.size() == 2
@@ -111,11 +109,11 @@ def test_axis_circular():
 
 
 normal_axs = [
-    bh.axis._regular_uoflow,
-    bh.axis._regular_noflow,
-    bh.axis.circular,
-    bh.axis.regular_log,
-    bh.axis.regular_sqrt,
+    bh.core.axis._regular_uoflow,
+    bh.core.axis._regular_noflow,
+    bh.core.axis.circular,
+    bh.core.axis.regular_log,
+    bh.core.axis.regular_sqrt,
 ]
 
 
@@ -135,15 +133,15 @@ def test_regular_axis_repr(axis):
 
 
 def test_metadata_compare():
-    ax1 = bh.axis._regular_uoflow(1, 2, 3, metadata=[1])
-    ax2 = bh.axis._regular_uoflow(1, 2, 3, metadata=[1])
+    ax1 = bh.axis.regular(1, 2, 3, metadata=[1])
+    ax2 = bh.axis.regular(1, 2, 3, metadata=[1])
 
     assert ax1 == ax2
 
 
 def test_metadata_compare_neq():
-    ax1 = bh.axis._regular_uoflow(1, 2, 3, metadata=[1])
-    ax2 = bh.axis._regular_uoflow(1, 2, 3, metadata=[2])
+    ax1 = bh.axis.regular(1, 2, 3, metadata=[1])
+    ax2 = bh.axis.regular(1, 2, 3, metadata=[2])
 
     assert ax1 != ax2
 
@@ -157,7 +155,7 @@ def test_any_metadata(axis):
 
 
 def test_cat_str():
-    ax = bh.axis._category_str(["a", "b", "c"])
+    ax = bh.axis.category(["a", "b", "c"])
     assert ax.bin(0) == "a"
     assert ax.bin(1) == "b"
     assert ax.bin(2) == "c"
@@ -166,7 +164,7 @@ def test_cat_str():
 
 
 def test_cat_int():
-    ax = bh.axis._category_int([1, 2, 3])
+    ax = bh.axis.category([1, 2, 3])
     assert ax.bin(0) == 1
     assert ax.bin(1) == 2
     assert ax.bin(2) == 3

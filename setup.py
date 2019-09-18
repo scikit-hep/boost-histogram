@@ -34,7 +34,7 @@ def get_description(readme_file):
 
 ext_modules = [
     Extension(
-        'boost.histogram',
+        'boost_histogram.core',
         ['src/module.cpp',
          'src/register_version.cpp',
          'src/register_utils.cpp',
@@ -120,7 +120,7 @@ extras = {
 
 setup(
     name='boost-histogram',
-    version=get_version("boost/histogram_version.py"),
+    version=get_version("boost_histogram/version.py"),
     author='Henry Schreiner',
     author_email='hschrein@cern.ch',
     maintainer='Henry Schreiner',

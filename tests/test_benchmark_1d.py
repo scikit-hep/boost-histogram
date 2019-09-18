@@ -1,7 +1,7 @@
 import pytest
 
-import boost.histogram as bh
-from boost.histogram.axis import regular
+import boost_histogram as bh
+from boost_histogram.axis import regular
 
 import numpy as np
 from numpy.testing import assert_array_equal, assert_allclose

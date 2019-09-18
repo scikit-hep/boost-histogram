@@ -3,8 +3,8 @@ import pytest
 import numpy as np
 from numpy.testing import assert_array_equal
 
-import boost.histogram as bh
-from boost.histogram.axis import regular
+import boost_histogram as bh
+from boost_histogram.axis import regular
 
 bins = (100, 100)
 ranges = ((-1, 1), (-1, 1))

@@ -1,6 +1,6 @@
 import pytest
 
-import boost.histogram as bh
+import boost_histogram as bh
 from threaded import thread_fill, classic_fill, atomic_fill
 
 import numpy as np
@@ -12,7 +12,7 @@ from functools import partial
 @pytest.mark.parametrize("method", [thread_fill, classic_fill, atomic_fill])
 def test_threads(benchmark, method):
     axes = [bh.axis.regular(1000, 0, 1)]
-    hist_linear = bh._make_histogram(*axes)
+    hist_linear = bh.histogram(*axes)
 
     vals = np.random.rand(100000)
     hist_linear.fill(vals)
@@ -26,7 +26,7 @@ def test_threads(benchmark, method):
 @pytest.mark.parametrize("threads", [1, 2, 4, 7])
 def test_threaded_builtin(threads):
     axes = [bh.axis.regular(1000, 0, 1)]
-    hist_atomic1 = bh._make_histogram(*axes, storage=bh.storage.atomic_int())
+    hist_atomic1 = bh.histogram(*axes, storage=bh.storage.atomic_int())
 
     vals = np.random.rand(10000)
 

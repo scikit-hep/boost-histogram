@@ -1,5 +1,5 @@
-import boost.histogram as bh
-import boost.histogram_version as bhv
+import boost_histogram as bh
+import boost_histogram.version as bhv
 
 
 def test_import():

@@ -1,4 +1,4 @@
-import boost.histogram as bh
+import boost_histogram as bh
 from timeit import timeit
 import math
 
@@ -6,7 +6,7 @@ print("Welcome to boost-histogram's performance report")
 
 setup_1d = '''
 import numpy as np
-import boost.histogram as bh
+import boost_histogram as bh
 
 bins=100
 ranges=(-1,1)
@@ -21,7 +21,7 @@ vals = np.random.normal(size=[10_000_000]).astype(np.float32)
 
 setup_2d = '''
 import numpy as np
-import boost.histogram as bh
+import boost_histogram as bh
 
 bins=(100, 100)
 ranges=((-1,1),(-1,1))

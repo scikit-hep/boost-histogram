@@ -5,7 +5,7 @@ All of the examples will assume the following import:
 
 .. code:: python
 
-   import boost.histogram as bh
+   import boost_histogram as bh
 
 In boost-histogram, a histogram is collection of Axis objects and a
 storage.
