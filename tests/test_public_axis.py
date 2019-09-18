@@ -138,31 +138,25 @@ class TestRegular(Axis):
 
     def test_repr(self):
         ax = regular(4, 1.1, 2.2)
-        assert repr(ax) == "regular(4, 1.1, 2.2, options=underflow | overflow)"
+        assert repr(ax) == "regular(4, 1.1, 2.2)"
 
         ax = regular(4, 1.1, 2.2, metadata="ra")
-        assert (
-            repr(ax)
-            == 'regular(4, 1.1, 2.2, metadata="ra", options=underflow | overflow)'
-        )
+        assert repr(ax) == 'regular(4, 1.1, 2.2, metadata="ra")'
 
         ax = regular(4, 1.1, 2.2, flow=False)
-        assert repr(ax) == "regular(4, 1.1, 2.2, options=none)"
+        assert repr(ax) == "regular(4, 1.1, 2.2, flow=False)"
 
         ax = regular(4, 1.1, 2.2, metadata="ra", flow=False)
-        assert repr(ax) == 'regular(4, 1.1, 2.2, metadata="ra", options=none)'
+        assert repr(ax) == 'regular(4, 1.1, 2.2, metadata="ra", flow=False)'
 
         ax = regular_log(4, 1.1, 2.2)
-        assert repr(ax) == "regular_log(4, 1.1, 2.2, options=underflow | overflow)"
+        assert repr(ax) == "regular_log(4, 1.1, 2.2)"
 
         ax = regular_sqrt(3, 1.1, 2.2)
-        assert repr(ax) == "regular_sqrt(3, 1.1, 2.2, options=underflow | overflow)"
+        assert repr(ax) == "regular_sqrt(3, 1.1, 2.2)"
 
         ax = regular_pow(4, 1.1, 2.2, 0.5)
-        assert (
-            repr(ax)
-            == "regular_pow(4, 1.1, 2.2, options=underflow | overflow, power=0.5)"
-        )
+        assert repr(ax) == "regular_pow(4, 1.1, 2.2, power=0.5)"
 
     def test_getitem(self):
         v = [1.0, 1.25, 1.5, 1.75, 2.0]
@@ -297,21 +291,16 @@ class TestCircular(Axis):
 
     def test_repr(self):
         ax = circular(4, 1.1, 2.2)
-        assert repr(ax) == "regular(4, 1.1, 2.2, options=overflow | circular)"
+        assert repr(ax) == "circular(4, 1.1, 2.2)"
 
         ax = circular(4, 1.1, 2.2, metadata="hi")
-        assert (
-            repr(ax)
-            == 'regular(4, 1.1, 2.2, metadata="hi", options=overflow | circular)'
-        )
+        assert repr(ax) == 'circular(4, 1.1, 2.2, metadata="hi")'
 
         ax = circular(4, 2.0)
-        assert repr(ax) == "regular(4, 0, 2, options=overflow | circular)"
+        assert repr(ax) == "circular(4, 0, 2)"
 
         ax = circular(4, 2.0, metadata="hi")
-        assert (
-            repr(ax) == 'regular(4, 0, 2, metadata="hi", options=overflow | circular)'
-        )
+        assert repr(ax) == 'circular(4, 0, 2, metadata="hi")'
 
     def test_getitem(self):
         v = [1.0, 1.0 + 0.5 * np.pi, 1.0 + np.pi, 1.0 + 1.5 * np.pi, 1.0 + 2.0 * np.pi]
@@ -408,13 +397,10 @@ class TestVariable(Axis):
 
     def test_repr(self):
         ax = variable([-0.1, 0.2])
-        assert repr(ax) == "variable(-0.1, 0.2, options=underflow | overflow)"
+        assert repr(ax) == "variable([-0.1, 0.2])"
 
         ax = variable([-0.1, 0.2], metadata="hi")
-        assert (
-            repr(ax)
-            == 'variable(-0.1, 0.2, metadata="hi", options=underflow | overflow)'
-        )
+        assert repr(ax) == 'variable([-0.1, 0.2], metadata="hi")'
 
     def test_getitem(self):
         v = [-0.1, 0.2, 0.3]
@@ -514,16 +500,16 @@ class TestInteger:
 
     def test_repr(self):
         a = integer(-1, 1)
-        assert repr(a) == "integer(-1, 1, options=underflow | overflow)"
+        assert repr(a) == "integer(-1, 1)"
 
         a = integer(-1, 1, metadata="hi")
-        assert repr(a) == 'integer(-1, 1, metadata="hi", options=underflow | overflow)'
+        assert repr(a) == 'integer(-1, 1, metadata="hi")'
 
         a = integer(-1, 1, flow=False)
-        assert repr(a) == "integer(-1, 1, options=none)"
+        assert repr(a) == "integer(-1, 1, flow=False)"
 
         a = integer(-1, 1, growth=True)
-        assert repr(a) == "integer(-1, 1, options=growth)"
+        assert repr(a) == "integer(-1, 1, growth=True)"
 
     def test_label(self):
         a = integer(-1, 2, metadata="foo")
@@ -582,10 +568,13 @@ class TestCategory(Axis):
 
     def test_repr(self):
         ax = category([1, 2, 3])
-        assert repr(ax) == "category(1, 2, 3, options=overflow)"
+        assert repr(ax) == "category([1, 2, 3])"
 
         ax = category([1, 2, 3], metadata="hi")
-        assert repr(ax) == 'category(1, 2, 3, metadata="hi", options=overflow)'
+        assert repr(ax) == 'category([1, 2, 3], metadata="hi")'
+
+        ax = category(["1", "2", "3"], metadata="hi")
+        assert repr(ax) == 'category(["1", "2", "3"], metadata="hi")'
 
     def test_getitem(self):
         c = [1, 2, 3]

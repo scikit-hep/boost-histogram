@@ -24,4 +24,45 @@ using weight           = bh::weight_storage;
 using profile          = bh::profile_storage;
 using weighted_profile = bh::weighted_profile_storage;
 
+// Allow repr to show python name
+template <class S>
+inline const char *name() {
+    return "unknown";
+}
+
+template <>
+inline const char *name<int_>() {
+    return "int";
+}
+
+template <>
+inline const char *name<atomic_int>() {
+    return "atomic_int";
+}
+
+template <>
+inline const char *name<double_>() {
+    return "double";
+}
+
+template <>
+inline const char *name<unlimited>() {
+    return "unlimited";
+}
+
+template <>
+inline const char *name<weight>() {
+    return "weight";
+}
+
+template <>
+inline const char *name<profile>() {
+    return "profile";
+}
+
+template <>
+inline const char *name<weighted_profile>() {
+    return "weighted_profile";
+}
+
 } // namespace storage
