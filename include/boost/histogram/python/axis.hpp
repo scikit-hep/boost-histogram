@@ -101,30 +101,29 @@ using _category_str_growth = bh::axis::category<std::string, metadata_t, bh::axi
 
 } // namespace axis
 
-namespace axes {
-
 // The following list is all types supported
-using any = std::vector<bh::axis::variant<axis::_regular_uoflow,
-                                          axis::_regular_uflow,
-                                          axis::_regular_oflow,
-                                          axis::_regular_noflow,
-                                          axis::_regular_growth,
-                                          axis::circular,
-                                          axis::regular_log,
-                                          axis::regular_pow,
-                                          axis::regular_sqrt,
-                                          axis::_variable_uoflow,
-                                          axis::_variable_oflow,
-                                          axis::_variable_uflow,
-                                          axis::_variable_noflow,
-                                          axis::_integer_uoflow,
-                                          axis::_integer_oflow,
-                                          axis::_integer_uflow,
-                                          axis::_integer_noflow,
-                                          axis::_integer_growth,
-                                          axis::_category_int,
-                                          axis::_category_int_growth,
-                                          axis::_category_str,
-                                          axis::_category_str_growth>>;
+using axis_variant = bh::axis::variant<axis::_regular_uoflow,
+                                       axis::_regular_uflow,
+                                       axis::_regular_oflow,
+                                       axis::_regular_noflow,
+                                       axis::_regular_growth,
+                                       axis::circular,
+                                       axis::regular_log,
+                                       axis::regular_pow,
+                                       axis::regular_sqrt,
+                                       axis::_variable_uoflow,
+                                       axis::_variable_oflow,
+                                       axis::_variable_uflow,
+                                       axis::_variable_noflow,
+                                       axis::_integer_uoflow,
+                                       axis::_integer_oflow,
+                                       axis::_integer_uflow,
+                                       axis::_integer_noflow,
+                                       axis::_integer_growth,
+                                       axis::_category_int,
+                                       axis::_category_int_growth,
+                                       axis::_category_str,
+                                       axis::_category_str_growth>;
 
-} // namespace axes
+// This saves a little typing
+using vector_axis_variant = std::vector<axis_variant>;

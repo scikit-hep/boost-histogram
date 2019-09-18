@@ -66,7 +66,7 @@ void register_make_histogram(py::module &m, py::module &hist) {
                 }
             }
 
-            auto axes = py::cast<axes::any>(args);
+            auto axes = py::cast<vector_axis_variant>(args);
 
             return try_cast<storage::unlimited,
                             storage::double_,
