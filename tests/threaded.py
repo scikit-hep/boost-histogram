@@ -1,4 +1,4 @@
-import boost.histogram as bh
+import boost_histogram as bh
 
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial, reduce

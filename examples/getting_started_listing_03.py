@@ -1,4 +1,4 @@
-import boost.histogram as bh
+import boost_histogram as bh
 import numpy as np
 
 # create 2d-histogram with two axes with 10 equidistant bins from -3 to 3

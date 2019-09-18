@@ -1,8 +1,10 @@
 import pytest
 from pytest import approx
 
-import boost.histogram.axis as bha
-from boost.histogram.axis import (
+import boost_histogram.core.axis as _bha
+import boost_histogram.axis.options as bhao
+
+from boost_histogram.axis import (
     regular,
     regular_log,
     regular_sqrt,
@@ -21,7 +23,7 @@ import abc
 # compatible with Python 2 *and* 3:
 ABC = abc.ABCMeta("ABC", (object,), {"__slots__": ()})
 
-# histogram -> boost.histogram
+# histogram -> boost_histogram
 # regular(..., noflow=False) -> regular_ouflow(...)
 # regular(..., noflow=True) -> _regular_noflow(...)
 # label -> metadata
@@ -60,28 +62,40 @@ class Axis(ABC):
 
 class TestRegular(Axis):
     def test_shortcut(self):
-        assert isinstance(regular(1, 2, 3), bha._regular_uoflow)
+        ax = regular(1, 2, 3)
         assert isinstance(regular(1, 2, 3), regular)
+        assert isinstance(ax, _bha._regular_uoflow)
+        assert ax.options() == bhao.underflow | bhao.overflow
 
-        assert isinstance(regular(1, 2, 3, overflow=False), bha._regular_uflow)
-        assert isinstance(regular(1, 2, 3, overflow=False), regular)
+        ax = regular(1, 2, 3, overflow=False)
+        assert isinstance(ax, regular)
+        assert isinstance(ax, _bha._regular_uflow)
+        assert ax.options() == bhao.underflow
 
-        assert isinstance(regular(1, 2, 3, underflow=False), bha._regular_oflow)
-        assert isinstance(regular(1, 2, 3, underflow=False), regular)
+        ax = regular(1, 2, 3, underflow=False)
+        assert isinstance(ax, regular)
+        assert isinstance(ax, _bha._regular_oflow)
+        assert ax.options() == bhao.overflow
 
-        assert isinstance(regular(1, 2, 3, flow=False), bha._regular_noflow)
-        assert isinstance(regular(1, 2, 3, flow=False), regular)
+        ax = regular(1, 2, 3, flow=False)
+        assert isinstance(ax, regular)
+        assert isinstance(ax, _bha._regular_noflow)
+        assert ax.options() == bhao.none
 
-        assert isinstance(
-            regular(1, 2, 3, underflow=False, overflow=False), bha._regular_noflow
-        )
-        assert isinstance(
-            regular(1, 2, 3, underflow=False, overflow=False, flow=True),
-            bha._regular_uoflow,
-        )
+        ax = regular(1, 2, 3, underflow=False, overflow=False)
+        assert isinstance(ax, regular)
+        assert isinstance(ax, _bha._regular_noflow)
+        assert ax.options() == bhao.none
 
-        assert isinstance(regular(1, 2, 3, growth=True), bha._regular_growth)
-        assert isinstance(regular(1, 2, 3, growth=True), regular)
+        ax = regular(1, 2, 3, underflow=False, overflow=False, flow=True)
+        assert isinstance(ax, regular)
+        assert isinstance(ax, _bha._regular_uoflow)
+        assert ax.options() == bhao.underflow | bhao.overflow
+
+        ax = regular(1, 2, 3, growth=True)
+        assert isinstance(ax, regular)
+        assert isinstance(ax, _bha._regular_growth)
+        assert ax.options() == bhao.growth
 
     def test_init(self):
         # Should not throw
@@ -96,7 +110,7 @@ class TestRegular(Axis):
         with pytest.raises(TypeError):
             regular()
         with pytest.raises(TypeError):
-            bha._regular_uoflow()
+            _bha._regular_uoflow()
         with pytest.raises(TypeError):
             regular(1)
         with pytest.raises(TypeError):
@@ -278,6 +292,7 @@ class TestCircular(Axis):
         a = circular(4, 1.0)
         assert a == circular(4, 1.0)
         assert a != circular(2, 1.0)
+        assert isinstance(a, circular)
 
         # CLASSIC: This used to do something, now is range of 0 error
         with pytest.raises(ValueError):
@@ -346,25 +361,35 @@ class TestCircular(Axis):
 
 class TestVariable(Axis):
     def test_shortcut(self):
-        assert isinstance(variable([1, 2, 3]), bha._variable_uoflow)
-        assert isinstance(variable([1, 2, 3]), variable)
+        ax = variable([1, 2, 3])
+        assert isinstance(ax, variable)
+        assert isinstance(ax, _bha._variable_uoflow)
+        assert ax.options() == bhao.underflow | bhao.overflow
 
-        assert isinstance(variable([1, 2, 3], overflow=False), bha._variable_uflow)
-        assert isinstance(variable([1, 2, 3], overflow=False), variable)
+        ax = variable([1, 2, 3], overflow=False)
+        assert isinstance(ax, variable)
+        assert isinstance(ax, _bha._variable_uflow)
+        assert ax.options() == bhao.underflow
 
-        assert isinstance(variable([1, 2, 3], underflow=False), bha._variable_oflow)
-        assert isinstance(variable([1, 2, 3], underflow=False), variable)
+        ax = variable([1, 2, 3], underflow=False)
+        assert isinstance(ax, variable)
+        assert isinstance(ax, _bha._variable_oflow)
+        assert ax.options() == bhao.overflow
 
-        assert isinstance(variable([1, 2, 3], flow=False), bha._variable_noflow)
-        assert isinstance(variable([1, 2, 3], flow=False), variable)
+        ax = variable([1, 2, 3], flow=False)
+        assert isinstance(ax, variable)
+        assert isinstance(ax, _bha._variable_noflow)
+        assert ax.options() == bhao.none
 
-        assert isinstance(
-            variable([1, 2, 3], underflow=False, overflow=False), bha._variable_noflow
-        )
-        assert isinstance(
-            variable([1, 2, 3], underflow=False, overflow=False, flow=True),
-            bha._variable_uoflow,
-        )
+        ax = variable([1, 2, 3], underflow=False, overflow=False)
+        assert isinstance(ax, variable)
+        assert isinstance(ax, _bha._variable_noflow)
+        assert ax.options() == bhao.none
+
+        ax = variable([1, 2, 3], underflow=False, overflow=False, flow=True)
+        assert isinstance(ax, variable)
+        assert isinstance(ax, _bha._variable_uoflow)
+        assert ax.options() == bhao.underflow | bhao.overflow
 
     def test_init(self):
         variable([0, 1])
@@ -446,28 +471,40 @@ class TestVariable(Axis):
 
 class TestInteger:
     def test_shortcut(self):
-        assert isinstance(integer(1, 3), bha._integer_uoflow)
-        assert isinstance(integer(1, 3), integer)
+        ax = integer(1, 3)
+        assert isinstance(ax, integer)
+        assert isinstance(ax, _bha._integer_uoflow)
+        assert ax.options() == bhao.underflow | bhao.overflow
 
-        assert isinstance(integer(1, 3, overflow=False), bha._integer_uflow)
-        assert isinstance(integer(1, 3, overflow=False), integer)
+        ax = integer(1, 3, overflow=False)
+        assert isinstance(ax, integer)
+        assert isinstance(ax, _bha._integer_uflow)
+        assert ax.options() == bhao.underflow
 
-        assert isinstance(integer(1, 3, underflow=False), bha._integer_oflow)
-        assert isinstance(integer(1, 3, underflow=False), integer)
+        ax = integer(1, 3, underflow=False)
+        assert isinstance(ax, integer)
+        assert isinstance(ax, _bha._integer_oflow)
+        assert ax.options() == bhao.overflow
 
-        assert isinstance(integer(1, 3, flow=False), bha._integer_noflow)
-        assert isinstance(integer(1, 3, flow=False), integer)
+        ax = integer(1, 3, flow=False)
+        assert isinstance(ax, integer)
+        assert isinstance(ax, _bha._integer_noflow)
+        assert ax.options() == bhao.none
 
-        assert isinstance(
-            integer(1, 3, underflow=False, overflow=False), bha._integer_noflow
-        )
-        assert isinstance(
-            integer(1, 3, underflow=False, overflow=False, flow=True),
-            bha._integer_uoflow,
-        )
+        ax = integer(1, 3, underflow=False, overflow=False)
+        assert isinstance(ax, integer)
+        assert isinstance(ax, _bha._integer_noflow)
+        assert ax.options() == bhao.none
 
-        assert isinstance(integer(1, 3, growth=True), bha._integer_growth)
-        assert isinstance(integer(1, 3, growth=True), integer)
+        ax = integer(1, 3, underflow=False, overflow=False, flow=True)
+        assert isinstance(ax, integer)
+        assert isinstance(ax, _bha._integer_uoflow)
+        assert ax.options() == bhao.underflow | bhao.overflow
+
+        ax = integer(1, 3, growth=True)
+        assert isinstance(ax, integer)
+        assert isinstance(ax, _bha._integer_growth)
+        assert ax.options() == bhao.growth
 
     def test_init(self):
         integer(-1, 2, flow=True)
@@ -561,6 +598,27 @@ class TestCategory(Axis):
 
         assert category([1, 2, 3]) == category([1, 2, 3])
         assert category([1, 2, 3]) != category([1, 3, 2])
+
+    def test_shortcut(self):
+        ax = category([1, 2, 3])
+        assert isinstance(ax, category)
+        assert isinstance(ax, _bha._category_int)
+        assert ax.options() == bhao.overflow
+
+        ax = category([1, 2, 3], growth=True)
+        assert isinstance(ax, category)
+        assert isinstance(ax, _bha._category_int_growth)
+        assert ax.options() == bhao.growth
+
+        ax = category(["1", "2", "3"])
+        assert isinstance(ax, category)
+        assert isinstance(ax, _bha._category_str)
+        assert ax.options() == bhao.overflow
+
+        ax = category(["1", "2", "3"], growth=True)
+        assert isinstance(ax, category)
+        assert isinstance(ax, _bha._category_str_growth)
+        assert ax.options() == bhao.growth
 
     def test_len(self):
         assert category([1, 2, 3]).size() == 3

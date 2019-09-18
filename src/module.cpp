@@ -16,7 +16,7 @@ void register_make_histogram(py::module &, py::module &);
 void register_accumulators(py::module &);
 void register_utils(py::module &);
 
-PYBIND11_MODULE(histogram, m) {
+PYBIND11_MODULE(core, m) {
     register_version(m);
 
     py::module storage = m.def_submodule("storage");

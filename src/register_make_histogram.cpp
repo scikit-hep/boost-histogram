@@ -81,7 +81,7 @@ void register_make_histogram(py::module &m, py::module &hist) {
         "Make any histogram");
 
     // This factory makes a class that can be used to create histograms and also be used in is_instance
-    py::object factory_meta_py = py::module::import("boost.histogram_utils").attr("FactoryMeta");
+    py::object factory_meta_py = py::module::import("boost_histogram.utils").attr("FactoryMeta");
 
     m.attr("histogram") = factory_meta_py(m.attr("_make_histogram"),
                                           py::make_tuple(hist.attr("_any_double"),

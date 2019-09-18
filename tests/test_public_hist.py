@@ -2,8 +2,8 @@ import pytest
 from pytest import approx
 
 
-from boost.histogram import histogram
-from boost.histogram.axis import (
+from boost_histogram import histogram
+from boost_histogram.axis import (
     regular,
     integer,
     regular_log,
@@ -14,7 +14,7 @@ from boost.histogram.axis import (
     category,
 )
 
-import boost.histogram as bh
+import boost_histogram as bh
 
 import numpy as np
 from numpy.testing import assert_array_equal
@@ -25,8 +25,8 @@ try:
 except ImportError:
     import pickle
 
-# histogram -> boost.histogram
-# histogram -> _make_histogram
+# histogram -> boost_histogram
+# histogram -> histogram
 # .dim -> .rank()
 
 

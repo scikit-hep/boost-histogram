@@ -1,6 +1,6 @@
 import pytest
 
-import boost.histogram as bh
+import boost_histogram as bh
 import numpy as np
 from numpy.testing import assert_allclose
 import itertools
@@ -21,7 +21,7 @@ def test_1d_center():
 # Any axis has a special replacement for internal_view
 def test_2d_any_center():
 
-    # This iterates in the opposite order as boost-histogram
+    # This iterates in the opposite order as boost_histogram
     results = itertools.product(np.r_[0:4], np.r_[0.125:0.875:4j])
 
     h = bh.histogram(bh.axis.regular(4, 0, 1), bh.axis.integer(0, 4))

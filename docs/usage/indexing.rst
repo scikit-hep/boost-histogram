@@ -87,7 +87,7 @@ here <https://gist.github.com/henryiii/d545a673ea2b3225cb985c9c02ac958b>`__.
 `Extra doc
 here <https://docs.google.com/document/d/1bJKA7Y0QXf46w53UFizJ4bnZlVIkb4aCqx6m2hoN0HM/edit#heading=h.jvegm6z8f387>`__.
 
-Note that the API comes in two forms; the ``__call__`` operator form is more powerful, slower, optional, and is not supported by boost.histogram.
+Note that the API comes in two forms; the ``__call__`` operator form is more powerful, slower, optional, and is not supported by boost-histogram.
 
 Basic implementation (WIP):
 

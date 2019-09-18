@@ -2,15 +2,19 @@ import pytest
 from pytest import approx
 import math
 
-import boost.histogram as bh
+import boost_histogram as bh
 
 
 @pytest.mark.parametrize(
     "axis,extent",
-    ((bh.axis._regular_uoflow, 2), (lambda *x: x, 2), (bh.axis._regular_noflow, 0)),
+    (
+        (bh.core.axis._regular_uoflow, 2),
+        (lambda *x: x, 2),
+        (bh.core.axis._regular_noflow, 0),
+    ),
 )
 def test_make_regular_1D(axis, extent):
-    hist = bh._make_histogram(axis(3, 2, 5))
+    hist = bh.histogram(axis(3, 2, 5))
 
     assert hist.rank() == 1
     assert hist.axis(0).size() == 3
@@ -23,7 +27,7 @@ def test_shortcuts():
     assert hist.rank() == 2
     for i in range(2):
         assert isinstance(hist.axis(i), bh.axis.regular)
-        assert isinstance(hist.axis(i), bh.axis._regular_uoflow)
+        assert isinstance(hist.axis(i), bh.core.axis._regular_uoflow)
         assert not isinstance(hist.axis(i), bh.axis.variable)
 
 
@@ -38,10 +42,11 @@ def test_shortcuts_with_metadata():
 
 
 @pytest.mark.parametrize(
-    "axis,extent", ((bh.axis._regular_uoflow, 2), (bh.axis._regular_noflow, 0))
+    "axis,extent",
+    ((bh.core.axis._regular_uoflow, 2), (bh.core.axis._regular_noflow, 0)),
 )
 def test_make_regular_2D(axis, extent):
-    hist = bh._make_histogram(axis(3, 2, 5), axis(5, 1, 6))
+    hist = bh.histogram(axis(3, 2, 5), axis(5, 1, 6))
 
     assert hist.rank() == 2
     assert hist.axis(0).size() == 3
@@ -63,9 +68,9 @@ def test_make_regular_2D(axis, extent):
     ),
 )
 def test_make_any_hist(storage):
-    hist = bh._make_histogram(
-        bh.axis._regular_uoflow(5, 1, 2),
-        bh.axis._regular_noflow(6, 2, 3),
+    hist = bh.histogram(
+        bh.core.axis._regular_uoflow(5, 1, 2),
+        bh.core.axis._regular_noflow(6, 2, 3),
         bh.axis.circular(8, 3, 4),
         storage=storage,
     )
@@ -85,19 +90,19 @@ def test_make_any_hist(storage):
 def test_make_any_hist_storage():
 
     assert float != type(
-        bh._make_histogram(
-            bh.axis._regular_uoflow(5, 1, 2), storage=bh.storage.int()
+        bh.histogram(
+            bh.core.axis._regular_uoflow(5, 1, 2), storage=bh.storage.int()
         ).at(0)
     )
     assert float == type(
-        bh._make_histogram(
-            bh.axis._regular_uoflow(5, 1, 2), storage=bh.storage.double()
+        bh.histogram(
+            bh.core.axis._regular_uoflow(5, 1, 2), storage=bh.storage.double()
         ).at(0)
     )
 
 
 def test_issue_axis_bin_swan():
-    hist = bh._make_histogram(
+    hist = bh.histogram(
         bh.axis.regular_sqrt(10, 0, 10, metadata="x"),
         bh.axis.circular(10, 0, 1, metadata="y"),
     )
@@ -113,31 +118,55 @@ def test_issue_axis_bin_swan():
 
 
 options = (
-    (bh.hist._any_unlimited, bh.axis._regular_uoflow(5, 1, 2), bh.storage.unlimited),
-    (bh.hist._any_int, bh.axis._regular_uoflow(5, 1, 2), bh.storage.int),
-    (bh.hist._any_atomic_int, bh.axis._regular_uoflow(5, 1, 2), bh.storage.atomic_int),
-    (bh.hist._any_int, bh.axis._regular_noflow(5, 1, 2), bh.storage.int),
-    (bh.hist._any_double, bh.axis._regular_uoflow(5, 1, 2), bh.storage.double),
-    (bh.hist._any_weight, bh.axis._regular_uoflow(5, 1, 2), bh.storage.weight),
-    (bh.hist._any_int, bh.axis._integer_uoflow(0, 5), bh.storage.int),
-    (bh.hist._any_atomic_int, bh.axis._integer_uoflow(0, 5), bh.storage.atomic_int),
-    (bh.hist._any_double, bh.axis._integer_uoflow(0, 5), bh.storage.double),
-    (bh.hist._any_unlimited, bh.axis._integer_uoflow(0, 5), bh.storage.unlimited),
-    (bh.hist._any_weight, bh.axis._integer_uoflow(0, 5), bh.storage.weight),
+    (
+        bh.core.hist._any_unlimited,
+        bh.core.axis._regular_uoflow(5, 1, 2),
+        bh.storage.unlimited,
+    ),
+    (bh.core.hist._any_int, bh.core.axis._regular_uoflow(5, 1, 2), bh.storage.int),
+    (
+        bh.core.hist._any_atomic_int,
+        bh.core.axis._regular_uoflow(5, 1, 2),
+        bh.storage.atomic_int,
+    ),
+    (bh.core.hist._any_int, bh.core.axis._regular_noflow(5, 1, 2), bh.storage.int),
+    (
+        bh.core.hist._any_double,
+        bh.core.axis._regular_uoflow(5, 1, 2),
+        bh.storage.double,
+    ),
+    (
+        bh.core.hist._any_weight,
+        bh.core.axis._regular_uoflow(5, 1, 2),
+        bh.storage.weight,
+    ),
+    (bh.core.hist._any_int, bh.core.axis._integer_uoflow(0, 5), bh.storage.int),
+    (
+        bh.core.hist._any_atomic_int,
+        bh.core.axis._integer_uoflow(0, 5),
+        bh.storage.atomic_int,
+    ),
+    (bh.core.hist._any_double, bh.core.axis._integer_uoflow(0, 5), bh.storage.double),
+    (
+        bh.core.hist._any_unlimited,
+        bh.core.axis._integer_uoflow(0, 5),
+        bh.storage.unlimited,
+    ),
+    (bh.core.hist._any_weight, bh.core.axis._integer_uoflow(0, 5), bh.storage.weight),
 )
 
 
 @pytest.mark.parametrize("histclass, ax, storage", options)
 def test_make_selection(histclass, ax, storage):
-    histogram = bh._make_histogram(ax, storage=storage())
+    histogram = bh.histogram(ax, storage=storage())
     assert isinstance(histogram, histclass)
 
-    histogram = bh._make_histogram(ax, ax, storage=storage())
+    histogram = bh.histogram(ax, ax, storage=storage())
     assert isinstance(histogram, histclass)
 
 
 def test_make_selection_special():
-    histogram = bh._make_histogram(
-        bh.axis._regular_uoflow(5, 1, 2), bh.axis._regular_noflow(10, 1, 2)
+    histogram = bh.histogram(
+        bh.core.axis._regular_uoflow(5, 1, 2), bh.core.axis._regular_noflow(10, 1, 2)
     )
-    assert isinstance(histogram, bh.hist._any_double)
+    assert isinstance(histogram, bh.core.hist._any_double)

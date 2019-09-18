@@ -3,6 +3,7 @@
 [![Gitter][gitter-badge]][gitter-link]
 [![Build Status][azure-badge]][azure-link]
 [![Documentation Status][rtd-badge]][rtd-link]
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
 Python bindings for [Boost::Histogram][] ([source][Boost::Histogram source]), a C++14 library. This should become one of the [fastest libraries][] for histogramming, while still providing the power of a full histogram object.
 
@@ -28,7 +29,7 @@ For the moment, you need to uninstall and reinstall to ensure you have the lates
 This is a suggested example of usage.
 
 ```python
-import boost.histogram as bh
+import boost_histogram as bh
 
 # Compose axis however you like
 hist = bh.histogram(bh.axis.regular(2, 0, 1),
@@ -158,7 +159,7 @@ git submodule update --init --depth 10
 
 </details>
 
-Make a build directory and run CMake. If you have a specific Python you want to use, add `-DPYTHON_EXECUTABLE=$(which python)` or similar to the CMake line.
+You can use setuptools (`setup.py`) or CMake 3.14+ to build the package. CMake is preferable for most development, and setuptools is used for packaging on PyPI. Make a build directory and run CMake. If you have a specific Python you want to use, add `-DPYTHON_EXECUTABLE=$(which python)` or similar to the CMake line. If you need help installing the latest CMake version, [visit this page](https://cliutils.gitlab.io/modern-cmake/chapters/intro/installing.html); one option is to use pip to install CMake.
 
 ```bash
 cmake -S . -B build

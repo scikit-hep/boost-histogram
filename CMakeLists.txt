@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.12...3.15)
 
-project(histogram LANGUAGES CXX VERSION 0.1)
+project(boost_histogram LANGUAGES CXX VERSION 0.1)
 
 # Boost histogram requires C++14
 set(CMAKE_CXX_STANDARD 14)
@@ -39,17 +39,17 @@ file(GLOB
 
 
 # This is the Python module
-pybind11_add_module(histogram SHARED
+pybind11_add_module(core SHARED
     ${BOOST_HIST_PY_HEADERS}
     ${BOOST_HIST_PY_SRC}
     ${BOOST_HIST_FILES}
 )
 
 # Add the include directory for boost/histogram/python
-target_include_directories(histogram PRIVATE include)
+target_include_directories(core PRIVATE include)
 
 # These are the Boost header-only libraries required by Boost::Histogram
-target_include_directories(histogram SYSTEM PUBLIC
+target_include_directories(core SYSTEM PUBLIC
     extern/assert/include
     extern/callable_traits/include
     extern/config/include
@@ -70,43 +70,59 @@ option(BOOST_HISTOGRAM_ERRORS "Make warnings errors (for CI mostly)")
 
 # Adding warnings
 if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang" OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-    target_compile_options(histogram PRIVATE -Wall -Wextra -pedantic-errors -Wconversion -Wsign-conversion)
+    target_compile_options(core PRIVATE -Wall -Wextra -pedantic-errors -Wconversion -Wsign-conversion)
     if(BOOST_HISTOGRAM_ERRORS)
-        target_compile_options(histogram PRIVATE -Werror)
+        target_compile_options(core PRIVATE -Werror)
     endif()
 
     # Python 2 will not be compatible with C++17, but let's not be reminded of that over and over again here.
     if("${PYTHON_VERSION_MAJOR}" LESS 3 AND "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-         target_compile_options(histogram PRIVATE -Wno-deprecated-register)
+         target_compile_options(core PRIVATE -Wno-deprecated-register)
     endif()
 elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
-    target_compile_options(histogram PRIVATE /W4)
+    target_compile_options(core PRIVATE /W4)
     if(BOOST_HISTOGRAM_ERRORS)
-        target_compile_options(histogram PRIVATE /WE)
+        target_compile_options(core PRIVATE /WE)
     endif()
 endif()
 
-
-
+# This allows setting the maximum number of axes in a histogram
 set(BOOST_HISTOGRAM_DETAIL_AXES_LIMIT "" CACHE STRING "Set the maximum number of axis in a histogram (affects compile time and size)")
 if(NOT "${BOOST_HISTOGRAM_DETAIL_AXES_LIMIT}" STREQUAL "")
-    target_compile_definitions(histogram PRIVATE BOOST_HISTOGRAM_DETAIL_AXES_LIMIT=${BOOST_HISTOGRAM_DETAIL_AXES_LIMIT})
+    target_compile_definitions(core PRIVATE BOOST_HISTOGRAM_DETAIL_AXES_LIMIT=${BOOST_HISTOGRAM_DETAIL_AXES_LIMIT})
 endif()
 
-# Make the output be in boost/...
-set_property(TARGET histogram PROPERTY LIBRARY_OUTPUT_DIRECTORY "boost")
-configure_file(
-    "boost/__init__.py"
-    "${CMAKE_CURRENT_BINARY_DIR}/boost/__init__.py"
-    COPYONLY)
-configure_file(
-    "boost/histogram_utils.py"
-    "${CMAKE_CURRENT_BINARY_DIR}/boost/histogram_utils.py"
-    COPYONLY)
-configure_file(
-    "boost/histogram_version.py"
-    "${CMAKE_CURRENT_BINARY_DIR}/boost/histogram_version.py"
-    COPYONLY)
+# Make the output library be in boost_histogram/core...
+set_property(TARGET core PROPERTY LIBRARY_OUTPUT_DIRECTORY "boost_histogram")
+
+# Collect all the python files and symlink them (3.14+) or copy them (3.12-3.13)
+# into the build directory
+# Protects from in-source builds (don't do this, please)
+if(NOT "${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_BINARY_DIR}")
+    file(GLOB_RECURSE
+        BOOST_HIST_PY_FILES
+        LIST_DIRECTORIES false
+        RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
+        CONFIGURE_DEPENDS
+        "boost_histogram/*.py")
+    foreach(F IN LISTS BOOST_HIST_PY_FILES)
+        if(CMAKE_VERSION VERSION_LESS 3.14)
+            get_filename_component(FDIR "${F}" DIRECTORY )
+            file(COPY       "${CMAKE_CURRENT_SOURCE_DIR}/${F}"
+                DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/${FDIR}")
+        else()
+            file(CREATE_LINK
+                "${CMAKE_CURRENT_SOURCE_DIR}/${F}"
+                "${CMAKE_CURRENT_BINARY_DIR}/${F}"
+                COPY_ON_ERROR SYMBOLIC
+                )
+        endif()
+    endforeach()
+endif()
+
+# Support installing
+install(DIRECTORY "boost_histogram" DESTINATION ".")
+install(TARGETS core DESTINATION "boost_histogram")
 
 
 # Tests (Requires pytest to be available to run)

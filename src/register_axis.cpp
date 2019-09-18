@@ -20,7 +20,7 @@ void register_axes_options(py::module &opt) {
 
 void register_axes(py::module &ax) {
     // This factory makes a class that can be used to create axes and also be used in is_instance
-    py::object factory_meta_py = py::module::import("boost.histogram_utils").attr("FactoryMeta");
+    py::object factory_meta_py = py::module::import("boost_histogram.utils").attr("FactoryMeta");
 
     register_axis<axis::_regular_uoflow>(ax, "_regular_uoflow", "Evenly spaced bins")
         .def(construct_axes<axis::_regular_uoflow, unsigned, double, double>(),

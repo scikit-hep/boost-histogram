@@ -1,7 +1,7 @@
 import pytest
 from pytest import approx
 
-import boost.histogram as bh
+import boost_histogram as bh
 import numpy as np
 
 
