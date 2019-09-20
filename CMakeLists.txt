@@ -1,6 +1,17 @@
 cmake_minimum_required(VERSION 3.12...3.15)
 
-project(boost_histogram LANGUAGES CXX VERSION 0.1)
+# Grab the version from the python files
+set(VERSION_REGEX [=[__version__[ \t]*=[ \t]*"(.+)"]=])
+
+# Read in the line containing the version
+file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/boost_histogram/version.py"
+    VERSION_STRING REGEX ${VERSION_REGEX})
+
+# Pick out just the version
+string(REGEX REPLACE ${VERSION_REGEX} "\\1" VERSION_STRING "${VERSION_STRING}")
+
+project(BOOST_HISTOGRAM LANGUAGES CXX VERSION ${VERSION_STRING})
+
 
 # Boost histogram requires C++14
 set(CMAKE_CXX_STANDARD 14)
@@ -9,7 +20,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Adding folders to keep the structure a bit nicer in IDE's
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
 
 # This is a standard recipe for setting a default build type
 set(default_build_type "Release")
@@ -22,8 +32,16 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
+
+# Display versions
+message(STATUS "boost-histogram ${BOOST_HISTOGRAM_VERSION}")
+message(STATUS "CMake ${CMAKE_VERSION}")
+
 # Adding PyBind11 and setting up Python
+# Will display PyBind11 version
 add_subdirectory(extern/pybind11)
+
+message(STATUS "Python ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
 
 # This is completely optional and just adds hints to IDEs - no affect on build at all.
 file(GLOB_RECURSE BOOST_HIST_FILES "extern/histogram/include/*.hpp")
@@ -128,19 +146,26 @@ install(TARGETS core DESTINATION "boost_histogram")
 # Tests (Requires pytest to be available to run)
 include(CTest)
 
-function(python_import PACKAGE_NAME)
-    string(REPLACE "-" "_" PYTHON_PACKAGE_NAME "${PACKAGE_NAME}")
-    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import ${PYTHON_PACKAGE_NAME}" RESULT_VARIABLE RESULT_PRESENT)
-    if(RESULT_PRESENT)
-        message(SEND_ERROR "You should run something like \"${PYTHON_EXECUTABLE} -m pip install ${PACKAGE_NAME}\"")
+# Check to see if modules are importable.
+function(python_import)
+    foreach(PACKAGE_NAME IN LISTS ARGN)
+        string(REPLACE "-" "_" PYTHON_PACKAGE_NAME "${PACKAGE_NAME}")
+        execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import ${PYTHON_PACKAGE_NAME}"
+            RESULT_VARIABLE RESULT_PRESENT
+            OUTPUT_QUIET ERROR_QUIET)
+        if(RESULT_PRESENT)
+            list(APPEND FAILED_NAMES "${PACKAGE_NAME}")
+        endif()
+    endforeach()
+    if(FAILED_NAMES)
+        list(JOIN FAILED_NAMES " " FAILED_NAMES)
+        message(SEND_ERROR "Dependencies missing, try installing:\n  ${PYTHON_EXECUTABLE} -m pip install ${FAILED_NAMES}\n")
     endif()
 endfunction()
 
 if(BUILD_TESTING)
 
-    python_import(numpy)
-    python_import(pytest)
-    python_import(pytest-benchmark)
+    python_import(numpy pytest pytest-benchmark)
 
     # Support for running from build directory
     file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/pytest.ini"
