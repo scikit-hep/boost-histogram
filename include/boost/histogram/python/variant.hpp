@@ -13,6 +13,7 @@
 namespace pybind11 {
 namespace detail {
 template <class... Ts>
-struct type_caster<boost::variant2::variant<Ts...>> : variant_caster<boost::variant2::variant<Ts...>> {};
+struct type_caster<boost::variant2::variant<Ts...>>
+    : variant_caster<boost::variant2::variant<Ts...>> {};
 } // namespace detail
 } // namespace pybind11

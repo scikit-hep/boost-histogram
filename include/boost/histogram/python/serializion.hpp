@@ -66,7 +66,8 @@ void weighted_mean<RealType>::serialize(Archive &ar, unsigned /* version */) {
     ar &serialization::make_nvp("sum_of_weights", sum_of_weights_);
     ar &serialization::make_nvp("sum_of_weights_squared", sum_of_weights_squared_);
     ar &serialization::make_nvp("weighted_mean", weighted_mean_);
-    ar &serialization::make_nvp("sum_of_weighted_deltas_squared", sum_of_weighted_deltas_squared_);
+    ar &serialization::make_nvp("sum_of_weighted_deltas_squared",
+                                sum_of_weighted_deltas_squared_);
 }
 
 template <class Archive, class T>
@@ -159,7 +160,8 @@ void serialize(Archive &ar, large_int<Allocator> &x, unsigned /* version */) {
 
 template <class Archive, class T>
 void serialize(Archive &ar, storage_adaptor<T> &s, unsigned /* version */) {
-    ar &serialization::make_nvp("impl", static_cast<detail::storage_adaptor_impl<T> &>(s));
+    ar &serialization::make_nvp("impl",
+                                static_cast<detail::storage_adaptor_impl<T> &>(s));
 }
 
 template <class Allocator, class Archive>
@@ -180,7 +182,8 @@ void serialize(Archive &ar, unlimited_storage<Allocator> &s, unsigned /* version
         ar &serialization::make_nvp("type", buffer.type);
         ar &serialization::make_nvp("size", buffer.size);
     }
-    buffer.visit([&buffer, &ar](auto *) { ar &serialization::make_nvp("buffer", buffer); });
+    buffer.visit(
+        [&buffer, &ar](auto *) { ar &serialization::make_nvp("buffer", buffer); });
 }
 
 template <class Archive, class A, class S>

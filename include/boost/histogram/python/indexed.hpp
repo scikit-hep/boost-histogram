@@ -15,7 +15,8 @@
 template <class T>
 struct index_python {
     using value_ref_t = typename decltype(std::declval<T>().begin())::reference;
-    using bin_t       = decltype(std::declval<T>().axis(std::declval<unsigned>()).bin(std::declval<unsigned>()));
+    using bin_t       = decltype(
+        std::declval<T>().axis(std::declval<unsigned>()).bin(std::declval<unsigned>()));
 
     T &histogram_;
     std::array<unsigned, BOOST_HISTOGRAM_DETAIL_AXES_LIMIT> indices_;
@@ -36,7 +37,8 @@ struct index_python {
     }
 
     decltype(auto) indices() const {
-        std::vector<unsigned> vector_bins{indices_.begin(), indices_.begin() + histogram_.rank()};
+        std::vector<unsigned> vector_bins{indices_.begin(),
+                                          indices_.begin() + histogram_.rank()};
         return vector_bins;
     }
 
@@ -47,7 +49,8 @@ struct index_python {
     decltype(auto) centers() {
         std::vector<double> center_values;
         for(unsigned i = 0; i < histogram_.rank(); i++)
-            center_values.push_back(histogram_.axis(i).bin((int)indices_.at(i)).center());
+            center_values.push_back(
+                histogram_.axis(i).bin((int)indices_.at(i)).center());
         return center_values;
     }
 
@@ -58,7 +61,8 @@ template <class histogram_t>
 struct repeatable_indexed {
     histogram_t &histogram;
     bh::coverage cov;
-    using indexed_t  = decltype(bh::indexed(std::declval<histogram_t &>(), std::declval<bh::coverage>()));
+    using indexed_t = decltype(
+        bh::indexed(std::declval<histogram_t &>(), std::declval<bh::coverage>()));
     using iterator_t = decltype(std::declval<indexed_t>().begin());
     std::unique_ptr<indexed_t> ind;
     iterator_t it;
@@ -92,7 +96,10 @@ struct repeatable_indexed {
     index_python<histogram_t> get() {
         auto result = it->indices();
         return index_python<histogram_t>(
-            histogram, it->get(), result.begin(), result.end()); // Copy elision, for sure in C++17
+            histogram,
+            it->get(),
+            result.begin(),
+            result.end()); // Copy elision, for sure in C++17
     }
 };
 
@@ -100,7 +107,9 @@ struct repeatable_indexed {
 template <py::return_value_policy Policy = py::return_value_policy::reference_internal,
           typename histogram_ref_t,
           typename... Extra>
-py::iterator make_repeatable_iterator(histogram_ref_t &histogram, bh::coverage cov, Extra &&... extra) {
+py::iterator make_repeatable_iterator(histogram_ref_t &histogram,
+                                      bh::coverage cov,
+                                      Extra &&... extra) {
     using histogram_t = bh::python::remove_cvref_t<histogram_ref_t>;
     using state       = repeatable_indexed<histogram_t>;
 
@@ -145,7 +154,9 @@ void register_indexed(py::module &m, std::string name) {
     indexed.def_property(
         "content",
         [](const indexed_t &self) { return self.get_content(); },
-        [](indexed_t &self, typename histogram_t::value_type value) { self.get_content() = value; });
+        [](indexed_t &self, typename histogram_t::value_type value) {
+            self.get_content() = value;
+        });
 }
 
 template <class histogram_t>
@@ -156,14 +167,16 @@ void register_ufunc_tools(py::class_<histogram_t> &cls) {
             using array_t = py::array_t<double>;
             array_t::ShapeContainer shapes;
             for(unsigned i = 0; i < hist.rank(); i++) {
-                shapes->push_back(flow ? bh::axis::traits::extent(hist.axis(i)) : hist.axis(i).size());
+                shapes->push_back(flow ? bh::axis::traits::extent(hist.axis(i))
+                                       : hist.axis(i).size());
             }
 
             std::vector<double> centers;
             py::array_t<double> arr;
             arr.resize(shapes);
 
-            for(auto &&ind : bh::indexed(hist, flow ? bh::coverage::all : bh::coverage::inner)) {
+            for(auto &&ind :
+                bh::indexed(hist, flow ? bh::coverage::all : bh::coverage::inner)) {
                 ssize_t tot = 0;
                 for(size_t i = 0; i < hist.rank(); i++) {
                     tot += ind.index((unsigned)i) * 1; // TODO: Support ND

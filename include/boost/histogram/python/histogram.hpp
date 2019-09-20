@@ -29,7 +29,8 @@ py::buffer_info make_buffer_impl(const Axes &axes, bool flow, T *ptr) {
     unsigned rank  = 0;
     char *start    = reinterpret_cast<char *>(ptr);
     bh::detail::for_each_axis(axes, [&](const auto &axis) {
-        const bool underflow = bh::axis::traits::options(axis) & bh::axis::option::underflow;
+        const bool underflow
+            = bh::axis::traits::options(axis) & bh::axis::option::underflow;
         if(!flow && underflow)
             start += stride;
         const auto extent = bh::axis::traits::extent(axis);
@@ -39,12 +40,13 @@ py::buffer_info make_buffer_impl(const Axes &axes, bool flow, T *ptr) {
         ++rank;
     });
 
-    return py::buffer_info(start,                              // Pointer to buffer
-                           sizeof(T),                          // Size of one scalar
-                           py::format_descriptor<T>::format(), // Python format descriptor
-                           rank,                               // Number of dimensions
-                           shape,                              // Buffer shape
-                           strides                             // Strides (in bytes) for each index
+    return py::buffer_info(
+        start,                              // Pointer to buffer
+        sizeof(T),                          // Size of one scalar
+        py::format_descriptor<T>::format(), // Python format descriptor
+        rank,                               // Number of dimensions
+        shape,                              // Buffer shape
+        strides                             // Strides (in bytes) for each index
     );
 }
 
@@ -70,7 +72,8 @@ py::buffer_info make_buffer(bh::histogram<A, bh::dense_storage<T>> &h, bool flow
 
 /// Specialization for unlimited_buffer
 template <class A, class Allocator>
-py::buffer_info make_buffer(bh::histogram<A, bh::unlimited_storage<Allocator>> &h, bool flow) {
+py::buffer_info make_buffer(bh::histogram<A, bh::unlimited_storage<Allocator>> &h,
+                            bool flow) {
     const auto &axes = bh::unsafe_access::axes(h);
     auto &storage    = bh::unsafe_access::storage(h);
     // User requested a view into the memory of unlimited storage. We convert

@@ -19,8 +19,10 @@ void register_axes_options(py::module &opt) {
 }
 
 void register_axes(py::module &ax) {
-    // This factory makes a class that can be used to create axes and also be used in is_instance
-    py::object factory_meta_py = py::module::import("boost_histogram.utils").attr("FactoryMeta");
+    // This factory makes a class that can be used to create axes and also be used in
+    // is_instance
+    py::object factory_meta_py
+        = py::module::import("boost_histogram.utils").attr("FactoryMeta");
 
     register_axis<axis::_regular_uoflow>(ax, "_regular_uoflow", "Evenly spaced bins")
         .def(construct_axes<axis::_regular_uoflow, unsigned, double, double>(),
@@ -29,28 +31,32 @@ void register_axes(py::module &ax) {
              "stop"_a,
              "metadata"_a = py::str());
 
-    register_axis<axis::_regular_uflow>(ax, "_regular_uflow", "Evenly spaced bins with underflow")
+    register_axis<axis::_regular_uflow>(
+        ax, "_regular_uflow", "Evenly spaced bins with underflow")
         .def(construct_axes<axis::_regular_uflow, unsigned, double, double>(),
              "n"_a,
              "start"_a,
              "stop"_a,
              "metadata"_a = py::str());
 
-    register_axis<axis::_regular_oflow>(ax, "_regular_oflow", "Evenly spaced bins with overflow ")
+    register_axis<axis::_regular_oflow>(
+        ax, "_regular_oflow", "Evenly spaced bins with overflow ")
         .def(construct_axes<axis::_regular_oflow, unsigned, double, double>(),
              "n"_a,
              "start"_a,
              "stop"_a,
              "metadata"_a = py::str());
 
-    register_axis<axis::_regular_noflow>(ax, "_regular_noflow", "Evenly spaced bins without over/under flow")
+    register_axis<axis::_regular_noflow>(
+        ax, "_regular_noflow", "Evenly spaced bins without over/under flow")
         .def(construct_axes<axis::_regular_noflow, unsigned, double, double>(),
              "n"_a,
              "start"_a,
              "stop"_a,
              "metadata"_a = py::str());
 
-    register_axis<axis::_regular_growth>(ax, "_regular_growth", "Evenly spaced bins that grow as needed")
+    register_axis<axis::_regular_growth>(
+        ax, "_regular_growth", "Evenly spaced bins that grow as needed")
         .def(construct_axes<axis::_regular_growth, unsigned, double, double>(),
              "n"_a,
              "start"_a,
@@ -78,15 +84,20 @@ void register_axes(py::module &ax) {
             }
 
             if(growth) {
-                return py::cast(axis::_regular_growth(n, start, stop, metadata), py::return_value_policy::move);
+                return py::cast(axis::_regular_growth(n, start, stop, metadata),
+                                py::return_value_policy::move);
             } else if(underflow && overflow) {
-                return py::cast(axis::_regular_uoflow(n, start, stop, metadata), py::return_value_policy::move);
+                return py::cast(axis::_regular_uoflow(n, start, stop, metadata),
+                                py::return_value_policy::move);
             } else if(underflow && !overflow) {
-                return py::cast(axis::_regular_uflow(n, start, stop, metadata), py::return_value_policy::move);
+                return py::cast(axis::_regular_uflow(n, start, stop, metadata),
+                                py::return_value_policy::move);
             } else if(!underflow && overflow) {
-                return py::cast(axis::_regular_oflow(n, start, stop, metadata), py::return_value_policy::move);
+                return py::cast(axis::_regular_oflow(n, start, stop, metadata),
+                                py::return_value_policy::move);
             } else {
-                return py::cast(axis::_regular_noflow(n, start, stop, metadata), py::return_value_policy::move);
+                return py::cast(axis::_regular_noflow(n, start, stop, metadata),
+                                py::return_value_policy::move);
             }
         },
         "n"_a,
@@ -96,7 +107,8 @@ void register_axes(py::module &ax) {
         "underflow"_a = true,
         "overflow"_a  = true,
         "growth"_a    = false,
-        "Make a regular axis with nice keyword arguments for underflow, overflow, and growth. "
+        "Make a regular axis with nice keyword arguments for underflow, overflow, and "
+        "growth. "
         "Passing 'flow' will override underflow and overflow at the same time.");
 
     ax.attr("regular") = factory_meta_py(ax.attr("_make_regular"),
@@ -135,9 +147,14 @@ void register_axes(py::module &ax) {
              "metadata"_a = py::str());
 
     register_axis<axis::regular_pow>(ax, "regular_pow", "Evenly spaced bins in a power")
-        .def(py::init([](unsigned n, double start, double stop, double pow, metadata_t metadata) {
+        .def(py::init([](unsigned n,
+                         double start,
+                         double stop,
+                         double pow,
+                         metadata_t metadata) {
                  validate_metadata(metadata);
-                 return new axis::regular_pow(bh::axis::transform::pow{pow}, n, start, stop, metadata);
+                 return new axis::regular_pow(
+                     bh::axis::transform::pow{pow}, n, start, stop, metadata);
              }),
              "n"_a,
              "start"_a,
@@ -145,22 +162,37 @@ void register_axes(py::module &ax) {
              "power"_a,
              "metadata"_a = py::str());
 
-    register_axis<axis::_variable_uoflow>(ax, "_variable_uoflow", "Unevenly spaced bins")
-        .def(construct_axes<axis::_variable_uoflow, std::vector<double>>(), "edges"_a, "metadata"_a = py::str());
+    register_axis<axis::_variable_uoflow>(
+        ax, "_variable_uoflow", "Unevenly spaced bins")
+        .def(construct_axes<axis::_variable_uoflow, std::vector<double>>(),
+             "edges"_a,
+             "metadata"_a = py::str());
 
-    register_axis<axis::_variable_uflow>(ax, "_variable_uflow", "Unevenly spaced bins with underflow")
-        .def(construct_axes<axis::_variable_uflow, std::vector<double>>(), "edges"_a, "metadata"_a = py::str());
+    register_axis<axis::_variable_uflow>(
+        ax, "_variable_uflow", "Unevenly spaced bins with underflow")
+        .def(construct_axes<axis::_variable_uflow, std::vector<double>>(),
+             "edges"_a,
+             "metadata"_a = py::str());
 
-    register_axis<axis::_variable_oflow>(ax, "_variable_oflow", "Unevenly spaced bins with overflow")
-        .def(construct_axes<axis::_variable_oflow, std::vector<double>>(), "edges"_a, "metadata"_a = py::str());
+    register_axis<axis::_variable_oflow>(
+        ax, "_variable_oflow", "Unevenly spaced bins with overflow")
+        .def(construct_axes<axis::_variable_oflow, std::vector<double>>(),
+             "edges"_a,
+             "metadata"_a = py::str());
 
-    register_axis<axis::_variable_noflow>(ax, "_variable_noflow", "Unevenly spaced bins without under/overflow")
-        .def(construct_axes<axis::_variable_noflow, std::vector<double>>(), "edges"_a, "metadata"_a = py::str());
+    register_axis<axis::_variable_noflow>(
+        ax, "_variable_noflow", "Unevenly spaced bins without under/overflow")
+        .def(construct_axes<axis::_variable_noflow, std::vector<double>>(),
+             "edges"_a,
+             "metadata"_a = py::str());
 
     ax.def(
         "_make_variable",
-        [](std::vector<double> edges, metadata_t metadata, bool underflow, bool overflow, py::kwargs kwargs)
-            -> py::object {
+        [](std::vector<double> edges,
+           metadata_t metadata,
+           bool underflow,
+           bool overflow,
+           py::kwargs kwargs) -> py::object {
             validate_metadata(metadata);
 
             auto flow = optional_arg(kwargs, "flow");
@@ -172,20 +204,25 @@ void register_axes(py::module &ax) {
             }
 
             if(underflow && overflow) {
-                return py::cast(axis::_variable_uoflow(edges, metadata), py::return_value_policy::move);
+                return py::cast(axis::_variable_uoflow(edges, metadata),
+                                py::return_value_policy::move);
             } else if(underflow && !overflow) {
-                return py::cast(axis::_variable_uflow(edges, metadata), py::return_value_policy::move);
+                return py::cast(axis::_variable_uflow(edges, metadata),
+                                py::return_value_policy::move);
             } else if(!underflow && overflow) {
-                return py::cast(axis::_variable_oflow(edges, metadata), py::return_value_policy::move);
+                return py::cast(axis::_variable_oflow(edges, metadata),
+                                py::return_value_policy::move);
             } else {
-                return py::cast(axis::_variable_noflow(edges, metadata), py::return_value_policy::move);
+                return py::cast(axis::_variable_noflow(edges, metadata),
+                                py::return_value_policy::move);
             }
         },
         "edges"_a,
         "metadata"_a  = py::str(),
         "underflow"_a = true,
         "overflow"_a  = true,
-        "Make a variable binned axis with nice keyword arguments for underflow, overflow. "
+        "Make a variable binned axis with nice keyword arguments for underflow, "
+        "overflow. "
         "Passing 'flow' will override underflow and overflow at the same time.");
 
     ax.attr("variable") = factory_meta_py(ax.attr("_make_variable"),
@@ -195,24 +232,48 @@ void register_axes(py::module &ax) {
                                                          ax.attr("_variable_noflow")));
 
     register_axis<axis::_integer_uoflow>(ax, "_integer_uoflow", "Contigious integers")
-        .def(construct_axes<axis::_integer_uoflow, int, int>(), "min"_a, "max"_a, "metadata"_a = py::str());
+        .def(construct_axes<axis::_integer_uoflow, int, int>(),
+             "min"_a,
+             "max"_a,
+             "metadata"_a = py::str());
 
-    register_axis<axis::_integer_uflow>(ax, "_integer_uflow", "Contigious integers with underflow")
-        .def(construct_axes<axis::_integer_uflow, int, int>(), "min"_a, "max"_a, "metadata"_a = py::str());
+    register_axis<axis::_integer_uflow>(
+        ax, "_integer_uflow", "Contigious integers with underflow")
+        .def(construct_axes<axis::_integer_uflow, int, int>(),
+             "min"_a,
+             "max"_a,
+             "metadata"_a = py::str());
 
-    register_axis<axis::_integer_oflow>(ax, "_integer_oflow", "Contigious integers with overflow")
-        .def(construct_axes<axis::_integer_oflow, int, int>(), "min"_a, "max"_a, "metadata"_a = py::str());
+    register_axis<axis::_integer_oflow>(
+        ax, "_integer_oflow", "Contigious integers with overflow")
+        .def(construct_axes<axis::_integer_oflow, int, int>(),
+             "min"_a,
+             "max"_a,
+             "metadata"_a = py::str());
 
-    register_axis<axis::_integer_noflow>(ax, "_integer_noflow", "Contigious integers with no under/overflow")
-        .def(construct_axes<axis::_integer_noflow, int, int>(), "min"_a, "max"_a, "metadata"_a = py::str());
+    register_axis<axis::_integer_noflow>(
+        ax, "_integer_noflow", "Contigious integers with no under/overflow")
+        .def(construct_axes<axis::_integer_noflow, int, int>(),
+             "min"_a,
+             "max"_a,
+             "metadata"_a = py::str());
 
-    register_axis<axis::_integer_growth>(ax, "_integer_growth", "Contigious integers with growth")
-        .def(construct_axes<axis::_integer_growth, int, int>(), "min"_a, "max"_a, "metadata"_a = py::str());
+    register_axis<axis::_integer_growth>(
+        ax, "_integer_growth", "Contigious integers with growth")
+        .def(construct_axes<axis::_integer_growth, int, int>(),
+             "min"_a,
+             "max"_a,
+             "metadata"_a = py::str());
 
     ax.def(
         "_make_integer",
-        [](int start, int stop, metadata_t metadata, bool underflow, bool overflow, bool growth, py::kwargs kwargs)
-            -> py::object {
+        [](int start,
+           int stop,
+           metadata_t metadata,
+           bool underflow,
+           bool overflow,
+           bool growth,
+           py::kwargs kwargs) -> py::object {
             validate_metadata(metadata);
 
             auto flow = optional_arg(kwargs, "flow");
@@ -224,15 +285,20 @@ void register_axes(py::module &ax) {
             }
 
             if(growth) {
-                return py::cast(axis::_integer_growth(start, stop, metadata), py::return_value_policy::move);
+                return py::cast(axis::_integer_growth(start, stop, metadata),
+                                py::return_value_policy::move);
             } else if(underflow && overflow) {
-                return py::cast(axis::_integer_uoflow(start, stop, metadata), py::return_value_policy::move);
+                return py::cast(axis::_integer_uoflow(start, stop, metadata),
+                                py::return_value_policy::move);
             } else if(underflow && !overflow) {
-                return py::cast(axis::_integer_uflow(start, stop, metadata), py::return_value_policy::move);
+                return py::cast(axis::_integer_uflow(start, stop, metadata),
+                                py::return_value_policy::move);
             } else if(!underflow && overflow) {
-                return py::cast(axis::_integer_oflow(start, stop, metadata), py::return_value_policy::move);
+                return py::cast(axis::_integer_oflow(start, stop, metadata),
+                                py::return_value_policy::move);
             } else {
-                return py::cast(axis::_integer_noflow(start, stop, metadata), py::return_value_policy::move);
+                return py::cast(axis::_integer_noflow(start, stop, metadata),
+                                py::return_value_policy::move);
             }
         },
         "start"_a,
@@ -241,7 +307,8 @@ void register_axes(py::module &ax) {
         "underflow"_a = true,
         "overflow"_a  = true,
         "growth"_a    = false,
-        "Make an integer axis with nice keyword arguments for underflow, overflow, and growth. "
+        "Make an integer axis with nice keyword arguments for underflow, overflow, and "
+        "growth. "
         "Passing 'flow' will override underflow and overflow at the same time.");
 
     ax.attr("integer") = factory_meta_py(ax.attr("_make_integer"),
@@ -252,16 +319,24 @@ void register_axes(py::module &ax) {
                                                         ax.attr("_integer_growth")));
 
     register_axis<axis::_category_int>(ax, "_category_int", "Text label bins")
-        .def(construct_axes<axis::_category_int, std::vector<int>>(), "labels"_a, "metadata"_a = py::str());
+        .def(construct_axes<axis::_category_int, std::vector<int>>(),
+             "labels"_a,
+             "metadata"_a = py::str());
 
-    register_axis<axis::_category_int_growth>(ax, "_category_int_growth", "Text label bins")
-        .def(construct_axes<axis::_category_int_growth, std::vector<int>>(), "labels"_a, "metadata"_a = py::str())
+    register_axis<axis::_category_int_growth>(
+        ax, "_category_int_growth", "Text label bins")
+        .def(construct_axes<axis::_category_int_growth, std::vector<int>>(),
+             "labels"_a,
+             "metadata"_a = py::str())
         .def(py::init<>());
 
     register_axis<axis::_category_str>(ax, "_category_str", "Text label bins")
-        .def(construct_axes<axis::_category_str, std::vector<std::string>>(), "labels"_a, "metadata"_a = py::str());
+        .def(construct_axes<axis::_category_str, std::vector<std::string>>(),
+             "labels"_a,
+             "metadata"_a = py::str());
 
-    register_axis<axis::_category_str_growth>(ax, "_category_str_growth", "Text label bins")
+    register_axis<axis::_category_str_growth>(
+        ax, "_category_str_growth", "Text label bins")
         .def(construct_axes<axis::_category_str_growth, std::vector<std::string>>(),
              "labels"_a,
              "metadata"_a = py::str())
@@ -276,28 +351,34 @@ void register_axes(py::module &ax) {
                 auto int_values = py::cast<std::vector<int>>(labels);
 
                 if(growth) {
-                    return py::cast(axis::_category_int_growth(int_values, metadata), py::return_value_policy::move);
+                    return py::cast(axis::_category_int_growth(int_values, metadata),
+                                    py::return_value_policy::move);
                 } else {
-                    return py::cast(axis::_category_int(int_values, metadata), py::return_value_policy::move);
+                    return py::cast(axis::_category_int(int_values, metadata),
+                                    py::return_value_policy::move);
                 }
             } catch(const py::cast_error &) {
                 auto str_values = py::cast<std::vector<std::string>>(labels);
 
                 if(growth) {
-                    return py::cast(axis::_category_str_growth(str_values, metadata), py::return_value_policy::move);
+                    return py::cast(axis::_category_str_growth(str_values, metadata),
+                                    py::return_value_policy::move);
                 } else {
-                    return py::cast(axis::_category_str(str_values, metadata), py::return_value_policy::move);
+                    return py::cast(axis::_category_str(str_values, metadata),
+                                    py::return_value_policy::move);
                 }
             }
         },
         "labels"_a,
         "metadata"_a = py::str(),
         "growth"_a   = false,
-        "Make an category axis with a nice keyword argument for growth. Int and string supported.");
+        "Make an category axis with a nice keyword argument for growth. Int and string "
+        "supported.");
 
-    ax.attr("category") = factory_meta_py(ax.attr("_make_category"),
-                                          py::make_tuple(ax.attr("_category_int"),
-                                                         ax.attr("_category_int_growth"),
-                                                         ax.attr("_category_str"),
-                                                         ax.attr("_category_str_growth")));
+    ax.attr("category")
+        = factory_meta_py(ax.attr("_make_category"),
+                          py::make_tuple(ax.attr("_category_int"),
+                                         ax.attr("_category_int_growth"),
+                                         ax.attr("_category_str"),
+                                         ax.attr("_category_str_growth")));
 }

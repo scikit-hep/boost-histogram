@@ -21,16 +21,19 @@ void register_make_histogram(py::module &m, py::module &hist) {
     m.def(
         "_make_histogram",
         [](py::args t_args, py::kwargs kwargs) -> py::object {
-            py::list args      = py::cast<py::list>(t_args);
-            py::object storage = optional_arg(kwargs, "storage", py::cast(storage::double_{}));
+            py::list args = py::cast<py::list>(t_args);
+            py::object storage
+                = optional_arg(kwargs, "storage", py::cast(storage::double_{}));
             finalize_args(kwargs);
 
             // Allow a user to forget to add () when calling bh.storage.item
-            // HD: I am very conflicted over this. It is handy, but blurs the distinction between classes and objects.
-            // For pedagogical reasons, I am against that. "Cuteness hurts",
-            // http://www.gotw.ca/publications/advice97.htm, and this looks too cute. Furthermore, there is a reason why
-            // I require the user to pass an instance and not just a type or enum. A storage may be run-time
-            // configurable. Passing an instance allows to pass options via the ctor of the storage.
+            // HD: I am very conflicted over this. It is handy, but blurs the
+            // distinction between classes and objects. For pedagogical reasons, I am
+            // against that. "Cuteness hurts",
+            // http://www.gotw.ca/publications/advice97.htm, and this looks too cute.
+            // Furthermore, there is a reason why I require the user to pass an instance
+            // and not just a type or enum. A storage may be run-time configurable.
+            // Passing an instance allows to pass options via the ctor of the storage.
             try {
                 storage = storage();
             } catch(const py::error_already_set &) {
@@ -42,26 +45,29 @@ void register_make_histogram(py::module &m, py::module &hist) {
                 if(py::isinstance<py::tuple>(args[i])) {
                     py::tuple arg = py::cast<py::tuple>(args[i]);
                     if(arg.size() == 3) {
-                        args[i] = py::cast(new axis::_regular_uoflow(py::cast<unsigned>(arg[0]),
-                                                                     py::cast<double>(arg[1]),
-                                                                     py::cast<double>(arg[2]),
-                                                                     py::str()),
-                                           py::return_value_policy::take_ownership);
+                        args[i] = py::cast(
+                            new axis::_regular_uoflow(py::cast<unsigned>(arg[0]),
+                                                      py::cast<double>(arg[1]),
+                                                      py::cast<double>(arg[2]),
+                                                      py::str()),
+                            py::return_value_policy::take_ownership);
                     } else if(arg.size() == 4) {
                         try {
                             py::cast<double>(arg[3]);
-                            throw py::type_error("The fourth argument (metadata) in the tuple cannot be numeric!");
+                            throw py::type_error("The fourth argument (metadata) in "
+                                                 "the tuple cannot be numeric!");
                         } catch(const py::cast_error &) {
                         }
 
-                        args[i] = py::cast(new axis::_regular_uoflow(py::cast<unsigned>(arg[0]),
-                                                                     py::cast<double>(arg[1]),
-                                                                     py::cast<double>(arg[2]),
-                                                                     py::cast<metadata_t>(arg[3])),
-                                           py::return_value_policy::take_ownership);
+                        args[i] = py::cast(
+                            new axis::_regular_uoflow(py::cast<unsigned>(arg[0]),
+                                                      py::cast<double>(arg[1]),
+                                                      py::cast<double>(arg[2]),
+                                                      py::cast<metadata_t>(arg[3])),
+                            py::return_value_policy::take_ownership);
                     } else {
-                        throw py::type_error(
-                            "Only (bins, start, stop) and (bins, start, stop, metadata) tuples accepted");
+                        throw py::type_error("Only (bins, start, stop) and (bins, "
+                                             "start, stop, metadata) tuples accepted");
                     }
                 }
             }
@@ -74,14 +80,18 @@ void register_make_histogram(py::module &m, py::module &hist) {
                             storage::atomic_int,
                             storage::weight,
                             storage::profile,
-                            storage::weighted_profile>(storage, [&axes](auto &&storage) {
-                return py::cast(bh::make_histogram_with(storage, axes), py::return_value_policy::move);
-            });
+                            storage::weighted_profile>(
+                storage, [&axes](auto &&storage) {
+                    return py::cast(bh::make_histogram_with(storage, axes),
+                                    py::return_value_policy::move);
+                });
         },
         "Make any histogram");
 
-    // This factory makes a class that can be used to create histograms and also be used in is_instance
-    py::object factory_meta_py = py::module::import("boost_histogram.utils").attr("FactoryMeta");
+    // This factory makes a class that can be used to create histograms and also be used
+    // in is_instance
+    py::object factory_meta_py
+        = py::module::import("boost_histogram.utils").attr("FactoryMeta");
 
     m.attr("histogram") = factory_meta_py(m.attr("_make_histogram"),
                                           py::make_tuple(hist.attr("_any_double"),

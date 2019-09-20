@@ -38,7 +38,8 @@ using is_one_of = boost::mp11::mp_contains<boost::mp11::mp_list<Us...>, T>;
 
 // this or something similar should move to boost::histogram::axis::traits
 template <class Axis>
-using get_axis_value_type = boost::histogram::python::remove_cvref_t<decltype(std::declval<Axis>().value(0))>;
+using get_axis_value_type
+    = boost::histogram::python::remove_cvref_t<decltype(std::declval<Axis>().value(0))>;
 
 template <class T>
 bool is_pyiterable(const T &t) {
@@ -56,7 +57,8 @@ void set_varg(boost::mp11::mp_identity<T>, VArg &v, const Arg &x) {
         v = py::cast<T>(x);
 }
 
-// specialization for string (HD: this is very inefficient and will be made more efficient in the future)
+// specialization for string (HD: this is very inefficient and will be made more
+// efficient in the future)
 template <class VArg, class Arg>
 void set_varg(boost::mp11::mp_identity<std::string>, VArg &v, const Arg &x) {
     if(py::isinstance<py::str>(x))
@@ -67,7 +69,8 @@ void set_varg(boost::mp11::mp_identity<std::string>, VArg &v, const Arg &x) {
 } // namespace detail
 
 template <class A, class S>
-py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *name, const char *desc) {
+py::class_<bh::histogram<A, S>>
+register_histogram(py::module &m, const char *name, const char *desc) {
     using histogram_t = bh::histogram<A, S>;
     namespace bv2     = boost::variant2;
 
@@ -75,10 +78,14 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
 
     hist.def(py::init<const A &, S>(), "axes"_a, "storage"_a = S())
 
-        .def_buffer([](bh::histogram<A, S> &h) -> py::buffer_info { return make_buffer(h, false); })
+        .def_buffer([](bh::histogram<A, S> &h) -> py::buffer_info {
+            return make_buffer(h, false);
+        })
 
         .def("rank", &histogram_t::rank, "Number of axes (dimensions) of histogram")
-        .def("size", &histogram_t::size, "Total number of bins in the histogram (including underflow/overflow)")
+        .def("size",
+             &histogram_t::size,
+             "Total number of bins in the histogram (including underflow/overflow)")
         .def("reset", &histogram_t::reset, "Reset bin counters to zero")
 
         .def("__copy__", [](const histogram_t &self) { return histogram_t(self); })
@@ -87,7 +94,8 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
                  histogram_t *a  = new histogram_t(self);
                  py::module copy = py::module::import("copy");
                  for(unsigned i = 0; i < a->rank(); i++) {
-                     bh::unsafe_access::axis(*a, i).metadata() = copy.attr("deepcopy")(a->axis(i).metadata(), memo);
+                     bh::unsafe_access::axis(*a, i).metadata()
+                         = copy.attr("deepcopy")(a->axis(i).metadata(), memo);
                  }
                  return a;
              })
@@ -100,11 +108,21 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
         ;
 
     // Atomics for example do not support these operations
-    def_optionally(hist, bh::detail::has_operator_rmul<histogram_t, double>{}, py::self *= double());
-    def_optionally(hist, bh::detail::has_operator_rmul<histogram_t, double>{}, py::self * double());
-    def_optionally(hist, bh::detail::has_operator_rmul<histogram_t, double>{}, double() * py::self);
-    def_optionally(hist, bh::detail::has_operator_rdiv<histogram_t, double>{}, py::self /= double());
-    def_optionally(hist, bh::detail::has_operator_rdiv<histogram_t, double>{}, py::self / double());
+    def_optionally(hist,
+                   bh::detail::has_operator_rmul<histogram_t, double>{},
+                   py::self *= double());
+    def_optionally(hist,
+                   bh::detail::has_operator_rmul<histogram_t, double>{},
+                   py::self * double());
+    def_optionally(hist,
+                   bh::detail::has_operator_rmul<histogram_t, double>{},
+                   double() * py::self);
+    def_optionally(hist,
+                   bh::detail::has_operator_rdiv<histogram_t, double>{},
+                   py::self /= double());
+    def_optionally(hist,
+                   bh::detail::has_operator_rdiv<histogram_t, double>{},
+                   py::self / double());
 
     hist.def(
             "to_numpy",
@@ -139,7 +157,8 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
                 if(ii < self.rank())
                     return self.axis(ii);
                 else
-                    throw std::out_of_range("The axis value must be less than the rank");
+                    throw std::out_of_range(
+                        "The axis value must be less than the rank");
             },
             "Get N-th axis with runtime index",
             "i"_a,
@@ -158,8 +177,8 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
 
         .def(
             "__getitem__",
-            [](const histogram_t &self,
-               py::object index) -> bv2::variant<typename histogram_t::value_type, histogram_t> {
+            [](const histogram_t &self, py::object index)
+                -> bv2::variant<typename histogram_t::value_type, histogram_t> {
                 // If this is not a tuple (>1D), make it a tuple of 1D
                 // Then, convert tuples to list
                 py::list indexes;
@@ -172,13 +191,15 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
                 indexes = expand_ellipsis(indexes, self.rank());
 
                 if(indexes.size() != self.rank())
-                    throw std::out_of_range("You must provide the same number of indices as the rank of the histogram");
+                    throw std::out_of_range("You must provide the same number of "
+                                            "indices as the rank of the histogram");
 
                 // Allow [bh.loc(...)] to work
                 for(py::size_t i = 0; i < indexes.size(); i++) {
                     if(py::hasattr(indexes[i], "value"))
                         indexes[i]
-                            = self.axis(static_cast<unsigned>(i)).index(py::cast<double>(indexes[i].attr("value")));
+                            = self.axis(static_cast<unsigned>(i))
+                                  .index(py::cast<double>(indexes[i].attr("value")));
                 }
 
                 // If this is (now) all integers, return the bin contents
@@ -196,7 +217,9 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
                     [&self](bh::axis::index_type i, double val) {
                         return self.axis(static_cast<unsigned>(i)).index(val);
                     },
-                    [&self](bh::axis::index_type i) { return self.axis(static_cast<unsigned>(i)).size(); });
+                    [&self](bh::axis::index_type i) {
+                        return self.axis(static_cast<unsigned>(i)).size();
+                    });
 
                 if(projections.empty())
                     return bh::algorithm::reduce(self, slices);
@@ -212,9 +235,11 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
                 if(flow) {
                     return bh::algorithm::sum(self);
                 } else {
-                    using T       = typename bh::histogram<A, S>::value_type;
-                    using AddType = boost::mp11::mp_if<std::is_arithmetic<T>, double, T>;
-                    using Sum     = boost::mp11::mp_if<std::is_arithmetic<T>, bh::accumulators::sum<double>, T>;
+                    using T = typename bh::histogram<A, S>::value_type;
+                    using AddType
+                        = boost::mp11::mp_if<std::is_arithmetic<T>, double, T>;
+                    using Sum = boost::mp11::
+                        mp_if<std::is_arithmetic<T>, bh::accumulators::sum<double>, T>;
                     Sum sum;
                     for(auto &&x : bh::indexed(self))
                         sum += (AddType)*x;
@@ -227,14 +252,16 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
         .def(
             "reduce",
             [](const histogram_t &self, py::args args) {
-                return bh::algorithm::reduce(self, py::cast<std::vector<bh::algorithm::reduce_option>>(args));
+                return bh::algorithm::reduce(
+                    self, py::cast<std::vector<bh::algorithm::reduce_option>>(args));
             },
             "Reduce based on one or more reduce_option")
 
         .def(
             "project",
             [](const histogram_t &self, py::args values) {
-                return bh::algorithm::project(self, py::cast<std::vector<unsigned>>(values));
+                return bh::algorithm::project(self,
+                                              py::cast<std::vector<unsigned>>(values));
             },
             "Project to a single axis or several axes on a multidiminsional histogram")
 
@@ -247,27 +274,38 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
                 namespace bmp = boost::mp11;
                 static_assert(
                     bmp::mp_empty<bmp::mp_set_difference<
-                        bmp::mp_unique<bmp::mp_transform<::detail::get_axis_value_type, axis_variant>>,
+                        bmp::mp_unique<bmp::mp_transform<::detail::get_axis_value_type,
+                                                         axis_variant>>,
                         bmp::mp_list<double, int, std::string>>>::value,
-                    "supported value types are double, int, std::string; new axis was added with different value type");
+                    "supported value types are double, int, std::string; new axis was "
+                    "added with different value type");
 
-                // HD: std::vector<std::string> is for passing strings, this very very inefficient but works at least
-                // I need to change something in boost::histogram to make passing strings from a numpy array efficient
-                using varg_t = boost::variant2::
-                    variant<py::array_t<double>, double, py::array_t<int>, int, std::vector<std::string>, std::string>;
-                auto vargs = bh::detail::make_stack_buffer<varg_t>(bh::unsafe_access::axes(self));
+                // HD: std::vector<std::string> is for passing strings, this very very
+                // inefficient but works at least I need to change something in
+                // boost::histogram to make passing strings from a numpy array efficient
+                using varg_t = boost::variant2::variant<py::array_t<double>,
+                                                        double,
+                                                        py::array_t<int>,
+                                                        int,
+                                                        std::vector<std::string>,
+                                                        std::string>;
+                auto vargs   = bh::detail::make_stack_buffer<varg_t>(
+                    bh::unsafe_access::axes(self));
 
                 {
                     auto args_it  = args.begin();
                     auto vargs_it = vargs.begin();
                     self.for_each_axis([&args_it, &vargs_it](const auto &ax) {
-                        using T = typename bh::python::remove_cvref_t<decltype(ax.value(0))>;
-                        detail::set_varg(boost::mp11::mp_identity<T>{}, *vargs_it++, *args_it++);
+                        using T =
+                            typename bh::python::remove_cvref_t<decltype(ax.value(0))>;
+                        detail::set_varg(
+                            boost::mp11::mp_identity<T>{}, *vargs_it++, *args_it++);
                     });
                 }
 
                 bool has_weight = false;
-                bv2::variant<py::array_t<double>, double> weight; // default constructed as empty array
+                bv2::variant<py::array_t<double>, double>
+                    weight; // default constructed as empty array
                 {
                     auto w = optional_arg(kwargs, "weight");
                     if(!w.is_none()) {
@@ -280,7 +318,9 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
                 }
 
                 using storage_t = typename histogram_t::storage_type;
-                bh::detail::static_if<detail::is_one_of<storage_t, storage::profile, storage::weighted_profile>>(
+                bh::detail::static_if<detail::is_one_of<storage_t,
+                                                        storage::profile,
+                                                        storage::weighted_profile>>(
                     [&kwargs, &vargs, &weight, &has_weight](auto &h) {
                         auto s = required_arg(kwargs, "sample");
                         finalize_args(kwargs);
@@ -289,12 +329,15 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
                         if(sarray.ndim() != 1)
                             throw std::invalid_argument("Sample array must be 1D");
 
-                        // HD: is it safe to release the gil? sarray is a Python object, could this cause trouble?
+                        // HD: is it safe to release the gil? sarray is a Python object,
+                        // could this cause trouble?
                         py::gil_scoped_release lock;
                         if(has_weight)
-                            bv2::visit([&h, &vargs, &sarray](
-                                           const auto &w) { h.fill(vargs, bh::sample(sarray), bh::weight(w)); },
-                                       weight);
+                            bv2::visit(
+                                [&h, &vargs, &sarray](const auto &w) {
+                                    h.fill(vargs, bh::sample(sarray), bh::weight(w));
+                                },
+                                weight);
                         else
                             h.fill(vargs, bh::sample(sarray));
                     },
@@ -303,7 +346,11 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
 
                         py::gil_scoped_release lock;
                         if(has_weight)
-                            bv2::visit([&h, &vargs](const auto &w) { h.fill(vargs, bh::weight(w)); }, weight);
+                            bv2::visit(
+                                [&h, &vargs](const auto &w) {
+                                    h.fill(vargs, bh::weight(w));
+                                },
+                                weight);
                         else
                             h.fill(vargs);
                     },
@@ -318,7 +365,8 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
     hist.def(
         "indexed",
         [](histogram_t &self, bool flow) {
-            return make_repeatable_iterator(self, flow ? bh::coverage::all : bh::coverage::inner);
+            return make_repeatable_iterator(
+                self, flow ? bh::coverage::all : bh::coverage::inner);
         },
         "flow"_a = false,
         "Set up an iterator, returns a special accessor for bin info and content",

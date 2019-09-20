@@ -14,19 +14,27 @@ void register_storages(py::module &storage) {
 
     register_storage<storage::int_>(storage, "int", "Integers in vectors storage type");
 
-    register_storage<storage::double_>(storage, "double", "Weighted storage without variance type (fast but simple)");
+    register_storage<storage::double_>(
+        storage, "double", "Weighted storage without variance type (fast but simple)");
 
-    register_storage<storage::atomic_int>(storage, "atomic_int", "Threadsafe (not growing axis) integer storage");
+    register_storage<storage::atomic_int>(
+        storage, "atomic_int", "Threadsafe (not growing axis) integer storage");
 
     // Default storages
 
-    register_storage<storage::unlimited>(storage, "unlimited", "Optimized for unweighted histograms, adaptive");
+    register_storage<storage::unlimited>(
+        storage, "unlimited", "Optimized for unweighted histograms, adaptive");
 
     register_storage<storage::weight>(
-        storage, "weight", "Dense storage which tracks sums of weights and a variance estimate");
+        storage,
+        "weight",
+        "Dense storage which tracks sums of weights and a variance estimate");
 
-    register_storage<storage::profile>(storage, "profile", "Dense storage which tracks means of samples in each cell");
+    register_storage<storage::profile>(
+        storage, "profile", "Dense storage which tracks means of samples in each cell");
 
     register_storage<storage::weighted_profile>(
-        storage, "weighted_profile", "Dense storage which tracks means of weighted samples in each cell");
+        storage,
+        "weighted_profile",
+        "Dense storage which tracks means of weighted samples in each cell");
 }

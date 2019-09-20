@@ -20,8 +20,12 @@ struct InFromTuple;
 
 namespace boost {
 namespace histogram {
-BOOST_HISTOGRAM_DETECT(has_method_serialize, (std::declval<T &>().serialize(std::declval<OutToTuple &>(), 0)));
-BOOST_HISTOGRAM_DETECT(has_function_serialize, (serialize(std::declval<OutToTuple &>(), std::declval<T &>(), 0)));
+BOOST_HISTOGRAM_DETECT(has_method_serialize,
+                       (std::declval<T &>().serialize(std::declval<OutToTuple &>(),
+                                                      0)));
+BOOST_HISTOGRAM_DETECT(
+    has_function_serialize,
+    (serialize(std::declval<OutToTuple &>(), std::declval<T &>(), 0)));
 } // namespace histogram
 } // namespace boost
 
@@ -30,22 +34,24 @@ struct OutToTuple {
     py::tuple tuple;
 
     template <class T,
-              std::enable_if_t<bh::has_method_serialize<T>::value && !bh::has_function_serialize<T>::value> * = nullptr>
+              std::enable_if_t<bh::has_method_serialize<T>::value
+                               && !bh::has_function_serialize<T>::value> * = nullptr>
     OutToTuple &operator&(T &&arg) {
         arg.serialize(*this, 0);
         return *this;
     }
 
     template <class T,
-              std::enable_if_t<!bh::has_method_serialize<T>::value && bh::has_function_serialize<T>::value> * = nullptr>
+              std::enable_if_t<!bh::has_method_serialize<T>::value
+                               && bh::has_function_serialize<T>::value> * = nullptr>
     OutToTuple &operator&(T &&arg) {
         serialize(*this, arg, 0);
         return *this;
     }
 
-    template <
-        typename T,
-        std::enable_if_t<!bh::has_method_serialize<T>::value && !bh::has_function_serialize<T>::value> * = nullptr>
+    template <typename T,
+              std::enable_if_t<!bh::has_method_serialize<T>::value
+                               && !bh::has_function_serialize<T>::value> * = nullptr>
     OutToTuple &operator&(T &&arg) {
         tuple = tuple + py::make_tuple<py::return_value_policy::reference>(arg);
         return *this;
@@ -61,22 +67,24 @@ struct InFromTuple {
         : tuple(tuple_) {}
 
     template <class T,
-              std::enable_if_t<bh::has_method_serialize<T>::value && !bh::has_function_serialize<T>::value> * = nullptr>
+              std::enable_if_t<bh::has_method_serialize<T>::value
+                               && !bh::has_function_serialize<T>::value> * = nullptr>
     InFromTuple &operator&(T &&arg) {
         arg.serialize(*this, 0);
         return *this;
     }
 
     template <class T,
-              std::enable_if_t<!bh::has_method_serialize<T>::value && bh::has_function_serialize<T>::value> * = nullptr>
+              std::enable_if_t<!bh::has_method_serialize<T>::value
+                               && bh::has_function_serialize<T>::value> * = nullptr>
     InFromTuple &operator&(T &&arg) {
         serialize(*this, arg, 0);
         return *this;
     }
 
-    template <
-        typename T,
-        std::enable_if_t<!bh::has_method_serialize<T>::value && !bh::has_function_serialize<T>::value> * = nullptr>
+    template <typename T,
+              std::enable_if_t<!bh::has_method_serialize<T>::value
+                               && !bh::has_function_serialize<T>::value> * = nullptr>
     InFromTuple &operator&(T &&arg) {
         using Tbase = std::decay_t<T>;
         arg         = py::cast<Tbase>(tuple[current++]);

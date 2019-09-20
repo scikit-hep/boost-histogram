@@ -3,8 +3,9 @@
 // Distributed under the 3-Clause BSD License.  See accompanying
 // file LICENSE or https://github.com/scikit-hep/boost-histogram for details.
 
-// This file must be the first include (that is, it must be before stdlib or boost headers)
-// This reduces the warning output from Python.h and also lets us define s afew things
+// This file must be the first include (that is, it must be before stdlib or boost
+// headers) This reduces the warning output from Python.h and also lets us define s afew
+// things
 
 #pragma once
 
