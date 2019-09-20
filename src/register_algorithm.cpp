@@ -21,7 +21,7 @@ void register_algorithms(py::module &algorithm) {
         "Reduce a histogram with one or more reduce_options",
         "histogram"_a);
 
-    py::class_<bh::algorithm::reduce_option>(algorithm, "reduce_option")
+    py::class_<bh::algorithm::reduce_option>(algorithm, "_reduce_option")
         .def(py::init<unsigned,
                       bool,
                       bh::axis::index_type,

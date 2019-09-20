@@ -1,1 +1,1 @@
-from ..core.axis.options import *
+from ..core.axis.options import none, underflow, overflow, circular, growth
