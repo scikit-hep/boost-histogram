@@ -247,7 +247,7 @@ py::class_<bh::histogram<A, S>> register_histogram(py::module &m, const char *na
                 namespace bmp = boost::mp11;
                 static_assert(
                     bmp::mp_empty<bmp::mp_set_difference<
-                        bmp::mp_unique<bmp::mp_transform<::detail::get_axis_value_type, bmp::mp_first<axes::any>>>,
+                        bmp::mp_unique<bmp::mp_transform<::detail::get_axis_value_type, axis_variant>>,
                         bmp::mp_list<double, int, std::string>>>::value,
                     "supported value types are double, int, std::string; new axis was added with different value type");
 
