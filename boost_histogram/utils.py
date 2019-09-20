@@ -1,5 +1,3 @@
-
-
 class FactoryMeta(object):
     def __init__(self, f, types):
         self._f = f

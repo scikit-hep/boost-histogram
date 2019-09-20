@@ -21,7 +21,7 @@ jobs:
         architecture: 'x64'
     - script: python -m pip install black
       displayName: Install Python formatter
-    - script: python -m black tests/test_*.py
+    - script: python -m black .
       displayName: Run Python formatter
     - script: git diff --exit-code --color
       displayName: Python format changes
