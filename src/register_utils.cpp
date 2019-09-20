@@ -16,22 +16,28 @@ struct rebin {
 struct project {};
 
 void register_utils(py::module &m) {
-    py::class_<loc>(m, "loc").def(py::init<double>()).def_readwrite("value", &loc::value);
+    py::class_<loc>(m, "loc")
+        .def(py::init<double>())
+        .def_readwrite("value", &loc::value);
 
     py::class_<rebin>(m, "rebin")
         .def(py::init<unsigned>())
-        .def_property_readonly_static("projection", [](py::object /* self */) { return false; })
+        .def_property_readonly_static("projection",
+                                      [](py::object /* self */) { return false; })
         .def_readwrite("factor", &rebin::factor);
 
     py::class_<project>(m, "_project")
         .def(py::init<>())
-        .def_property_readonly_static("projection", [](py::object /* self */) { return true; });
+        .def_property_readonly_static("projection",
+                                      [](py::object /* self */) { return true; });
 
     m.attr("project") = project{};
 
     m.def(
         "indexed",
-        [](py::object item, bool flow) { return item.attr("indexed")("flow"_a = flow); },
+        [](py::object item, bool flow) {
+            return item.attr("indexed")("flow"_a = flow);
+        },
         "histogram"_a,
         "flow"_a = false,
         "Set up an iterator, returns a special accessor for bin info and content");

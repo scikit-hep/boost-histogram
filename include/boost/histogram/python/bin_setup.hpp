@@ -22,7 +22,8 @@ void bin_setup(py::class_<T> &b) {
         .def(py::self != py::self)
         .def("__repr__",
              [](const T &self) {
-                 return "<bin ["s + std::to_string(self.lower()) + ", "s + std::to_string(self.upper()) + "]>"s;
+                 return "<bin ["s + std::to_string(self.lower()) + ", "s
+                        + std::to_string(self.upper()) + "]>"s;
              })
 
         ;

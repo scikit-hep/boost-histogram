@@ -29,13 +29,16 @@ using namespace std::literals;
 inline void validate_metadata(metadata_t v) {
     try {
         py::cast<double>(v);
-        throw py::type_error("Numeric types not allowed for metatdata in the the constructor. Use .metadata after "
-                             "constructing instead if you *really* need numeric metadata.");
+        throw py::type_error(
+            "Numeric types not allowed for metatdata in the the constructor. Use "
+            ".metadata after "
+            "constructing instead if you *really* need numeric metadata.");
     } catch(const py::cast_error &) {
     }
 }
 
-/// Add a constructor for an axes, with smart handling for the metadata (will not allow numeric types)"
+/// Add a constructor for an axes, with smart handling for the metadata (will not allow
+/// numeric types)"
 template <class T, class... Args>
 decltype(auto) construct_axes() {
     return py::init([](Args... args, metadata_t v) {
@@ -47,7 +50,8 @@ decltype(auto) construct_axes() {
 
 /// Add helpers common to all types with a range of values
 template <class A>
-py::class_<bh::axis::interval_view<A>> register_axis_iv(py::module &m, const char *name) {
+py::class_<bh::axis::interval_view<A>> register_axis_iv(py::module &m,
+                                                        const char *name) {
     using A_iv               = bh::axis::interval_view<A>;
     py::class_<A_iv> axis_iv = py::class_<A_iv>(m, name, "Lightweight bin view");
 
@@ -59,11 +63,23 @@ py::class_<bh::axis::interval_view<A>> register_axis_iv(py::module &m, const cha
 /// Add items to an axis where the axis values are continious
 template <class A, class B>
 void add_to_axis(py::module m, const char *name, B &&axis, std::false_type) {
-    axis.def("bin", &A::bin, "The bin details (center, lower, upper)", "idx"_a, py::keep_alive<0, 1>());
+    axis.def("bin",
+             &A::bin,
+             "The bin details (center, lower, upper)",
+             "idx"_a,
+             py::keep_alive<0, 1>());
     axis.def(
-        "bins", [](const A &self, bool flow) { return axis_to_bins(self, flow); }, "flow"_a = false);
-    axis.def("index", py::vectorize(&A::index), "The index at a point(s) on the axis", "x"_a);
-    axis.def("value", py::vectorize(&A::value), "The value(s) for a fractional bin(s) in the axis", "i"_a);
+        "bins",
+        [](const A &self, bool flow) { return axis_to_bins(self, flow); },
+        "flow"_a = false);
+    axis.def("index",
+             py::vectorize(&A::index),
+             "The index at a point(s) on the axis",
+             "x"_a);
+    axis.def("value",
+             py::vectorize(&A::value),
+             "The value(s) for a fractional bin(s) in the axis",
+             "i"_a);
 
     axis.def(
         "edges",
@@ -75,7 +91,10 @@ void add_to_axis(py::module m, const char *name, B &&axis, std::false_type) {
         "centers",
         [](const A &ax) {
             py::array_t<double> centers((unsigned)ax.size());
-            std::transform(ax.begin(), ax.end(), centers.mutable_data(), [](const auto &bin) { return bin.center(); });
+            std::transform(ax.begin(),
+                           ax.end(),
+                           centers.mutable_data(),
+                           [](const auto &bin) { return bin.center(); });
             return centers;
         },
         "Return the bin centers");
@@ -85,13 +104,17 @@ void add_to_axis(py::module m, const char *name, B &&axis, std::false_type) {
     register_axis_iv<A>(m, name_iv.c_str());
 }
 
-/// Add items to an axis where the axis values are not continious (categories of strings, for example)
+/// Add items to an axis where the axis values are not continious (categories of
+/// strings, for example)
 template <class A, class B>
 void add_to_axis(py::module, const char *, B &&axis, std::true_type) {
     axis.def("bin", &A::bin, "The bin name", "idx"_a);
     axis.def(
-        "bins", [](const A &self, bool flow) { return axis_to_bins(self, flow); }, "flow"_a = false);
-    // Not that these really just don't work with string labels; they would work for numerical labels.
+        "bins",
+        [](const A &self, bool flow) { return axis_to_bins(self, flow); },
+        "flow"_a = false);
+    // Not that these really just don't work with string labels; they would work for
+    // numerical labels.
     axis.def("index", &A::index, "The index at a point on the axis", "x"_a);
     axis.def("value", &A::value, "The value for a fractional bin in the axis", "i"_a);
 }
@@ -146,7 +169,8 @@ py::class_<A> register_axis(py::module &m, const char *name, Args &&... args) {
                    name,
                    axis,
                    std::integral_constant < bool,
-                   std::is_reference<Result>::value || std::is_integral<Result>::value > {});
+                   std::is_reference<Result>::value
+                       || std::is_integral<Result>::value > {});
 
     axis.def(make_pickle<A>());
 

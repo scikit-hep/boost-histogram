@@ -15,7 +15,8 @@ namespace boost {
 namespace histogram {
 
 template <typename CharT, typename Traits, typename A, typename S>
-std::basic_ostream<CharT, Traits> &operator<<(std::basic_ostream<CharT, Traits> &os, const histogram<A, S> &h) {
+std::basic_ostream<CharT, Traits> &operator<<(std::basic_ostream<CharT, Traits> &os,
+                                              const histogram<A, S> &h) {
     os << "histogram(";
     h.for_each_axis([&](const auto &a) { os << "\n  " << a << ","; });
     os << (h.rank() ? "\n  " : " ") << "storage=" << storage::name<S>();

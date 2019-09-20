@@ -17,15 +17,18 @@
 namespace pybind11 {
 namespace detail {
 template <class... Ts>
-struct type_caster<bh::axis::variant<Ts...>> : variant_caster<bh::axis::variant<Ts...>> {};
+struct type_caster<bh::axis::variant<Ts...>>
+    : variant_caster<bh::axis::variant<Ts...>> {};
 } // namespace detail
 } // namespace pybind11
 
 /// Utility to convert an axis to edges array
 template <class A>
 py::array_t<double> axis_to_edges(const A &ax, bool flow) {
-    unsigned overflow  = flow && (bh::axis::traits::options(ax) & bh::axis::option::underflow);
-    unsigned underflow = flow && (bh::axis::traits::options(ax) & bh::axis::option::overflow);
+    unsigned overflow
+        = flow && (bh::axis::traits::options(ax) & bh::axis::option::underflow);
+    unsigned underflow
+        = flow && (bh::axis::traits::options(ax) & bh::axis::option::overflow);
 
     py::array_t<double> edges((unsigned)ax.size() + 1u + overflow + underflow);
 
@@ -34,8 +37,10 @@ py::array_t<double> axis_to_edges(const A &ax, bool flow) {
 
     edges.mutable_at(0u + underflow) = ax.bin(0).lower();
 
-    std::transform(
-        ax.begin(), ax.end(), edges.mutable_data() + 1u + underflow, [](const auto &bin) { return bin.upper(); });
+    std::transform(ax.begin(),
+                   ax.end(),
+                   edges.mutable_data() + 1u + underflow,
+                   [](const auto &bin) { return bin.upper(); });
 
     if(overflow)
         edges.mutable_at(edges.size() - 1) = ax.bin(ax.size()).upper();
@@ -45,9 +50,12 @@ py::array_t<double> axis_to_edges(const A &ax, bool flow) {
 
 template <class A>
 decltype(auto) axis_to_bins(const A &self, bool flow) {
-    std::vector<bh::python::remove_cvref_t<decltype(self.bin(std::declval<int>()))>> out;
-    bool overflow  = flow && (bh::axis::traits::options(self) & bh::axis::option::underflow);
-    bool underflow = flow && (bh::axis::traits::options(self) & bh::axis::option::overflow);
+    std::vector<bh::python::remove_cvref_t<decltype(self.bin(std::declval<int>()))>>
+        out;
+    bool overflow
+        = flow && (bh::axis::traits::options(self) & bh::axis::option::underflow);
+    bool underflow
+        = flow && (bh::axis::traits::options(self) & bh::axis::option::overflow);
 
     out.reserve((size_t)bh::axis::traits::extent(self));
 
@@ -62,9 +70,13 @@ inline bool PyObject_Check(void *value) { return value != nullptr; }
 class metadata_t : public py::object {
     PYBIND11_OBJECT_DEFAULT(metadata_t, object, PyObject_Check);
 
-    bool operator==(const metadata_t &other) const { return py::cast<bool>(this->attr("__eq__")(other)); }
+    bool operator==(const metadata_t &other) const {
+        return py::cast<bool>(this->attr("__eq__")(other));
+    }
 
-    bool operator!=(const metadata_t &other) const { return py::cast<bool>(this->attr("__ne__")(other)); }
+    bool operator!=(const metadata_t &other) const {
+        return py::cast<bool>(this->attr("__ne__")(other));
+    }
 };
 
 namespace axis {
@@ -72,10 +84,14 @@ namespace axis {
 // These match the Python names
 
 using _regular_uoflow = bh::axis::regular<double, bh::use_default, metadata_t>;
-using _regular_uflow  = bh::axis::regular<double, bh::use_default, metadata_t, bh::axis::option::underflow_t>;
-using _regular_oflow  = bh::axis::regular<double, bh::use_default, metadata_t, bh::axis::option::overflow_t>;
-using _regular_noflow = bh::axis::regular<double, bh::use_default, metadata_t, bh::axis::option::none_t>;
-using _regular_growth = bh::axis::regular<double, bh::use_default, metadata_t, bh::axis::option::growth_t>;
+using _regular_uflow  = bh::axis::
+    regular<double, bh::use_default, metadata_t, bh::axis::option::underflow_t>;
+using _regular_oflow = bh::axis::
+    regular<double, bh::use_default, metadata_t, bh::axis::option::overflow_t>;
+using _regular_noflow
+    = bh::axis::regular<double, bh::use_default, metadata_t, bh::axis::option::none_t>;
+using _regular_growth = bh::axis::
+    regular<double, bh::use_default, metadata_t, bh::axis::option::growth_t>;
 
 using circular     = bh::axis::circular<double, metadata_t>;
 using regular_log  = bh::axis::regular<double, bh::axis::transform::log, metadata_t>;
@@ -83,21 +99,27 @@ using regular_sqrt = bh::axis::regular<double, bh::axis::transform::sqrt, metada
 using regular_pow  = bh::axis::regular<double, bh::axis::transform::pow, metadata_t>;
 
 using _variable_uoflow = bh::axis::variable<double, metadata_t>;
-using _variable_uflow  = bh::axis::variable<double, metadata_t, bh::axis::option::underflow_t>;
-using _variable_oflow  = bh::axis::variable<double, metadata_t, bh::axis::option::overflow_t>;
-using _variable_noflow = bh::axis::variable<double, metadata_t, bh::axis::option::none_t>;
+using _variable_uflow
+    = bh::axis::variable<double, metadata_t, bh::axis::option::underflow_t>;
+using _variable_oflow
+    = bh::axis::variable<double, metadata_t, bh::axis::option::overflow_t>;
+using _variable_noflow
+    = bh::axis::variable<double, metadata_t, bh::axis::option::none_t>;
 
 using _integer_uoflow = bh::axis::integer<int, metadata_t>;
-using _integer_uflow  = bh::axis::integer<int, metadata_t, bh::axis::option::underflow_t>;
-using _integer_oflow  = bh::axis::integer<int, metadata_t, bh::axis::option::overflow_t>;
+using _integer_uflow
+    = bh::axis::integer<int, metadata_t, bh::axis::option::underflow_t>;
+using _integer_oflow = bh::axis::integer<int, metadata_t, bh::axis::option::overflow_t>;
 using _integer_noflow = bh::axis::integer<int, metadata_t, bh::axis::option::none_t>;
 using _integer_growth = bh::axis::integer<int, metadata_t, bh::axis::option::growth_t>;
 
-using _category_int        = bh::axis::category<int, metadata_t>;
-using _category_int_growth = bh::axis::category<int, metadata_t, bh::axis::option::growth_t>;
+using _category_int = bh::axis::category<int, metadata_t>;
+using _category_int_growth
+    = bh::axis::category<int, metadata_t, bh::axis::option::growth_t>;
 
-using _category_str        = bh::axis::category<std::string, metadata_t>;
-using _category_str_growth = bh::axis::category<std::string, metadata_t, bh::axis::option::growth_t>;
+using _category_str = bh::axis::category<std::string, metadata_t>;
+using _category_str_growth
+    = bh::axis::category<std::string, metadata_t, bh::axis::option::growth_t>;
 
 } // namespace axis
 

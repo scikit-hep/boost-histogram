@@ -55,9 +55,9 @@ void stream_options(OStream &os, const unsigned bits) {
     bool overflow  = bits & axis::option::overflow;
     bool growth    = bits & axis::option::growth;
 
-    // Axes types (circular) that have a single flow bin should report flow=False if turned off
-    // But currently, flow=False is the only supported circular axis type
-    // if circular, then underflow = overflow = underflow && overflow;
+    // Axes types (circular) that have a single flow bin should report flow=False if
+    // turned off But currently, flow=False is the only supported circular axis type if
+    // circular, then underflow = overflow = underflow && overflow;
 
     if(circular)
         return;
@@ -97,18 +97,21 @@ template <class T>
 class polymorphic_bin;
 
 template <class... Ts>
-std::basic_ostream<Ts...> &operator<<(std::basic_ostream<Ts...> &os, const null_type &) {
+std::basic_ostream<Ts...> &operator<<(std::basic_ostream<Ts...> &os,
+                                      const null_type &) {
     return os; // do nothing
 }
 
 template <class... Ts, class U>
-std::basic_ostream<Ts...> &operator<<(std::basic_ostream<Ts...> &os, const interval_view<U> &i) {
+std::basic_ostream<Ts...> &operator<<(std::basic_ostream<Ts...> &os,
+                                      const interval_view<U> &i) {
     os << "[" << i.lower() << ", " << i.upper() << ")";
     return os;
 }
 
 template <class... Ts, class U>
-std::basic_ostream<Ts...> &operator<<(std::basic_ostream<Ts...> &os, const polymorphic_bin<U> &i) {
+std::basic_ostream<Ts...> &operator<<(std::basic_ostream<Ts...> &os,
+                                      const polymorphic_bin<U> &i) {
     if(i.is_discrete())
         os << static_cast<double>(i);
     else
@@ -117,10 +120,11 @@ std::basic_ostream<Ts...> &operator<<(std::basic_ostream<Ts...> &os, const polym
 }
 
 template <class... Ts, class... Us>
-std::basic_ostream<Ts...> &operator<<(std::basic_ostream<Ts...> &os, const regular<Us...> &a) {
+std::basic_ostream<Ts...> &operator<<(std::basic_ostream<Ts...> &os,
+                                      const regular<Us...> &a) {
     bool circular = a.options() & axis::option::circular;
-    os << (circular ? "circular" : "regular") << detail::axis_suffix(a.transform()) << "(" << a.size() << ", "
-       << a.value(0) << ", " << a.value(a.size());
+    os << (circular ? "circular" : "regular") << detail::axis_suffix(a.transform())
+       << "(" << a.size() << ", " << a.value(0) << ", " << a.value(a.size());
     detail::stream_metadata(os, a.metadata());
     detail::stream_options(os, a.options());
     detail::stream_transform(os, a.transform());
@@ -129,7 +133,8 @@ std::basic_ostream<Ts...> &operator<<(std::basic_ostream<Ts...> &os, const regul
 }
 
 template <class... Ts, class... Us>
-std::basic_ostream<Ts...> &operator<<(std::basic_ostream<Ts...> &os, const integer<Us...> &a) {
+std::basic_ostream<Ts...> &operator<<(std::basic_ostream<Ts...> &os,
+                                      const integer<Us...> &a) {
     os << "integer(" << a.value(0) << ", " << a.value(a.size());
     detail::stream_metadata(os, a.metadata());
     detail::stream_options(os, a.options());
@@ -138,7 +143,8 @@ std::basic_ostream<Ts...> &operator<<(std::basic_ostream<Ts...> &os, const integ
 }
 
 template <class... Ts, class... Us>
-std::basic_ostream<Ts...> &operator<<(std::basic_ostream<Ts...> &os, const variable<Us...> &a) {
+std::basic_ostream<Ts...> &operator<<(std::basic_ostream<Ts...> &os,
+                                      const variable<Us...> &a) {
     os << "variable([" << a.value(0);
     for(index_type i = 1, n = a.size(); i <= n; ++i) {
         os << ", " << a.value(i);
@@ -151,7 +157,8 @@ std::basic_ostream<Ts...> &operator<<(std::basic_ostream<Ts...> &os, const varia
 }
 
 template <class... Ts, class... Us>
-std::basic_ostream<Ts...> &operator<<(std::basic_ostream<Ts...> &os, const category<Us...> &a) {
+std::basic_ostream<Ts...> &operator<<(std::basic_ostream<Ts...> &os,
+                                      const category<Us...> &a) {
     os << "category([";
     for(index_type i = 0, n = a.size(); i < n; ++i) {
         detail::stream_value(os, a.value(i));
@@ -164,16 +171,18 @@ std::basic_ostream<Ts...> &operator<<(std::basic_ostream<Ts...> &os, const categ
 }
 
 template <class... Ts, class... Us>
-std::basic_ostream<Ts...> &operator<<(std::basic_ostream<Ts...> &os, const variant<Us...> &v) {
+std::basic_ostream<Ts...> &operator<<(std::basic_ostream<Ts...> &os,
+                                      const variant<Us...> &v) {
     visit(
         [&os](const auto &x) {
             using A = std::decay_t<decltype(x)>;
-            detail::static_if<detail::is_streamable<A>>([&os](const auto &x) { os << x; },
-                                                        [](const auto &) {
-                                                            BOOST_THROW_EXCEPTION(std::runtime_error(detail::cat(
-                                                                detail::type_name<A>(), " is not streamable")));
-                                                        },
-                                                        x);
+            detail::static_if<detail::is_streamable<A>>(
+                [&os](const auto &x) { os << x; },
+                [](const auto &) {
+                    BOOST_THROW_EXCEPTION(std::runtime_error(
+                        detail::cat(detail::type_name<A>(), " is not streamable")));
+                },
+                x);
         },
         v);
     return os;

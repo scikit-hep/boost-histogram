@@ -30,7 +30,8 @@ py::class_<A> register_storage(py::module &m, const char *name, const char *desc
 
 /// Add helpers to the unlimited storage type
 template <>
-py::class_<storage::unlimited> register_storage(py::module &m, const char *name, const char *desc) {
+py::class_<storage::unlimited>
+register_storage(py::module &m, const char *name, const char *desc) {
     using A = storage::unlimited; // match code above
 
     py::class_<A> storage(m, name, desc);
