@@ -111,13 +111,6 @@ void register_axes(py::module &ax) {
         "growth. "
         "Passing 'flow' will override underflow and overflow at the same time.");
 
-    ax.attr("regular") = factory_meta_py(ax.attr("_make_regular"),
-                                         py::make_tuple(ax.attr("_regular_uoflow"),
-                                                        ax.attr("_regular_uflow"),
-                                                        ax.attr("_regular_oflow"),
-                                                        ax.attr("_regular_noflow"),
-                                                        ax.attr("_regular_growth")));
-
     register_axis<axis::circular>(ax, "circular", "Evenly spaced bins with wraparound")
         .def(construct_axes<axis::circular, unsigned, double, double>(),
              "n"_a,
@@ -225,12 +218,6 @@ void register_axes(py::module &ax) {
         "overflow. "
         "Passing 'flow' will override underflow and overflow at the same time.");
 
-    ax.attr("variable") = factory_meta_py(ax.attr("_make_variable"),
-                                          py::make_tuple(ax.attr("_variable_uoflow"),
-                                                         ax.attr("_variable_uflow"),
-                                                         ax.attr("_variable_oflow"),
-                                                         ax.attr("_variable_noflow")));
-
     register_axis<axis::_integer_uoflow>(ax, "_integer_uoflow", "Contigious integers")
         .def(construct_axes<axis::_integer_uoflow, int, int>(),
              "min"_a,
@@ -311,13 +298,6 @@ void register_axes(py::module &ax) {
         "growth. "
         "Passing 'flow' will override underflow and overflow at the same time.");
 
-    ax.attr("integer") = factory_meta_py(ax.attr("_make_integer"),
-                                         py::make_tuple(ax.attr("_integer_uoflow"),
-                                                        ax.attr("_integer_uflow"),
-                                                        ax.attr("_integer_oflow"),
-                                                        ax.attr("_integer_noflow"),
-                                                        ax.attr("_integer_growth")));
-
     register_axis<axis::_category_int>(ax, "_category_int", "Text label bins")
         .def(construct_axes<axis::_category_int, std::vector<int>>(),
              "labels"_a,
@@ -374,11 +354,4 @@ void register_axes(py::module &ax) {
         "growth"_a   = false,
         "Make an category axis with a nice keyword argument for growth. Int and string "
         "supported.");
-
-    ax.attr("category")
-        = factory_meta_py(ax.attr("_make_category"),
-                          py::make_tuple(ax.attr("_category_int"),
-                                         ax.attr("_category_int_growth"),
-                                         ax.attr("_category_str"),
-                                         ax.attr("_category_str_growth")));
 }

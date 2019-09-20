@@ -42,7 +42,6 @@ ext_modules = [
         [
             "src/module.cpp",
             "src/register_version.cpp",
-            "src/register_utils.cpp",
             "src/register_algorithm.cpp",
             "src/register_axis.cpp",
             "src/register_polymorphic_bin.cpp",
