@@ -66,7 +66,6 @@ counts = hist.view()
     * `.options()`: The options set on the axis (`bh.axis.options` bitfields)
     * `.edges(flow=False)`: The N+1 bin edges (if continuous)
     * `.centers(flow=False)`: The N bin centers (if continuous)
-    * `.update(value)`: Grow an axis to include `value` if needed and able
     * `.index(values)`: The index at a point (or points) on the axis
     * `.value(index)`: The value for a fractional bin in the axis
 * Many storage types
@@ -166,12 +165,12 @@ cmake -S . -B build
 cmake --build build -j4
 ```
 
-Run the unit tests (requires pytest and numpy). Use `ctest` or `make test`, from the build directory, like this:
+Run the unit tests (requires pytest and numpy). Use the `test` target from anywhere, or use `ctest` from the build directory, like this:
 
 ```bash
 ctest
-# or
-python -m pytest
+# Directly running with Python pytest works too
+python3 -m pytest
 ```
 
 The tests require `numpy`, `pytest`, and `pytest-benchmark`. If you are using Python 2, you will need `futures` as well.
@@ -202,6 +201,48 @@ end
 ```
 
 </details>
+
+<details><summary>Formatting(click to expand)</summary>
+
+Code should be well formatted; CI will check it and one of the authors can help reformat your code. If you want to check it yourself, several tools help.
+
+#### Clang-format
+
+There are two scripts to help you run clang-format. They change the contents in-place.
+They are:
+
+```bash
+./scripts/check_style.sh        # If you have the same clang-format version as unibeautify
+./scripts/check_style_docker.sh # If you have Docker
+```
+
+Select one, or use your editor's clang-format integration (especially if it happens to be unibeautify).
+
+#### Black
+
+To run the Python Software Foundation's Black formatter, make sure it is installed:
+
+```bash
+python3 -m pip install black
+```
+
+Then run:
+
+```bash
+python3 -m black .
+```
+
+Black also support [pre-commit](https://pre-commit.com). Just [install pre-commit](https://pre-commit.com/#install), then run:
+
+```bash
+pre-commit install
+```
+
+Now Black will check all changed Python files every time you git commit.
+
+</details>
+
+
 
 ## Talks and other documentation/tutorial sources
 
