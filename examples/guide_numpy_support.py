@@ -1,15 +1,15 @@
 from __future__ import print_function
 import sys
 import os
+
 sys.path.append(os.getcwd())
 
-#[ guide_numpy_support
+# [ guide_numpy_support
 import histogram as hg
 import numpy as np
 
 # create 2d-histogram with two axes with 10 equidistant bins from -3 to 3
-h = hg.histogram(hg.axis.regular(10, -3, 3, "x"),
-                 hg.axis.regular(10, -3, 3, "y"))
+h = hg.histogram(hg.axis.regular(10, -3, 3, "x"), hg.axis.regular(10, -3, 3, "y"))
 
 # generate some numpy arrays with data to fill into histogram,
 # in this case normal distributed random numbers in x and y
@@ -17,7 +17,7 @@ x = np.random.randn(1000)
 y = 0.5 * np.random.randn(1000)
 
 # fill histogram with numpy arrays, this is very fast
-h(x, y) # call looks the same as if x, y were values
+h(x, y)  # call looks the same as if x, y were values
 
 # get representations of the bin edges as Numpy arrays; this representation
 # differs from `list(h.axis(0))` as explained in the next example
@@ -28,11 +28,12 @@ y = np.array(h.axis(1))
 count_matrix = np.asarray(h)
 
 # cut off the under- and overflow bins to not confuse matplotib (no copy)
-reduced_count_matrix = count_matrix[:-2,:-2]
+reduced_count_matrix = count_matrix[:-2, :-2]
 
 try:
     # draw the count matrix
     import matplotlib.pyplot as plt
+
     plt.pcolor(x, y, reduced_count_matrix.T)
     plt.xlabel(h.axis(0).label)
     plt.ylabel(h.axis(1).label)
@@ -56,4 +57,4 @@ except ImportError:
     #  [ 0  0  0  0  0  2  0  0  0  0  0  0]
     #  [ 0  0  0  0  0  1  0  0  0  0  0  0]]
 
-#]
+# ]
