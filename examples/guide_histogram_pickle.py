@@ -1,14 +1,15 @@
 from __future__ import print_function
 import sys
 import os
+
 sys.path.append(os.getcwd())
 
-#[ guide_histogram_pickle
+# [ guide_histogram_pickle
 import histogram as hg
 import pickle
 
 h1 = hg.histogram(hg.axis.regular(2, -1, 1))
-h2 = hg.histogram(h1) # creates copy
+h2 = hg.histogram(h1)  # creates copy
 h1(-0.5)
 h2(0.5)
 
@@ -28,4 +29,4 @@ with open("h4_saved.pkl", "rb") as f:
 print(h4 == h5)
 # prints: True
 
-#]
+# ]

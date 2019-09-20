@@ -2,8 +2,7 @@ import boost_histogram as bh
 import numpy as np
 
 # create 2d-histogram with two axes with 10 equidistant bins from -3 to 3
-h = bh.histogram(bh.axis.regular(10, -3, 3, "x"),
-                 bh.axis.regular(10, -3, 3, "y"))
+h = bh.histogram(bh.axis.regular(10, -3, 3, "x"), bh.axis.regular(10, -3, 3, "y"))
 
 # generate some numpy arrays with data to fill into histogram,
 # in this case normal distributed random numbers in x and y
@@ -23,6 +22,7 @@ count_matrix = np.asarray(h)
 try:
     # draw the count matrix
     import matplotlib.pyplot as plt
+
     plt.pcolor(x, y, count_matrix.T)
     plt.xlabel(h.axis(0).metadata)
     plt.ylabel(h.axis(1).metadata)
@@ -47,4 +47,3 @@ except ImportError:
     #  [ 0  0  0  1  2  3  1  0  0  0  0  0]
     #  [ 0  0  0  0  0  2  0  0  0  0  0  0]
     #  [ 0  0  0  0  0  1  0  0  0  0  0  0]]
-
