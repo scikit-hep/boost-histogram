@@ -20,7 +20,6 @@
 #include <boost/histogram/python/serializion.hpp>
 #include <boost/histogram/python/shared_histogram.hpp>
 #include <boost/histogram/python/storage.hpp>
-#include <boost/histogram/python/typetools.hpp>
 #include <boost/histogram/python/variant.hpp>
 #include <boost/histogram/unsafe_access.hpp>
 #include <boost/mp11.hpp>
@@ -35,11 +34,6 @@
 namespace detail {
 template <class T, class... Us>
 using is_one_of = boost::mp11::mp_contains<boost::mp11::mp_list<Us...>, T>;
-
-// this or something similar should move to boost::histogram::axis::traits
-template <class Axis>
-using get_axis_value_type
-    = boost::histogram::python::remove_cvref_t<decltype(std::declval<Axis>().value(0))>;
 
 template <class T>
 bool is_pyiterable(const T &t) {
@@ -319,8 +313,8 @@ register_histogram(py::module &m, const char *name, const char *desc) {
 
                 using storage_t = typename histogram_t::storage_type;
                 bh::detail::static_if<detail::is_one_of<storage_t,
-                                                        storage::profile,
-                                                        storage::weighted_profile>>(
+                                                        storage::mean,
+                                                        storage::weighted_mean>>(
                     [&kwargs, &vargs, &weight, &has_weight](auto &h) {
                         auto s = required_arg(kwargs, "sample");
                         finalize_args(kwargs);

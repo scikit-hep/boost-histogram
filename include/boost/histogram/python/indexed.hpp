@@ -8,8 +8,9 @@
 #include <boost/histogram/python/pybind11.hpp>
 
 #include <boost/histogram/indexed.hpp>
-#include <boost/histogram/python/typetools.hpp>
 #include <pybind11/numpy.h>
+
+#include <type_traits>
 #include <vector>
 
 template <class T>
@@ -110,7 +111,7 @@ template <py::return_value_policy Policy = py::return_value_policy::reference_in
 py::iterator make_repeatable_iterator(histogram_ref_t &histogram,
                                       bh::coverage cov,
                                       Extra &&... extra) {
-    using histogram_t = bh::python::remove_cvref_t<histogram_ref_t>;
+    using histogram_t = std::decay_t<histogram_ref_t>;
     using state       = repeatable_indexed<histogram_t>;
 
     if(!py::detail::get_type_info(typeid(state), false)) {
