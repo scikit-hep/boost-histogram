@@ -38,7 +38,7 @@ def get_version(version_file):
 
 release = get_version(
     os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "..", "boost", "histogram_version.py")
+        os.path.join(os.path.dirname(__file__), "..", "boost_histogram", "version.py")
     )
 )
 
