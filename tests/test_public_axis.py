@@ -202,7 +202,6 @@ class TestRegular(Axis):
         c = (v[:-1] + v[1:]) / 2
         assert_allclose(a.centers(), c)
 
-
     def test_index(self):
         a = regular(4, 1.0, 2.0)
 
