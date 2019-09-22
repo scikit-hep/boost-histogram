@@ -28,8 +28,8 @@ ABC = abc.ABCMeta("ABC", (object,), {"__slots__": ()})
 # regular(..., noflow=True) -> _regular_noflow(...)
 # label -> metadata
 # len(ax) -> ax.size(flow=False)
-# ax.extent() -> ax.size(flow=True)
-# ax[i] -> ax.bin(i) # (.lower() and .upper() instead of [0] and [1]) (may return)
+# ax.extent() -> ax.extent
+# ax[i] -> ax.bin(i) # ([0] and [1] instead of [0] and [1]) (may return)
 # Circular is very different (Boost::Histogram change)
 # Variable and category take an array/list now
 
@@ -147,8 +147,8 @@ class TestRegular(Axis):
         # CLASSIC: Not explicit
         # assert len(a) == 4
 
-        assert a.size() == 4
-        assert a.size(flow=True) == 6
+        assert a.size == 4
+        assert a.extent == 6
 
     def test_repr(self):
         ax = regular(4, 1.1, 2.2)
@@ -176,10 +176,10 @@ class TestRegular(Axis):
         v = [1.0, 1.25, 1.5, 1.75, 2.0]
         a = regular(4, 1.0, 2.0)
         for i in range(4):
-            a.bin(i).lower() == approx(v[i])
-            a.bin(i).upper() == approx(v[i + 1])
-        assert a.bin(-1).lower() == -float("infinity")
-        assert a.bin(4).upper() == float("infinity")
+            a.bin(i)[0] == approx(v[i])
+            a.bin(i)[1] == approx(v[i + 1])
+        assert a.bin(-1)[0] == -float("infinity")
+        assert a.bin(4)[1] == float("infinity")
 
         # CLASSIC: bins outside the range now have different behavior
         # with pytest.raises(IndexError):
@@ -187,18 +187,21 @@ class TestRegular(Axis):
         # with pytest.raises(IndexError):
         #     a.bin(5)
 
-        assert a.bin(-2).lower() == -float("infinity")
-        assert a.bin(-2).upper() == -float("infinity")
-        assert a.bin(5).lower() == float("infinity")
-        assert a.bin(5).upper() == float("infinity")
+        assert a.bin(-2)[0] == -float("infinity")
+        assert a.bin(-2)[1] == -float("infinity")
+        assert a.bin(5)[0] == float("infinity")
+        assert a.bin(5)[1] == float("infinity")
 
     def test_iter(self):
-        v = np.array([1.0, 1.25, 1.5, 1.75, 2.0])
-        a = regular(4, 1.0, 2.0)
+        v = np.array([1.0, 1.5, 2.0])
+        a = regular(2, 1.0, 2.0)
+        assert_allclose(tuple(a), ((1, 1.5), (1.5, 2)))
+
         assert_array_equal(a.edges(), v)
 
         c = (v[:-1] + v[1:]) / 2
         assert_allclose(a.centers(), c)
+
 
     def test_index(self):
         a = regular(4, 1.0, 2.0)
@@ -244,9 +247,9 @@ class TestRegular(Axis):
         assert a.index(100) == 2
         assert a.index(1000) == 2
 
-        assert a.bin(0).lower() == approx(1e0)
-        assert a.bin(1).lower() == approx(1e1)
-        assert a.bin(1).upper() == approx(1e2)
+        assert a.bin(0)[0] == approx(1e0)
+        assert a.bin(1)[0] == approx(1e1)
+        assert a.bin(1)[1] == approx(1e2)
 
     def test_pow_transform(self):
         a = regular_pow(2, 1.0, 9.0, power=0.5)
@@ -260,9 +263,9 @@ class TestRegular(Axis):
         assert a.index(9) == 2
         assert a.index(1000) == 2
 
-        assert a.bin(0).lower(), approx(1.0)
-        assert a.bin(1).lower(), approx(4.0)
-        assert a.bin(1).upper(), approx(9.0)
+        assert a.bin(0)[0], approx(1.0)
+        assert a.bin(1)[0], approx(4.0)
+        assert a.bin(1)[1], approx(9.0)
 
 
 class TestCircular(Axis):
@@ -299,10 +302,10 @@ class TestCircular(Axis):
             circular(4, 0.0)
 
     def test_len(self):
-        assert circular(4, 1.0).size() == 4
-        assert circular(4, 1.0).size(flow=True) == 5
-        assert circular(4, 0.0, 1.0).size() == 4
-        assert circular(4, 0.0, 1.0).size(flow=True) == 5
+        assert circular(4, 1.0).size == 4
+        assert circular(4, 1.0).extent == 5
+        assert circular(4, 0.0, 1.0).size == 4
+        assert circular(4, 0.0, 1.0).extent == 5
 
     def test_repr(self):
         ax = circular(4, 1.1, 2.2)
@@ -324,8 +327,8 @@ class TestCircular(Axis):
         a = circular(4, 1, 1 + np.pi * 2)
 
         for i in range(4):
-            assert a.bin(i).lower() == v[i]
-            assert a.bin(i).upper() == v[i + 1]
+            assert a.bin(i)[0] == v[i]
+            assert a.bin(i)[1] == v[i + 1]
 
         # CLASSIC: Out of range used to raise
         # TODO: test out of range
@@ -417,8 +420,8 @@ class TestVariable(Axis):
         assert a != variable([-0.1, 0.1])
 
     def test_len(self):
-        assert variable([-0.1, 0.2, 0.3]).size() == 2
-        assert variable([-0.1, 0.2, 0.3]).size(flow=True) == 4
+        assert variable([-0.1, 0.2, 0.3]).size == 2
+        assert variable([-0.1, 0.2, 0.3]).extent == 4
 
     def test_repr(self):
         ax = variable([-0.1, 0.2])
@@ -432,18 +435,18 @@ class TestVariable(Axis):
         a = variable(v)
 
         for i in range(2):
-            assert a.bin(i).lower() == v[i]
-            assert a.bin(i).upper() == v[i + 1]
+            assert a.bin(i)[0] == v[i]
+            assert a.bin(i)[1] == v[i + 1]
 
-        assert a.bin(-1).lower() == -float("infinity")
-        assert a.bin(-1).upper() == v[0]
+        assert a.bin(-1)[0] == -float("infinity")
+        assert a.bin(-1)[1] == v[0]
 
-        assert a.bin(2).lower() == v[2]
-        assert a.bin(2).upper() == float("infinity")
+        assert a.bin(2)[0] == v[2]
+        assert a.bin(2)[1] == float("infinity")
 
         # CLASSIC: out of range used to throw
-        assert a.bin(-2).upper() == -float("infinity")
-        assert a.bin(3).lower() == float("infinity")
+        assert a.bin(-2)[1] == -float("infinity")
+        assert a.bin(3)[0] == float("infinity")
 
     def test_iter(self):
         v = np.array([-0.1, 0.2, 0.3])
@@ -528,12 +531,12 @@ class TestInteger:
         assert integer(-1, 2, flow=True) != integer(-1, 2, flow=False)
 
     def test_len(self):
-        assert integer(-1, 3, flow=True).size() == 4
-        assert integer(-1, 3, flow=True).size(flow=True) == 6
-        assert integer(-1, 3, flow=False).size() == 4
-        assert integer(-1, 3, flow=False).size(flow=True) == 4
-        assert integer(-1, 3, growth=True).size() == 4
-        assert integer(-1, 3, growth=True).size(flow=True) == 4
+        assert integer(-1, 3, flow=True).size == 4
+        assert integer(-1, 3, flow=True).extent == 6
+        assert integer(-1, 3, flow=False).size == 4
+        assert integer(-1, 3, flow=False).extent == 4
+        assert integer(-1, 3, growth=True).size == 4
+        assert integer(-1, 3, growth=True).extent == 4
 
     def test_repr(self):
         a = integer(-1, 1)
@@ -563,9 +566,9 @@ class TestInteger:
         assert a.bin(5) == 2 ** 31 - 1
 
     def test_iter(self):
-        v = np.array([-1, 0, 1, 2])
+        v = (-1, 0, 1, 2)
         a = integer(-1, 3)
-        assert_array_equal(a.bins(), v)
+        assert_array_equal(tuple(a), v)
 
     def test_index(self):
         a = integer(-1, 3)
@@ -621,8 +624,8 @@ class TestCategory(Axis):
         assert ax.options() == bhao.growth
 
     def test_len(self):
-        assert category([1, 2, 3]).size() == 3
-        assert category([1, 2, 3]).size(flow=True) == 4
+        assert category([1, 2, 3]).size == 3
+        assert category([1, 2, 3]).extent == 4
 
     def test_repr(self):
         ax = category([1, 2, 3])
