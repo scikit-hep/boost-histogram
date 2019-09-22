@@ -1,7 +1,6 @@
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
 import sys
-import re
 import setuptools
 from setuptools import find_packages
 
@@ -17,17 +16,8 @@ try:
 except ImportError:
     print("Numpy not found, parallel compile not available")
 
-RE_VERSION = re.compile(r"""^__version__\s*=\s*['"]([^'"]*)['"]""", re.MULTILINE)
-
-
-def get_version(version_file):
-    with open(version_file) as f:
-        contents = f.read()
-    mo = RE_VERSION.search(contents)
-    if not mo:
-        raise RuntimeError("Unable to find version string in {}.".format(version_file))
-
-    return mo.group(1)
+# get __version__
+exec(open("boost_histogram/version.py").read())
 
 
 def get_description(readme_file):
@@ -125,7 +115,7 @@ extras = {
 
 setup(
     name="boost-histogram",
-    version=get_version("boost_histogram/version.py"),
+    version=__version__,
     author="Henry Schreiner",
     author_email="hschrein@cern.ch",
     maintainer="Henry Schreiner",
