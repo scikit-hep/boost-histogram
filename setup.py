@@ -1,9 +1,25 @@
+from __future__ import division
+from setuptools import find_packages
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
-import sys
 import setuptools
-from setuptools import find_packages
+import sys
+import os
 
+# Change to using pathlib when Python2 support is dropped
+class Path(str):
+    def __truediv__(self, s):
+        return self.__class__(os.path.join(self, s))
+
+
+# Useful paths
+BASE_DIR = Path(os.path.abspath(os.path.dirname(__file__)))
+VERSION_FILE = BASE_DIR / "boost_histogram" / "version.py"
+README_FILE = BASE_DIR / "README.md"
+SRC_DIR = BASE_DIR / "src"
+EXTERN_DIR = BASE_DIR / "extern"
+
+# Official trick to avoid pytest-runner as requirement if not needed
 needs_pytest = {"pytest", "test", "ptr"}.intersection(sys.argv)
 pytest_runner = ["pytest-runner"] if needs_pytest else []
 
@@ -16,42 +32,42 @@ try:
 except ImportError:
     print("Numpy not found, parallel compile not available")
 
-# get __version__
-exec(open("boost_histogram/version.py").read())
+# Read __version__ into about
+about = {}
+with open(VERSION_FILE) as f:
+    exec(f.read(), about)
 
-
-def get_description(readme_file):
-    with open("README.md", "rb") as f:
-        result = f.read().decode("utf8", "ignore")
-    return result
+# Read in readme
+with open(README_FILE, "rb") as f:
+    description = f.read().decode("utf8", "ignore")
 
 
 ext_modules = [
     Extension(
         "boost_histogram.core",
         [
-            "src/module.cpp",
-            "src/register_version.cpp",
-            "src/register_algorithm.cpp",
-            "src/register_axis.cpp",
-            "src/register_polymorphic_bin.cpp",
-            "src/register_shared_histogram.cpp",
-            "src/register_general_histograms.cpp",
-            "src/register_make_histogram.cpp",
-            "src/register_storage.cpp",
-            "src/register_accumulators.cpp",
+            SRC_DIR / "module.cpp",
+            SRC_DIR / "register_version.cpp",
+            SRC_DIR / "register_algorithm.cpp",
+            SRC_DIR / "register_axis.cpp",
+            SRC_DIR / "register_polymorphic_bin.cpp",
+            SRC_DIR / "register_shared_histogram.cpp",
+            SRC_DIR / "register_general_histograms.cpp",
+            SRC_DIR / "register_make_histogram.cpp",
+            SRC_DIR / "register_storage.cpp",
+            SRC_DIR / "register_accumulators.cpp",
         ],
         include_dirs=[
-            "include",
-            "extern/assert/include",
-            "extern/callable_traits/include",
-            "extern/config/include",
-            "extern/core/include",
-            "extern/histogram/include",
-            "extern/mp11/include",
-            "extern/pybind11/include",
-            "extern/throw_exception/include",
-            "extern/variant2/include",
+            BASE_DIR / "include",
+            EXTERN_DIR / "assert/include",
+            EXTERN_DIR / "callable_traits/include",
+            EXTERN_DIR / "config/include",
+            EXTERN_DIR / "core/include",
+            EXTERN_DIR / "histogram/include",
+            EXTERN_DIR / "mp11/include",
+            EXTERN_DIR / "pybind11/include",
+            EXTERN_DIR / "throw_exception/include",
+            EXTERN_DIR / "variant2/include",
         ],
         language="c++",
     )
@@ -115,14 +131,14 @@ extras = {
 
 setup(
     name="boost-histogram",
-    version=__version__,
+    version=about["__version__"],
     author="Henry Schreiner",
     author_email="hschrein@cern.ch",
     maintainer="Henry Schreiner",
     maintainer_email="hschrein@cern.ch",
     url="https://github.com/scikit-hep/boost-histogram",
     description="The Boost::Histogram Python wrapper.",
-    long_description=get_description("README.md"),
+    long_description=description,
     long_description_content_type="text/markdown",
     ext_modules=ext_modules,
     packages=find_packages(exclude=["tests"]),
