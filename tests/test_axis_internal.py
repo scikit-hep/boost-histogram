@@ -26,42 +26,40 @@ def test_axis_regular_uoflow(axtype, function):
     assert 10 == ax.index(1.01)
     assert 10 == ax.index(23)
 
-    assert 10 == ax.size()
+    assert 10 == ax.size
 
-    assert ax.bin(3).lower() == approx(0.3)
-    assert ax.bin(3).upper() == approx(0.4)
-    assert ax.bin(3).width() == approx(0.1)
-    assert ax.bin(3).center() == approx(0.35)
+    assert ax.bin(3)[0] == approx(0.3)
+    assert ax.bin(3)[1] == approx(0.4)
 
-    for b, v in zip(ax.bins(), np.arange(10) / 10.0):
-        assert b.lower() == approx(v)
-        assert b.upper() == approx(v + 0.1)
+    for b, v in zip(ax, np.arange(10) / 10.0):
+        assert b[0] == approx(v)
+        assert b[1] == approx(v + 0.1)
 
 
 def test_axis_regular_extents():
     ax = bh.axis.regular(10, 0, 1)
-    assert 12 == ax.size(flow=True)
+    assert 12 == ax.extent
     assert 11 == len(ax.edges())
     assert 13 == len(ax.edges(True))
     assert 10 == len(ax.centers())
     assert ax.options() == bh.axis.options.underflow | bh.axis.options.overflow
 
     ax = bh.axis.regular(10, 0, 1, overflow=False)
-    assert 11 == ax.size(flow=True)
+    assert 11 == ax.extent
     assert 11 == len(ax.edges())
     assert 12 == len(ax.edges(True))
     assert 10 == len(ax.centers())
     assert ax.options() == bh.axis.options.underflow
 
     ax = bh.axis.regular(10, 0, 1, underflow=False)
-    assert 11 == ax.size(flow=True)
+    assert 11 == ax.extent
     assert 11 == len(ax.edges())
     assert 12 == len(ax.edges(True))
     assert 10 == len(ax.centers())
     assert ax.options() == bh.axis.options.overflow
 
     ax = bh.axis.regular(10, 0, 1, flow=False)
-    assert 10 == ax.size(flow=True)
+    assert 10 == ax.extent
     assert 11 == len(ax.edges())
     assert 11 == len(ax.edges(True))
     assert 10 == len(ax.centers())
@@ -72,20 +70,20 @@ def test_axis_growth():
     ax = bh.axis.regular(10, 0, 1, growth=True)
     ax.index(0.7)
     ax.index(1.2)
-    assert ax.size() == 10
+    assert ax.size == 10
     assert len(ax.centers()) == 10
     assert len(ax.edges()) == 11
     assert ax.update(1.21) == (12, -3)
-    assert ax.size() == 13
+    assert ax.size == 13
     assert len(ax.edges()) == 14
     assert len(ax.centers()) == 13
 
 
 def test_axis_growth_cat():
     ax = bh.axis.category(["This"], growth=True)
-    assert ax.size() == 1
+    assert ax.size == 1
     ax.update("That")
-    assert ax.size() == 2
+    assert ax.size == 2
     assert ax.bin(0) == "This"
     assert ax.bin(1) == "That"
 
@@ -161,6 +159,9 @@ def test_cat_str():
     assert ax.bin(2) == "c"
 
     assert ax.index("b") == 1
+    assert_array_equal(ax.index(("b", "a", "f")), [1, 0, 3])
+    # assert ax.value(0) == "a"
+    assert_array_equal(ax.value((1, 2)), ("b", "c"))
 
 
 def test_cat_int():
@@ -170,3 +171,4 @@ def test_cat_int():
     assert ax.bin(2) == 3
 
     assert ax.index(2) == 1
+    assert_array_equal(ax.index((2, 1, 5)), [1, 0, 3])

@@ -8,9 +8,11 @@
 #include <boost/histogram/python/pybind11.hpp>
 
 #include <boost/histogram/axis.hpp>
-#include <boost/histogram/python/typetools.hpp>
 
+#include <algorithm>
+#include <string>
 #include <tuple>
+#include <type_traits>
 #include <vector>
 
 /// Register bh::axis::variant as a variant for PyBind11
@@ -21,49 +23,6 @@ struct type_caster<bh::axis::variant<Ts...>>
     : variant_caster<bh::axis::variant<Ts...>> {};
 } // namespace detail
 } // namespace pybind11
-
-/// Utility to convert an axis to edges array
-template <class A>
-py::array_t<double> axis_to_edges(const A &ax, bool flow) {
-    unsigned overflow
-        = flow && (bh::axis::traits::options(ax) & bh::axis::option::underflow);
-    unsigned underflow
-        = flow && (bh::axis::traits::options(ax) & bh::axis::option::overflow);
-
-    py::array_t<double> edges((unsigned)ax.size() + 1u + overflow + underflow);
-
-    if(underflow)
-        edges.mutable_at(0u) = ax.bin(-1).lower();
-
-    edges.mutable_at(0u + underflow) = ax.bin(0).lower();
-
-    std::transform(ax.begin(),
-                   ax.end(),
-                   edges.mutable_data() + 1u + underflow,
-                   [](const auto &bin) { return bin.upper(); });
-
-    if(overflow)
-        edges.mutable_at(edges.size() - 1) = ax.bin(ax.size()).upper();
-
-    return edges;
-}
-
-template <class A>
-decltype(auto) axis_to_bins(const A &self, bool flow) {
-    std::vector<bh::python::remove_cvref_t<decltype(self.bin(std::declval<int>()))>>
-        out;
-    bool overflow
-        = flow && (bh::axis::traits::options(self) & bh::axis::option::underflow);
-    bool underflow
-        = flow && (bh::axis::traits::options(self) & bh::axis::option::overflow);
-
-    out.reserve((size_t)bh::axis::traits::extent(self));
-
-    for(int i = 0 - underflow; i < self.size() + overflow; i++)
-        out.emplace_back(self.bin(i));
-
-    return out;
-}
 
 inline bool PyObject_Check(void *value) { return value != nullptr; }
 
@@ -79,7 +38,121 @@ class metadata_t : public py::object {
     }
 };
 
+namespace detail {
+template <class Iterable>
+std::string::size_type max_string_length(const Iterable &c) {
+    std::string::size_type n = 0;
+    for(auto &&s : c)
+        n = std::max(n, s.size());
+    return n;
+}
+} // namespace detail
+
 namespace axis {
+// this or something similar should move to boost::histogram::axis::traits
+template <class Axis>
+using get_value_type = std::decay_t<decltype(std::declval<Axis>().value(0))>;
+
+// this or something similar should move to boost::histogram::axis::traits
+template <class Axis>
+using is_continuous =
+    typename std::is_same<get_value_type<Axis>, bh::axis::real_index_type>::type;
+
+/// Utility to convert an axis to edges array
+template <class A>
+py::array_t<double> to_edges(const A &ax, bool flow) {
+    const bh::axis::index_type underflow
+        = flow && (bh::axis::traits::options(ax) & bh::axis::option::underflow);
+    const bh::axis::index_type overflow
+        = flow && (bh::axis::traits::options(ax) & bh::axis::option::overflow);
+
+    py::array_t<double> edges(
+        static_cast<std::size_t>(ax.size() + 1 + overflow + underflow));
+
+    for(bh::axis::index_type i = -underflow; i <= ax.size() + overflow; ++i)
+        edges.mutable_at(i + underflow) = ax.value(i);
+
+    return edges;
+}
+
+template <class A>
+py::array to_values_impl(const A &ax,
+                         bh::axis::index_type underflow,
+                         bh::axis::index_type overflow) {
+    py::array_t<get_value_type<A>> result(
+        static_cast<std::size_t>(ax.size() + 1 + overflow + underflow));
+
+    for(auto i = -underflow; i < ax.size() + overflow; i++)
+        result.mutable_at(static_cast<std::size_t>(i + underflow)) = ax.value(i);
+
+    return result;
+}
+
+template <class... Ts>
+py::array to_values_impl(const bh::axis::category<std::string, Ts...> &ax,
+                         bh::axis::index_type,
+                         bh::axis::index_type overflow) {
+    static_assert(!(bh::axis::category<std::string, Ts...>::options()
+                    & bh::axis::option::underflow),
+                  "category axis never has underflow");
+
+    const auto n = detail::max_string_length(ax);
+    py::array result(py::dtype(bh::detail::cat("S", n)), ax.size() + overflow);
+
+    for(auto i = 0; i < ax.size() + overflow; i++) {
+        auto sout     = static_cast<char *>(result.mutable_data(i));
+        const auto &s = ax.value(i);
+        std::copy(s.begin(), s.end(), sout);
+        if(s.size() < n)
+            sout[s.size()] = 0;
+    }
+
+    return result;
+}
+
+/// Utility to convert an axis to value array
+template <class A>
+py::array to_values(const A &ax, bool flow) {
+    static_assert(is_continuous<A>::value == false, "");
+
+    const bh::axis::index_type underflow
+        = flow && (bh::axis::traits::options(ax) & bh::axis::option::underflow);
+    const bh::axis::index_type overflow
+        = flow && (bh::axis::traits::options(ax) & bh::axis::option::overflow);
+
+    return to_values_impl(ax, underflow, overflow);
+}
+
+template <class A>
+py::array to_edges_or_values(const A &ax, bool flow) {
+    return bh::detail::static_if<is_continuous<A>>(
+        [flow](const auto &ax) { return to_edges(ax, flow); },
+        [flow](const auto &ax) { return to_values(ax, flow); },
+        ax);
+}
+
+template <class A>
+py::array to_centers(const A &ax) {
+    static_assert(is_continuous<A>::value, "");
+
+    py::array_t<get_value_type<A>> result(static_cast<std::size_t>(ax.size()));
+
+    std::transform(ax.begin(), ax.end(), result.mutable_data(), [](const auto &b) {
+        return b.center();
+    });
+
+    return result;
+}
+
+template <class A>
+py::object bin(const A &ax, bh::axis::index_type i) {
+    return bh::detail::static_if<is_continuous<A>>(
+        [i](const auto &ax) {
+            return py::make_tuple(ax.bin(i).lower(), ax.bin(i).upper());
+        },
+        [i](const auto &ax) { return py::cast(ax.bin(i)); },
+        ax);
+}
 
 // These match the Python names
 

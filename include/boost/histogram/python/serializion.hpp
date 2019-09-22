@@ -10,7 +10,6 @@
 #include <boost/histogram/python/pybind11.hpp>
 
 #include <boost/histogram/python/pickle.hpp>
-#include <boost/histogram/python/typetools.hpp>
 
 #include <boost/assert.hpp>
 #include <boost/histogram/accumulators/mean.hpp>
@@ -175,7 +174,7 @@ void serialize(Archive &ar, unlimited_storage<Allocator> &s, unsigned /* version
         ar &serialization::make_nvp("size", size);
         helper.visit([&buffer, size](auto *tp) {
             BOOST_ASSERT(tp == nullptr);
-            using T = bh::python::remove_cvref_t<decltype(*tp)>;
+            using T = std::decay_t<decltype(*tp)>;
             buffer.template make<T>(size);
         });
     } else {

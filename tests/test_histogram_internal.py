@@ -23,8 +23,8 @@ def test_1D_fill_int(hist_func):
     assert_array_equal(hist.view(flow=False), H)
     assert_array_equal(hist.view(flow=True)[1:-1], H)
 
-    assert hist.axis(0).size() == bins
-    assert hist.axis(0).size(flow=True) == bins + 2
+    assert hist.axis(0).size == bins
+    assert hist.axis(0).extent == bins + 2
 
 
 @pytest.mark.parametrize("hist_func", methods)
@@ -45,11 +45,11 @@ def test_2D_fill_int(hist_func):
     assert_array_equal(hist.view(flow=True)[1:-1, 1:-1], H)
     assert_array_equal(hist.view(flow=False), H)
 
-    assert hist.axis(0).size() == bins[0]
-    assert hist.axis(0).size(flow=True) == bins[0] + 2
+    assert hist.axis(0).size == bins[0]
+    assert hist.axis(0).extent == bins[0] + 2
 
-    assert hist.axis(1).size() == bins[1]
-    assert hist.axis(1).size(flow=True) == bins[1] + 2
+    assert hist.axis(1).size == bins[1]
+    assert hist.axis(1).extent == bins[1] + 2
 
 
 def test_edges_histogram():
@@ -89,7 +89,7 @@ def test_growing_histogram():
 
     hist.fill(1.45)
 
-    assert hist.size() == 15
+    assert hist.size == 15
 
 
 def test_numpy_flow():
@@ -97,7 +97,7 @@ def test_numpy_flow():
 
     for i in range(10):
         for j in range(5):
-            x, y = h.axis(0).bin(i).center(), h.axis(1).bin(j).center()
+            x, y = h.axis(0).centers()[i], h.axis(1).centers()[j]
             v = i + j * 10 + 1
             h.fill([x] * v, [y] * v)
 
@@ -121,7 +121,7 @@ def test_numpy_compare():
     ys = []
     for i in range(10):
         for j in range(5):
-            x, y = h.axis(0).bin(i).center(), h.axis(1).bin(j).center()
+            x, y = h.axis(0).centers()[i], h.axis(1).centers()[j]
             v = i + j * 10 + 1
             xs += [x] * v
             ys += [y] * v

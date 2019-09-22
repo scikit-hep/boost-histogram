@@ -16,15 +16,15 @@ import boost_histogram as bh
 def test_make_regular_1D(axis, extent):
     hist = bh.histogram(axis(3, 2, 5))
 
-    assert hist.rank() == 1
-    assert hist.axis(0).size() == 3
-    assert hist.axis(0).size(flow=True) == 3 + extent
-    assert hist.axis(0).bin(1).center() == approx(3.5)
+    assert hist.rank == 1
+    assert hist.axis(0).size == 3
+    assert hist.axis(0).extent == 3 + extent
+    assert hist.axis(0).bin(1) == (3, 4)
 
 
 def test_shortcuts():
     hist = bh.histogram((1, 2, 3), (10, 0, 1))
-    assert hist.rank() == 2
+    assert hist.rank == 2
     for i in range(2):
         assert isinstance(hist.axis(i), bh.axis.regular)
         assert isinstance(hist.axis(i), bh.core.axis._regular_uoflow)
@@ -48,14 +48,14 @@ def test_shortcuts_with_metadata():
 def test_make_regular_2D(axis, extent):
     hist = bh.histogram(axis(3, 2, 5), axis(5, 1, 6))
 
-    assert hist.rank() == 2
-    assert hist.axis(0).size() == 3
-    assert hist.axis(0).size(flow=True) == 3 + extent
-    assert hist.axis(0).bin(1).center() == approx(3.5)
+    assert hist.rank == 2
+    assert hist.axis(0).size == 3
+    assert hist.axis(0).extent == 3 + extent
+    assert hist.axis(0).bin(1) == approx((3, 4))
 
-    assert hist.axis(1).size() == 5
-    assert hist.axis(1).size(flow=True) == 5 + extent
-    assert hist.axis(1).bin(1).center() == approx(2.5)
+    assert hist.axis(1).size == 5
+    assert hist.axis(1).extent == 5 + extent
+    assert hist.axis(1).bin(1) == approx((2, 3))
 
 
 @pytest.mark.parametrize(
@@ -69,22 +69,22 @@ def test_make_regular_2D(axis, extent):
 )
 def test_make_any_hist(storage):
     hist = bh.histogram(
-        bh.core.axis._regular_uoflow(5, 1, 2),
-        bh.core.axis._regular_noflow(6, 2, 3),
-        bh.axis.circular(8, 3, 4),
+        bh.core.axis._regular_uoflow(3, 1, 4),
+        bh.core.axis._regular_noflow(2, 2, 4),
+        bh.axis.circular(4, 1, 5),
         storage=storage,
     )
 
-    assert hist.rank() == 3
-    assert hist.axis(0).size() == 5
-    assert hist.axis(0).size(flow=True) == 7
-    assert hist.axis(0).bin(1).center() == approx(1.3)
-    assert hist.axis(1).size() == 6
-    assert hist.axis(1).size(flow=True) == 6
-    assert hist.axis(1).bin(1).center() == approx(2.25)
-    assert hist.axis(2).size() == 8
-    assert hist.axis(2).size(flow=True) == 9
-    assert hist.axis(2).bin(1).center() == approx(3.1875)
+    assert hist.rank == 3
+    assert hist.axis(0).size == 3
+    assert hist.axis(0).extent == 5
+    assert hist.axis(0).bin(1) == approx((2, 3))
+    assert hist.axis(1).size == 2
+    assert hist.axis(1).extent == 2
+    assert hist.axis(1).bin(1) == approx((3, 4))
+    assert hist.axis(2).size == 4
+    assert hist.axis(2).extent == 5
+    assert hist.axis(2).bin(1) == approx((2, 3))
 
 
 def test_make_any_hist_storage():
@@ -108,13 +108,13 @@ def test_issue_axis_bin_swan():
     )
 
     b = hist.axis(1).bin(1)
-    assert repr(b) == "<bin [0.100000, 0.200000]>"
-    assert b.lower() == approx(0.1)
-    assert b.upper() == approx(0.2)
+    assert repr(b) == "(0.1, 0.2)"
+    assert b[0] == approx(0.1)
+    assert b[1] == approx(0.2)
 
-    assert hist.axis(0).bin(0).lower() == 0
-    assert hist.axis(0).bin(1).lower() == approx(0.1)
-    assert hist.axis(0).bin(2).lower() == approx(0.4)
+    assert hist.axis(0).bin(0)[0] == 0
+    assert hist.axis(0).bin(1)[0] == approx(0.1)
+    assert hist.axis(0).bin(2)[0] == approx(0.4)
 
 
 options = (

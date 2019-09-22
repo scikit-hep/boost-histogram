@@ -20,7 +20,6 @@
 #include <boost/histogram/python/serializion.hpp>
 #include <boost/histogram/python/shared_histogram.hpp>
 #include <boost/histogram/python/storage.hpp>
-#include <boost/histogram/python/typetools.hpp>
 #include <boost/histogram/python/variant.hpp>
 #include <boost/histogram/unsafe_access.hpp>
 #include <boost/mp11.hpp>
@@ -35,11 +34,6 @@
 namespace detail {
 template <class T, class... Us>
 using is_one_of = boost::mp11::mp_contains<boost::mp11::mp_list<Us...>, T>;
-
-// this or something similar should move to boost::histogram::axis::traits
-template <class Axis>
-using get_axis_value_type
-    = boost::histogram::python::remove_cvref_t<decltype(std::declval<Axis>().value(0))>;
 
 template <class T>
 bool is_pyiterable(const T &t) {
@@ -82,10 +76,12 @@ register_histogram(py::module &m, const char *name, const char *desc) {
             return make_buffer(h, false);
         })
 
-        .def("rank", &histogram_t::rank, "Number of axes (dimensions) of histogram")
-        .def("size",
-             &histogram_t::size,
-             "Total number of bins in the histogram (including underflow/overflow)")
+        .def_property_readonly(
+            "rank", &histogram_t::rank, "Number of axes (dimensions) of histogram")
+        .def_property_readonly(
+            "size",
+            &histogram_t::size,
+            "Total number of bins in the histogram (including underflow/overflow)")
         .def("reset", &histogram_t::reset, "Reset bin counters to zero")
 
         .def("__copy__", [](const histogram_t &self) { return histogram_t(self); })
@@ -127,19 +123,21 @@ register_histogram(py::module &m, const char *name, const char *desc) {
     hist.def(
             "to_numpy",
             [](histogram_t &h, bool flow) {
-                py::list listing;
+                py::tuple result(1 + h.rank());
 
-                // Add the histogram as the first argument
-                py::array arr(make_buffer(h, flow));
-                listing.append(arr);
+                // Add the histogram buffer as the first argument
+                PyTuple_SET_ITEM(
+                    result.ptr(), 0, py::array(make_buffer(h, flow)).release().ptr());
 
                 // Add the axis edges
-                for(unsigned i = 0; i < h.rank(); i++) {
-                    const auto &ax = h.axis(i);
-                    listing.append(axis_to_edges(ax, flow));
-                }
+                h.for_each_axis([&result, flow, i = 1](const auto &ax) mutable {
+                    PyTuple_SET_ITEM(
+                        result.ptr(),
+                        i++,
+                        axis::to_edges_or_values(ax, flow).release().ptr());
+                });
 
-                return py::cast<py::tuple>(listing);
+                return result;
             },
             "flow"_a = false,
             "convert to a numpy style tuple of returns")
@@ -173,7 +171,7 @@ register_histogram(py::module &m, const char *name, const char *desc) {
             },
             "Access bin counter at indices")
 
-        .def("__repr__", shift_to_string<histogram_t>())
+        .def("__repr__", &shift_to_string<histogram_t>)
 
         .def(
             "__getitem__",
@@ -274,8 +272,8 @@ register_histogram(py::module &m, const char *name, const char *desc) {
                 namespace bmp = boost::mp11;
                 static_assert(
                     bmp::mp_empty<bmp::mp_set_difference<
-                        bmp::mp_unique<bmp::mp_transform<::detail::get_axis_value_type,
-                                                         axis_variant>>,
+                        bmp::mp_unique<
+                            bmp::mp_transform<axis::get_value_type, axis_variant>>,
                         bmp::mp_list<double, int, std::string>>>::value,
                     "supported value types are double, int, std::string; new axis was "
                     "added with different value type");
@@ -296,8 +294,7 @@ register_histogram(py::module &m, const char *name, const char *desc) {
                     auto args_it  = args.begin();
                     auto vargs_it = vargs.begin();
                     self.for_each_axis([&args_it, &vargs_it](const auto &ax) {
-                        using T =
-                            typename bh::python::remove_cvref_t<decltype(ax.value(0))>;
+                        using T = std::decay_t<decltype(ax.value(0))>;
                         detail::set_varg(
                             boost::mp11::mp_identity<T>{}, *vargs_it++, *args_it++);
                     });

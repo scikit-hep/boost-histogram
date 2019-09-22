@@ -42,10 +42,8 @@ void def_optionally(T &&, std::false_type, Args &&...) {}
 
 /// Shift to string
 template <class T>
-auto shift_to_string() {
-    return [](const T &self) {
-        std::ostringstream out;
-        out << self;
-        return out.str();
-    };
+std::string shift_to_string(const T &x) {
+    std::ostringstream out;
+    out << x;
+    return out.str();
 }
