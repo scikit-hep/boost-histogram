@@ -12,12 +12,8 @@ class Path(str):
         return self.__class__(os.path.join(self, s))
 
 
-# Useful paths
+# Baes directory as a Path
 BASE_DIR = Path(os.path.abspath(os.path.dirname(__file__)))
-VERSION_FILE = BASE_DIR / "boost_histogram" / "version.py"
-README_FILE = BASE_DIR / "README.md"
-SRC_DIR = BASE_DIR / "src"
-EXTERN_DIR = BASE_DIR / "extern"
 
 # Official trick to avoid pytest-runner as requirement if not needed
 needs_pytest = {"pytest", "test", "ptr"}.intersection(sys.argv)
@@ -34,41 +30,44 @@ except ImportError:
 
 # Read __version__ into about
 about = {}
-with open(VERSION_FILE) as f:
+with open(BASE_DIR / "boost_histogram/version.py") as f:
     exec(f.read(), about)
 
 # Read in readme
-with open(README_FILE, "rb") as f:
+with open(BASE_DIR / "README.md", "rb") as f:
     description = f.read().decode("utf8", "ignore")
 
+SRC_FILES = [
+    "src/module.cpp",
+    "src/register_version.cpp",
+    "src/register_algorithm.cpp",
+    "src/register_axis.cpp",
+    "src/register_polymorphic_bin.cpp",
+    "src/register_shared_histogram.cpp",
+    "src/register_general_histograms.cpp",
+    "src/register_make_histogram.cpp",
+    "src/register_storage.cpp",
+    "src/register_accumulators.cpp",
+]
+
+INCLUDE_FILES = [
+    "include",
+    "extern/assert/include",
+    "extern/callable_traits/include",
+    "extern/config/include",
+    "extern/core/include",
+    "extern/histogram/include",
+    "extern/mp11/include",
+    "extern/pybind11/include",
+    "extern/throw_exception/include",
+    "extern/variant2/include",
+]
 
 ext_modules = [
     Extension(
         "boost_histogram.core",
-        [
-            SRC_DIR / "module.cpp",
-            SRC_DIR / "register_version.cpp",
-            SRC_DIR / "register_algorithm.cpp",
-            SRC_DIR / "register_axis.cpp",
-            SRC_DIR / "register_polymorphic_bin.cpp",
-            SRC_DIR / "register_shared_histogram.cpp",
-            SRC_DIR / "register_general_histograms.cpp",
-            SRC_DIR / "register_make_histogram.cpp",
-            SRC_DIR / "register_storage.cpp",
-            SRC_DIR / "register_accumulators.cpp",
-        ],
-        include_dirs=[
-            BASE_DIR / "include",
-            EXTERN_DIR / "assert/include",
-            EXTERN_DIR / "callable_traits/include",
-            EXTERN_DIR / "config/include",
-            EXTERN_DIR / "core/include",
-            EXTERN_DIR / "histogram/include",
-            EXTERN_DIR / "mp11/include",
-            EXTERN_DIR / "pybind11/include",
-            EXTERN_DIR / "throw_exception/include",
-            EXTERN_DIR / "variant2/include",
-        ],
+        [str(BASE_DIR / f) for f in SRC_FILES],
+        include_dirs=[str(BASE_DIR / f) for f in INCLUDE_FILES],
         language="c++",
     )
 ]
