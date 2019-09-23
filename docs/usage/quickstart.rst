@@ -79,7 +79,7 @@ if you want to initialize the contents of every bin to a function, you could do:
    hist = bh.histogram(bh.axis.regular(10, 0.0, 1.0),
                        bh.axis.regular(10, 0, 10),
                        storage=bh.storage.double())
-   
+
    for ind in hist.indexed():
        ind.content = f(*ind.centers())
 

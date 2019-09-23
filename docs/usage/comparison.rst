@@ -12,7 +12,7 @@ There are a few parts of the Boost.Histogram interface that are not bound. They 
 
 The call operator
    This is provided in C++ to allow single item filling, and was designed to mimic the
-   accumulator syntax used elsewhere in Boost. It also works nicely with some STL 
+   accumulator syntax used elsewhere in Boost. It also works nicely with some STL
    algorithms. It was not provided in Python because using call to modify an object
    is not common in Python, using call makes duck-typing more dangerous, and single-item
    fills are not encouraged in Python due to poor performance. The ``.fill`` method from
@@ -41,7 +41,7 @@ Additions
 
 Unified Histogram Indexing
    The Python bindings support UHI, a proposal to unify and simplify histogram indexing in Python.
-   
+
 Numpy compatibility
    The Python bindings do several things to simplify Numpy compatibility.
 
