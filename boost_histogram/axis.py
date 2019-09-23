@@ -1,19 +1,8 @@
-from ..core.axis import (
-    _make_regular,
-    regular_log,
-    regular_sqrt,
-    regular_pow,
-    circular,
-    _make_variable,
-    _make_integer,
-    _make_category,
-)
+from .core.axis import regular_log, regular_sqrt, regular_pow, circular
 
-from ..core import axis as ca
+from .core import axis as ca
 
-from . import options
-
-from ..utils import FactoryMeta
+from .utils import FactoryMeta
 
 regular = FactoryMeta(
     ca._make_regular,

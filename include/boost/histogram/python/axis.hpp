@@ -85,7 +85,7 @@ py::array to_values_impl(const A &ax,
     for(auto i = -underflow; i < ax.size() + overflow; i++)
         result.mutable_at(static_cast<std::size_t>(i + underflow)) = ax.value(i);
 
-    return result;
+    return std::move(result);
 }
 
 template <class... Ts>
@@ -141,7 +141,7 @@ py::array to_centers(const A &ax) {
         return b.center();
     });
 
-    return result;
+    return std::move(result);
 }
 
 template <class A>

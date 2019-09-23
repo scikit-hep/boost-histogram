@@ -29,6 +29,21 @@
 
 using namespace std::literals;
 
+struct options {
+    unsigned option;
+    bool none() const { return option == bh::axis::option::none; }
+    bool underflow() const {
+        return static_cast<bool>(option & bh::axis::option::underflow);
+    }
+    bool overflow() const {
+        return static_cast<bool>(option & bh::axis::option::overflow);
+    }
+    bool circular() const {
+        return static_cast<bool>(option & bh::axis::option::circular);
+    }
+    bool growth() const { return static_cast<bool>(option & bh::axis::option::growth); }
+};
+
 /// Ensure metadata is valid.
 inline void validate_metadata(metadata_t v) {
     try {
@@ -145,7 +160,7 @@ void vectorized_index_and_value_methods(
                         "argument must be string or sequence of strings");
                 }
 
-                return indices;
+                return std::move(indices);
             },
             "Index for value (or values) on the axis",
             "x"_a)
@@ -203,7 +218,12 @@ py::class_<A> register_axis(py::module &m, const char *name, Args &&... args) {
         .def(py::self != py::self)
 
         .def("update", &A::update, "i"_a, "Bin and add a value if allowed")
-        .def_static("options", &A::options, "Return the options associated to the axis")
+        .def_property_readonly(
+            "options",
+            [](const A &self) {
+                return options{static_cast<unsigned>(self.options())};
+            },
+            "Return the options associated to the axis")
         .def_property(
             "metadata",
             [](const A &self) { return self.metadata(); },
