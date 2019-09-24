@@ -37,6 +37,16 @@ storages = (
 )
 
 
+@pytest.mark.parametrize("copy_fn", copies)
+@pytest.mark.parametrize(
+    "opts", ({}, {"growth": True}, {"underflow": True, "overflow": True})
+)
+def test_options(copy_fn, opts):
+    orig = bh.axis.options(**opts)
+    new = copy_fn(orig)
+    assert new == orig
+
+
 @pytest.mark.parametrize("accum,args", accumulators)
 @pytest.mark.parametrize("copy_fn", copies)
 def test_accumulators(accum, args, copy_fn):

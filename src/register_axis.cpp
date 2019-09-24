@@ -12,19 +12,29 @@
 
 void register_axes(py::module &ax) {
     py::class_<options>(ax, "options")
-        .def_property_readonly("none", &options::none)
+        .def(py::init<bool, bool, bool, bool>(),
+             "underflow"_a = false,
+             "overflow"_a  = false,
+             "circular"_a  = false,
+             "growth"_a    = false)
+        .def(py::self == py::self)
+        .def(py::self != py::self)
+        .def(py::pickle([](const options &op) { return py::make_tuple(op.option); },
+                        [](py::tuple t) {
+                            if(t.size() != 1)
+                                throw std::runtime_error("Invalid state");
+                            return options{py::cast<unsigned>(t[0])};
+                        }))
+
         .def_property_readonly("underflow", &options::underflow)
         .def_property_readonly("overflow", &options::overflow)
         .def_property_readonly("circular", &options::circular)
         .def_property_readonly("growth", &options::growth)
+
         .def("__repr__", [](const options &self) {
-            return py::str("options(none={}, underflow={}, overflow={}, circular={}, "
-                           "growth={})")
-                .format(self.none(),
-                        self.underflow(),
-                        self.overflow(),
-                        self.circular(),
-                        self.growth());
+            return py::str("options(underflow={}, overflow={}, circular={}, growth={})")
+                .format(
+                    self.underflow(), self.overflow(), self.circular(), self.growth());
         });
 
     register_axis<axis::_regular_uoflow>(ax, "_regular_uoflow", "Evenly spaced bins")

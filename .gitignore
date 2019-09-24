@@ -43,6 +43,7 @@
 .ipynb_checkpoints
 /wheelhouse/*
 /dist/*
+*.mypy_cache
 
 # Other editor files
 *.swp

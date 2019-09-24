@@ -42,28 +42,28 @@ def test_axis_regular_extents():
     assert 11 == len(ax.edges())
     assert 13 == len(ax.edges(True))
     assert 10 == len(ax.centers())
-    assert ax.options() == bh.axis.options.underflow | bh.axis.options.overflow
+    assert ax.options == bh.axis.options(underflow=True, overflow=True)
 
     ax = bh.axis.regular(10, 0, 1, overflow=False)
     assert 11 == ax.extent
     assert 11 == len(ax.edges())
     assert 12 == len(ax.edges(True))
     assert 10 == len(ax.centers())
-    assert ax.options() == bh.axis.options.underflow
+    assert ax.options == bh.axis.options(underflow=True)
 
     ax = bh.axis.regular(10, 0, 1, underflow=False)
     assert 11 == ax.extent
     assert 11 == len(ax.edges())
     assert 12 == len(ax.edges(True))
     assert 10 == len(ax.centers())
-    assert ax.options() == bh.axis.options.overflow
+    assert ax.options == bh.axis.options(overflow=True)
 
     ax = bh.axis.regular(10, 0, 1, flow=False)
     assert 10 == ax.extent
     assert 11 == len(ax.edges())
     assert 11 == len(ax.edges(True))
     assert 10 == len(ax.centers())
-    assert ax.options() == bh.axis.options.none
+    assert ax.options == bh.axis.options()
 
 
 def test_axis_growth():
@@ -103,7 +103,7 @@ def test_axis_circular():
     ax = bh.axis.circular(10, 0, 1)
 
     assert 0.1 == ax.value(1)
-    assert ax.options() == bh.axis.options.circular | bh.axis.options.overflow
+    assert ax.options == bh.axis.options(circular=True, overflow=True)
 
 
 normal_axs = [

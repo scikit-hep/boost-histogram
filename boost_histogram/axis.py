@@ -1,4 +1,4 @@
-from .core.axis import regular_log, regular_sqrt, regular_pow, circular
+from .core.axis import regular_log, regular_sqrt, regular_pow, circular, options
 
 from .core import axis as ca
 
