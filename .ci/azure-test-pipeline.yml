@@ -21,8 +21,9 @@ jobs:
       displayName: Install pre-commit
     - script: pre-commit run --all
       displayName: Run pre-commit
-    - script: git diff --exit-code --color
+    - script: git diff --exit-code
       displayName: Display format changes
+      condition: always()
 
 - job: LinuxSDist
   pool:
