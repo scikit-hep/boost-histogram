@@ -202,46 +202,22 @@ end
 
 </details>
 
-<details><summary>Formatting(click to expand)</summary>
+#### Formatting
 
-Code should be well formatted; CI will check it and one of the authors can help reformat your code. If you want to check it yourself, several tools help.
+Code should be well formatted; CI will check it and one of the authors can help reformat your code. If you want to check it yourself, you should use [`pre-commit`](https://pre-commit.com).
 
-#### Clang-format
-
-There are two scripts to help you run clang-format. They change the contents in-place.
-They are:
+Just [install pre-commit](https://pre-commit.com/#install), probably using brew on macOS or pip on other platforms, then run:
 
 ```bash
-./scripts/check_style.sh        # If you have the same clang-format version as unibeautify
-./scripts/check_style_docker.sh # If you have Docker
+pre-commit install # If you have Docker
+pre-commit install --config=.pre-commit-nodocker.yaml # If you have clang-format 8
 ```
 
-Select one, or use your editor's clang-format integration (especially if it happens to be unibeautify).
-
-#### Black
-
-To run the Python Software Foundation's Black formatter, make sure it is installed:
+Now all changed files will be checked every time you git commit. You can check it yourself (even without installing the hooks) using:
 
 ```bash
-python3 -m pip install black
+pre-commit run --all-files
 ```
-
-Then run:
-
-```bash
-python3 -m black .
-```
-
-Black also support [pre-commit](https://pre-commit.com). Just [install pre-commit](https://pre-commit.com/#install), then run:
-
-```bash
-pre-commit install
-```
-
-Now Black will check all changed Python files every time you git commit.
-
-</details>
-
 
 
 ## Talks and other documentation/tutorial sources
