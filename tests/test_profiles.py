@@ -2,9 +2,9 @@ from pytest import approx
 import boost_histogram as bh
 
 
-def test_profile_hist():
+def test_mean_hist():
 
-    h = bh.histogram(bh.axis.regular(3, 0, 1), storage=bh.storage.profile)
+    h = bh.histogram(bh.axis.regular(3, 0, 1), storage=bh.storage.mean)
 
     h.fill(0.10, sample=[2.5])
     h.fill(0.25, sample=[3.5])

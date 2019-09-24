@@ -4,6 +4,6 @@ from .core.storage import (
     atomic_int,
     unlimited,
     weight,
-    profile,
-    weighted_profile,
+    mean,
+    weighted_mean,
 )

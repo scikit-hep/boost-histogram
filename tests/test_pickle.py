@@ -30,10 +30,10 @@ storages = (
     bh.storage.atomic_int,
     bh.storage.double,
     bh.storage.int,
-    bh.storage.profile,
+    bh.storage.mean,
     bh.storage.unlimited,
     bh.storage.weight,
-    bh.storage.weighted_profile,
+    bh.storage.weighted_mean,
 )
 
 

@@ -79,12 +79,11 @@ void register_make_histogram(py::module &m, py::module &hist) {
                             storage::int_,
                             storage::atomic_int,
                             storage::weight,
-                            storage::profile,
-                            storage::weighted_profile>(
-                storage, [&axes](auto &&storage) {
-                    return py::cast(bh::make_histogram_with(storage, axes),
-                                    py::return_value_policy::move);
-                });
+                            storage::mean,
+                            storage::weighted_mean>(storage, [&axes](auto &&storage) {
+                return py::cast(bh::make_histogram_with(storage, axes),
+                                py::return_value_policy::move);
+            });
         },
         "Make any histogram");
 
