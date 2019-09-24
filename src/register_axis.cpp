@@ -26,6 +26,10 @@ void register_axes(py::module &ax) {
                             return options{py::cast<unsigned>(t[0])};
                         }))
 
+        .def("__copy__", [](const options &self) { return options(self); })
+        .def("__deepcopy__",
+             [](const options &self, py::object) { return options{self}; })
+
         .def_property_readonly("underflow", &options::underflow)
         .def_property_readonly("overflow", &options::overflow)
         .def_property_readonly("circular", &options::circular)
