@@ -38,13 +38,13 @@ void register_general_histograms(py::module &hist) {
         "_any_weight",
         "N-dimensional histogram for weighted data with any axis types.");
 
-    register_histogram<vector_axis_variant, bh::profile_storage>(
+    register_histogram<vector_axis_variant, storage::mean>(
         hist,
-        "_any_profile",
+        "_any_mean",
         "N-dimensional histogram for sampled data with any axis types.");
 
-    register_histogram<vector_axis_variant, bh::weighted_profile_storage>(
+    register_histogram<vector_axis_variant, storage::weighted_mean>(
         hist,
-        "_any_weighted_profile",
+        "_any_weighted_mean",
         "N-dimensional histogram for weighted and sampled data with any axis types.");
 }

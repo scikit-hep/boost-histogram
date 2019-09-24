@@ -16,13 +16,13 @@
 namespace storage {
 
 // Names match Python names
-using int_             = bh::dense_storage<uint64_t>;
-using atomic_int       = bh::dense_storage<bh::accumulators::thread_safe<uint64_t>>;
-using double_          = bh::dense_storage<double>;
-using unlimited        = bh::unlimited_storage<>;
-using weight           = bh::weight_storage;
-using profile          = bh::profile_storage;
-using weighted_profile = bh::weighted_profile_storage;
+using int_          = bh::dense_storage<uint64_t>;
+using atomic_int    = bh::dense_storage<bh::accumulators::thread_safe<uint64_t>>;
+using double_       = bh::dense_storage<double>;
+using unlimited     = bh::unlimited_storage<>;
+using weight        = bh::weight_storage;
+using mean          = bh::profile_storage;
+using weighted_mean = bh::weighted_profile_storage;
 
 // Allow repr to show python name
 template <class S>
@@ -56,13 +56,13 @@ inline const char *name<weight>() {
 }
 
 template <>
-inline const char *name<profile>() {
-    return "profile";
+inline const char *name<mean>() {
+    return "mean";
 }
 
 template <>
-inline const char *name<weighted_profile>() {
-    return "weighted_profile";
+inline const char *name<weighted_mean>() {
+    return "weighted_mean";
 }
 
 } // namespace storage

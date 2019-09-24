@@ -316,8 +316,8 @@ register_histogram(py::module &m, const char *name, const char *desc) {
 
                 using storage_t = typename histogram_t::storage_type;
                 bh::detail::static_if<detail::is_one_of<storage_t,
-                                                        storage::profile,
-                                                        storage::weighted_profile>>(
+                                                        storage::mean,
+                                                        storage::weighted_mean>>(
                     [&kwargs, &vargs, &weight, &has_weight](auto &h) {
                         auto s = required_arg(kwargs, "sample");
                         finalize_args(kwargs);

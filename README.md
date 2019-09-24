@@ -74,8 +74,8 @@ counts = hist.view()
     * `bh.storage.unlimited`: Starts small, but can go up to unlimited precision ints or doubles.
     * `bh.storage.atomic_int`: Threadsafe filling, for higher performance on multhreaded backends. Does not support growing axis in threads.
     * `bh.storage.weight`: Stores a weight and sum of weights squared.
-    * `bh.storage.profile`: Accepts a sample and computes the mean of the samples.
-    * `bh.storage.weighted_profile`: Accepts a sample and a weight. It computes the weighted mean of the samples.
+    * `bh.storage.mean`: Accepts a sample and computes the mean of the samples.
+    * `bh.storage.weighted_mean`: Accepts a sample and a weight. It computes the weighted mean of the samples.
 * Accumulators
     * `bh.accumulator.weighted_sum`: Tracks a weighted sum and variance
     * `bh.accumulator.weighted_mean`: Tracks a weighted sum, mean, and variance (West's incremental algorithm)

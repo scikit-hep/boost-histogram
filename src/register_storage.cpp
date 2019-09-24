@@ -30,11 +30,11 @@ void register_storages(py::module &storage) {
         "weight",
         "Dense storage which tracks sums of weights and a variance estimate");
 
-    register_storage<storage::profile>(
-        storage, "profile", "Dense storage which tracks means of samples in each cell");
+    register_storage<storage::mean>(
+        storage, "mean", "Dense storage which tracks means of samples in each cell");
 
-    register_storage<storage::weighted_profile>(
+    register_storage<storage::weighted_mean>(
         storage,
-        "weighted_profile",
+        "weighted_mean",
         "Dense storage which tracks means of weighted samples in each cell");
 }
