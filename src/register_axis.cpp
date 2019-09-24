@@ -10,19 +10,36 @@
 #include <boost/histogram/python/register_axis.hpp>
 #include <vector>
 
-void register_axes_options(py::module &opt) {
-    opt.attr("none")      = (unsigned)bh::axis::option::none;
-    opt.attr("underflow") = (unsigned)bh::axis::option::underflow;
-    opt.attr("overflow")  = (unsigned)bh::axis::option::overflow;
-    opt.attr("circular")  = (unsigned)bh::axis::option::circular;
-    opt.attr("growth")    = (unsigned)bh::axis::option::growth;
-}
-
 void register_axes(py::module &ax) {
-    // This factory makes a class that can be used to create axes and also be used in
-    // is_instance
-    py::object factory_meta_py
-        = py::module::import("boost_histogram.utils").attr("FactoryMeta");
+    py::class_<options>(ax, "options")
+        .def(py::init<bool, bool, bool, bool>(),
+             "underflow"_a = false,
+             "overflow"_a  = false,
+             "circular"_a  = false,
+             "growth"_a    = false)
+        .def(py::self == py::self)
+        .def(py::self != py::self)
+        .def(py::pickle([](const options &op) { return py::make_tuple(op.option); },
+                        [](py::tuple t) {
+                            if(t.size() != 1)
+                                throw std::runtime_error("Invalid state");
+                            return options{py::cast<unsigned>(t[0])};
+                        }))
+
+        .def("__copy__", [](const options &self) { return options(self); })
+        .def("__deepcopy__",
+             [](const options &self, py::object) { return options{self}; })
+
+        .def_property_readonly("underflow", &options::underflow)
+        .def_property_readonly("overflow", &options::overflow)
+        .def_property_readonly("circular", &options::circular)
+        .def_property_readonly("growth", &options::growth)
+
+        .def("__repr__", [](const options &self) {
+            return py::str("options(underflow={}, overflow={}, circular={}, growth={})")
+                .format(
+                    self.underflow(), self.overflow(), self.circular(), self.growth());
+        });
 
     register_axis<axis::_regular_uoflow>(ax, "_regular_uoflow", "Evenly spaced bins")
         .def(construct_axes<axis::_regular_uoflow, unsigned, double, double>(),

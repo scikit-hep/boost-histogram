@@ -2,7 +2,7 @@ import pytest
 from pytest import approx
 
 import boost_histogram.core.axis as _bha
-import boost_histogram.axis.options as bhao
+from boost_histogram.axis import options
 
 from boost_histogram.axis import (
     regular,
@@ -65,37 +65,37 @@ class TestRegular(Axis):
         ax = regular(1, 2, 3)
         assert isinstance(regular(1, 2, 3), regular)
         assert isinstance(ax, _bha._regular_uoflow)
-        assert ax.options() == bhao.underflow | bhao.overflow
+        assert ax.options == options(underflow=True, overflow=True)
 
         ax = regular(1, 2, 3, overflow=False)
         assert isinstance(ax, regular)
         assert isinstance(ax, _bha._regular_uflow)
-        assert ax.options() == bhao.underflow
+        assert ax.options == options(underflow=True)
 
         ax = regular(1, 2, 3, underflow=False)
         assert isinstance(ax, regular)
         assert isinstance(ax, _bha._regular_oflow)
-        assert ax.options() == bhao.overflow
+        assert ax.options == options(overflow=True)
 
         ax = regular(1, 2, 3, flow=False)
         assert isinstance(ax, regular)
         assert isinstance(ax, _bha._regular_noflow)
-        assert ax.options() == bhao.none
+        assert ax.options == options()
 
         ax = regular(1, 2, 3, underflow=False, overflow=False)
         assert isinstance(ax, regular)
         assert isinstance(ax, _bha._regular_noflow)
-        assert ax.options() == bhao.none
+        assert ax.options == options()
 
         ax = regular(1, 2, 3, underflow=False, overflow=False, flow=True)
         assert isinstance(ax, regular)
         assert isinstance(ax, _bha._regular_uoflow)
-        assert ax.options() == bhao.underflow | bhao.overflow
+        assert ax.options == options(underflow=True, overflow=True)
 
         ax = regular(1, 2, 3, growth=True)
         assert isinstance(ax, regular)
         assert isinstance(ax, _bha._regular_growth)
-        assert ax.options() == bhao.growth
+        assert ax.options == options(growth=True)
 
     def test_init(self):
         # Should not throw
@@ -366,32 +366,32 @@ class TestVariable(Axis):
         ax = variable([1, 2, 3])
         assert isinstance(ax, variable)
         assert isinstance(ax, _bha._variable_uoflow)
-        assert ax.options() == bhao.underflow | bhao.overflow
+        assert ax.options == options(underflow=True, overflow=True)
 
         ax = variable([1, 2, 3], overflow=False)
         assert isinstance(ax, variable)
         assert isinstance(ax, _bha._variable_uflow)
-        assert ax.options() == bhao.underflow
+        assert ax.options == options(underflow=True)
 
         ax = variable([1, 2, 3], underflow=False)
         assert isinstance(ax, variable)
         assert isinstance(ax, _bha._variable_oflow)
-        assert ax.options() == bhao.overflow
+        assert ax.options == options(overflow=True)
 
         ax = variable([1, 2, 3], flow=False)
         assert isinstance(ax, variable)
         assert isinstance(ax, _bha._variable_noflow)
-        assert ax.options() == bhao.none
+        assert ax.options == options()
 
         ax = variable([1, 2, 3], underflow=False, overflow=False)
         assert isinstance(ax, variable)
         assert isinstance(ax, _bha._variable_noflow)
-        assert ax.options() == bhao.none
+        assert ax.options == options()
 
         ax = variable([1, 2, 3], underflow=False, overflow=False, flow=True)
         assert isinstance(ax, variable)
         assert isinstance(ax, _bha._variable_uoflow)
-        assert ax.options() == bhao.underflow | bhao.overflow
+        assert ax.options == options(underflow=True, overflow=True)
 
     def test_init(self):
         variable([0, 1])
@@ -476,37 +476,37 @@ class TestInteger:
         ax = integer(1, 3)
         assert isinstance(ax, integer)
         assert isinstance(ax, _bha._integer_uoflow)
-        assert ax.options() == bhao.underflow | bhao.overflow
+        assert ax.options == options(underflow=True, overflow=True)
 
         ax = integer(1, 3, overflow=False)
         assert isinstance(ax, integer)
         assert isinstance(ax, _bha._integer_uflow)
-        assert ax.options() == bhao.underflow
+        assert ax.options == options(underflow=True)
 
         ax = integer(1, 3, underflow=False)
         assert isinstance(ax, integer)
         assert isinstance(ax, _bha._integer_oflow)
-        assert ax.options() == bhao.overflow
+        assert ax.options == options(overflow=True)
 
         ax = integer(1, 3, flow=False)
         assert isinstance(ax, integer)
         assert isinstance(ax, _bha._integer_noflow)
-        assert ax.options() == bhao.none
+        assert ax.options == options()
 
         ax = integer(1, 3, underflow=False, overflow=False)
         assert isinstance(ax, integer)
         assert isinstance(ax, _bha._integer_noflow)
-        assert ax.options() == bhao.none
+        assert ax.options == options()
 
         ax = integer(1, 3, underflow=False, overflow=False, flow=True)
         assert isinstance(ax, integer)
         assert isinstance(ax, _bha._integer_uoflow)
-        assert ax.options() == bhao.underflow | bhao.overflow
+        assert ax.options == options(underflow=True, overflow=True)
 
         ax = integer(1, 3, growth=True)
         assert isinstance(ax, integer)
         assert isinstance(ax, _bha._integer_growth)
-        assert ax.options() == bhao.growth
+        assert ax.options == options(growth=True)
 
     def test_init(self):
         integer(-1, 2, flow=True)
@@ -605,22 +605,22 @@ class TestCategory(Axis):
         ax = category([1, 2, 3])
         assert isinstance(ax, category)
         assert isinstance(ax, _bha._category_int)
-        assert ax.options() == bhao.overflow
+        assert ax.options == options(overflow=True)
 
         ax = category([1, 2, 3], growth=True)
         assert isinstance(ax, category)
         assert isinstance(ax, _bha._category_int_growth)
-        assert ax.options() == bhao.growth
+        assert ax.options == options(growth=True)
 
         ax = category(["1", "2", "3"])
         assert isinstance(ax, category)
         assert isinstance(ax, _bha._category_str)
-        assert ax.options() == bhao.overflow
+        assert ax.options == options(overflow=True)
 
         ax = category(["1", "2", "3"], growth=True)
         assert isinstance(ax, category)
         assert isinstance(ax, _bha._category_str_growth)
-        assert ax.options() == bhao.growth
+        assert ax.options == options(growth=True)
 
     def test_len(self):
         assert category([1, 2, 3]).size == 3

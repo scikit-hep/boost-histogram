@@ -9,7 +9,6 @@ void register_version(py::module &);
 void register_algorithms(py::module &);
 void register_storages(py::module &);
 void register_axes(py::module &);
-void register_axes_options(py::module &);
 void register_polymorphic_bin(py::module &);
 void register_general_histograms(py::module &);
 void register_make_histogram(py::module &, py::module &);
@@ -21,9 +20,7 @@ PYBIND11_MODULE(core, m) {
     py::module storage = m.def_submodule("storage");
     register_storages(storage);
 
-    py::module ax  = m.def_submodule("axis");
-    py::module opt = ax.def_submodule("options");
-    register_axes_options(opt);
+    py::module ax = m.def_submodule("axis");
     register_axes(ax);
     register_polymorphic_bin(ax);
 

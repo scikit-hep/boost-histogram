@@ -94,7 +94,7 @@ counts = hist.view()
     * `.view(flow=False)`: Get a view on the bin contents (with or without under/overflow bins)
     * `np.asarray(...)`: Get a view on the bin contents with under/overflow bins
     * `.axis(i)`: Get the `i`th axis
-    * `.at(i, j, ...)`: Get the bin contents as a location 
+    * `.at(i, j, ...)`: Get the bin contents as a location
     * `.sum()`: The total count of all bins
     * `.project(ax1, ax2, ...)`: Project down to listed axis (numbers)
     * `.reduce(ax, reduce_option, ...)`: shrink, rebin, or slice, or any combination
@@ -104,7 +104,7 @@ counts = hist.view()
         * `ind.centers()`: The centers of each bin
         * `ind.indices()`: A list of indices
 * Details
-    * Use `bh.histogram(..., storage=...)` to make a histogram (there are several different types) 
+    * Use `bh.histogram(..., storage=...)` to make a histogram (there are several different types)
     * Several common combinations are optimized, such as regular axes + int storage
 
 
@@ -136,7 +136,7 @@ Conda support is planned.
 
 #### Source builds
 
-For a source build, for example from an "sdist" package, the only requirements are a C++14 compatible compiler. If you are using Python 2.7 on Windows, you will need to use a recent version of Visual studio and force distutils to use it, or just upgrade to Python 3.6 or newer. Check the PyBind11 documentation for [more help](https://pybind11.readthedocs.io/en/stable/faq.html#working-with-ancient-visual-studio-2009-builds-on-windows). On some Linux systems, you may need to use a newer compiler than the one your distribution ships with. 
+For a source build, for example from an "sdist" package, the only requirements are a C++14 compatible compiler. If you are using Python 2.7 on Windows, you will need to use a recent version of Visual studio and force distutils to use it, or just upgrade to Python 3.6 or newer. Check the PyBind11 documentation for [more help](https://pybind11.readthedocs.io/en/stable/faq.html#working-with-ancient-visual-studio-2009-builds-on-windows). On some Linux systems, you may need to use a newer compiler than the one your distribution ships with.
 
 ## Developing
 

@@ -17,7 +17,7 @@ python:
   version: 3
   install:
     - requirements: docs/requirements.txt
-      
+
 
 # Currently, we do not build the package, so submodules are not needed.
 submodules:
