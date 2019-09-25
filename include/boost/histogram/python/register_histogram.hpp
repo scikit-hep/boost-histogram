@@ -132,9 +132,7 @@ register_histogram(py::module &m, const char *name, const char *desc) {
                 // Add the axis edges
                 h.for_each_axis([&result, flow, i = 1](const auto &ax) mutable {
                     PyTuple_SET_ITEM(
-                        result.ptr(),
-                        i++,
-                        axis::to_edges_or_values(ax, flow).release().ptr());
+                        result.ptr(), i++, axis::np_bins(ax, flow).release().ptr());
                 });
 
                 return result;
@@ -272,8 +270,8 @@ register_histogram(py::module &m, const char *name, const char *desc) {
                 namespace bmp = boost::mp11;
                 static_assert(
                     bmp::mp_empty<bmp::mp_set_difference<
-                        bmp::mp_unique<
-                            bmp::mp_transform<axis::get_value_type, axis_variant>>,
+                        bmp::mp_unique<bmp::mp_transform<bh::axis::traits::value_type,
+                                                         axis_variant>>,
                         bmp::mp_list<double, int, std::string>>>::value,
                     "supported value types are double, int, std::string; new axis was "
                     "added with different value type");

@@ -88,20 +88,6 @@ void vectorized_index_and_value_methods(py::class_<A> &axis) {
 
 template <class... Ts>
 void vectorized_index_and_value_methods(
-    py::class_<bh::axis::category<int, Ts...>> &axis) {
-    using axis_t = bh::axis::category<int, Ts...>;
-    axis.def("index",
-             py::vectorize([](axis_t &self, int v) { return int(self.index(v)); }),
-             "Index for value (or values) on the axis",
-             "x"_a)
-        .def("value",
-             py::vectorize([](axis_t &self, int i) { return int(self.value(i)); }),
-             "Value at index (or indices)",
-             "i"_a);
-}
-
-template <class... Ts>
-void vectorized_index_and_value_methods(
     py::class_<bh::axis::category<std::string, Ts...>> &axis) {
     using axis_t = bh::axis::category<std::string, Ts...>;
     axis.def(
@@ -138,7 +124,7 @@ void vectorized_index_and_value_methods(
                     }
                 } break;
                 case 'U': {
-                    // numpy seems to use utf32 encoding
+                    // numpy seems to use utf-32 encoding
                     if(itemsize % 4 != 0)
                         throw std::invalid_argument(
                             "itemsize for unicode array is not multiple of 4");
@@ -244,10 +230,6 @@ py::class_<A> register_axis(py::module &m, const char *name, Args &&... args) {
             "extent",
             &bh::axis::traits::extent<A>,
             "Returns the number of bins including over- or underflow")
-        .def_property_readonly(
-            "size", &A::size, "Return number of bins excluding over- or underflow")
-
-        .def("bin", &axis::bin<A>, "i"_a, "Return bin at index i")
 
         .def("__copy__", [](const A &self) { return A(self); })
         .def("__deepcopy__",
@@ -258,6 +240,7 @@ py::class_<A> register_axis(py::module &m, const char *name, Args &&... args) {
                  return a;
              })
 
+        .def("__len__", &A::size, "Return number of bins excluding over- or underflow")
         .def(
             "__iter__",
             [](A &ax) {
@@ -276,28 +259,28 @@ py::class_<A> register_axis(py::module &m, const char *name, Args &&... args) {
             },
             py::keep_alive<0, 1>())
 
-        ;
+        .def("bins",
+             &axis::bins<A>,
+             "flow"_a = false,
+             "Return bins as array.\n"
+             "\n"
+             "Length N = len(axis) or axis.extent if flow=True. For axis other than "
+             "the category axis, this returns an array Nx2 of lower and upper edges. "
+             "For the category axis, this returns an array N of the category values.")
 
-    bh::detail::static_if<axis::is_continuous<A>>(
-        [](auto &ax) {
-            // for continuous axis with bins that represent intervals
-            using axis_t = boost::mp11::mp_first<std::decay_t<decltype(ax)>>;
-            ax.def("edges",
-                   &axis::to_edges<axis_t>,
-                   "flow"_a = false,
-                   "Bin edges (length: len(axis) + 1) (include over/underflow if "
-                   "flow=True)")
-                .def("centers", &axis::to_centers<axis_t>, "Return the bin centers");
-        },
-        [](auto &ax) {
-            // for discrete axis with bins that represent values
-            using axis_t = boost::mp11::mp_first<std::decay_t<decltype(ax)>>;
-            ax.def("values",
-                   &axis::to_values<axis_t>,
-                   "flow"_a = false,
-                   "Return the bin values");
-        },
-        ax);
+        .def("np_bins",
+             &axis::np_bins<A>,
+             "flow"_a = false,
+             "Return bins as a numpy.histogram compatible array.\n"
+             "\n"
+             "Length N = len(axis) + 1 or axis.extent + 1 if flow=True. For axis other "
+             "than the category axis, this returns an array of lower edges and the "
+             "last upper edge. For the category axis, this returns an array of the "
+             "category values.")
+
+        .def_property_readonly("centers", &axis::centers<A>, "Return bin centers")
+
+        ;
 
     vectorized_index_and_value_methods(ax);
 
