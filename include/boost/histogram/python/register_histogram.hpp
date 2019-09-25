@@ -130,9 +130,9 @@ register_histogram(py::module &m, const char *name, const char *desc) {
                     result.ptr(), 0, py::array(make_buffer(h, flow)).release().ptr());
 
                 // Add the axis edges
-                h.for_each_axis([&result, flow, i = 1](const auto &ax) mutable {
+                h.for_each_axis([&result, flow, i = 0](const auto &ax) mutable {
                     PyTuple_SET_ITEM(
-                        result.ptr(), i++, axis::np_bins(ax, flow).release().ptr());
+                        result.ptr(), ++i, axis::np_bins(ax, flow).release().ptr());
                 });
 
                 return result;
