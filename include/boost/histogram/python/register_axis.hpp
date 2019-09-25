@@ -12,7 +12,6 @@
 #include <boost/histogram/detail/iterator_adaptor.hpp>
 #include <boost/histogram/python/axis.hpp>
 #include <boost/histogram/python/axis_ostream.hpp>
-#include <boost/histogram/python/bin_setup.hpp>
 #include <boost/histogram/python/serializion.hpp>
 
 #include <algorithm>

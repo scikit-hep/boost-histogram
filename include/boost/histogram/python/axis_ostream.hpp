@@ -93,30 +93,10 @@ void stream_value(OStream &os, const std::basic_string<Ts...> &t) {
 
 namespace axis {
 
-template <class T>
-class polymorphic_bin;
-
 template <class... Ts>
 std::basic_ostream<Ts...> &operator<<(std::basic_ostream<Ts...> &os,
                                       const null_type &) {
     return os; // do nothing
-}
-
-template <class... Ts, class U>
-std::basic_ostream<Ts...> &operator<<(std::basic_ostream<Ts...> &os,
-                                      const interval_view<U> &i) {
-    os << "[" << i.lower() << ", " << i.upper() << ")";
-    return os;
-}
-
-template <class... Ts, class U>
-std::basic_ostream<Ts...> &operator<<(std::basic_ostream<Ts...> &os,
-                                      const polymorphic_bin<U> &i) {
-    if(i.is_discrete())
-        os << static_cast<double>(i);
-    else
-        os << "[" << i.lower() << ", " << i.upper() << ")";
-    return os;
 }
 
 template <class... Ts, class... Us>
