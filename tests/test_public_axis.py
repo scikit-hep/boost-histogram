@@ -184,8 +184,8 @@ class TestRegular(Axis):
         a = regular(2, 1.0, 2.0)
         ref = [1.0, 1.5, 2.0]
         for i in range(2):
-            assert_allclose(a.bin(i), ref[i:i + 2])
-            assert_allclose(a[i], ref[i:i + 2])
+            assert_allclose(a.bin(i), ref[i : i + 2])
+            assert_allclose(a[i], ref[i : i + 2])
 
         assert a[-1] == a[1]
         with pytest.raises(IndexError):
@@ -203,7 +203,7 @@ class TestRegular(Axis):
         a = regular(2, 1.0, 2.0)
         ref = [1.0, 1.5, 2.0]
         for i, bin in enumerate(a):
-            assert_allclose(bin, ref[i:i + 2])
+            assert_allclose(bin, ref[i : i + 2])
 
     def test_index(self):
         a = regular(4, 1.0, 2.0)
@@ -311,18 +311,18 @@ class TestCircular(Axis):
         a = circular(2, 1, 1 + np.pi * 2)
         ref = [1.0, 1.0 + np.pi, 1.0 + 2.0 * np.pi]
         for i in range(2):
-            assert_allclose(a.bin(i), ref[i:i + 2])
-            assert_allclose(a[i], ref[i:i + 2])
+            assert_allclose(a.bin(i), ref[i : i + 2])
+            assert_allclose(a[i], ref[i : i + 2])
 
         assert a[-1] == a[1]
         with pytest.raises(IndexError):
             a[2]
 
-        assert a.bin(2)[0] == approx(1 + 2*np.pi)
-        assert a.bin(2)[1] == approx(1 + 3*np.pi)
+        assert a.bin(2)[0] == approx(1 + 2 * np.pi)
+        assert a.bin(2)[1] == approx(1 + 3 * np.pi)
 
         with pytest.raises(IndexError):
-            a.bin(-1) # no underflow
+            a.bin(-1)  # no underflow
         with pytest.raises(IndexError):
             a.bin(3)
 
@@ -330,7 +330,7 @@ class TestCircular(Axis):
         a = circular(2, 1, 1 + np.pi * 2)
         ref = [1.0, 1.0 + np.pi, 1.0 + 2.0 * np.pi]
         for i, bin in enumerate(a):
-            assert_allclose(bin, ref[i:i + 2])
+            assert_allclose(bin, ref[i : i + 2])
 
     def test_index(self):
         a = circular(4, 1, 1 + np.pi * 2)
@@ -426,8 +426,8 @@ class TestVariable(Axis):
         a = variable(ref)
 
         for i in range(2):
-            assert_allclose(a.bin(i), ref[i:i + 2])
-            assert_allclose(a[i], ref[i:i + 2])
+            assert_allclose(a.bin(i), ref[i : i + 2])
+            assert_allclose(a[i], ref[i : i + 2])
 
         assert a[-1] == a[1]
         with pytest.raises(IndexError):
@@ -448,7 +448,7 @@ class TestVariable(Axis):
         ref = [-0.1, 0.2, 0.3]
         a = variable(ref)
         for i, bin in enumerate(a):
-            assert_array_equal(bin, ref[i:i + 2])
+            assert_array_equal(bin, ref[i : i + 2])
 
     def test_index(self):
         a = variable([-0.1, 0.2, 0.3])
