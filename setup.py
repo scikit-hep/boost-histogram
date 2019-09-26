@@ -42,7 +42,6 @@ SRC_FILES = [
     "src/register_version.cpp",
     "src/register_algorithm.cpp",
     "src/register_axis.cpp",
-    "src/register_polymorphic_bin.cpp",
     "src/register_shared_histogram.cpp",
     "src/register_general_histograms.cpp",
     "src/register_make_histogram.cpp",
