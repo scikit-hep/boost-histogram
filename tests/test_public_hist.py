@@ -382,7 +382,7 @@ def test_pickle_0():
         integer(0, 20),
         regular(2, 0.0, 20.0, flow=False),
         variable([0.0, 1.0, 2.0]),
-        circular(4, 2 * np.pi),
+        circular(4, 0, 2 * np.pi),
     )
     for i in range(a.axis(0).extent):
         a.fill(i, 0, 0, 0, 0)
@@ -582,23 +582,6 @@ def test_numpy_conversion_5():
     assert a1[0, 1] == 3
     assert a1[1, 1] == 4
     assert a1[2, 1] == 5
-
-
-def test_numpy_conversion_6():
-    a = integer(0, 2)
-    b = regular(2, 0, 2)
-    c = variable([0, 1, 2])
-    ref = np.array((0.0, 1.0, 2.0))
-    assert_array_equal(tuple(a), [0, 1])
-    assert_array_equal(b.edges(), ref)
-    assert_array_equal(c.edges(), ref)
-
-    d = circular(4, 0, 2 * np.pi)
-    ref = np.array((0.0, 0.5 * np.pi, np.pi, 1.5 * np.pi, 2.0 * np.pi))
-    assert_array_equal(d.edges(), ref)
-    e = category([1, 2])
-    ref = np.array((1, 2))
-    assert_array_equal(tuple(e), ref)
 
 
 def test_fill_with_numpy_array_0():

@@ -26,7 +26,7 @@ def test_axis_regular_uoflow(axtype, function):
     assert 10 == ax.index(1.01)
     assert 10 == ax.index(23)
 
-    assert 10 == ax.size
+    assert 10 == len(ax)
 
     assert ax.bin(3)[0] == approx(0.3)
     assert ax.bin(3)[1] == approx(0.4)
@@ -39,60 +39,28 @@ def test_axis_regular_uoflow(axtype, function):
 def test_axis_regular_extents():
     ax = bh.axis.regular(10, 0, 1)
     assert 12 == ax.extent
-    assert 11 == len(ax.edges())
-    assert 13 == len(ax.edges(True))
-    assert 10 == len(ax.centers())
+    assert 10 == len(ax.centers)
     assert ax.options == bh.axis.options(underflow=True, overflow=True)
 
     ax = bh.axis.regular(10, 0, 1, overflow=False)
     assert 11 == ax.extent
-    assert 11 == len(ax.edges())
-    assert 12 == len(ax.edges(True))
-    assert 10 == len(ax.centers())
+    assert 10 == len(ax.centers)
     assert ax.options == bh.axis.options(underflow=True)
 
     ax = bh.axis.regular(10, 0, 1, underflow=False)
     assert 11 == ax.extent
-    assert 11 == len(ax.edges())
-    assert 12 == len(ax.edges(True))
-    assert 10 == len(ax.centers())
+    assert 10 == len(ax.centers)
     assert ax.options == bh.axis.options(overflow=True)
 
     ax = bh.axis.regular(10, 0, 1, flow=False)
     assert 10 == ax.extent
-    assert 11 == len(ax.edges())
-    assert 11 == len(ax.edges(True))
-    assert 10 == len(ax.centers())
+    assert 10 == len(ax.centers)
     assert ax.options == bh.axis.options()
-
-
-def test_axis_growth():
-    ax = bh.axis.regular(10, 0, 1, growth=True)
-    ax.index(0.7)
-    ax.index(1.2)
-    assert ax.size == 10
-    assert len(ax.centers()) == 10
-    assert len(ax.edges()) == 11
-    assert ax.update(1.21) == (12, -3)
-    assert ax.size == 13
-    assert len(ax.edges()) == 14
-    assert len(ax.centers()) == 13
-
-
-def test_axis_growth_cat():
-    ax = bh.axis.category(["This"], growth=True)
-    assert ax.size == 1
-    ax.update("That")
-    assert ax.size == 2
-    assert ax.bin(0) == "This"
-    assert ax.bin(1) == "That"
 
 
 @pytest.mark.parametrize("offset", [-1, 0, 1, 2])
 def test_axis_circular_offset(offset):
     ax = bh.axis.circular(10, 0, 1)
-    assert 11 == len(ax.edges())
-
     assert 3 == ax.index(0.34 + offset)
     assert 2 == ax.index(0.26 + offset)
 

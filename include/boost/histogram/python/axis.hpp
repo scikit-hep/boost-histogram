@@ -69,6 +69,21 @@ py::array bins_impl(const A &ax, bool flow) {
 }
 
 template <class... Ts>
+py::array bins_impl(const bh::axis::integer<int, Ts...> &ax, bool flow) {
+    const bh::axis::index_type underflow
+        = flow && (bh::axis::traits::options(ax) & bh::axis::option::underflow);
+    const bh::axis::index_type overflow
+        = flow && (bh::axis::traits::options(ax) & bh::axis::option::overflow);
+
+    py::array_t<int> result(static_cast<std::size_t>(ax.size() + underflow + overflow));
+
+    for(auto i = -underflow; i < ax.size() + overflow; i++)
+        result.mutable_at(static_cast<std::size_t>(i)) = ax.value(i);
+
+    return std::move(result);
+}
+
+template <class... Ts>
 py::array bins_impl(const bh::axis::category<int, Ts...> &ax, bool flow) {
     static_assert(
         !(bh::axis::category<int, Ts...>::options() & bh::axis::option::underflow),
@@ -116,7 +131,7 @@ py::array bins(const A &ax, bool flow) {
 }
 
 template <class A>
-py::array np_bins_impl(const A &ax, bool flow) {
+py::array edges_impl(const A &ax, bool flow) {
     const bh::axis::index_type underflow
         = flow && (bh::axis::traits::options(ax) & bh::axis::option::underflow);
     const bh::axis::index_type overflow
@@ -131,30 +146,22 @@ py::array np_bins_impl(const A &ax, bool flow) {
     return std::move(edges);
 }
 
-template <class... Ts>
-py::array np_bins_impl(const bh::axis::category<int, Ts...> &ax, bool flow) {
-    return bins_impl(ax, flow);
-}
-
-template <class... Ts>
-py::array np_bins_impl(const bh::axis::category<std::string, Ts...> &ax, bool flow) {
+template <class U, class... Ts>
+py::array edges_impl(const bh::axis::category<U, Ts...> &ax, bool flow) {
     return bins(ax, flow);
 }
 
-/// Like bins, but converts to numpy-histogram-compatible array
+/// Convert continuous axis into numpy.histogram compatible edge array
 template <class A>
-py::array np_bins(const A &ax, bool flow) {
-    // this indirection is needed by pybind11
-    return np_bins_impl(ax, flow);
+py::array edges(const A &ax, bool flow) {
+    return edges_impl(ax, flow);
 }
 
 template <class A>
 py::array centers(const A &ax) {
     return bh::detail::static_if<bh::axis::traits::is_continuous<A>>(
         [](const auto &ax) -> py::array {
-            using A2 = std::decay_t<decltype(ax)>;
-            py::array_t<bh::axis::traits::value_type<A2>> result(
-                static_cast<std::size_t>(ax.size()));
+            py::array_t<double> result(static_cast<std::size_t>(ax.size()));
             std::transform(ax.begin(),
                            ax.end(),
                            result.mutable_data(),
@@ -166,12 +173,48 @@ py::array centers(const A &ax) {
 }
 
 template <class A>
-py::object bin(const A &ax, bh::axis::index_type i) {
+py::array_t<double> widths_impl(const A &ax) {
+    py::array_t<double> result(static_cast<std::size_t>(ax.size()));
+    std::transform(ax.begin(), ax.end(), result.mutable_data(), [](const auto &b) {
+        return b.width();
+    });
+    return result;
+}
+
+template <class... Ts>
+py::array_t<double> widths_impl(const bh::axis::integer<int, Ts...> &ax) {
+    py::array_t<double> result(static_cast<std::size_t>(ax.size()));
+    std::fill(result.mutable_data(), result.mutable_data() + ax.size(), 1.0);
+    return result;
+}
+
+template <class U, class... Ts>
+py::array_t<double> widths_impl(const bh::axis::category<U, Ts...> &ax) {
+    py::array_t<double> result(static_cast<std::size_t>(ax.size()));
+    std::fill(result.mutable_data(), result.mutable_data() + ax.size(), 1.0);
+    return result;
+}
+
+template <class A>
+py::array_t<double> widths(const A &ax) {
+    return widths_impl(ax);
+}
+
+template <class A>
+py::object unchecked_center(const A &ax, bh::axis::index_type i) {
     return bh::detail::static_if<bh::axis::traits::is_continuous<A>>(
-        [i](const auto &ax) {
-            return py::make_tuple(ax.bin(i).lower(), ax.bin(i).upper());
-        },
+        [i](const auto &ax) { return py::cast(ax.bin(i).center()); },
         [i](const auto &ax) { return py::cast(ax.bin(i)); },
+        ax);
+}
+
+template <class A>
+py::object unchecked_bin(const A &ax, bh::axis::index_type i) {
+    return bh::detail::static_if<bh::axis::traits::is_continuous<A>>(
+        [i](const auto &ax) -> py::object {
+            return std::move(py::make_tuple(ax.bin(i).lower(), ax.bin(i).upper()));
+        },
+        [i](const auto &ax) -> py::object { return py::cast(ax.bin(i)); },
         ax);
 }
 

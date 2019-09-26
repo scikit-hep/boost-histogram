@@ -123,19 +123,17 @@ register_histogram(py::module &m, const char *name, const char *desc) {
     hist.def(
             "to_numpy",
             [](histogram_t &h, bool flow) {
-                py::tuple result(1 + h.rank());
+                py::tuple tup(1 + h.rank());
 
                 // Add the histogram buffer as the first argument
-                PyTuple_SET_ITEM(
-                    result.ptr(), 0, py::array(make_buffer(h, flow)).release().ptr());
+                unchecked_set(tup, 0, py::array(make_buffer(h, flow)));
 
                 // Add the axis edges
-                h.for_each_axis([&result, flow, i = 0](const auto &ax) mutable {
-                    PyTuple_SET_ITEM(
-                        result.ptr(), ++i, axis::np_bins(ax, flow).release().ptr());
+                h.for_each_axis([&tup, flow, i = 0u](const auto &ax) mutable {
+                    unchecked_set(tup, ++i, axis::edges(ax, flow));
                 });
 
-                return result;
+                return tup;
             },
             "flow"_a = false,
             "convert to a numpy style tuple of returns")

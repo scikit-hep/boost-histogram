@@ -212,13 +212,13 @@ py::class_<A> register_axis(py::module &m, const char *name, Args &&... args) {
         .def(py::self == py::self)
         .def(py::self != py::self)
 
-        .def("update", &A::update, "i"_a, "Bin and add a value if allowed")
         .def_property_readonly(
             "options",
             [](const A &self) {
                 return options{static_cast<unsigned>(self.options())};
             },
             "Return the options associated to the axis")
+
         .def_property(
             "metadata",
             [](const A &self) { return self.metadata(); },
@@ -226,9 +226,13 @@ py::class_<A> register_axis(py::module &m, const char *name, Args &&... args) {
             "Set the axis label")
 
         .def_property_readonly(
+            "size",
+            &A::size,
+            "Returns the number of bins excluding under- and overflow")
+        .def_property_readonly(
             "extent",
             &bh::axis::traits::extent<A>,
-            "Returns the number of bins including over- or underflow")
+            "Returns the number of bins including under- and overflow")
 
         .def("__copy__", [](const A &self) { return A(self); })
         .def("__deepcopy__",
@@ -239,7 +243,39 @@ py::class_<A> register_axis(py::module &m, const char *name, Args &&... args) {
                  return a;
              })
 
-        .def("__len__", &A::size, "Return number of bins excluding over- or underflow")
+        .def(
+            "bin",
+            [](const A &ax, int i) {
+                const bh::axis::index_type begin
+                    = bh::axis::traits::static_options<A>::test(
+                          bh::axis::option::underflow)
+                          ? -1
+                          : 0;
+                const bh::axis::index_type end
+                    = bh::axis::traits::static_options<A>::test(
+                          bh::axis::option::overflow)
+                          ? ax.size() + 1
+                          : ax.size();
+                if(begin <= i && i < end)
+                    return axis::unchecked_bin<A>(ax, i);
+                throw py::index_error();
+            },
+            "i"_a,
+            "Return bin at index (-1 accesses underflow bin, size access overflow)")
+
+        .def("__len__", &A::size, "Return number of bins excluding under- and overflow")
+        .def(
+            "__getitem__",
+            [](const A &ax, int i) {
+                // Python-style indexing
+                if(i < 0)
+                    i += ax.size();
+                if(i >= ax.size())
+                    throw py::index_error();
+                return axis::unchecked_bin<A>(ax, i);
+            },
+            "i"_a,
+            "Return bin at index")
         .def(
             "__iter__",
             [](A &ax) {
@@ -250,7 +286,9 @@ py::class_<A> register_axis(py::module &m, const char *name, Args &&... args) {
                         : iterator::iterator_adaptor_(idx)
                         , axis_(axis) {}
 
-                    auto operator*() const { return axis::bin<A>(axis_, this->base()); }
+                    auto operator*() const {
+                        return axis::unchecked_bin<A>(axis_, this->base());
+                    }
                 };
 
                 iterator begin(ax, 0), end(ax, ax.size());
@@ -258,26 +296,8 @@ py::class_<A> register_axis(py::module &m, const char *name, Args &&... args) {
             },
             py::keep_alive<0, 1>())
 
-        .def("bins",
-             &axis::bins<A>,
-             "flow"_a = false,
-             "Return bins as array.\n"
-             "\n"
-             "Length N = len(axis) or axis.extent if flow=True. For axis other than "
-             "the category axis, this returns an array Nx2 of lower and upper edges. "
-             "For the category axis, this returns an array N of the category values.")
-
-        .def("np_bins",
-             &axis::np_bins<A>,
-             "flow"_a = false,
-             "Return bins as a numpy.histogram compatible array.\n"
-             "\n"
-             "Length N = len(axis) + 1 or axis.extent + 1 if flow=True. For axis other "
-             "than the category axis, this returns an array of lower edges and the "
-             "last upper edge. For the category axis, this returns an array of the "
-             "category values.")
-
         .def_property_readonly("centers", &axis::centers<A>, "Return bin centers")
+        .def_property_readonly("widths", &axis::widths<A>, "Return bin widths")
 
         ;
 
