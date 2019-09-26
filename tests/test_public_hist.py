@@ -543,7 +543,7 @@ def test_numpy_conversion_3():
 def test_numpy_conversion_4():
     a = histogram(integer(0, 2, flow=False), integer(0, 4, flow=False))
     a1 = np.asarray(a)
-    assert a1.dtype == np.double  # CLASSIC: np.uint8
+    assert a1.dtype == np.double
     assert a1.shape == (2, 4)
 
     b = histogram()
