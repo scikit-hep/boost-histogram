@@ -278,7 +278,7 @@ py::class_<A> register_axis(py::module &m, const char *name, Args &&... args) {
             "Return bin at index")
         .def(
             "__iter__",
-            [](A &ax) {
+            [](const A &ax) {
                 struct iterator
                     : bh::detail::iterator_adaptor<iterator, int, py::object> {
                     const A &axis_;
@@ -296,10 +296,12 @@ py::class_<A> register_axis(py::module &m, const char *name, Args &&... args) {
             },
             py::keep_alive<0, 1>())
 
+        .def_property_readonly(
+            "edges",
+            [](const A &ax) { return axis::edges(ax, false); },
+            "Return bin edges")
         .def_property_readonly("centers", &axis::centers<A>, "Return bin centers")
-        .def_property_readonly("widths", &axis::widths<A>, "Return bin widths")
-        .def_property_readonly("edges", &axis::edges<A>, "Return bin edges");
-    ;
+        .def_property_readonly("widths", &axis::widths<A>, "Return bin widths");
 
     vectorized_index_and_value_methods(ax);
 
