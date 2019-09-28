@@ -89,7 +89,7 @@ def test_growing_histogram():
 
     hist.fill(1.45)
 
-    assert hist.size == 15
+    assert hist.size == 17
 
 
 def test_numpy_flow():

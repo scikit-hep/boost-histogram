@@ -10,9 +10,12 @@ def test_compare():
     assert options(underflow=True, overflow=True) == options(
         underflow=True, overflow=True
     )
+    assert options() != options(overflow=True)
+    assert options(underflow=True) != options(overflow=True)
+    assert options(underflow=True, overflow=True) != options(overflow=True)
 
 
-def test_each():
+def test_fields():
     o = options()
 
     assert not o.underflow

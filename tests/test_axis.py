@@ -3,7 +3,6 @@ from pytest import approx
 
 import boost_histogram.core.axis as bha
 from boost_histogram.axis import options
-
 from boost_histogram.axis import (
     regular,
     regular_log,
@@ -18,10 +17,67 @@ from boost_histogram.axis import (
 import numpy as np
 from numpy.testing import assert_array_equal, assert_allclose
 
+import copy
 import abc
 
 # compatible with Python 2 *and* 3:
 ABC = abc.ABCMeta("ABC", (object,), {"__slots__": ()})
+
+
+@pytest.mark.parametrize(
+    "axis_and_args",
+    [
+        (regular, (1, 2, 3, "")),
+        (regular, (1, 2, 3, "u")),
+        (regular, (1, 2, 3, "o")),
+        (regular, (1, 2, 3, "uo")),
+        (regular, (1, 2, 3, "uog")),
+        (circular, (1, 2, 3, "")),
+        (regular_log, (1, 2, 3, "")),
+        (regular_sqrt, (1, 2, 3, "")),
+        (regular_pow, (1, 2, 3, 1, "")),
+        (variable, ((1, 2, 3), "")),
+        (variable, ((1, 2, 3), "u")),
+        (variable, ((1, 2, 3), "o")),
+        (variable, ((1, 2, 3), "uo")),
+        (variable, ((1, 2, 3), "uog")),
+        (integer, (1, 2, "")),
+        (integer, (1, 2, "u")),
+        (integer, (1, 2, "o")),
+        (integer, (1, 2, "uo")),
+        (integer, (1, 2, "g")),
+        (category, ((1, 2, 3), "")),
+        (category, ((1, 2, 3), "g")),
+        (category, ("ABC", "")),
+        (category, ("ABC", "g")),
+    ],
+)
+def test_metadata(axis_and_args):
+    axis, args_opt = axis_and_args
+    args = args_opt[:-1]
+    opt = args_opt[-1]
+    for m in ("foo", 64, {"one": 1}):
+        kwargs = {
+            "underflow": "u" in opt,
+            "overflow": "o" in opt,
+            "growth": "g" in opt,
+            "metadata": m,
+        }
+        if axis is category:
+            del kwargs["underflow"]
+            del kwargs["overflow"]
+        if axis in (circular, regular_log, regular_sqrt, regular_pow):
+            del kwargs["underflow"]
+            del kwargs["overflow"]
+            del kwargs["growth"]
+        assert axis(*args, **kwargs).metadata is m
+        mcopy = copy.deepcopy(m)
+        # assert axis(*args, m).metadata is not mcopy
+        assert axis(*args, **kwargs).metadata == m
+        assert axis(*args, **kwargs).metadata == mcopy
+        assert axis(*args, **kwargs).metadata != "bar"
+        assert axis(*args, **kwargs) == axis(*args, **kwargs)
+        assert axis(*args, **kwargs) != axis(*args, metadata="bar")
 
 
 class Axis(ABC):
@@ -61,10 +117,11 @@ class Axis(ABC):
 class TestRegular(Axis):
     def test_init(self):
         # Should not throw
-        regular(1, 1.0, 2.0, flow=True)
-        regular(1, 1.0, 2.0, flow=True, metadata="ra")
-        regular(1, 1.0, 2.0, flow=False)
-        regular(1, 1.0, 2.0, flow=False, metadata="ra")
+        regular(1, 1.0, 2.0)
+        regular(1, 1.0, 2.0, metadata="ra")
+        regular(1, 1.0, 2.0, underflow=False)
+        regular(1, 1.0, 2.0, underflow=False, overflow=False, metadata="ra")
+        regular(1, 1.0, 2.0, metadata=0)
         regular_log(1, 1.0, 2.0)
         regular_sqrt(1, 1.0, 2.0)
         regular_pow(1, 1.0, 2.0, 1.5)
@@ -88,9 +145,6 @@ class TestRegular(Axis):
             regular(1, 1.0, 1.0)
 
         with pytest.raises(TypeError):
-            regular(1, 1.0, 2.0, metadata=0)
-
-        with pytest.raises(KeyError):
             regular(1, 1.0, 2.0, bad_keyword="ra")
         with pytest.raises(TypeError):
             regular_pow(1, 1.0, 2.0)
@@ -110,25 +164,15 @@ class TestRegular(Axis):
         assert isinstance(ax, bha._regular_oflow)
         assert ax.options == options(overflow=True)
 
-        ax = regular(1, 2, 3, flow=False)
-        assert isinstance(ax, regular)
-        assert isinstance(ax, bha._regular_noflow)
-        assert ax.options == options()
-
         ax = regular(1, 2, 3, underflow=False, overflow=False)
         assert isinstance(ax, regular)
-        assert isinstance(ax, bha._regular_noflow)
+        assert isinstance(ax, bha._regular_none)
         assert ax.options == options()
-
-        ax = regular(1, 2, 3, underflow=False, overflow=False, flow=True)
-        assert isinstance(ax, regular)
-        assert isinstance(ax, bha._regular_uoflow)
-        assert ax.options == options(underflow=True, overflow=True)
 
         ax = regular(1, 2, 3, growth=True)
         assert isinstance(ax, regular)
-        assert isinstance(ax, bha._regular_growth)
-        assert ax.options == options(growth=True)
+        assert isinstance(ax, bha._regular_uoflow_growth)
+        assert ax.options == options(underflow=True, overflow=True, growth=True)
 
     def test_equal(self):
         a = regular(4, 1.0, 2.0)
@@ -136,6 +180,11 @@ class TestRegular(Axis):
         assert a != regular(3, 1.0, 2.0)
         assert a != regular(4, 1.1, 2.0)
         assert a != regular(4, 1.0, 2.1)
+
+        # metadata compare
+        assert regular(1, 2, 3, metadata=1) == regular(1, 2, 3, metadata=1)
+        assert regular(1, 2, 3, metadata=1) != regular(1, 2, 3, metadata="1")
+        assert regular(1, 2, 3, metadata=1) != regular(1, 2, 3, metadata=[1])
 
     def test_len(self):
         a = regular(4, 1.0, 2.0)
@@ -150,11 +199,11 @@ class TestRegular(Axis):
         ax = regular(4, 1.1, 2.2, metadata="ra")
         assert repr(ax) == 'regular(4, 1.1, 2.2, metadata="ra")'
 
-        ax = regular(4, 1.1, 2.2, flow=False)
-        assert repr(ax) == "regular(4, 1.1, 2.2, flow=False)"
+        ax = regular(4, 1.1, 2.2, underflow=False)
+        assert repr(ax) == "regular(4, 1.1, 2.2, underflow=False)"
 
-        ax = regular(4, 1.1, 2.2, metadata="ra", flow=False)
-        assert repr(ax) == 'regular(4, 1.1, 2.2, metadata="ra", flow=False)'
+        ax = regular(4, 1.1, 2.2, metadata="ra", overflow=False)
+        assert repr(ax) == 'regular(4, 1.1, 2.2, metadata="ra", overflow=False)'
 
         ax = regular_log(4, 1.1, 2.2)
         assert repr(ax) == "regular_log(4, 1.1, 2.2)"
@@ -263,17 +312,18 @@ class TestRegular(Axis):
 class TestCircular(Axis):
     def test_init(self):
         # Should not throw
-        circular(4, 0.0, 1.0)
-        circular(4, 0.0, 1.0, metadata="pa")
+        circular(1, 2, 3)
+        circular(1, 2, 3, metadata="pa")
+        circular(1, 2, 3, "pa")
 
         with pytest.raises(TypeError):
             circular()
         with pytest.raises(TypeError):
             circular(1)
+        with pytest.raises(TypeError):
+            circular(1, -1)
         with pytest.raises(Exception):
             circular(-1)
-        with pytest.raises(TypeError):
-            circular(1, 1.0, 2.0, 3.0)
         with pytest.raises(TypeError):
             circular(1, 1.0, metadata=1)
         with pytest.raises(TypeError):
@@ -363,7 +413,7 @@ class TestVariable(Axis):
             variable([1, 1])
         with pytest.raises(TypeError):
             variable(["1", 2])
-        with pytest.raises(KeyError):
+        with pytest.raises(TypeError):
             variable([0.0, 1.0, 2.0], bad_keyword="ra")
 
         ax = variable([1, 2, 3])
@@ -381,20 +431,10 @@ class TestVariable(Axis):
         assert isinstance(ax, bha._variable_oflow)
         assert ax.options == options(overflow=True)
 
-        ax = variable([1, 2, 3], flow=False)
-        assert isinstance(ax, variable)
-        assert isinstance(ax, bha._variable_noflow)
-        assert ax.options == options()
-
         ax = variable([1, 2, 3], underflow=False, overflow=False)
         assert isinstance(ax, variable)
-        assert isinstance(ax, bha._variable_noflow)
+        assert isinstance(ax, bha._variable_none)
         assert ax.options == options()
-
-        ax = variable([1, 2, 3], underflow=False, overflow=False, flow=True)
-        assert isinstance(ax, variable)
-        assert isinstance(ax, bha._variable_uoflow)
-        assert ax.options == options(underflow=True, overflow=True)
 
     def test_equal(self):
         a = variable([-0.1, 0.2, 0.3])
@@ -468,8 +508,11 @@ class TestVariable(Axis):
 
 class TestInteger:
     def test_init(self):
-        integer(-1, 2, flow=True)
-        integer(-1, 2, flow=False)
+        integer(-1, 2)
+        integer(-1, 2, metadata="foo")
+        integer(-1, 2, "foo")
+        integer(-1, 2, underflow=False)
+        integer(-1, 2, underflow=False, overflow=False)
         integer(-1, 2, growth=True)
 
         with pytest.raises(TypeError):
@@ -480,9 +523,6 @@ class TestInteger:
             integer("1", 2)
         with pytest.raises(ValueError):
             integer(2, -1)
-
-        with pytest.raises(TypeError):
-            integer(1, 2, 3)
 
         ax = integer(1, 3)
         assert isinstance(ax, integer)
@@ -499,20 +539,10 @@ class TestInteger:
         assert isinstance(ax, bha._integer_oflow)
         assert ax.options == options(overflow=True)
 
-        ax = integer(1, 3, flow=False)
-        assert isinstance(ax, integer)
-        assert isinstance(ax, bha._integer_noflow)
-        assert ax.options == options()
-
         ax = integer(1, 3, underflow=False, overflow=False)
         assert isinstance(ax, integer)
-        assert isinstance(ax, bha._integer_noflow)
+        assert isinstance(ax, bha._integer_none)
         assert ax.options == options()
-
-        ax = integer(1, 3, underflow=False, overflow=False, flow=True)
-        assert isinstance(ax, integer)
-        assert isinstance(ax, bha._integer_uoflow)
-        assert ax.options == options(underflow=True, overflow=True)
 
         ax = integer(1, 3, growth=True)
         assert isinstance(ax, integer)
@@ -522,18 +552,15 @@ class TestInteger:
     def test_equal(self):
         assert integer(-1, 2) == integer(-1, 2)
         assert integer(-1, 2) != integer(-1, 2, metadata="Other")
-        assert integer(-1, 2, flow=True) != integer(-1, 2, flow=False)
+        assert integer(-1, 2, underflow=True) != integer(-1, 2, underflow=False)
 
-    def test_len(self):
-        assert len(integer(-1, 3, flow=True)) == 4
-        assert integer(-1, 3, flow=True).size == 4
-        assert integer(-1, 3, flow=True).extent == 6
-        assert len(integer(-1, 3, flow=False)) == 4
-        assert integer(-1, 3, flow=False).size == 4
-        assert integer(-1, 3, flow=False).extent == 4
-        assert len(integer(-1, 3, growth=True)) == 4
-        assert integer(-1, 3, growth=True).size == 4
-        assert integer(-1, 3, growth=True).extent == 4
+    @pytest.mark.parametrize("underflow", [0, 1])
+    @pytest.mark.parametrize("overflow", [0, 1])
+    def test_len(self, underflow, overflow):
+        a = integer(-1, 3, underflow=underflow, overflow=overflow)
+        assert len(a) == 4
+        assert a.size == 4
+        assert a.extent == 4 + underflow + overflow
 
     def test_repr(self):
         a = integer(-1, 1)
@@ -542,8 +569,11 @@ class TestInteger:
         a = integer(-1, 1, metadata="hi")
         assert repr(a) == 'integer(-1, 1, metadata="hi")'
 
-        a = integer(-1, 1, flow=False)
-        assert repr(a) == "integer(-1, 1, flow=False)"
+        a = integer(-1, 1, underflow=False)
+        assert repr(a) == "integer(-1, 1, underflow=False)"
+
+        a = integer(-1, 1, overflow=False)
+        assert repr(a) == "integer(-1, 1, overflow=False)"
 
         a = integer(-1, 1, growth=True)
         assert repr(a) == "integer(-1, 1, growth=True)"
@@ -589,20 +619,20 @@ class TestInteger:
 class TestCategory(Axis):
     def test_init(self):
         # should not raise
-        category([1, 2, 3])
-        category([1, 2, 3], metadata="ca")
-
-        # Basic string support
-        category(["1"])
+        category([1, 2])
+        category((1, 2), metadata="foo")
+        category([1, 2], "foo")
+        category(["A", "B"])
+        category("AB")
+        category("AB", metadata="foo")
+        category("AB", "foo")
 
         with pytest.raises(TypeError):
             category()
         with pytest.raises(RuntimeError):
             category([1, "2"])
         with pytest.raises(TypeError):
-            category([1, 2], metadata=1)
-        with pytest.raises(TypeError):
-            category([1, 2, 3], uoflow=True)
+            category([1, 2, 3], underflow=True)
 
         ax = category([1, 2, 3])
         assert isinstance(ax, category)
@@ -630,27 +660,28 @@ class TestCategory(Axis):
         assert category(["A", "B"]) == category("AB")
         assert category(["A", "B"]) != category("BA")
 
-    def test_len(self):
-        assert len(category([1, 2, 3])) == 3
-        assert category([1, 2, 3]).size == 3
-        assert category([1, 2, 3]).extent == 4
-        assert len(category("AB")) == 2
-        assert category("AB").size == 2
-        assert category("AB").extent == 3
+    @pytest.mark.parametrize("ref", ([1, 2, 3], "ABC"))
+    @pytest.mark.parametrize("growth", (False, True))
+    def test_len(self, ref, growth):
+        a = category(ref, growth=growth)
+        assert len(a) == 3
+        assert a.size == 3
+        assert a.extent == 3 if growth else 4
 
     def test_repr(self):
         ax = category([1, 2, 3])
         assert repr(ax) == "category([1, 2, 3])"
 
-        ax = category([1, 2, 3], metadata="hi")
-        assert repr(ax) == 'category([1, 2, 3], metadata="hi")'
+        ax = category([1, 2, 3], metadata="foo")
+        assert repr(ax) == 'category([1, 2, 3], metadata="foo")'
 
-        ax = category("ABC", metadata="hi")
-        assert repr(ax) == 'category(["A", "B", "C"], metadata="hi")'
+        ax = category("ABC", metadata="foo")
+        assert repr(ax) == 'category(["A", "B", "C"], metadata="foo")'
 
     @pytest.mark.parametrize("ref", ([1, 2, 3], "ABC"))
-    def test_getitem(self, ref):
-        a = category(ref)
+    @pytest.mark.parametrize("growth", (False, True))
+    def test_getitem(self, ref, growth):
+        a = category(ref, growth=growth)
 
         for i in range(3):
             assert a.bin(i) == ref[i]
@@ -660,7 +691,7 @@ class TestCategory(Axis):
         with pytest.raises(IndexError):
             a[3]
 
-        # assert a.bin(3) == 0
+        assert a.bin(3) == 0
         with pytest.raises(IndexError):
             a.bin(-1)
         with pytest.raises(IndexError):
