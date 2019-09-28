@@ -120,7 +120,7 @@ py::array bins_impl(const A &ax, bool flow) {
     py::array_t<double> result(
         {static_cast<std::size_t>(ax.size() + underflow + overflow), std::size_t(2)});
 
-    for(auto i = -underflow; i < ax.size() + overflow; i++) {
+    for(auto i = -underflow; i < ax.size() + overflow; ++i) {
         result.mutable_at(static_cast<std::size_t>(i + underflow), 0) = ax.value(i);
         result.mutable_at(static_cast<std::size_t>(i + underflow), 1) = ax.value(i + 1);
     }
@@ -137,7 +137,7 @@ py::array bins_impl(const bh::axis::integer<int, Ts...> &ax, bool flow) {
 
     py::array_t<int> result(static_cast<std::size_t>(ax.size() + underflow + overflow));
 
-    for(auto i = -underflow; i < ax.size() + overflow; i++)
+    for(auto i = -underflow; i < ax.size() + overflow; ++i)
         result.mutable_at(static_cast<std::size_t>(i)) = ax.value(i);
 
     return std::move(result);
@@ -146,15 +146,15 @@ py::array bins_impl(const bh::axis::integer<int, Ts...> &ax, bool flow) {
 template <class... Ts>
 py::array bins_impl(const bh::axis::category<int, Ts...> &ax, bool flow) {
     static_assert(
-        !(bh::axis::category<int, Ts...>::options() & bh::axis::option::underflow),
-        "category axis never has underflow");
+        !(std::decay_t<decltype(ax)>::options() & bh::axis::option::underflow),
+        "discrete axis never has underflow");
 
     const bh::axis::index_type overflow
         = flow && (bh::axis::traits::options(ax) & bh::axis::option::overflow);
 
     py::array_t<int> result(static_cast<std::size_t>(ax.size() + overflow));
 
-    for(auto i = 0; i < ax.size() + overflow; i++)
+    for(auto i = 0; i < ax.size() + overflow; ++i)
         result.mutable_at(static_cast<std::size_t>(i)) = ax.value(i);
 
     return std::move(result);
@@ -162,9 +162,9 @@ py::array bins_impl(const bh::axis::category<int, Ts...> &ax, bool flow) {
 
 template <class... Ts>
 py::array bins_impl(const bh::axis::category<std::string, Ts...> &ax, bool flow) {
-    static_assert(!(bh::axis::category<std::string, Ts...>::options()
-                    & bh::axis::option::underflow),
-                  "category axis never has underflow");
+    static_assert(
+        !(std::decay_t<decltype(ax)>::options() & bh::axis::option::underflow),
+        "discrete axis never has underflow");
 
     const bh::axis::index_type overflow
         = flow && (bh::axis::traits::options(ax) & bh::axis::option::overflow);
@@ -215,8 +215,9 @@ py::array_t<double> edges(const A &ax, bool flow = false) {
     return select(
         continuous,
         [flow](const auto &ax) {
-            static_assert(!(ax.options() & bh::axis::option::underflow),
-                          "discrete axis never has underflow");
+            static_assert(
+                !(std::decay_t<decltype(ax)>::options() & bh::axis::option::underflow),
+                "discrete axis never has underflow");
 
             const bh::axis::index_type overflow
                 = flow && (bh::axis::traits::options(ax) & bh::axis::option::overflow);
