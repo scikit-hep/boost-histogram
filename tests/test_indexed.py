@@ -21,12 +21,12 @@ def test_1d_center():
 
 
 # Any axis has a special replacement for internal_view
-def test_2d_any_center():
+def test_2d_center():
 
     h = bh.histogram(bh.axis.regular(2, 0, 1), bh.axis.integer(0, 2))
 
     bins = [((0, 0.5), 0), ((0.5, 1), 0), ((0, 0.5), 1), ((0.5, 1), 1)]
-    centers = [(0.25, 0), (0.75, 0), (0.25, 1), (0.75, 1)]
+    centers = [(0.25, 0.5), (0.75, 0.5), (0.25, 1.5), (0.75, 1.5)]
 
     for ind, bins_ref, centers_ref in zip(h.indexed(), bins, centers):
         assert ind.bins()[0] == approx(bins_ref[0])

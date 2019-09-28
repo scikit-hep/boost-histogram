@@ -163,7 +163,7 @@ void vectorized_index_and_value_methods(
             "value",
             [](axis_t &self, py::array_t<int> indices) {
                 const ssize_t itemsize
-                    = (static_cast<ssize_t>(detail::max_string_length(self)) + 1) * 4;
+                    = (static_cast<ssize_t>(max_string_length(self)) + 1) * 4;
                 // to-do: return object array, since strings are highly redundant
                 std::vector<ssize_t> strides;
                 strides.reserve(static_cast<std::size_t>(indices.ndim()));
@@ -298,8 +298,8 @@ py::class_<A> register_axis(py::module &m, const char *name, Args &&... args) {
 
         .def_property_readonly("centers", &axis::centers<A>, "Return bin centers")
         .def_property_readonly("widths", &axis::widths<A>, "Return bin widths")
-
-        ;
+        .def_property_readonly("edges", &axis::edges<A>, "Return bin edges");
+    ;
 
     vectorized_index_and_value_methods(ax);
 
