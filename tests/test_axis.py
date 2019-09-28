@@ -590,7 +590,7 @@ class TestInteger:
         for i, r in enumerate(ref):
             assert a.bin(i) == r
             assert a[i] == r
-        # assert a.bin(-1) == -2 # wait for update in boost::histogram, then re-enable test
+        assert a.bin(-1) == -2
         assert a.bin(4) == 3
 
     def test_iter(self):
@@ -691,27 +691,31 @@ class TestCategory(Axis):
         with pytest.raises(IndexError):
             a[3]
 
-        assert a.bin(3) == 0
         with pytest.raises(IndexError):
             a.bin(-1)
+        # Even if category axis has overflow enabled, we cannot return a bin value for the overflow,
+        # because it is not clear what that value should be. So we raise an IndexError when this bin is accessed.
         with pytest.raises(IndexError):
-            a.bin(4)
+            a.bin(3)
 
-    @pytest.mark.parametrize("ref", ([1, 2, 3], "ABC"))
-    def test_iter(self, ref):
-        a = category(ref)
-        for bin, refi in zip(a, ref):
-            assert bin == refi
+    @pytest.mark.parametrize("ref", ([1, 2, 3], ("A", "B", "C")))
+    @pytest.mark.parametrize("growth", (False, True))
+    def test_iter(self, ref, growth):
+        a = category(ref, growth=growth)
+        assert_array_equal(a, ref)
 
-    @pytest.mark.parametrize("ref", ([1, 2, 3], "ABC"))
-    def test_index(self, ref):
-        a = category(ref)
+    @pytest.mark.parametrize("ref", ([1, 2, 3], ("A", "B", "C")))
+    @pytest.mark.parametrize("growth", (False, True))
+    def test_index(self, ref, growth):
+        a = category(ref, growth=growth)
         for i, r in enumerate(ref):
             assert a.index(r) == i
+        assert_array_equal(a.index(ref), [0, 1, 2])
 
     @pytest.mark.parametrize("ref", ([1, 2, 3], "ABC"))
-    def test_edges_centers_widths(self, ref):
-        a = category(ref)
+    @pytest.mark.parametrize("growth", (False, True))
+    def test_edges_centers_widths(self, ref, growth):
+        a = category(ref, growth=growth)
         assert_allclose(a.edges, [0, 1, 2, 3])
         assert_allclose(a.centers, [0.5, 1.5, 2.5])
         assert_allclose(a.widths, [1, 1, 1])
