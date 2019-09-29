@@ -12,18 +12,14 @@ y = 0.5 * np.random.randn(1000)
 # fill histogram with numpy arrays, this is very fast
 h.fill(x, y)
 
-# Get representations of the bin edges
-x = h.axis(0).edges()
-y = h.axis(1).edges()
-
-# creates a view of the counts (no copy involved)
-count_matrix = np.asarray(h)
+# Get numpy.histogram compatible representation of the histogram
+w, x, y = h.to_numpy()
 
 try:
     # draw the count matrix
     import matplotlib.pyplot as plt
 
-    plt.pcolor(x, y, count_matrix.T)
+    plt.pcolor(x, y, w.T)
     plt.xlabel(h.axis(0).metadata)
     plt.ylabel(h.axis(1).metadata)
     plt.savefig("example_2d_python.png")
@@ -31,7 +27,7 @@ try:
 except ImportError:
 
     # ok, no matplotlib, then just print the full count matrix
-    print(count_matrix)
+    print(w)
 
     # output of the print looks something like this, the two right-most rows
     # and two down-most columns represent under-/overflow bins

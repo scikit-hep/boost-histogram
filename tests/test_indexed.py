@@ -1,4 +1,5 @@
 import pytest
+from pytest import approx
 
 import boost_histogram as bh
 import numpy as np
@@ -7,33 +8,30 @@ import itertools
 
 
 def test_1d_center():
-    h = bh.histogram(bh.axis.regular(4, 0, 1))
+    h = bh.histogram(bh.axis.regular(2, 0, 1))
 
-    results = np.r_[0.125:0.875:4j]
+    bins = [(0, 0.5), (0.5, 1)]
+    centers = [0.25, 0.75]
 
-    for ind, answer in zip(h.indexed(), results):
-        a_bin, = ind.bins()
-        assert a_bin.center() == answer
+    for ind, bin_ref, center_ref in zip(h.indexed(), bins, centers):
+        bin, = ind.bins()
+        assert bin == approx(bin_ref)
         center, = ind.centers()
-        assert center == answer
+        assert center == approx(center_ref)
 
 
 # Any axis has a special replacement for internal_view
-def test_2d_any_center():
+def test_2d_center():
 
-    # This iterates in the opposite order as boost_histogram
-    results = itertools.product(np.r_[0:4], np.r_[0.125:0.875:4j])
+    h = bh.histogram(bh.axis.regular(2, 0, 1), bh.axis.integer(0, 2))
 
-    h = bh.histogram(bh.axis.regular(4, 0, 1), bh.axis.integer(0, 4))
+    bins = [((0, 0.5), 0), ((0.5, 1), 0), ((0, 0.5), 1), ((0.5, 1), 1)]
+    centers = [(0.25, 0.5), (0.75, 0.5), (0.25, 1.5), (0.75, 1.5)]
 
-    for ind, answer in zip(h.indexed(), results):
-        a, b = ind.centers()
-        assert b == answer[0]
-        assert a == answer[1]
-
-        a, b = ind.bins()
-        assert b.center() == answer[0]
-        assert a.center() == answer[1]
+    for ind, bins_ref, centers_ref in zip(h.indexed(), bins, centers):
+        assert ind.bins()[0] == approx(bins_ref[0])
+        assert ind.bins()[1] == approx(bins_ref[1])
+        assert ind.centers() == approx(centers_ref)
 
 
 def test_2d_function():

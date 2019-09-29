@@ -47,3 +47,25 @@ std::string shift_to_string(const T &x) {
     out << x;
     return out.str();
 }
+
+template <class Obj>
+void unchecked_set_impl(std::true_type, py::tuple &tup, ssize_t i, Obj &&obj) {
+    // PyTuple_SetItem steals a reference to 'val'
+    if(PyTuple_SetItem(tup.ptr(), i, obj.release().ptr()) != 0) {
+        throw py::error_already_set();
+    }
+}
+
+template <class T>
+void unchecked_set_impl(std::false_type, py::tuple &tup, ssize_t i, T &&t) {
+    unchecked_set_impl(std::true_type{}, tup, i, py::cast(std::forward<T>(t)));
+}
+
+/// Unchecked tuple assign
+template <class T>
+void unchecked_set(py::tuple &tup, unsigned i, T &&t) {
+    unchecked_set_impl(std::is_base_of<py::object, std::decay_t<T>>{},
+                       tup,
+                       static_cast<ssize_t>(i),
+                       std::forward<T>(t));
+}

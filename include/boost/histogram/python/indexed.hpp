@@ -16,43 +16,49 @@
 template <class T>
 struct index_python {
     using value_ref_t = typename decltype(std::declval<T>().begin())::reference;
-    using bin_t       = decltype(
-        std::declval<T>().axis(std::declval<unsigned>()).bin(std::declval<unsigned>()));
 
     T &histogram_;
-    std::array<unsigned, BOOST_HISTOGRAM_DETAIL_AXES_LIMIT> indices_;
+    std::array<bh::axis::index_type, BOOST_HISTOGRAM_DETAIL_AXES_LIMIT> indices_;
     value_ref_t content;
 
     template <class It>
     index_python(T &histogram, value_ref_t content, It &&begin_it, It &&end_it)
         : histogram_(histogram)
         , content(content) {
+        if(histogram_.rank() > indices_.size())
+            throw std::invalid_argument("histogram rank too large");
         std::copy(begin_it, end_it, indices_.begin());
     }
 
-    decltype(auto) bins() const {
-        std::vector<bin_t> vector_bins;
-        for(unsigned i = 0; i < histogram_.rank(); i++)
-            vector_bins.push_back(histogram_.axis(i).bin((int)indices_.at(i)));
-        return vector_bins;
+    unsigned rank() const { return histogram_.rank(); }
+
+    py::tuple bins() const {
+        py::tuple tup(rank());
+        histogram_.for_each_axis([&tup, this, i = 0u](const auto &ax) mutable {
+            unchecked_set(tup, i, axis::unchecked_bin(ax, indices_[i]));
+            ++i;
+        });
+        return tup;
     }
 
-    decltype(auto) indices() const {
-        std::vector<unsigned> vector_bins{indices_.begin(),
-                                          indices_.begin() + histogram_.rank()};
-        return vector_bins;
+    py::tuple indices() const {
+        py::tuple tup(rank());
+        for(unsigned i = 0; i < rank(); ++i)
+            unchecked_set(tup, i, indices_[i]);
+        return tup;
     }
 
     const value_ref_t get_content() const { return content; }
 
     value_ref_t get_content() { return content; }
 
-    decltype(auto) centers() {
-        std::vector<double> center_values;
-        for(unsigned i = 0; i < histogram_.rank(); i++)
-            center_values.push_back(
-                histogram_.axis(i).bin((int)indices_.at(i)).center());
-        return center_values;
+    py::tuple centers() {
+        py::tuple tup(rank());
+        histogram_.for_each_axis([&tup, this, i = 0u](const auto &ax) mutable {
+            unchecked_set(tup, i, axis::unchecked_center(ax, indices_[i]));
+            ++i;
+        });
+        return tup;
     }
 
     // Add content(s), centers, edges

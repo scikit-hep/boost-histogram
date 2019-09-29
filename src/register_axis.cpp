@@ -133,13 +133,6 @@ void register_axes(py::module &ax) {
              "n"_a,
              "start"_a,
              "stop"_a,
-             "metadata"_a = py::str())
-        .def(py::init([](unsigned n, double stop, metadata_t metadata) {
-                 validate_metadata(metadata);
-                 return new axis::circular{n, 0.0, stop, metadata};
-             }),
-             "n"_a,
-             "stop"_a,
              "metadata"_a = py::str());
 
     register_axis<axis::regular_log>(ax, "regular_log", "Evenly spaced bins in log10")
@@ -344,9 +337,36 @@ void register_axes(py::module &ax) {
         [](py::object labels, metadata_t metadata, bool growth) -> py::object {
             validate_metadata(metadata);
 
-            try {
-                auto int_values = py::cast<std::vector<int>>(labels);
+            // handle sequences
+            if(py::isinstance<py::sequence>(labels)) {
+                std::vector<std::string> str_values;
 
+                // handle string or sequence of strings
+                if(py::isinstance<py::str>(labels)) {
+                    auto s = py::cast<std::string>(labels);
+                    str_values.resize(s.size());
+                    std::transform(s.begin(),
+                                   s.end(),
+                                   str_values.begin(),
+                                   [](const char &c) { return std::string(1, c); });
+                } else {
+                    auto seq = py::cast<py::sequence>(labels);
+                    if(py::isinstance<py::str>(seq[0]))
+                        str_values = py::cast<std::vector<std::string>>(labels);
+                }
+                if(!str_values.empty()) {
+                    if(growth) {
+                        return py::cast(
+                            axis::_category_str_growth(str_values, metadata),
+                            py::return_value_policy::move);
+                    } else {
+                        return py::cast(axis::_category_str(str_values, metadata),
+                                        py::return_value_policy::move);
+                    }
+                }
+
+                // handle sequence of int or throw TypeError
+                auto int_values = py::cast<std::vector<int>>(labels);
                 if(growth) {
                     return py::cast(axis::_category_int_growth(int_values, metadata),
                                     py::return_value_policy::move);
@@ -354,17 +374,9 @@ void register_axes(py::module &ax) {
                     return py::cast(axis::_category_int(int_values, metadata),
                                     py::return_value_policy::move);
                 }
-            } catch(const py::cast_error &) {
-                auto str_values = py::cast<std::vector<std::string>>(labels);
-
-                if(growth) {
-                    return py::cast(axis::_category_str_growth(str_values, metadata),
-                                    py::return_value_policy::move);
-                } else {
-                    return py::cast(axis::_category_str(str_values, metadata),
-                                    py::return_value_policy::move);
-                }
             }
+
+            throw py::type_error("labels is not a sequence");
         },
         "labels"_a,
         "metadata"_a = py::str(),

@@ -12,7 +12,6 @@
 #include <boost/histogram/detail/iterator_adaptor.hpp>
 #include <boost/histogram/python/axis.hpp>
 #include <boost/histogram/python/axis_ostream.hpp>
-#include <boost/histogram/python/bin_setup.hpp>
 #include <boost/histogram/python/serializion.hpp>
 
 #include <algorithm>
@@ -88,20 +87,6 @@ void vectorized_index_and_value_methods(py::class_<A> &axis) {
 
 template <class... Ts>
 void vectorized_index_and_value_methods(
-    py::class_<bh::axis::category<int, Ts...>> &axis) {
-    using axis_t = bh::axis::category<int, Ts...>;
-    axis.def("index",
-             py::vectorize([](axis_t &self, int v) { return int(self.index(v)); }),
-             "Index for value (or values) on the axis",
-             "x"_a)
-        .def("value",
-             py::vectorize([](axis_t &self, int i) { return int(self.value(i)); }),
-             "Value at index (or indices)",
-             "i"_a);
-}
-
-template <class... Ts>
-void vectorized_index_and_value_methods(
     py::class_<bh::axis::category<std::string, Ts...>> &axis) {
     using axis_t = bh::axis::category<std::string, Ts...>;
     axis.def(
@@ -138,7 +123,7 @@ void vectorized_index_and_value_methods(
                     }
                 } break;
                 case 'U': {
-                    // numpy seems to use utf32 encoding
+                    // numpy seems to use utf-32 encoding
                     if(itemsize % 4 != 0)
                         throw std::invalid_argument(
                             "itemsize for unicode array is not multiple of 4");
@@ -178,7 +163,7 @@ void vectorized_index_and_value_methods(
             "value",
             [](axis_t &self, py::array_t<int> indices) {
                 const ssize_t itemsize
-                    = (static_cast<ssize_t>(detail::max_string_length(self)) + 1) * 4;
+                    = (static_cast<ssize_t>(max_string_length(self)) + 1) * 4;
                 // to-do: return object array, since strings are highly redundant
                 std::vector<ssize_t> strides;
                 strides.reserve(static_cast<std::size_t>(indices.ndim()));
@@ -227,13 +212,13 @@ py::class_<A> register_axis(py::module &m, const char *name, Args &&... args) {
         .def(py::self == py::self)
         .def(py::self != py::self)
 
-        .def("update", &A::update, "i"_a, "Bin and add a value if allowed")
         .def_property_readonly(
             "options",
             [](const A &self) {
                 return options{static_cast<unsigned>(self.options())};
             },
             "Return the options associated to the axis")
+
         .def_property(
             "metadata",
             [](const A &self) { return self.metadata(); },
@@ -241,13 +226,13 @@ py::class_<A> register_axis(py::module &m, const char *name, Args &&... args) {
             "Set the axis label")
 
         .def_property_readonly(
+            "size",
+            &A::size,
+            "Returns the number of bins excluding under- and overflow")
+        .def_property_readonly(
             "extent",
             &bh::axis::traits::extent<A>,
-            "Returns the number of bins including over- or underflow")
-        .def_property_readonly(
-            "size", &A::size, "Return number of bins excluding over- or underflow")
-
-        .def("bin", &axis::bin<A>, "i"_a, "Return bin at index i")
+            "Returns the number of bins including under- and overflow")
 
         .def("__copy__", [](const A &self) { return A(self); })
         .def("__deepcopy__",
@@ -259,8 +244,41 @@ py::class_<A> register_axis(py::module &m, const char *name, Args &&... args) {
              })
 
         .def(
+            "bin",
+            [](const A &ax, int i) {
+                const bh::axis::index_type begin
+                    = bh::axis::traits::static_options<A>::test(
+                          bh::axis::option::underflow)
+                          ? -1
+                          : 0;
+                const bh::axis::index_type end
+                    = bh::axis::traits::static_options<A>::test(
+                          bh::axis::option::overflow)
+                          ? ax.size() + 1
+                          : ax.size();
+                if(begin <= i && i < end)
+                    return axis::unchecked_bin<A>(ax, i);
+                throw py::index_error();
+            },
+            "i"_a,
+            "Return bin at index (-1 accesses underflow bin, size access overflow)")
+
+        .def("__len__", &A::size, "Return number of bins excluding under- and overflow")
+        .def(
+            "__getitem__",
+            [](const A &ax, int i) {
+                // Python-style indexing
+                if(i < 0)
+                    i += ax.size();
+                if(i >= ax.size())
+                    throw py::index_error();
+                return axis::unchecked_bin<A>(ax, i);
+            },
+            "i"_a,
+            "Return bin at index")
+        .def(
             "__iter__",
-            [](A &ax) {
+            [](const A &ax) {
                 struct iterator
                     : bh::detail::iterator_adaptor<iterator, int, py::object> {
                     const A &axis_;
@@ -268,7 +286,9 @@ py::class_<A> register_axis(py::module &m, const char *name, Args &&... args) {
                         : iterator::iterator_adaptor_(idx)
                         , axis_(axis) {}
 
-                    auto operator*() const { return axis::bin<A>(axis_, this->base()); }
+                    auto operator*() const {
+                        return axis::unchecked_bin<A>(axis_, this->base());
+                    }
                 };
 
                 iterator begin(ax, 0), end(ax, ax.size());
@@ -276,28 +296,12 @@ py::class_<A> register_axis(py::module &m, const char *name, Args &&... args) {
             },
             py::keep_alive<0, 1>())
 
-        ;
-
-    bh::detail::static_if<axis::is_continuous<A>>(
-        [](auto &ax) {
-            // for continuous axis with bins that represent intervals
-            using axis_t = boost::mp11::mp_first<std::decay_t<decltype(ax)>>;
-            ax.def("edges",
-                   &axis::to_edges<axis_t>,
-                   "flow"_a = false,
-                   "Bin edges (length: len(axis) + 1) (include over/underflow if "
-                   "flow=True)")
-                .def("centers", &axis::to_centers<axis_t>, "Return the bin centers");
-        },
-        [](auto &ax) {
-            // for discrete axis with bins that represent values
-            using axis_t = boost::mp11::mp_first<std::decay_t<decltype(ax)>>;
-            ax.def("values",
-                   &axis::to_values<axis_t>,
-                   "flow"_a = false,
-                   "Return the bin values");
-        },
-        ax);
+        .def_property_readonly(
+            "edges",
+            [](const A &ax) { return axis::edges(ax, false); },
+            "Return bin edges")
+        .def_property_readonly("centers", &axis::centers<A>, "Return bin centers")
+        .def_property_readonly("widths", &axis::widths<A>, "Return bin widths");
 
     vectorized_index_and_value_methods(ax);
 

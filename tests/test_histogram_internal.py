@@ -97,7 +97,7 @@ def test_numpy_flow():
 
     for i in range(10):
         for j in range(5):
-            x, y = h.axis(0).centers()[i], h.axis(1).centers()[j]
+            x, y = h.axis(0).centers[i], h.axis(1).centers[j]
             v = i + j * 10 + 1
             h.fill([x] * v, [y] * v)
 
@@ -121,7 +121,7 @@ def test_numpy_compare():
     ys = []
     for i in range(10):
         for j in range(5):
-            x, y = h.axis(0).centers()[i], h.axis(1).centers()[j]
+            x, y = h.axis(0).centers[i], h.axis(1).centers[j]
             v = i + j * 10 + 1
             xs += [x] * v
             ys += [y] * v
