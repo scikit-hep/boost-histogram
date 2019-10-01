@@ -53,29 +53,6 @@ struct options {
     bool growth() const { return static_cast<bool>(option & bh::axis::option::growth); }
 };
 
-/// Ensure metadata is valid.
-inline void validate_metadata(metadata_t v) {
-    try {
-        py::cast<double>(v);
-        throw py::type_error(
-            "Numeric types not allowed for metatdata in the the constructor. Use "
-            ".metadata after "
-            "constructing instead if you *really* need numeric metadata.");
-    } catch(const py::cast_error &) {
-    }
-}
-
-/// Add a constructor for an axes, with smart handling for the metadata (will not allow
-/// numeric types)"
-template <class T, class... Args>
-decltype(auto) construct_axes() {
-    return py::init([](Args... args, metadata_t v) {
-        // Check for numeric v here
-        validate_metadata(v);
-        return new T{std::forward<Args>(args)..., v};
-    });
-}
-
 template <class A>
 void vectorized_index_and_value_methods(py::class_<A> &axis) {
     axis.def("index",
@@ -252,8 +229,9 @@ py::class_<A> register_axis(py::module &m, const char *name, Args &&... args) {
                           ? -1
                           : 0;
                 const bh::axis::index_type end
-                    = bh::axis::traits::static_options<A>::test(
-                          bh::axis::option::overflow)
+                    = (!axis::is_category<A>::value
+                       && bh::axis::traits::static_options<A>::test(
+                           bh::axis::option::overflow))
                           ? ax.size() + 1
                           : ax.size();
                 if(begin <= i && i < end)

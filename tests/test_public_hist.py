@@ -109,7 +109,7 @@ def test_fill_int_1d():
 
 @pytest.mark.parametrize("flow", [True, False])
 def test_fill_1d(flow):
-    h = histogram(regular(3, -1, 2, flow=flow))
+    h = histogram(regular(3, -1, 2, underflow=flow, overflow=flow))
     with pytest.raises(ValueError):
         h.fill()
     with pytest.raises(ValueError):
@@ -161,7 +161,10 @@ def test_growth():
 
 @pytest.mark.parametrize("flow", [True, False])
 def test_fill_2d(flow):
-    h = histogram(integer(-1, 2, flow=flow), regular(4, -2, 2, flow=flow))
+    h = histogram(
+        integer(-1, 2, underflow=flow, overflow=flow),
+        regular(4, -2, 2, underflow=flow, overflow=flow),
+    )
     h.fill(-1, -2)
     h.fill(-1, -1)
     h.fill(0, 0)
@@ -192,7 +195,10 @@ def test_fill_2d(flow):
 
 @pytest.mark.parametrize("flow", [True, False])
 def test_add_2d(flow):
-    h = histogram(integer(-1, 2, flow=flow), regular(4, -2, 2, flow=flow))
+    h = histogram(
+        integer(-1, 2, underflow=flow, overflow=flow),
+        regular(4, -2, 2, underflow=flow, overflow=flow),
+    )
     assert isinstance(h, histogram)
 
     h.fill(-1, -2)
@@ -228,7 +234,10 @@ def test_add_2d_bad():
 
 @pytest.mark.parametrize("flow", [True, False])
 def test_add_2d_w(flow):
-    h = histogram(integer(-1, 2, flow=flow), regular(4, -2, 2, flow=flow))
+    h = histogram(
+        integer(-1, 2, underflow=flow, overflow=flow),
+        regular(4, -2, 2, underflow=flow, overflow=flow),
+    )
     h.fill(-1, -2)
     h.fill(-1, -1)
     h.fill(0, 0)
@@ -245,7 +254,10 @@ def test_add_2d_w(flow):
         [0, 0, 0, 0, 0, 0],
     ]
 
-    h2 = histogram(integer(-1, 2, flow=flow), regular(4, -2, 2, flow=flow))
+    h2 = histogram(
+        integer(-1, 2, underflow=flow, overflow=flow),
+        regular(4, -2, 2, underflow=flow, overflow=flow),
+    )
     h2.fill(0, 0, weight=0)
 
     h2 += h
@@ -380,7 +392,7 @@ def test_pickle_0():
     a = histogram(
         category([0, 1, 2]),
         integer(0, 20),
-        regular(2, 0.0, 20.0, flow=False),
+        regular(2, 0.0, 20.0, underflow=False, overflow=False),
         variable([0.0, 1.0, 2.0]),
         circular(4, 0, 2 * np.pi),
     )
@@ -413,7 +425,7 @@ def test_pickle_1():
     a = histogram(
         category([0, 1, 2]),
         integer(0, 3, metadata="ia"),
-        regular(4, 0.0, 4.0, flow=False),
+        regular(4, 0.0, 4.0, underflow=False, overflow=False),
         variable([0.0, 1.0, 2.0]),
     )
     assert isinstance(a, histogram)
@@ -446,7 +458,7 @@ def test_pickle_1():
 
 
 def test_numpy_conversion_0():
-    a = histogram(integer(0, 3, flow=False))
+    a = histogram(integer(0, 3, underflow=False, overflow=False))
     a.fill(0)
     for i in range(5):
         a.fill(1)
@@ -487,7 +499,9 @@ def test_numpy_conversion_1():
 
 def test_numpy_conversion_2():
     a = histogram(
-        integer(0, 2, flow=False), integer(0, 3, flow=False), integer(0, 4, flow=False)
+        integer(0, 2, underflow=False, overflow=False),
+        integer(0, 3, underflow=False, overflow=False),
+        integer(0, 4, underflow=False, overflow=False),
     )
     r = np.zeros((2, 3, 4), dtype=np.int8)
     for i in range(a.axis(0).extent):
@@ -541,7 +555,10 @@ def test_numpy_conversion_3():
 
 
 def test_numpy_conversion_4():
-    a = histogram(integer(0, 2, flow=False), integer(0, 4, flow=False))
+    a = histogram(
+        integer(0, 2, underflow=False, overflow=False),
+        integer(0, 4, underflow=False, overflow=False),
+    )
     a1 = np.asarray(a)
     assert a1.dtype == np.double
     assert a1.shape == (2, 4)
@@ -557,8 +574,8 @@ def test_numpy_conversion_4():
 
 def test_numpy_conversion_5():
     a = histogram(
-        integer(0, 3, flow=False),
-        integer(0, 2, flow=False),
+        integer(0, 3, underflow=False, overflow=False),
+        integer(0, 2, underflow=False, overflow=False),
         storage=bh.storage.unlimited(),
     )
     a.fill(0, 0)
@@ -588,7 +605,7 @@ def test_fill_with_numpy_array_0():
     def ar(*args):
         return np.array(args, dtype=float)
 
-    a = histogram(integer(0, 3, flow=False))
+    a = histogram(integer(0, 3, underflow=False, overflow=False))
     a.fill(ar(-1, 0, 1, 2, 1))
     a.fill((4, -1, 0, 1, 2))
     assert a.at(0) == 2
@@ -607,7 +624,10 @@ def test_fill_with_numpy_array_0():
     with pytest.raises(ValueError):
         a.at(1, 2)
 
-    a = histogram(integer(0, 2, flow=False), regular(2, 0, 2, flow=False))
+    a = histogram(
+        integer(0, 2, underflow=False, overflow=False),
+        regular(2, 0, 2, underflow=False, overflow=False),
+    )
     a.fill(ar(-1, 0, 1), ar(-1.0, 1.0, 0.1))
     assert a.at(0, 0) == 0
     assert a.at(0, 1) == 1
@@ -628,7 +648,7 @@ def test_fill_with_numpy_array_0():
     with pytest.raises(ValueError):
         a.at(1, 2, 3)
 
-    a = histogram(integer(0, 3, flow=False))
+    a = histogram(integer(0, 3, underflow=False, overflow=False))
     a.fill(ar(0, 0, 1, 2, 1, 0, 2, 2))
     assert a.at(0) == 3
     assert a.at(1) == 2
@@ -678,13 +698,16 @@ def test_fill_with_numpy_array_1():
     with pytest.raises(ValueError):
         a.fill((1, 2), weight=([1, 1], [2, 2]))
 
-    a = histogram(integer(0, 2, flow=False), regular(2, 0, 2, flow=False))
+    a = histogram(
+        integer(0, 2, underflow=False, overflow=False),
+        regular(2, 0, 2, underflow=False, overflow=False),
+    )
     a.fill((-1, 0, 1), (-1, 1, 0.1))
     assert a.at(0, 0) == 0
     assert a.at(0, 1) == 1
     assert a.at(1, 0) == 1
     assert a.at(1, 1) == 0
-    a = histogram(integer(0, 3, flow=False))
+    a = histogram(integer(0, 3, underflow=False, overflow=False))
     a.fill((0, 0, 1, 2))
     a.fill((1, 0, 2, 2))
     assert a.at(0) == 3
@@ -700,7 +723,7 @@ def test_fill_with_numpy_array_2():
     assert a.at(1) == 1
     assert a.at(2) == 2
 
-    b = histogram(integer(0, 2, flow=False), category(["A", "B"]))
+    b = histogram(integer(0, 2, underflow=False, overflow=False), category(["A", "B"]))
     b.fill((1, 0, 10), ("C", "B", "A"))
     assert b.at(0, 0) == 0
     assert b.at(1, 0) == 0

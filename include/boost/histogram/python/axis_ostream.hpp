@@ -34,18 +34,10 @@ inline const char *axis_suffix(const axis::transform::log &) { return "_log"; }
 inline const char *axis_suffix(const axis::transform::sqrt &) { return "_sqrt"; }
 inline const char *axis_suffix(const axis::transform::pow &) { return "_pow"; }
 
-template <class OStream, class T>
-void stream_metadata(OStream &os, const T &t) {
-    detail::static_if<detail::is_streamable<T>>(
-        [&os](const auto &t) {
-            std::ostringstream oss;
-            oss << t;
-            if(!oss.str().empty()) {
-                os << ", metadata=" << std::quoted(oss.str());
-            }
-        },
-        [&os](const auto &) { os << ", metadata=" << detail::type_name<T>(); },
-        t);
+template <class OStream>
+void stream_metadata(OStream &os, const metadata_t &t) {
+    if(!t.is_none())
+        os << ", metadata=" << std::quoted(py::cast<std::string>(t));
 }
 
 template <class OStream>
@@ -61,14 +53,12 @@ void stream_options(OStream &os, const unsigned bits) {
 
     if(circular)
         return;
-    else if(growth)
-        os << ", growth=True";
-    else if(!underflow && !overflow)
-        os << ", flow=False";
-    else if(underflow && !overflow)
-        os << ", overflow=False";
     else if(!underflow && overflow)
         os << ", underflow=False";
+    else if(underflow && !overflow)
+        os << ", overflow=False";
+    else if(growth)
+        os << ", growth=True";
 }
 
 template <class OStream, class T>

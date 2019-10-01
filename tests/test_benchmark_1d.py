@@ -15,7 +15,7 @@ ranges = np.asarray(ranges).astype(np.float64)
 edges = np.linspace(ranges[0], ranges[1], bins + 1)
 
 np.random.seed(42)
-vals = np.random.normal(size=[10000000]).astype(np.float32)
+vals = np.random.normal(size=[100000]).astype(np.float32)
 
 answer, _ = np.histogram(vals, bins=bins, range=ranges)
 
@@ -27,7 +27,9 @@ def test_numpy_perf_1d(benchmark):
 
 
 def make_and_run_hist(flow, storage):
-    histo = bh.histogram(regular(bins, *ranges, flow=flow), storage=storage())
+    histo = bh.histogram(
+        regular(bins, *ranges, underflow=flow, overflow=flow), storage=storage()
+    )
     histo.fill(vals)
     return histo.view()
 

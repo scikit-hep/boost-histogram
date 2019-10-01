@@ -17,7 +17,7 @@ edges = (
 )
 
 np.random.seed(42)
-vals = np.random.normal(size=[2, 1000000]).astype(np.float64)
+vals = np.random.normal(size=[2, 100000]).astype(np.float64)
 
 answer, _, _ = np.histogram2d(*vals, bins=bins, range=ranges)
 
@@ -31,8 +31,8 @@ def test_numpy_perf_2d(benchmark):
 def make_and_run_hist(flow, storage):
 
     histo = bh.histogram(
-        regular(bins[0], *ranges[0], flow=flow),
-        regular(bins[1], *ranges[1], flow=flow),
+        regular(bins[0], *ranges[0], underflow=flow, overflow=flow),
+        regular(bins[1], *ranges[1], underflow=flow, overflow=flow),
         storage=storage(),
     )
     histo.fill(*vals)

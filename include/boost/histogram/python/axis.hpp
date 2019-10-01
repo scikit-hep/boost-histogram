@@ -26,15 +26,12 @@ struct type_caster<bh::axis::variant<Ts...>>
 
 inline bool PyObject_Check(void *value) { return value != nullptr; }
 
-class metadata_t : public py::object {
+struct metadata_t : py::object {
     PYBIND11_OBJECT_DEFAULT(metadata_t, object, PyObject_Check);
 
-    bool operator==(const metadata_t &other) const {
-        return py::cast<bool>(this->attr("__eq__")(other));
-    }
-
+    bool operator==(const metadata_t &other) const { return py::object::equal(other); }
     bool operator!=(const metadata_t &other) const {
-        return py::cast<bool>(this->attr("__ne__")(other));
+        return py::object::not_equal(other);
     }
 };
 
@@ -47,6 +44,11 @@ std::string::size_type max_string_length(const Iterable &c) {
 }
 
 namespace axis {
+
+namespace option = bh::axis::option;
+
+using ogrowth_t  = decltype(option::growth | option::overflow);
+using uogrowth_t = decltype(option::growth | option::underflow | option::overflow);
 
 // How edges, centers, and widths are handled
 //
@@ -113,9 +115,9 @@ decltype(auto) unchecked_bin(const A &ax, bh::axis::index_type i) {
 template <class A>
 py::array bins_impl(const A &ax, bool flow) {
     const bh::axis::index_type underflow
-        = flow && (bh::axis::traits::options(ax) & bh::axis::option::underflow);
+        = flow && (bh::axis::traits::options(ax) & option::underflow);
     const bh::axis::index_type overflow
-        = flow && (bh::axis::traits::options(ax) & bh::axis::option::overflow);
+        = flow && (bh::axis::traits::options(ax) & option::overflow);
 
     py::array_t<double> result(
         {static_cast<std::size_t>(ax.size() + underflow + overflow), std::size_t(2)});
@@ -131,9 +133,9 @@ py::array bins_impl(const A &ax, bool flow) {
 template <class... Ts>
 py::array bins_impl(const bh::axis::integer<int, Ts...> &ax, bool flow) {
     const bh::axis::index_type underflow
-        = flow && (bh::axis::traits::options(ax) & bh::axis::option::underflow);
+        = flow && (bh::axis::traits::options(ax) & option::underflow);
     const bh::axis::index_type overflow
-        = flow && (bh::axis::traits::options(ax) & bh::axis::option::overflow);
+        = flow && (bh::axis::traits::options(ax) & option::overflow);
 
     py::array_t<int> result(static_cast<std::size_t>(ax.size() + underflow + overflow));
 
@@ -145,12 +147,11 @@ py::array bins_impl(const bh::axis::integer<int, Ts...> &ax, bool flow) {
 
 template <class... Ts>
 py::array bins_impl(const bh::axis::category<int, Ts...> &ax, bool flow) {
-    static_assert(
-        !(std::decay_t<decltype(ax)>::options() & bh::axis::option::underflow),
-        "discrete axis never has underflow");
+    static_assert(!(std::decay_t<decltype(ax)>::options() & option::underflow),
+                  "discrete axis never has underflow");
 
     const bh::axis::index_type overflow
-        = flow && (bh::axis::traits::options(ax) & bh::axis::option::overflow);
+        = flow && (bh::axis::traits::options(ax) & option::overflow);
 
     py::array_t<int> result(static_cast<std::size_t>(ax.size() + overflow));
 
@@ -162,12 +163,11 @@ py::array bins_impl(const bh::axis::category<int, Ts...> &ax, bool flow) {
 
 template <class... Ts>
 py::array bins_impl(const bh::axis::category<std::string, Ts...> &ax, bool flow) {
-    static_assert(
-        !(std::decay_t<decltype(ax)>::options() & bh::axis::option::underflow),
-        "discrete axis never has underflow");
+    static_assert(!(std::decay_t<decltype(ax)>::options() & option::underflow),
+                  "discrete axis never has underflow");
 
     const bh::axis::index_type overflow
-        = flow && (bh::axis::traits::options(ax) & bh::axis::option::overflow);
+        = flow && (bh::axis::traits::options(ax) & option::overflow);
 
     const auto n = max_string_length(ax);
     // TODO: this should return unicode
@@ -199,9 +199,9 @@ py::array_t<double> edges(const A &ax, bool flow = false) {
             bh::axis::real_index_type,
             bh::axis::index_type>;
         const index_type underflow
-            = flow && (bh::axis::traits::options(ax) & bh::axis::option::underflow);
+            = flow && (bh::axis::traits::options(ax) & option::underflow);
         const index_type overflow
-            = flow && (bh::axis::traits::options(ax) & bh::axis::option::overflow);
+            = flow && (bh::axis::traits::options(ax) & option::overflow);
 
         py::array_t<double> edges(
             static_cast<std::size_t>(ax.size() + 1 + overflow + underflow));
@@ -215,12 +215,11 @@ py::array_t<double> edges(const A &ax, bool flow = false) {
     return select(
         continuous,
         [flow](const auto &ax) {
-            static_assert(
-                !(std::decay_t<decltype(ax)>::options() & bh::axis::option::underflow),
-                "discrete axis never has underflow");
+            static_assert(!(std::decay_t<decltype(ax)>::options() & option::underflow),
+                          "discrete axis never has underflow");
 
             const bh::axis::index_type overflow
-                = flow && (bh::axis::traits::options(ax) & bh::axis::option::overflow);
+                = flow && (bh::axis::traits::options(ax) & option::overflow);
 
             py::array_t<double> edges(
                 static_cast<std::size_t>(ax.size() + 1 + overflow));
@@ -260,71 +259,67 @@ py::array_t<double> widths(const A &ax) {
     return result;
 }
 
-// These match the Python names
-
-using _regular_uoflow = bh::axis::regular<double, bh::use_default, metadata_t>;
-using _regular_uflow  = bh::axis::
-    regular<double, bh::use_default, metadata_t, bh::axis::option::underflow_t>;
-using _regular_oflow = bh::axis::
-    regular<double, bh::use_default, metadata_t, bh::axis::option::overflow_t>;
-using _regular_noflow
-    = bh::axis::regular<double, bh::use_default, metadata_t, bh::axis::option::none_t>;
-using _regular_growth = bh::axis::
-    regular<double, bh::use_default, metadata_t, bh::axis::option::growth_t>;
+// These match the Python names except for a possible underscore
+using regular_none
+    = bh::axis::regular<double, bh::use_default, metadata_t, option::none_t>;
+using regular_uflow
+    = bh::axis::regular<double, bh::use_default, metadata_t, option::underflow_t>;
+using regular_oflow
+    = bh::axis::regular<double, bh::use_default, metadata_t, option::overflow_t>;
+using regular_uoflow = bh::axis::regular<double, bh::use_default, metadata_t>;
+using regular_uoflow_growth
+    = bh::axis::regular<double, bh::use_default, metadata_t, uogrowth_t>;
 
 using circular     = bh::axis::circular<double, metadata_t>;
 using regular_log  = bh::axis::regular<double, bh::axis::transform::log, metadata_t>;
 using regular_sqrt = bh::axis::regular<double, bh::axis::transform::sqrt, metadata_t>;
 using regular_pow  = bh::axis::regular<double, bh::axis::transform::pow, metadata_t>;
 
-using _variable_uoflow = bh::axis::variable<double, metadata_t>;
-using _variable_uflow
-    = bh::axis::variable<double, metadata_t, bh::axis::option::underflow_t>;
-using _variable_oflow
-    = bh::axis::variable<double, metadata_t, bh::axis::option::overflow_t>;
-using _variable_noflow
-    = bh::axis::variable<double, metadata_t, bh::axis::option::none_t>;
+using variable_none   = bh::axis::variable<double, metadata_t, option::none_t>;
+using variable_uflow  = bh::axis::variable<double, metadata_t, option::underflow_t>;
+using variable_oflow  = bh::axis::variable<double, metadata_t, option::overflow_t>;
+using variable_uoflow = bh::axis::variable<double, metadata_t>;
+using variable_uoflow_growth = bh::axis::variable<double, metadata_t, uogrowth_t>;
 
-using _integer_uoflow = bh::axis::integer<int, metadata_t>;
-using _integer_uflow
-    = bh::axis::integer<int, metadata_t, bh::axis::option::underflow_t>;
-using _integer_oflow = bh::axis::integer<int, metadata_t, bh::axis::option::overflow_t>;
-using _integer_noflow = bh::axis::integer<int, metadata_t, bh::axis::option::none_t>;
-using _integer_growth = bh::axis::integer<int, metadata_t, bh::axis::option::growth_t>;
+using integer_none   = bh::axis::integer<int, metadata_t, option::none_t>;
+using integer_uoflow = bh::axis::integer<int, metadata_t>;
+using integer_uflow  = bh::axis::integer<int, metadata_t, option::underflow_t>;
+using integer_oflow  = bh::axis::integer<int, metadata_t, option::overflow_t>;
+using integer_growth = bh::axis::integer<int, metadata_t, option::growth_t>;
 
-using _category_int = bh::axis::category<int, metadata_t>;
-using _category_int_growth
-    = bh::axis::category<int, metadata_t, bh::axis::option::growth_t>;
+using category_int        = bh::axis::category<int, metadata_t>;
+using category_int_growth = bh::axis::category<int, metadata_t, option::growth_t>;
 
-using _category_str = bh::axis::category<std::string, metadata_t>;
-using _category_str_growth
-    = bh::axis::category<std::string, metadata_t, bh::axis::option::growth_t>;
+using category_str = bh::axis::category<std::string, metadata_t>;
+using category_str_growth
+    = bh::axis::category<std::string, metadata_t, option::growth_t>;
 
 } // namespace axis
 
 // The following list is all types supported
-using axis_variant = bh::axis::variant<axis::_regular_uoflow,
-                                       axis::_regular_uflow,
-                                       axis::_regular_oflow,
-                                       axis::_regular_noflow,
-                                       axis::_regular_growth,
+using axis_variant = bh::axis::variant<axis::regular_none,
+                                       axis::regular_uflow,
+                                       axis::regular_oflow,
+                                       axis::regular_uoflow,
+                                       axis::regular_uoflow_growth,
                                        axis::circular,
                                        axis::regular_log,
                                        axis::regular_pow,
                                        axis::regular_sqrt,
-                                       axis::_variable_uoflow,
-                                       axis::_variable_oflow,
-                                       axis::_variable_uflow,
-                                       axis::_variable_noflow,
-                                       axis::_integer_uoflow,
-                                       axis::_integer_oflow,
-                                       axis::_integer_uflow,
-                                       axis::_integer_noflow,
-                                       axis::_integer_growth,
-                                       axis::_category_int,
-                                       axis::_category_int_growth,
-                                       axis::_category_str,
-                                       axis::_category_str_growth>;
+                                       axis::variable_none,
+                                       axis::variable_uflow,
+                                       axis::variable_oflow,
+                                       axis::variable_uoflow,
+                                       axis::variable_uoflow_growth,
+                                       axis::integer_none,
+                                       axis::integer_uflow,
+                                       axis::integer_oflow,
+                                       axis::integer_uoflow,
+                                       axis::integer_growth,
+                                       axis::category_int,
+                                       axis::category_int_growth,
+                                       axis::category_str,
+                                       axis::category_str_growth>;
 
 // This saves a little typing
 using vector_axis_variant = std::vector<axis_variant>;
