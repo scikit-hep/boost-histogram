@@ -510,7 +510,6 @@ class TestInteger:
     def test_init(self):
         integer(-1, 2)
         integer(-1, 2, metadata="foo")
-        integer(-1, 2, "foo")
         integer(-1, 2, underflow=False)
         integer(-1, 2, underflow=False, overflow=False)
         integer(-1, 2, growth=True)
@@ -523,6 +522,10 @@ class TestInteger:
             integer("1", 2)
         with pytest.raises(ValueError):
             integer(2, -1)
+        with pytest.raises(TypeError):
+            integer(-1, 2, "foo")
+        with pytest.raises(TypeError):
+            integer(20, 30, 40)
 
         ax = integer(1, 3)
         assert isinstance(ax, integer)
@@ -621,15 +624,18 @@ class TestCategory(Axis):
         # should not raise
         category([1, 2])
         category((1, 2), metadata="foo")
-        category([1, 2], "foo")
         category(["A", "B"])
         category("AB")
         category("AB", metadata="foo")
-        category("AB", "foo")
+
+        with pytest.raises(TypeError):
+            category([1, 2], "foo")
+        with pytest.raises(TypeError):
+            category("AB", "foo")
 
         with pytest.raises(TypeError):
             category()
-        with pytest.raises(RuntimeError):
+        with pytest.raises(TypeError):
             category([1, "2"])
         with pytest.raises(TypeError):
             category([1, 2, 3], underflow=True)

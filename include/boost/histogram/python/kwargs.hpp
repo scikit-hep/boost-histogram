@@ -41,7 +41,7 @@ inline void finalize_args(const py::kwargs &kwargs) {
     if(kwargs.size() > 0) {
         std::stringstream out;
         for(const auto &item : kwargs) {
-            out << " " << item.first;
+            out << ", " << item.first;
         }
         throw py::key_error("Unidentfied keywords found:" + out.str());
     }

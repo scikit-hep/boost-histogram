@@ -56,26 +56,26 @@ def test_accumulators(accum, args, copy_fn):
 
 
 axes_creations = (
-    (bh.core.axis._regular_none, (4, 2, 4, None)),
-    (bh.core.axis._regular_uoflow, (4, 2, 4, None)),
-    (bh.core.axis._regular_uoflow_growth, (4, 2, 4, None)),
-    (bh.axis.regular_log, (4, 2, 4, None)),
-    (bh.axis.regular_sqrt, (4, 2, 4, None)),
-    (bh.axis.regular_pow, (4, 2, 4, 0.5, None)),
-    (bh.axis.circular, (4, 2, 4, None)),
-    (bh.axis.variable, ([1, 2, 3, 4], None)),
-    (bh.core.axis._integer_uoflow, (1, 4, None)),
-    (bh.core.axis._category_int, ([1, 2, 3], None)),
-    (bh.core.axis._category_int_growth, ([1, 2, 3], None)),
-    (bh.core.axis._category_str, (["1", "2", "3"], None)),
-    (bh.core.axis._category_str_growth, (["1", "2", "3"], None)),
+    (bh.core.axis._regular_none, (4, 2, 4)),
+    (bh.core.axis._regular_uoflow, (4, 2, 4)),
+    (bh.core.axis._regular_uoflow_growth, (4, 2, 4)),
+    (bh.axis.regular_log, (4, 2, 4)),
+    (bh.axis.regular_sqrt, (4, 2, 4)),
+    (bh.axis.regular_pow, (4, 2, 4, 0.5)),
+    (bh.axis.circular, (4, 2, 4)),
+    (bh.axis.variable, ([1, 2, 3, 4],)),
+    (bh.core.axis._integer_uoflow, (1, 4)),
+    (bh.core.axis._category_int, ([1, 2, 3],)),
+    (bh.core.axis._category_int_growth, ([1, 2, 3],)),
+    (bh.core.axis._category_str, (["1", "2", "3"],)),
+    (bh.core.axis._category_str_growth, (["1", "2", "3"],)),
 )
 
 
 @pytest.mark.parametrize("axis,args", axes_creations)
 @pytest.mark.parametrize("copy_fn", copies)
 def test_axes(axis, args, copy_fn):
-    orig = axis(*args)
+    orig = axis(*args, metadata=None)
     new = copy_fn(orig)
     assert new == orig
 
@@ -83,8 +83,7 @@ def test_axes(axis, args, copy_fn):
 @pytest.mark.parametrize("axis,args", axes_creations)
 @pytest.mark.parametrize("copy_fn", copies)
 def test_metadata_str(axis, args, copy_fn):
-    orig = axis(*args)
-    orig.metadata = "foo"
+    orig = axis(*args, metadata="foo")
     new = copy_fn(orig)
     assert new.metadata == orig.metadata
     new.metadata = orig.metadata
@@ -118,8 +117,7 @@ def test_compare_copy_hist(metadata):
 @pytest.mark.parametrize("axis,args", axes_creations)
 @pytest.mark.parametrize("copy_fn", copies)
 def test_metadata_any(axis, args, copy_fn):
-    orig = axis(*args)
-    orig.metadata = (1, 2, 3)
+    orig = axis(*args, metadata=(1, 2, 3))
     new = copy_fn(orig)
     assert new.metadata == orig.metadata
     new.metadata = orig.metadata
