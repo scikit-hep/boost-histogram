@@ -11,16 +11,18 @@
 #include <boost/mp11.hpp>
 #include <vector>
 
-template <class... Ts, class Init>
+template <class... Ts, class Init, class... Passthrough>
 void register_axis_sub_types(py::module &mod,
                              std::array<const char *, sizeof...(Ts)> names,
                              const char *doc,
-                             Init &&init) {
+                             Init &&init,
+                             Passthrough &&... passthrough) {
     using namespace boost::mp11;
     using types = mp_list<Ts...>;
     mp_for_each<mp_iota_c<sizeof...(Ts)>>([&](auto I) {
         using T = mp_at_c<types, I>;
-        register_axis<T>(mod, names.at(I), doc).def(std::forward<Init>(init));
+        register_axis<T>(mod, names.at(I), doc)
+            .def(std::forward<Init>(init), std::forward<Passthrough>(passthrough)...);
     });
 }
 
@@ -74,44 +76,11 @@ void register_axes(py::module &mod) {
          "_regular_uoflow",
          "_regular_uoflow_growth"},
         "Evenly spaced bins",
-        py::init<unsigned, double, double, metadata_t>());
-
-    mod.def(
-        "_make_regular",
-        [](unsigned n,
-           double start,
-           double stop,
-           metadata_t metadata,
-           bool underflow,
-           bool overflow,
-           bool growth) -> py::object {
-            validate_axis_options(underflow, overflow, growth);
-            if(growth) {
-                // underflow and overflow are on, they handle +/- infinity and nan
-                return py::cast(axis::regular_uoflow_growth(n, start, stop, metadata),
-                                py::return_value_policy::move);
-            } else if(underflow && overflow) {
-                return py::cast(axis::regular_uoflow(n, start, stop, metadata),
-                                py::return_value_policy::move);
-            } else if(underflow) {
-                return py::cast(axis::regular_uflow(n, start, stop, metadata),
-                                py::return_value_policy::move);
-            } else if(overflow) {
-                return py::cast(axis::regular_oflow(n, start, stop, metadata),
-                                py::return_value_policy::move);
-            }
-            return py::cast(axis::regular_none(n, start, stop, metadata),
-                            py::return_value_policy::move);
-        },
+        py::init<unsigned, double, double, metadata_t>(),
         "bins"_a,
         "start"_a,
         "stop"_a,
-        "metadata"_a  = py::none(),
-        "underflow"_a = true,
-        "overflow"_a  = true,
-        "growth"_a    = false,
-        "Make a regular axis with nice keyword arguments for underflow, overflow, and "
-        "growth.");
+        "metadata"_a = py::none());
 
     register_axis<axis::circular>(mod, "circular", "Evenly spaced bins with wraparound")
         .def(py::init<unsigned, double, double, metadata_t>(),
@@ -162,40 +131,9 @@ void register_axes(py::module &mod) {
          "_variable_uoflow",
          "_variable_uoflow_growth"},
         "Unevenly spaced bins",
-        py::init<std::vector<double>, metadata_t>());
-
-    mod.def(
-        "_make_variable",
-        [](std::vector<double> edges,
-           metadata_t metadata,
-           bool underflow,
-           bool overflow,
-           bool growth) -> py::object {
-            validate_axis_options(underflow, overflow, growth);
-            if(growth) {
-                // underflow and overflow are on, they handle +/- infinity and nan
-                return py::cast(axis::variable_uoflow_growth(edges, metadata),
-                                py::return_value_policy::move);
-            } else if(underflow && overflow) {
-                return py::cast(axis::variable_uoflow(edges, metadata),
-                                py::return_value_policy::move);
-            } else if(underflow) {
-                return py::cast(axis::variable_uflow(edges, metadata),
-                                py::return_value_policy::move);
-            } else if(overflow) {
-                return py::cast(axis::variable_oflow(edges, metadata),
-                                py::return_value_policy::move);
-            }
-            return py::cast(axis::variable_none(edges, metadata),
-                            py::return_value_policy::move);
-        },
+        py::init<std::vector<double>, metadata_t>(),
         "edges"_a,
-        "metadata"_a  = py::none(),
-        "underflow"_a = true,
-        "overflow"_a  = true,
-        "growth"_a    = false,
-        "Make a variable binned axis with nice keyword arguments for underflow, "
-        "overflow.");
+        "metadata"_a = py::none());
 
     register_axis_sub_types<axis::integer_none,
                             axis::integer_uflow,
@@ -208,92 +146,24 @@ void register_axes(py::module &mod) {
                                                    "_integer_uoflow",
                                                    "_integer_growth"},
                                                   "Contiguous integers",
-                                                  py::init<int, int, metadata_t>());
-
-    mod.def(
-        "_make_integer",
-        [](int start,
-           int stop,
-           metadata_t metadata,
-           bool underflow,
-           bool overflow,
-           bool growth) -> py::object {
-            if(growth) {
-                // underflow and overflow settings are ignored, integers are always
-                // finite and thus cannot end up in a flow bin when growth is on
-                return py::cast(axis::integer_growth(start, stop, metadata),
-                                py::return_value_policy::move);
-            } else if(underflow && overflow) {
-                return py::cast(axis::integer_uoflow(start, stop, metadata),
-                                py::return_value_policy::move);
-            } else if(underflow) {
-                return py::cast(axis::integer_uflow(start, stop, metadata),
-                                py::return_value_policy::move);
-            } else if(overflow) {
-                return py::cast(axis::integer_oflow(start, stop, metadata),
-                                py::return_value_policy::move);
-            }
-            return py::cast(axis::integer_none(start, stop, metadata),
-                            py::return_value_policy::move);
-        },
-        "start"_a,
-        "stop"_a,
-        "metadata"_a  = py::none(),
-        "underflow"_a = true,
-        "overflow"_a  = true,
-        "growth"_a    = false,
-        "Make an integer axis with nice keyword arguments for underflow, overflow, and "
-        "growth.");
+                                                  py::init<int, int, metadata_t>(),
+                                                  "start"_a,
+                                                  "stop"_a,
+                                                  "metadata"_a = py::none());
 
     register_axis_sub_types<axis::category_int, axis::category_int_growth>(
         mod,
         {"_category_int", "_category_int_growth"},
         "Axis with discontiguous integer bins",
-        py::init<std::vector<int>, metadata_t>());
+        py::init<std::vector<int>, metadata_t>(),
+        "categories"_a,
+        "metadata"_a = py::none());
 
     register_axis_sub_types<axis::category_str, axis::category_str_growth>(
         mod,
         {"_category_str", "_category_str_growth"},
         "Axis with text bins",
-        py::init<std::vector<std::string>, metadata_t>());
-
-    mod.def(
-        "_make_category",
-        [](py::sequence labels, metadata_t metadata, bool growth) -> py::object {
-            // handle string or sequence of strings
-            std::vector<std::string> str_values;
-            if(py::isinstance<py::str>(labels)) {
-                auto s = py::cast<std::string>(labels);
-                str_values.resize(s.size());
-                std::transform(s.begin(),
-                               s.end(),
-                               str_values.begin(),
-                               [](const char &c) { return std::string(1, c); });
-            } else {
-                if(py::isinstance<py::str>(labels[0]))
-                    str_values = py::cast<std::vector<std::string>>(labels);
-            }
-            if(!str_values.empty()) {
-                if(growth) {
-                    return py::cast(axis::category_str_growth(str_values, metadata),
-                                    py::return_value_policy::move);
-                }
-                return py::cast(axis::category_str(str_values, metadata),
-                                py::return_value_policy::move);
-            }
-
-            // handle sequence of int or throw TypeError
-            auto int_values = py::cast<std::vector<int>>(labels);
-            if(growth) {
-                return py::cast(axis::category_int_growth(int_values, metadata),
-                                py::return_value_policy::move);
-            }
-            return py::cast(axis::category_int(int_values, metadata),
-                            py::return_value_policy::move);
-        },
-        "labels"_a,
-        "metadata"_a = py::none(),
-        "growth"_a   = false,
-        "Make an category axis with a nice keyword argument for growth. Int and string "
-        "supported.");
+        py::init<std::vector<std::string>, metadata_t>(),
+        "categories"_a,
+        "metadata"_a = py::none());
 }
