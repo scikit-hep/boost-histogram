@@ -147,6 +147,12 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for details on how to set up a developm
 
 * [2019-4-15 IRIS-HEP Topical meeting](https://indico.cern.ch/event/803122/)
 
+---
+
+## Acknowledgements
+
+Support for this work was provided by the National Science Foundation cooperative agreement OAC-1836650 (IRIS-HEP) and OAC-1450377 (DIANA/HEP). Any opinions, findings, conclusions or recommendations expressed in this material are those of the authors and do not necessarily reflect the views of the National Science Foundation.
+
 [gitter-badge]:            https://badges.gitter.im/HSF/PyHEP-histogramming.svg
 [gitter-link]:             https://gitter.im/HSF/PyHEP-histogramming?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
 [azure-badge]:             https://dev.azure.com/scikit-hep/boost-histogram/_apis/build/status/scikit-hep.boost-histogram?branchName=develop
