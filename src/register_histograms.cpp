@@ -12,6 +12,8 @@
 #include <boost/histogram/storage_adaptor.hpp>
 
 void register_histograms(py::module &hist) {
+    hist.attr("_axes_limit") = BOOST_HISTOGRAM_DETAIL_AXES_LIMIT;
+
     register_histogram<vector_axis_variant, storage::int_>(
         hist,
         "_any_int",
