@@ -16,7 +16,9 @@ def test_weighted_sum():
     assert v.value == 3.0
     assert v.variance == 4.75
 
-    v = bh.accumulators.weighted_sum([1, 2, 3], [4, 5, 6])
+    v = bh.accumulators.weighted_sum()
+    for a, b in zip([1, 2, 3], [4, 5, 6]):
+        v += bh.accumulators.weighted_sum(a, b)
 
     assert v.value == 6
     assert v.variance == 15
@@ -31,7 +33,8 @@ def test_weighted_mean():
     assert v.variance == 4.5
     assert v.value == 2.0
 
-    v = bh.accumulators.weighted_mean([1, 2], [4, 1])
+    v = bh.accumulators.weighted_mean()
+    v([1, 2], [4, 1])
 
     assert v.sum_of_weights == 3.0
     assert v.variance == 4.5
@@ -48,7 +51,8 @@ def test_mean():
     assert v.variance == 1
     assert v.value == 2
 
-    v = bh.accumulators.mean([1, 2, 3])
+    v = bh.accumulators.mean()
+    v([1, 2, 3])
 
     assert v.count == 3
     assert v.variance == 1
@@ -63,5 +67,6 @@ def test_sum():
 
     assert v.value == 6
 
-    v = bh.accumulators.sum([1, 2, 3])
+    v = bh.accumulators.sum()
+    v += [1, 2, 3]
     assert v.value == 6
