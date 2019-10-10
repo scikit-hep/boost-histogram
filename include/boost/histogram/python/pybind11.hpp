@@ -17,11 +17,6 @@
 #include <sstream>
 #include <type_traits>
 
-// Allow command line overide
-#ifndef BOOST_HISTOGRAM_DETAIL_AXES_LIMIT
-#define BOOST_HISTOGRAM_DETAIL_AXES_LIMIT 16
-#endif
-
 namespace py = pybind11;
 using namespace pybind11::literals; // For ""_a syntax
 
