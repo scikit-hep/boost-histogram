@@ -33,21 +33,21 @@ except ImportError:
 def test_init():
     histogram()
     histogram(integer(-1, 1))
-    with pytest.raises(RuntimeError):
+    with pytest.raises(TypeError):
         histogram(1)
-    with pytest.raises(RuntimeError):
+    with pytest.raises(TypeError):
         histogram("bla")
-    with pytest.raises(RuntimeError):
+    with pytest.raises(TypeError):
         histogram([])
-    with pytest.raises(RuntimeError):
+    with pytest.raises(TypeError):
         histogram(regular)
     with pytest.raises(TypeError):
         histogram(regular())
-    with pytest.raises(RuntimeError):
+    with pytest.raises(TypeError):
         histogram([integer(-1, 1)])
-    with pytest.raises(RuntimeError):
+    with pytest.raises(TypeError):
         histogram([integer(-1, 1), integer(-1, 1)])
-    with pytest.raises(KeyError):
+    with pytest.raises(TypeError):
         histogram(integer(-1, 1), unknown_keyword="nh")
 
     h = histogram(integer(-1, 2))
