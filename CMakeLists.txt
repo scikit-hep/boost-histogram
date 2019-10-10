@@ -78,6 +78,12 @@ target_include_directories(core SYSTEM PUBLIC
     extern/variant2/include
     )
 
+# Useful flags
+target_compile_options(core
+  PRIVATE
+    $<IF:$<CXX_COMPILER_ID:MSVC>,/fp:fast,-funsafe-math-optimizations>
+)
+
 # This makes IDE's like XCode mimic the Boost Histogram structure
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/extern/histogram/include PREFIX "Header Files" FILES ${BOOST_HIST_FILES})
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/include PREFIX "Header Files" FILES ${BOOST_HIST_PY_HEADERS})
@@ -111,7 +117,9 @@ if(NOT "${BOOST_HISTOGRAM_DETAIL_AXES_LIMIT}" STREQUAL "")
 endif()
 
 # Make the output library be in boost_histogram/core...
-set_property(TARGET core PROPERTY LIBRARY_OUTPUT_DIRECTORY "boost_histogram")
+# This is a generator expression to avoid Debug/Release subdirectories in IDEs,
+# which confuses Python.
+set_property(TARGET core PROPERTY LIBRARY_OUTPUT_DIRECTORY "$<1:boost_histogram>")
 
 # Collect all the python files and symlink them (3.14+) or copy them (3.12-3.13)
 # into the build directory
