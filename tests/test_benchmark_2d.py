@@ -6,6 +6,9 @@ from numpy.testing import assert_array_equal
 import boost_histogram as bh
 from boost_histogram.axis import regular
 
+STORAGES = (bh.storage.int, bh.storage.double, bh.storage.unlimited)
+DTYPES = (np.float64, np.float32, np.int64, np.int32)
+
 bins = (100, 100)
 ranges = ((-1, 1), (-1, 1))
 bins = np.asarray(bins).astype(np.int64)
@@ -17,18 +20,20 @@ edges = (
 )
 
 np.random.seed(42)
-vals = np.random.normal(size=[2, 100000]).astype(np.float64)
+vals_core = np.random.normal(size=[2, 100000])
+vals = {t: vals_core.astype(t) for t in DTYPES}
 
-answer, _, _ = np.histogram2d(*vals, bins=bins, range=ranges)
+answer = {t: np.histogram2d(*vals[t], bins=bins, range=ranges)[0] for t in DTYPES}
 
 
 @pytest.mark.benchmark(group="2d-fills")
-def test_numpy_perf_2d(benchmark):
-    result, _, _ = benchmark(np.histogram2d, *vals, bins=bins, range=ranges)
-    assert_array_equal(result, answer)
+@pytest.mark.parametrize("dtype", vals)
+def test_numpy_perf_2d(benchmark, dtype):
+    result, _, _ = benchmark(np.histogram2d, *vals[dtype], bins=bins, range=ranges)
+    assert_array_equal(result, answer[dtype])
 
 
-def make_and_run_hist(flow, storage):
+def make_and_run_hist(flow, storage, vals):
 
     histo = bh.histogram(
         regular(bins[0], *ranges[0], underflow=flow, overflow=flow),
@@ -40,16 +45,9 @@ def make_and_run_hist(flow, storage):
 
 
 @pytest.mark.benchmark(group="2d-fills")
-@pytest.mark.parametrize("flow", (True, False))
-@pytest.mark.parametrize(
-    "storage",
-    (
-        bh.storage.int,
-        bh.storage.double,
-        bh.storage.unlimited,
-        # bh.storage.weight,
-    ),
-)
-def test_2d(benchmark, flow, storage):
-    result = benchmark(make_and_run_hist, flow, storage)
-    assert_array_equal(result[:-1, :-1], answer[:-1, :-1])
+@pytest.mark.parametrize("flow", (True, False), ids=["flow", "noflow"])
+@pytest.mark.parametrize("dtype", vals)
+@pytest.mark.parametrize("storage", STORAGES)
+def test_2d(benchmark, flow, storage, dtype):
+    result = benchmark(make_and_run_hist, flow, storage, vals[dtype])
+    assert_array_equal(result[:-1, :-1], answer[dtype][:-1, :-1])

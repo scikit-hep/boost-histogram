@@ -55,6 +55,10 @@ You'll need to reinstall it if you want to rebuild.
 
 You can enable benchmarking with `--benchmark-enable` when running tests. You can also run explicit performance tests with `scripts/performance_report.py`.
 
+```bash
+python3 -m pytest --benchmark-enable --benchmark-sort fullname
+```
+
 For example, if you want to benchmark before and after a change:
 
 ```bash
@@ -62,7 +66,7 @@ python3 -m pytest --benchmark-enable --benchmark-autosave
 # Make change
 python3 -m pytest --benchmark-enable --benchmark-autosave
 
-pytest-benchmark compare 0001 0002 --histogram
+pytest-benchmark compare 0001 0002 --sort fullname --histogram
 ```
 
 Note, while the histogram option (`--histogram`) is nice, it does require `pygal` and `pygaljs` to be installed. Feel free to leave it off if not needed.
