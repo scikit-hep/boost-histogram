@@ -9,7 +9,7 @@ void register_version(py::module &);
 void register_algorithms(py::module &);
 void register_storages(py::module &);
 void register_axes(py::module &);
-void register_general_histograms(py::module &);
+void register_histograms(py::module &);
 void register_accumulators(py::module &);
 
 PYBIND11_MODULE(core, m) {
@@ -22,7 +22,7 @@ PYBIND11_MODULE(core, m) {
     register_axes(ax);
 
     py::module hist = m.def_submodule("hist");
-    register_general_histograms(hist);
+    register_histograms(hist);
 
     py::module accumulators = m.def_submodule("accumulators");
     register_accumulators(accumulators);

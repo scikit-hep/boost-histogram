@@ -11,7 +11,7 @@
 #include <boost/histogram/python/storage.hpp>
 #include <boost/histogram/storage_adaptor.hpp>
 
-void register_general_histograms(py::module &hist) {
+void register_histograms(py::module &hist) {
     register_histogram<vector_axis_variant, storage::int_>(
         hist,
         "_any_int",
