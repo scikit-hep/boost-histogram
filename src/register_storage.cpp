@@ -10,8 +10,6 @@
 #include <boost/histogram/storage_adaptor.hpp>
 
 void register_storages(py::module &storage) {
-    // Fast storages
-
     register_storage<storage::int_>(storage, "int", "Integers in vectors storage type");
 
     register_storage<storage::double_>(
@@ -19,8 +17,6 @@ void register_storages(py::module &storage) {
 
     register_storage<storage::atomic_int>(
         storage, "atomic_int", "Threadsafe (not growing axis) integer storage");
-
-    // Default storages
 
     register_storage<storage::unlimited>(
         storage, "unlimited", "Optimized for unweighted histograms, adaptive");

@@ -1,4 +1,4 @@
-from .core import histogram
+from .hist import histogram
 
 from . import axis, storage, accumulators, algorithm
 

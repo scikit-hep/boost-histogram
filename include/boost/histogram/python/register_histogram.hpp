@@ -348,6 +348,7 @@ register_histogram(py::module &m, const char *name, const char *desc) {
                             h.fill(vargs);
                     },
                     self);
+                return self;
             },
             "Insert data into the histogram")
 
