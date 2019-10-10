@@ -25,16 +25,6 @@ void register_accumulators(py::module &accumulators) {
         .def_property_readonly("value", &weighted_sum::value)
 
         .def(py::self += double())
-        .def("__iadd__",
-             [](weighted_sum &self, py::array_t<double> arr) {
-                 auto r = arr.unchecked<1>();
-                 for(py::ssize_t idx = 0; idx < r.shape(0); ++idx)
-                     self += r(idx);
-                 return self;
-             })
-
-        // Note: there is no way to do a vectorized sum with weights.
-        // Constructors that take a vector of inputs would be one solution.
 
         ;
 
@@ -47,13 +37,6 @@ void register_accumulators(py::module &accumulators) {
             "value", &sum::operator double, [](sum &s, double v) { s = v; })
 
         .def(py::self += double())
-        .def("__iadd__",
-             [](sum &self, py::array_t<double> arr) {
-                 auto r = arr.unchecked<1>();
-                 for(py::ssize_t idx = 0; idx < r.shape(0); ++idx)
-                     self += r(idx);
-                 return self;
-             })
 
         .def_property_readonly("small", &sum::small)
         .def_property_readonly("large", &sum::large)
@@ -75,22 +58,15 @@ void register_accumulators(py::module &accumulators) {
 
         .def(
             "__call__",
-            [](weighted_mean &self, py::object value) {
-                py::vectorize([](weighted_mean &self, double v) {
-                    self(v);
-                    return false; // Required for PyBind11 for now (may be fixed
-                                  // after 2.4.2)
-                })(self, value);
+            [](weighted_mean &self, double value) {
+                self(value);
                 return self;
             },
             "value"_a)
         .def(
             "__call__",
-            [](weighted_mean &self, py::object weight, py::object value) {
-                py::vectorize([](weighted_mean &self, double w, double v) {
-                    self(w, v);
-                    return false;
-                })(self, weight, value);
+            [](weighted_mean &self, double weight, double value) {
+                self(weight, value);
                 return self;
             },
             "weight"_a,
@@ -112,21 +88,15 @@ void register_accumulators(py::module &accumulators) {
 
         .def(
             "__call__",
-            [](mean &self, py::object value) {
-                py::vectorize([](mean &self, double v) {
-                    self(v);
-                    return false;
-                })(self, value);
+            [](mean &self, double value) {
+                self(value);
                 return self;
             },
             "value"_a)
         .def(
             "__call__",
-            [](mean &self, py::object weight, py::object value) {
-                py::vectorize([](mean &self, double w, double x) {
-                    self(w, x);
-                    return false;
-                })(self, weight, value);
+            [](mean &self, double weight, double value) {
+                self(weight, value);
                 return self;
             },
             "weight"_a,
