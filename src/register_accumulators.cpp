@@ -77,7 +77,7 @@ void register_accumulators(py::module &accumulators) {
     using mean = bh::accumulators::mean<double>;
 
     register_accumulator<mean>(accumulators, "mean")
-        .def(py::init<std::size_t, const double &, const double &>(),
+        .def(py::init<const double &, const double &, const double &>(),
              "value"_a,
              "mean"_a,
              "variance"_a)

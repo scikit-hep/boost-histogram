@@ -39,7 +39,6 @@ with open(BASE_DIR / "README.md", "rb") as f:
 
 SRC_FILES = [
     "src/module.cpp",
-    "src/register_version.cpp",
     "src/register_algorithm.cpp",
     "src/register_axis.cpp",
     "src/register_histograms.cpp",
