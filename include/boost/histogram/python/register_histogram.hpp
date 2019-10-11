@@ -18,7 +18,6 @@
 #include <boost/histogram/python/indexed.hpp>
 #include <boost/histogram/python/kwargs.hpp>
 #include <boost/histogram/python/serializion.hpp>
-#include <boost/histogram/python/shared_histogram.hpp>
 #include <boost/histogram/python/storage.hpp>
 #include <boost/histogram/python/variant.hpp>
 #include <boost/histogram/unsafe_access.hpp>
@@ -168,60 +167,6 @@ register_histogram(py::module &m, const char *name, const char *desc) {
             "Access bin counter at indices")
 
         .def("__repr__", &shift_to_string<histogram_t>)
-
-        .def(
-            "__getitem__",
-            [](const histogram_t &self, py::object index)
-                -> bv2::variant<typename histogram_t::value_type, histogram_t> {
-                // If this is not a tuple (>1D), make it a tuple of 1D
-                // Then, convert tuples to list
-                py::list indexes;
-                if(py::isinstance<py::tuple>(index))
-                    indexes = py::cast<py::tuple>(index);
-                else
-                    indexes.append(index);
-
-                // Expand ... to :
-                indexes = expand_ellipsis(indexes, self.rank());
-
-                if(indexes.size() != self.rank())
-                    throw std::out_of_range("You must provide the same number of "
-                                            "indices as the rank of the histogram");
-
-                // Allow [bh.loc(...)] to work
-                for(py::size_t i = 0; i < indexes.size(); i++) {
-                    if(py::hasattr(indexes[i], "value"))
-                        indexes[i]
-                            = self.axis(static_cast<unsigned>(i))
-                                  .index(py::cast<double>(indexes[i].attr("value")));
-                }
-
-                // If this is (now) all integers, return the bin contents
-                try {
-                    auto int_args = py::cast<std::vector<int>>(indexes);
-                    return self.at(int_args);
-                } catch(const py::cast_error &) {
-                }
-
-                // Compute needed slices and projections
-                std::vector<bh::algorithm::reduce_option> slices;
-                std::vector<unsigned> projections;
-                std::tie(slices, projections) = get_slices(
-                    indexes,
-                    [&self](bh::axis::index_type i, double val) {
-                        return self.axis(static_cast<unsigned>(i)).index(val);
-                    },
-                    [&self](bh::axis::index_type i) {
-                        return self.axis(static_cast<unsigned>(i)).size();
-                    });
-
-                if(projections.empty())
-                    return bh::algorithm::reduce(self, slices);
-                else {
-                    auto reduced = bh::algorithm::reduce(self, slices);
-                    return bh::algorithm::project(self, projections);
-                }
-            })
 
         .def(
             "sum",
