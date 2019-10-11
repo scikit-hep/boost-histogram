@@ -2,6 +2,7 @@ class FactoryMeta(object):
     def __init__(self, f, types):
         self._f = f
         self._types = types
+        self.__doc__ = f.__doc__
 
     def __call__(self, *args, **kwargs):
         return self._f(*args, **kwargs)
