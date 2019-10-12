@@ -10,6 +10,8 @@
 #include <boost/histogram/axis.hpp>
 
 #include <algorithm>
+#include <cmath>
+#include <limits>
 #include <string>
 #include <tuple>
 #include <type_traits>
@@ -192,8 +194,8 @@ py::array bins(const A &ax, bool flow = false) {
 
 /// Convert continuous axis into numpy.histogram compatible edge array
 template <class A>
-py::array_t<double> edges(const A &ax, bool flow = false) {
-    auto continuous = [flow](const auto &ax) {
+py::array_t<double> edges(const A &ax, bool flow = false, bool numpy_upper = false) {
+    auto continuous = [flow, numpy_upper](const auto &ax) {
         using index_type = std::conditional_t<
             bh::axis::traits::is_continuous<std::decay_t<decltype(ax)>>::value,
             bh::axis::real_index_type,
@@ -208,6 +210,11 @@ py::array_t<double> edges(const A &ax, bool flow = false) {
 
         for(index_type i = -underflow; i <= ax.size() + overflow; ++i)
             edges.mutable_at(i + underflow) = ax.value(i);
+
+        if(numpy_upper) {
+            edges.mutable_at(ax.size() + underflow) = std::nextafter(
+                edges.at(ax.size() + underflow), std::numeric_limits<double>::min());
+        }
 
         return edges;
     };
