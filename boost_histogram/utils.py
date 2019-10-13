@@ -26,12 +26,16 @@ class rebin(object):
         self.factor = value
 
 
-class _project(object):
-    __slots__ = ()
+class project(object):
     projection = True
 
 
-project = _project
+class underflow(object):
+    flow = -1
+
+
+class overflow(object):
+    flow = 1
 
 
 def indexed(histogram, flow=False):
