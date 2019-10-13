@@ -34,6 +34,11 @@ def _make_histogram(*args, **kwargs):
 
     args = [_arg_shortcut(arg) for arg in args]
 
+    if len(args) > _core.hist._axes_limit:
+        raise IndexError(
+            "Too many axes, must be less than {}".format(_core.hist._axes_limit)
+        )
+
     for s in _histogram_and_storage:
         if isinstance(storage, s):
             return _histogram_and_storage[s](args, storage)

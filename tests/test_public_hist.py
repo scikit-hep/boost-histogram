@@ -325,10 +325,21 @@ def test_axis():
         h.axis(-3)
 
 
-# CLASSIC: This used to only fail when accessing, now fails in creation
-def test_overflow():
-    with pytest.raises(RuntimeError):
-        h = histogram(*[regular(1, 0, 1) for i in range(50)])
+def test_out_of_limit_axis():
+
+    lim = bh.core.hist._axes_limit
+    ax = (
+        bh.axis.regular(1, -1, 1, underflow=False, overflow=False) for a in range(lim)
+    )
+    # Nothrow
+    bh.histogram(*ax)
+
+    ax = (
+        bh.axis.regular(1, -1, 1, underflow=False, overflow=False)
+        for a in range(lim + 1)
+    )
+    with pytest.raises(IndexError):
+        bh.histogram(*ax)
 
 
 def test_out_of_range():
@@ -447,6 +458,8 @@ def test_pickle_0():
     assert a.axis(3) == b.axis(3)
     assert a.axis(4) == b.axis(4)
     assert a.sum() == b.sum()
+    assert repr(a) == repr(b)
+    assert str(a) == str(b)
     assert a == b
 
 
@@ -480,6 +493,8 @@ def test_pickle_1():
     assert a.axis(2) == b.axis(2)
     assert a.axis(3) == b.axis(3)
     assert a.sum() == b.sum()
+    assert repr(a) == repr(b)
+    assert str(a) == str(b)
     assert a == b
 
 
@@ -607,6 +622,7 @@ def test_numpy_conversion_5():
         integer(0, 2, underflow=False, overflow=False),
         storage=bh.storage.unlimited(),
     )
+
     a.fill(0, 0)
     for i in range(80):
         a = a + a
@@ -719,13 +735,19 @@ def test_fill_with_numpy_array_1():
     with pytest.raises(KeyError):
         a.fill((1, 2), foo=(1, 1))
     with pytest.raises(ValueError):
-        a.fill((1, 2), weight=(1,))
+        a.fill((1, 2, 3), weight=(1, 2))
     with pytest.raises(ValueError):
         a.fill((1, 2), weight="ab")
     with pytest.raises(KeyError):
         a.fill((1, 2), weight=(1, 1), foo=1)
     with pytest.raises(ValueError):
         a.fill((1, 2), weight=([1, 1], [2, 2]))
+
+    # CLASSIC: Used to fail
+    a = histogram(integer(0, 3))
+    a.fill((1, 2), weight=(1,))
+    assert a.at(1) == 1.0
+    assert a.at(2) == 1.0
 
     a = histogram(
         integer(0, 2, underflow=False, overflow=False),
