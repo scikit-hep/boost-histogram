@@ -65,6 +65,7 @@ template <class A, class S>
 py::class_<bh::histogram<A, S>>
 register_histogram(py::module &m, const char *name, const char *desc) {
     using histogram_t = bh::histogram<A, S>;
+    using value_type  = typename histogram_t::value_type;
     namespace bv2     = boost::variant2;
 
     py::class_<histogram_t> hist(m, name, desc, py::buffer_protocol());
@@ -160,11 +161,19 @@ register_histogram(py::module &m, const char *name, const char *desc) {
         .def(
             "at",
             [](const histogram_t &self, py::args &args) {
-                // Optimize for no dynamic?
                 auto int_args = py::cast<std::vector<int>>(args);
                 return self.at(int_args);
             },
-            "Access bin counter at indices")
+            "Select a contents given indices. Also consider [] indexing to get "
+            "contents.")
+
+        .def(
+            "_at_set",
+            [](histogram_t &self, const value_type &input, py::args &args) {
+                auto int_args     = py::cast<std::vector<int>>(args);
+                self.at(int_args) = input;
+            },
+            "Use [] indexing to set instead")
 
         .def("__repr__", &shift_to_string<histogram_t>)
 

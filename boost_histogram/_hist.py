@@ -62,21 +62,40 @@ def _expand_ellipsis(indexes, rank):
         raise IndexError("an index can only have a single ellipsis ('...')")
 
 
-def _compute_getitem(self, index):
+def _compute_commonindex(self, index, expand):
     # Normalize -> h[i] == h[i,]
     if not isinstance(index, tuple):
         index = (index,)
 
     # Now a list
-    indexes = _expand_ellipsis(index, self.rank)
+    if expand:
+        indexes = _expand_ellipsis(index, self.rank)
+    else:
+        indexes = list(index)
+
+    if len(indexes) != self.rank:
+        raise IndexError("IndexError: Wrong number of indices for histogram")
 
     # Allow [bh.loc(...)] to work
     for i in range(len(indexes)):
         if hasattr(indexes[i], "value"):
             indexes[i] = self.axis(i).index(indexes[i].value)
+        elif hasattr(indexes[i], "flow"):
+            if indexes[i].flow == 1:
+                indexes[i] = self.axis(i).size
+            elif indexes[i].flow == -1:
+                indexes[i] = -1
+        elif isinstance(indexes[i], int):
+            if abs(indexes[i]) >= self.axis(i).size:
+                raise IndexError("histogram index is out of range")
+            indexes[i] %= self.axis(i).size
 
-    if len(indexes) != self.rank:
-        raise IndexError("IndexError: Wrong number of indices for histogram")
+    return indexes
+
+
+def _compute_getitem(self, index):
+
+    indexes = _compute_commonindex(self, index, expand=True)
 
     # If this is (now) all integers, return the bin contents
     try:
@@ -127,7 +146,14 @@ def _compute_getitem(self, index):
     return reduced.project(*projections) if projections else reduced
 
 
+def _compute_setitem(self, index, value):
+    indexes = _compute_commonindex(self, index, expand=True)
+
+    self._at_set(value, *indexes)
+
+
 for h in _histogram_and_storage.values():
     h.__getitem__ = _compute_getitem
+    h.__setitem__ = _compute_setitem
 
 del h

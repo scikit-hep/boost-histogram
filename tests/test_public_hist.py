@@ -94,7 +94,7 @@ def test_fill_int_1d():
     with pytest.raises(IndexError):
         h[0, 1]
 
-    for get in (lambda h, arg: h.at(arg),):
+    for get in (lambda h, arg: h.at(arg), lambda h, arg: h[arg]):
         # lambda h, arg: h[arg]):
         assert get(h, 0) == 2
         assert get(h, 1) == 1
@@ -103,8 +103,14 @@ def test_fill_int_1d():
         # assert get(h, 1).variance == 1
         # assert get(h, 2).variance == 3
 
-        assert get(h, -1) == 1
-        assert get(h, 3) == 1
+    assert h.at(3) == 1
+    assert h.at(-1) == 1
+
+    assert h[-1] == 3
+    with pytest.raises(IndexError):
+        h[3]
+    with pytest.raises(IndexError):
+        h[-3]
 
 
 @pytest.mark.parametrize("flow", [True, False])
@@ -140,6 +146,29 @@ def test_fill_1d(flow):
     if flow is True:
         assert get(h, -1) == 1
         assert get(h, 3) == 1
+
+
+# TODO: atomic_int not supported
+@pytest.mark.parametrize("storage", [bh.storage.int, bh.storage.double])
+def test_setting(storage):
+    h = histogram(regular(10, 0, 1), storage=storage)
+    h[bh.underflow] = 1
+    h[0] = 2
+    h[1] = 3
+    h[bh.loc(0.55)] = 4
+    h[-1] = 5
+    h[bh.overflow] = 6
+
+    assert h[bh.underflow] == 1
+    assert h[0] == 2
+    assert h[1] == 3
+    assert h[bh.loc(0.55)] == 4
+    assert h[5] == 4
+    assert h[-1] == 5
+    assert h[9] == 5
+    assert h[bh.overflow] == 6
+
+    assert_array_equal(h.view(flow=True), [1, 2, 3, 0, 0, 0, 4, 0, 0, 0, 5, 6])
 
 
 def test_growth():

@@ -5,7 +5,7 @@ This is the design document for Unified Histogram Indexing (UHI).  Much of the o
 Other histogramming libraries can implement support for this as well, and the "tag" functors, like ``project`` and ``loc`` can be
 used between libraries.
 
-The following examples assume you have imported ``loc``, ``project``, ``rebin``, and ``end`` from boost-histogram or any other
+The following examples assume you have imported ``loc``, ``project``, ``rebin``, ``end``, ``underflow``, and ``overflow`` from boost-histogram or any other
 library that implements UHI.
 
 Access:
@@ -13,8 +13,9 @@ Access:
 
 .. code:: python
 
-   v = h[b] # Returns bin contents, indexed by bin number
-   v = h[loc(b)] # Returns the bin containing the value
+   v = h[b]         # Returns bin contents, indexed by bin number
+   v = h[loc(b)]    # Returns the bin containing the value
+   v = h[underflow] # Underflow and overflow can be accessed with special tags
 
 Slicing:
 ^^^^^^^^
@@ -35,14 +36,19 @@ Slicing:
    h2 = h[0:end:project] # Special end functor (TBD)
    h2 = h[0:len(h2.axis(0)):project] # Projection without flow bins
 
-Setting (Not yet supported)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Setting
+^^^^^^^
 
 .. code:: python
 
+   # Single values
+   h[b] = v         # Returns bin contents, indexed by bin number
+   h[loc(b)] = v    # Returns the bin containing the value
+   h[underflow] = v # Underflow and overflow can be accessed with special tags
+
+   # Not yet supported!
    h[...] = np.ndarray(...) # Setting with an array or histogram sets the contents if the sizes match
                             # Overflow can optionally be included
-   h[b] = v                 # Single values work too
 
 All of this generalizes to multiple dimensions. ``loc(v)`` could return
 categorical bins, but slicing on categories would (currently) not be
@@ -54,7 +60,8 @@ will case the relevant flow bin to be excluded (not currently supported).
 
 ``loc``, ``project``, and ``rebin`` all live inside the histogramming
 package (like boost-histogram), but are completely general and can be created by a
-user using an explicit API (below).
+user using an explicit API (below). ``end``, ``underflow`` and ``overflow`` also
+follow a general API.
 
 Invalid syntax:
 ^^^^^^^^^^^^^^^
@@ -76,6 +83,13 @@ Rejected proposals or proposals for future consideration, maybe ``hist``-only:
 
 --------------
 
+
+
+Axis indexing
+-------------
+
+TODO: Possibly extend to axes. Would follow the 1D cases above.
+
 Implementation notes
 --------------------
 
@@ -87,7 +101,8 @@ here <https://gist.github.com/henryiii/d545a673ea2b3225cb985c9c02ac958b>`__.
 `Extra doc
 here <https://docs.google.com/document/d/1bJKA7Y0QXf46w53UFizJ4bnZlVIkb4aCqx6m2hoN0HM/edit#heading=h.jvegm6z8f387>`__.
 
-Note that the API comes in two forms; the ``__call__`` operator form is more powerful, slower, optional, and is not supported by boost-histogram.
+Note that the API comes in two forms; the ``__call__``/``__new__`` operator form is more powerful, slower, optional, and is not supported by boost-histogram.
+A fully conforming UHI implementation must allow the tag form without the operators.
 
 Basic implementation (WIP):
 
@@ -103,9 +118,20 @@ Basic implementation (WIP):
    class project:
        "When used in the step of a Histogram's slice, project sums over and eliminates what remains of the axis after slicing."
        projection = True
+
+       # Optional, not supported in boost-histogram
        def __new__(cls, binning, axis, counts):
          return None, numpy.add.reduce(counts, axis=axis)
 
+
+   class end:
+       ?
+
+   # Only these values have defined behavior
+   class underflow:
+       flow = -1
+   class overflow:
+       flow = 1
 
 
    class rebin:
