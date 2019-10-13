@@ -296,10 +296,21 @@ def test_axis():
         h.axis(-3)
 
 
-# CLASSIC: This used to only fail when accessing, now fails in creation
-def test_overflow():
-    with pytest.raises(RuntimeError):
-        h = histogram(*[regular(1, 0, 1) for i in range(50)])
+def test_out_of_limit_axis():
+
+    lim = bh.core.hist._axes_limit
+    ax = (
+        bh.axis.regular(1, -1, 1, underflow=False, overflow=False) for a in range(lim)
+    )
+    # Nothrow
+    bh.histogram(*ax)
+
+    ax = (
+        bh.axis.regular(1, -1, 1, underflow=False, overflow=False)
+        for a in range(lim + 1)
+    )
+    with pytest.raises(IndexError):
+        bh.histogram(*ax)
 
 
 def test_out_of_range():
