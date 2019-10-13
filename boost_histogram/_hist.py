@@ -2,15 +2,15 @@ from .utils import FactoryMeta, KWArgs
 
 from . import core as _core
 
-_histogram_and_storage = {
-    _core.storage.double: _core.hist._any_double,
-    _core.storage.int: _core.hist._any_int,
-    _core.storage.atomic_int: _core.hist._any_atomic_int,
-    _core.storage.unlimited: _core.hist._any_unlimited,
-    _core.storage.weight: _core.hist._any_weight,
-    _core.storage.mean: _core.hist._any_mean,
-    _core.storage.weighted_mean: _core.hist._any_weighted_mean,
-}
+_histograms = (
+    _core.hist._any_double,
+    _core.hist._any_int,
+    _core.hist._any_atomic_int,
+    _core.hist._any_unlimited,
+    _core.hist._any_weight,
+    _core.hist._any_mean,
+    _core.hist._any_weighted_mean,
+)
 
 
 def _arg_shortcut(item):
@@ -39,14 +39,14 @@ def _make_histogram(*args, **kwargs):
             "Too many axes, must be less than {}".format(_core.hist._axes_limit)
         )
 
-    for s in _histogram_and_storage:
-        if isinstance(storage, s):
-            return _histogram_and_storage[s](args, storage)
+    for h in _histograms:
+        if isinstance(storage, h._storage_type):
+            return h(args, storage)
 
     raise TypeError("Unsupported storage")
 
 
-histogram = FactoryMeta(_make_histogram, tuple(_histogram_and_storage.values()))
+histogram = FactoryMeta(_make_histogram, _histograms)
 
 
 def _expand_ellipsis(indexes, rank):
@@ -157,7 +157,7 @@ def _compute_setitem(self, index, value):
     self._at_set(value, *indexes)
 
 
-for h in _histogram_and_storage.values():
+for h in _histograms:
     h.__getitem__ = _compute_getitem
     h.__setitem__ = _compute_setitem
 

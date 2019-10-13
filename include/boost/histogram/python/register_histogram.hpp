@@ -101,6 +101,14 @@ register_histogram(py::module &m, const char *name, const char *desc) {
         .def(py::self == py::self)
         .def(py::self != py::self)
 
+        .def_property_readonly_static(
+            "_storage_type",
+            [](py::object) {
+                return py::detail::get_type_handle(
+                    typeid(typename histogram_t::storage_type), true);
+                // Change to py::type<T>() if added to PyBind11
+            })
+
         ;
 
     // Atomics for example do not support these operations
