@@ -110,7 +110,7 @@ def _compute_getitem(self, index):
     except RuntimeError:
         pass
 
-    projections = []
+    integrations = set()
     slices = []
 
     # Compute needed slices and projections
@@ -125,7 +125,7 @@ def _compute_getitem(self, index):
             if ind.step is not None:
                 if hasattr(ind.step, "projection"):
                     if ind.step.projection:
-                        projections.append(i)
+                        integrations.add(i)
                         if ind.start is not None or ind.stop is not None:
                             raise IndexError(
                                 "Currently cut projections are not supported"
@@ -150,7 +150,11 @@ def _compute_getitem(self, index):
             slices.append(_core.algorithm.slice_and_rebin(i, begin, end, merge))
 
     reduced = self.reduce(*slices)
-    return reduced.project(*projections) if projections else reduced
+    if not integrations:
+        return reduced
+    else:
+        projections = [i for i in range(self.rank) if i not in integrations]
+        return reduced.project(*projections) if projections else self.sum(flow=True)
 
 
 def _compute_setitem(self, index, value):
