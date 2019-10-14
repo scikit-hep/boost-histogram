@@ -92,12 +92,18 @@ def test_ellipsis():
 
 
 def test_basic_projection():
-    h2 = bh.histogram(bh.axis.regular(10, 0, 1), bh.axis.regular(10, 0, 1))
-    h1 = bh.histogram(bh.axis.regular(10, 0, 1))
+    h2 = bh.histogram(
+        bh.axis.regular(10, 0, 10),
+        bh.axis.regular(10, 0, 10),
+        bh.axis.regular(10, 0, 10),
+    )
+    h1 = bh.histogram(bh.axis.regular(10, 0, 10))
 
-    contents = [[2, 2, 2, 3, 4, 5, 6], [1, 2, 2, 3, 2, 1, 2]]
+    contents = [[2, 2, 2, 3, 4, 5, 6], [1, 2, 2, 3, 2, 1, 2], [-12, 33, 4, 9, 2, 4, 9]]
 
     h1.fill(contents[0])
     h2.fill(*contents)
 
-    assert h1 == h2[:, :: bh.project]
+    assert h1 == h2[:, :: bh.project, :: bh.project]
+    assert h1 == h2[..., :: bh.project, :: bh.project]
+    assert h2.sum(flow=True) == h2[:: bh.project, :: bh.project, :: bh.project]
