@@ -8,6 +8,8 @@
 #include <boost/histogram/python/pybind11.hpp>
 
 #include <boost/histogram/axis.hpp>
+#include <boost/histogram/python/axis_setup.hpp>
+#include <boost/histogram/python/regular_numpy.hpp>
 
 #include <algorithm>
 #include <cmath>
@@ -16,34 +18,6 @@
 #include <tuple>
 #include <type_traits>
 #include <vector>
-
-/// Register bh::axis::variant as a variant for PyBind11
-namespace pybind11 {
-namespace detail {
-template <class... Ts>
-struct type_caster<bh::axis::variant<Ts...>>
-    : variant_caster<bh::axis::variant<Ts...>> {};
-} // namespace detail
-} // namespace pybind11
-
-inline bool PyObject_Check(void *value) { return value != nullptr; }
-
-struct metadata_t : py::object {
-    PYBIND11_OBJECT_DEFAULT(metadata_t, object, PyObject_Check);
-
-    bool operator==(const metadata_t &other) const { return py::object::equal(other); }
-    bool operator!=(const metadata_t &other) const {
-        return py::object::not_equal(other);
-    }
-};
-
-template <class Iterable>
-std::string::size_type max_string_length(const Iterable &c) {
-    std::string::size_type n = 0;
-    for(auto &&s : c)
-        n = std::max(n, s.size());
-    return n;
-}
 
 namespace axis {
 
@@ -211,7 +185,7 @@ py::array_t<double> edges(const A &ax, bool flow = false, bool numpy_upper = fal
         for(index_type i = -underflow; i <= ax.size() + overflow; ++i)
             edges.mutable_at(i + underflow) = ax.value(i);
 
-        if(numpy_upper) {
+        if(numpy_upper && !std::is_same<A, axis::regular_numpy>::value) {
             edges.mutable_at(ax.size() + underflow) = std::nextafter(
                 edges.at(ax.size() + underflow), std::numeric_limits<double>::min());
         }
@@ -313,6 +287,7 @@ using axis_variant = bh::axis::variant<axis::regular_none,
                                        axis::regular_log,
                                        axis::regular_pow,
                                        axis::regular_sqrt,
+                                       axis::regular_numpy,
                                        axis::variable_none,
                                        axis::variable_uflow,
                                        axis::variable_oflow,

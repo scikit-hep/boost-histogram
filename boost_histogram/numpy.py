@@ -1,5 +1,6 @@
 from . import axis as _axis
 from . import _hist as _hist
+from . import core as _core
 
 
 def histogramdd(a, bins=10, range=None, normed=None, weights=None, density=None):
@@ -35,11 +36,8 @@ def histogramdd(a, bins=10, range=None, normed=None, weights=None, density=None)
         if isinstance(b, int):
             if r is None:
                 # Nextafter may affect bin edges slightly
-                r = (
-                    np.min(a[n]),
-                    np.nextafter(np.max(np.double(a[n])), np.finfo("d").max),
-                )
-            axs.append(_axis.regular(b, r[0], r[1]))
+                r = (np.min(a[n]), np.max(a[n]))
+            axs.append(_core.axis._regular_numpy(b, r[0], r[1]))
         else:
             b = np.asarray(b, dtype=np.double)
             b[-1] = np.nextafter(b[-1], np.finfo("d").max)
