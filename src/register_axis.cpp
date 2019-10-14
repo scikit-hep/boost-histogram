@@ -8,6 +8,7 @@
 #include <boost/histogram/python/axis.hpp>
 #include <boost/histogram/python/kwargs.hpp>
 #include <boost/histogram/python/register_axis.hpp>
+#include <boost/histogram/python/regular_numpy.hpp>
 #include <boost/mp11.hpp>
 #include <vector>
 
@@ -68,13 +69,15 @@ void register_axes(py::module &mod) {
                             axis::regular_uflow,
                             axis::regular_oflow,
                             axis::regular_uoflow,
-                            axis::regular_uoflow_growth>(
+                            axis::regular_uoflow_growth,
+                            axis::regular_numpy>(
         mod,
         {"_regular_none",
          "_regular_uflow",
          "_regular_oflow",
          "_regular_uoflow",
-         "_regular_uoflow_growth"},
+         "_regular_uoflow_growth",
+         "_regular_numpy"},
         "Evenly spaced bins",
         py::init<unsigned, double, double, metadata_t>(),
         "bins"_a,

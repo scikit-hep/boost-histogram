@@ -138,7 +138,7 @@ register_histogram(py::module &m, const char *name, const char *desc) {
 
                 // Add the axis edges
                 h.for_each_axis([&tup, flow, i = 0u](const auto &ax) mutable {
-                    unchecked_set(tup, ++i, axis::edges(ax, flow));
+                    unchecked_set(tup, ++i, axis::edges(ax, flow, true));
                 });
 
                 return tup;
