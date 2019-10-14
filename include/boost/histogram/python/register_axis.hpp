@@ -12,6 +12,7 @@
 #include <boost/histogram/detail/iterator_adaptor.hpp>
 #include <boost/histogram/python/axis.hpp>
 #include <boost/histogram/python/axis_ostream.hpp>
+#include <boost/histogram/python/options.hpp>
 #include <boost/histogram/python/serializion.hpp>
 
 #include <algorithm>
@@ -27,31 +28,6 @@
 #include <vector>
 
 using namespace std::literals;
-
-struct options {
-    unsigned option;
-
-    options(unsigned value)
-        : option(value) {}
-    options(bool uflow, bool oflow, bool circ, bool grow)
-        : option(
-            uflow * bh::axis::option::underflow | oflow * bh::axis::option::overflow
-            | circ * bh::axis::option::circular | grow * bh::axis::option::growth) {}
-
-    bool operator==(const options &other) const { return option == other.option; }
-    bool operator!=(const options &other) const { return option != other.option; }
-
-    bool underflow() const {
-        return static_cast<bool>(option & bh::axis::option::underflow);
-    }
-    bool overflow() const {
-        return static_cast<bool>(option & bh::axis::option::overflow);
-    }
-    bool circular() const {
-        return static_cast<bool>(option & bh::axis::option::circular);
-    }
-    bool growth() const { return static_cast<bool>(option & bh::axis::option::growth); }
-};
 
 template <class A>
 void vectorized_index_and_value_methods(py::class_<A> &axis) {
