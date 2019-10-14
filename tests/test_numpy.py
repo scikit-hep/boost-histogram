@@ -3,6 +3,12 @@ import pytest
 import boost_histogram as bh
 import numpy as np
 
+import warnings
+
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    import boost_histogram.numpy as bhnp
+
 
 @pytest.mark.parametrize(
     "a",
@@ -38,7 +44,7 @@ import numpy as np
 def test_histogram1d(a, opt):
     v = np.array(a)
     h1, e1 = np.histogram(v, **opt)
-    h2, e2 = bh.numpy.histogram(v, **opt).to_numpy()
+    h2, e2 = bhnp.histogram(v, **opt).to_numpy()
 
     np.testing.assert_array_almost_equal(e1, e2)
     np.testing.assert_array_equal(h1, h2)
@@ -49,7 +55,7 @@ def test_histogram2d():
     y = np.array([0.4, 0.5, 0.22, 0.65, 0.32, 0.01, 0.23, 1.98])
 
     h1, e1x, e1y = np.histogram2d(x, y)
-    h2, e2x, e2y = bh.numpy.histogram2d(x, y).to_numpy()
+    h2, e2x, e2y = bhnp.histogram2d(x, y).to_numpy()
 
     np.testing.assert_array_almost_equal(e1x, e2x)
     np.testing.assert_array_almost_equal(e1y, e2y)

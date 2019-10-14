@@ -2,6 +2,13 @@ from . import axis as _axis
 from . import _hist as _hist
 from . import core as _core
 
+import warnings
+
+warnings.warn(
+    "The boost_histogram.numpy module is provisional and may change in future releases",
+    FutureWarning,
+)
+
 
 def histogramdd(a, bins=10, range=None, normed=None, weights=None, density=None):
     import numpy as np
