@@ -9,6 +9,8 @@ with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     import boost_histogram.numpy as bhnp
 
+np113 = tuple(int(x) for x in np.__version__.split(".")[:2]) >= (1, 13)
+
 
 @pytest.mark.parametrize(
     "a",
@@ -36,7 +38,7 @@ with warnings.catch_warnings():
     (
         {},
         {"bins": 10},
-        {"bins": "auto"},  # Only for numpy 1.13+
+        {"bins": "auto" if np113 else 20},
         {"range": (0, 5), "bins": 30},
         {"bins": [0, 1, 1.2, 1.3, 4, 21]},
     ),
