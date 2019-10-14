@@ -6,49 +6,74 @@ import numpy as np
 
 
 def test_weighted_sum():
-    v = bh.accumulators.weighted_sum(1.5, 2.5)
+    a = bh.accumulators.weighted_sum(1.5, 2.5)
 
-    assert v.value == 1.5
-    assert v.variance == 2.5
+    assert a.value == 1.5
+    assert a.variance == 2.5
 
-    v += 1.5
+    a += 1.5
 
-    assert v.value == 3.0
-    assert v.variance == 4.75
+    assert a.value == 3.0
+    assert a.variance == 4.75
 
-    v = bh.accumulators.weighted_sum()
-    for a, b in zip([1, 2, 3], [4, 5, 6]):
-        v += bh.accumulators.weighted_sum(a, b)
+    vals = [1, 2, 3]
+    vari = [4, 5, 6]
 
-    assert v.value == 6
-    assert v.variance == 15
+    a = bh.accumulators.weighted_sum()
+    for val, var in zip(vals, vari):
+        a += bh.accumulators.weighted_sum(val, variance=var)
 
+    assert a.value == 6
+    assert a.variance == 15
 
-def test_weighted_mean():
-    v = bh.accumulators.weighted_mean()
-    v(1, 4)
-    v(2, 1)
+    a2 = bh.accumulators.weighted_sum().fill(vals, variance=vari)
+    assert a == a2
 
-    assert v.sum_of_weights == 3.0
-    assert v.variance == 4.5
-    assert v.value == 2.0
-
-
-def test_mean():
-    v = bh.accumulators.mean()
-    v(1)
-    v(2)
-    v(3)
-
-    assert v.count == 3
-    assert v.value == 2
-    assert v.variance == 1
+    assert a == bh.accumulators.weighted_sum(6, 15)
 
 
 def test_sum():
-    v = bh.accumulators.sum()
-    v += 1
-    v += 2
-    v += 3
+    vals = [1, 2, 3]
+    a = bh.accumulators.sum()
+    for val in vals:
+        a += val
 
-    assert v.value == 6
+    assert a.value == 6
+
+    a2 = bh.accumulators.sum().fill(vals)
+    assert a == a2
+
+    assert a == bh.accumulators.sum(6)
+
+
+def test_weighted_mean():
+    vals = [4, 1]
+    weights = [1, 2]
+    a = bh.accumulators.weighted_mean()
+    for v, w in zip(vals, weights):
+        a(v, weight=w)
+
+    assert a.sum_of_weights == 3.0
+    assert a.variance == 4.5
+    assert a.value == 2.0
+
+    a2 = bh.accumulators.weighted_mean().fill(vals, weight=weights)
+    assert a == a2
+
+    assert a == bh.accumulators.weighted_mean(3, 5, 2, 4.5)
+
+
+def test_mean():
+    vals = [1, 2, 3]
+    a = bh.accumulators.mean()
+    for val in vals:
+        a(val)
+
+    assert a.count == 3
+    assert a.value == 2
+    assert a.variance == 1
+
+    a2 = bh.accumulators.mean().fill([1, 2, 3])
+    assert a == a2
+
+    assert a == bh.accumulators.mean(3, 2, 1)
