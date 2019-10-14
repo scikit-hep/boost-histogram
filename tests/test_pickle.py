@@ -24,20 +24,18 @@ accumulators = (
     (bh.accumulators.weighted_mean, (1.5, 2.5, 3.5, 4.5)),
 )
 
-copies = (copy.copy, copy.deepcopy)
-
 storages = (
     bh.storage.atomic_int,
     bh.storage.double,
     bh.storage.int,
     bh.storage.mean,
-    bh.storage.unlimited,
+    # bh.storage.unlimited, TODO: Does not convert to Python
     bh.storage.weight,
     bh.storage.weighted_mean,
 )
 
 
-@pytest.mark.parametrize("copy_fn", copies)
+@pytest.mark.parametrize("copy_fn", copy_fns)
 @pytest.mark.parametrize(
     "opts", ({}, {"growth": True}, {"underflow": True, "overflow": True})
 )
@@ -48,7 +46,7 @@ def test_options(copy_fn, opts):
 
 
 @pytest.mark.parametrize("accum,args", accumulators)
-@pytest.mark.parametrize("copy_fn", copies)
+@pytest.mark.parametrize("copy_fn", copy_fns)
 def test_accumulators(accum, args, copy_fn):
     orig = accum(*args)
     new = copy_fn(orig)
@@ -62,6 +60,7 @@ axes_creations = (
     (bh.axis.regular_log, (4, 2, 4)),
     (bh.axis.regular_sqrt, (4, 2, 4)),
     (bh.axis.regular_pow, (4, 2, 4, 0.5)),
+    (bh.core.axis._regular_numpy, (4, 2, 4)),
     (bh.axis.circular, (4, 2, 4)),
     (bh.axis.variable, ([1, 2, 3, 4],)),
     (bh.core.axis._integer_uoflow, (1, 4)),
@@ -73,7 +72,7 @@ axes_creations = (
 
 
 @pytest.mark.parametrize("axis,args", axes_creations)
-@pytest.mark.parametrize("copy_fn", copies)
+@pytest.mark.parametrize("copy_fn", copy_fns)
 def test_axes(axis, args, copy_fn):
     orig = axis(*args, metadata=None)
     new = copy_fn(orig)
@@ -81,7 +80,7 @@ def test_axes(axis, args, copy_fn):
 
 
 @pytest.mark.parametrize("axis,args", axes_creations)
-@pytest.mark.parametrize("copy_fn", copies)
+@pytest.mark.parametrize("copy_fn", copy_fns)
 def test_metadata_str(axis, args, copy_fn):
     orig = axis(*args, metadata="foo")
     new = copy_fn(orig)
@@ -115,7 +114,7 @@ def test_compare_copy_hist(metadata):
 
 
 @pytest.mark.parametrize("axis,args", axes_creations)
-@pytest.mark.parametrize("copy_fn", copies)
+@pytest.mark.parametrize("copy_fn", copy_fns)
 def test_metadata_any(axis, args, copy_fn):
     orig = axis(*args, metadata=(1, 2, 3))
     new = copy_fn(orig)
@@ -124,7 +123,7 @@ def test_metadata_any(axis, args, copy_fn):
     assert new == orig
 
 
-@pytest.mark.parametrize("copy_fn", copies)
+@pytest.mark.parametrize("copy_fn", copy_fns)
 @pytest.mark.parametrize("storage", storages)
 def test_storage_int(copy_fn, storage):
     storage = storage()
@@ -133,7 +132,7 @@ def test_storage_int(copy_fn, storage):
     assert storage == new
 
 
-@pytest.mark.parametrize("copy_fn", copies)
+@pytest.mark.parametrize("copy_fn", copy_fns)
 def test_histogram_regular(copy_fn):
     hist = bh.histogram(bh.axis.regular(4, 1, 2), bh.axis.regular(8, 3, 6))
 
@@ -141,7 +140,7 @@ def test_histogram_regular(copy_fn):
     assert hist == new
 
 
-@pytest.mark.parametrize("copy_fn", copies)
+@pytest.mark.parametrize("copy_fn", copy_fns)
 def test_histogram_fancy(copy_fn):
     hist = bh.histogram(bh.axis.regular(4, 1, 2), bh.axis.integer(0, 6))
 
@@ -149,10 +148,21 @@ def test_histogram_fancy(copy_fn):
     assert hist == new
 
 
-@pytest.mark.parametrize("copy_fn", copies)
+@pytest.mark.parametrize("copy_fn", copy_fns)
 @pytest.mark.parametrize("metadata", ("This", (1, 2, 3)))
 def test_histogram_metadata(copy_fn, metadata):
 
     hist = bh.histogram(bh.axis.regular(4, 1, 2, metadata=metadata))
     new = copy_fn(hist)
     assert hist == new
+
+
+@pytest.mark.parametrize("copy_fn", copy_fns)
+def test_numpy_edge(copy_fn):
+    ax1 = bh.core.axis._regular_numpy(10, 0, 1)
+    ax2 = copy_fn(ax1)
+
+    # stop defaults to 0, so this fails if the copy fails
+    assert ax1 == ax2
+    assert ax1.index(1) == ax2.index(1)
+    assert ax2.index(1) == 9
