@@ -1,24 +1,26 @@
 from __future__ import absolute_import, division, print_function
 
+del absolute_import, division, print_function  # hides these from IPython
+
 from . import axis as _axis
 from . import _hist as _hist
 from . import core as _core
 
-import warnings
+from .utils import KWArgs as _KWArgs
 
-warnings.warn(
-    "The boost_histogram.numpy module is provisional and may change in future releases",
-    FutureWarning,
-)
-del warnings
+import numpy as _np
+
+__all__ = ("histogram", "histogram2d", "histogramdd")
 
 
-def bhistogramdd(a, bins=10, range=None, normed=None, weights=None, density=None):
-    """
-    Return a boost-histogram object using the same arguments as numpy's histogramdd.
-    This does not support density/normed,
-    """
-    import numpy as np
+def histogramdd(
+    a, bins=10, range=None, normed=None, weights=None, density=None, **kwargs
+):
+    np = _np  # Hidden to keep module clean
+
+    with _KWArgs(kwargs) as k:
+        boost = k.optional("bh", False)
+        storage = k.optional("bh_storage", _core.storage.double)
 
     if normed is not None:
         raise KeyError(
@@ -29,7 +31,7 @@ def bhistogramdd(a, bins=10, range=None, normed=None, weights=None, density=None
             "boost-histogram does not support the density keyword at the moment"
         )
 
-    # Odd design here. Oh well.
+    # Odd numpy design here. Oh well.
     if isinstance(a, np.ndarray):
         a = a.T
 
@@ -58,34 +60,49 @@ def bhistogramdd(a, bins=10, range=None, normed=None, weights=None, density=None
             axs.append(_axis.variable(b))
 
     if weights is None:
-        return _hist.histogram(*axs).fill(*a)
+        hist = _hist.histogram(*axs).fill(*a)
     else:
-        return _hist.histogram(*axis).fill(*a, weight=weights)
+        hist = _hist.histogram(*axis).fill(*a, weight=weights)
+
+    return hist if boost else hist.to_numpy()
 
 
-def histogramdd(a, bins=10, range=None, normed=None, weights=None, density=None):
-    return bhistogramdd(a, bins, range, normed, weights, density).to_numpy()
+def histogram2d(
+    x, y, bins=10, range=None, normed=None, weights=None, density=None, **kwargs
+):
+    return histogramdd((x, y), bins, range, normed, weights, density, **kwargs)
 
 
-def bhistogram2d(x, y, bins=10, range=None, normed=None, weights=None, density=None):
-    return bhistogramdd((x, y), bins, range, normed, weights, density)
+def histogram(
+    a, bins=10, range=None, normed=None, weights=None, density=None, **kwargs
+):
+    np = _np
 
-
-def histogram2d(x, y, bins=10, range=None, normed=None, weights=None, density=None):
-    return bhistogram2d(x, y, bins, range, normed, weights, density).to_numpy()
-
-
-def bhistogram(x, bins=10, range=None, normed=None, weights=None, density=None):
-    import numpy as np
+    # numpy 1d histogram returns integers in some cases
+    if "bh_storage" not in kwargs and not (weights or normed or density):
+        kwargs["bh_storage"] = _core.storage.int
 
     if isinstance(bins, str):
         if tuple(int(x) for x in np.__version__.split(".")[:2]) < (1, 13):
             raise KeyError(
                 "Upgrade numpy to 1.13+ to use string arguments to boost-histogram's histogram function"
             )
-        bins = np.histogram_bin_edges(x, bins, range, weights)
-    return bhistogramdd((x,), (bins,), (range,), normed, weights, density)
+        bins = np.histogram_bin_edges(a, bins, range, weights)
+    return histogramdd((a,), (bins,), (range,), normed, weights, density, **kwargs)
 
 
-def histogram(x, bins=10, range=None, normed=None, weights=None, density=None):
-    return bhistogram(x, bins, range, normed, weights, density).to_numpy()
+# Process docstrings
+for f, n in zip(
+    (histogram, histogram2d, histogramdd),
+    (_np.histogram, _np.histogram2d, _np.histogramdd),
+):
+
+    H = """\
+    Return a boost-histogram object using the same arguments as numpy's {}.
+    This does not support density/normed yet. Two extra arguments are added: bh=True
+    will enable object based output, and bh_storage=... lets you set the storage used.
+    """
+
+    f.__doc__ = H.format(n.__name__) + n.__doc__
+
+del f, n, H
