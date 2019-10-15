@@ -30,7 +30,6 @@ class regular_numpy : public bh::axis::regular<double, bh::use_default, metadata
         , stop_(0){};
 
     boost::histogram::axis::index_type index(value_type v) const {
-        std::cout << "stop: " << stop_ << std::endl;
         return v <= stop_ ? std::min(regular::index(v), size() - 1) : regular::index(v);
     }
 
