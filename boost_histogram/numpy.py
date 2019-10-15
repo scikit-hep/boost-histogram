@@ -10,9 +10,14 @@ warnings.warn(
     "The boost_histogram.numpy module is provisional and may change in future releases",
     FutureWarning,
 )
+del warnings
 
 
-def histogramdd(a, bins=10, range=None, normed=None, weights=None, density=None):
+def bhistogramdd(a, bins=10, range=None, normed=None, weights=None, density=None):
+    """
+    Return a boost-histogram object using the same arguments as numpy's histogramdd.
+    This does not support density/normed,
+    """
     import numpy as np
 
     if normed is not None:
@@ -58,11 +63,19 @@ def histogramdd(a, bins=10, range=None, normed=None, weights=None, density=None)
         return _hist.histogram(*axis).fill(*a, weight=weights)
 
 
+def histogramdd(a, bins=10, range=None, normed=None, weights=None, density=None):
+    return bhistogramdd(a, bins, range, normed, weights, density).to_numpy()
+
+
+def bhistogram2d(x, y, bins=10, range=None, normed=None, weights=None, density=None):
+    return bhistogramdd((x, y), bins, range, normed, weights, density)
+
+
 def histogram2d(x, y, bins=10, range=None, normed=None, weights=None, density=None):
-    return histogramdd((x, y), bins, range, normed, weights, density)
+    return bhistogram2d(x, y, bins, range, normed, weights, density).to_numpy()
 
 
-def histogram(x, bins=10, range=None, normed=None, weights=None, density=None):
+def bhistogram(x, bins=10, range=None, normed=None, weights=None, density=None):
     import numpy as np
 
     if isinstance(bins, str):
@@ -71,5 +84,8 @@ def histogram(x, bins=10, range=None, normed=None, weights=None, density=None):
                 "Upgrade numpy to 1.13+ to use string arguments to boost-histogram's histogram function"
             )
         bins = np.histogram_bin_edges(x, bins, range, weights)
-    return histogramdd((x,), (bins,), (range,), normed, weights, density)
-    # TODO: this also supports a few more tricks in Numpy, those can be added for numpy 1.13+
+    return bhistogramdd((x,), (bins,), (range,), normed, weights, density)
+
+
+def histogram(x, bins=10, range=None, normed=None, weights=None, density=None):
+    return bhistogram(x, bins, range, normed, weights, density).to_numpy()

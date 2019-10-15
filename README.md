@@ -26,12 +26,11 @@ For the moment, you need to uninstall and reinstall to ensure you have the lates
 
 ## Usage
 
-This is a suggested example of usage.
 
 ```python
 import boost_histogram as bh
 
-# Compose axis however you like
+# Compose axis however you like; this is a 2D histogram
 hist = bh.histogram(bh.axis.regular(2, 0, 1),
                     bh.axis.regular(4, 0.0, 1.0))
 
@@ -53,21 +52,25 @@ counts = hist.view()
     * `bh.axis.regular_pow(n, start, stop, power)`: Regularly spaced value to some `power`
     * `bh.axis.integer(start, stop, underflow=True, overflow=True, growth=False)`: Special high-speed version of `regular` for evenly spaced bins of width 1
     * `bh.axis.variable([start, edge1, edge2, ..., stop], underflow=True, overflow=True)`: Uneven bin spacing
-    * `bh.axis.category([...], growth=False)`: Integer or (WIP) string categories
+    * `bh.axis.category([...], growth=False)`: Integer or string categories
 * Axis features:
+    * `.index(values)`: The index at a point (or points) on the axis
+    * `.value(indexes)`: The value for a fractional bin in the axis
+    * `.bin(i)`: The bin given an integer index
+    * `.options`: The options the axis was created with
+    * `.metadata`: Anything a user wants to store
+    * `.size`: The number of bins (not including under/overflow)
+    * `.extent`: The number of bins (including under/overflow)
     * `.bin(i)`: The bin or a bin view for continuous axis types
         * `.lower()`: The lower value
         * `.upper()`: The upper value
         * `.center()`: The center value
         * `.width()`: The bin width
-    * `.bins()`: A list of bins or bin views
-    * `.size()`: The number of bins (not including under/overflow)
-    * `.size(flow=True)`: The number of bins (including under/overflow)
     * `.options()`: The options set on the axis (`bh.axis.options` bitfields)
-    * `.edges(flow=False)`: The N+1 bin edges (if continuous)
-    * `.centers(flow=False)`: The N bin centers (if continuous)
-    * `.index(values)`: The index at a point (or points) on the axis
-    * `.value(index)`: The value for a fractional bin in the axis
+    * `.edges`: The N+1 bin edges (if continuous)
+    * `.centers`: The N bin centers (if continuous)
+    * `.widths`: The N bin widths
+
 * Many storage types
     * `bh.storage.int`: 64 bit unsigned integers for high performance and useful view access
     * `bh.storage.double`: Doubles for weighted values
@@ -82,30 +85,29 @@ counts = hist.view()
     * `bh.accumulator.sum`: High accuracy sum (Neumaier)
     * `bh.accumulator.mean`: Running count, mean, and variance (Welfords's incremental algorithm)
 * Histogram operations
-    * `.fill(arr, ..., weight=...)` Fill with N arrays or single values
-    * `(a, b, ...)`: Fill with arrays or single values
-    * `+`: Add two histograms
-    * `.rank()`: The number of dimensions
-    * `.size()`: The number of bins (include under/overflow bins)
+    * `h.fill(arr, ..., weight=...)` Fill with N arrays or single values
+    * `h.rank`: The number of dimensions
+    * `h.size or len(h)`: The number of bins
     * `.reset()`: Set counters to 0
+    * `+`: Add two histograms
     * `*=`: Multiply by a scaler (not all storages) (`hist * scalar` and `scalar * hist` supported too)
     * `/=`: Divide by a scaler (not all storages) (`hist / scalar` supported too)
     * `.to_numpy(flow=False)`: Convert to a numpy style tuple (with or without under/overflow bins)
     * `.view(flow=False)`: Get a view on the bin contents (with or without under/overflow bins)
-    * `np.asarray(...)`: Get a view on the bin contents with under/overflow bins
     * `.axis(i)`: Get the `i`th axis
-    * `.at(i, j, ...)`: Get the bin contents as a location
-    * `.sum()`: The total count of all bins
+    * `.sum(flow=False)`: The total count of all bins
     * `.project(ax1, ax2, ...)`: Project down to listed axis (numbers)
     * `.reduce(ax, reduce_option, ...)`: shrink, rebin, or slice, or any combination
+    <!--
     * `.indexed(flow=False)`: Iterate over the bins with a special "indexed" iterator
         * `ind.content`: The contents of a bin (set or get)
         * `ind.bins()`: A list of bins
         * `ind.centers()`: The centers of each bin
         * `ind.indices()`: A list of indices
+    -->
+* Indexing - Supports the Unified Histogram Indexing (UHI) proposal
 * Details
     * Use `bh.histogram(..., storage=...)` to make a histogram (there are several different types)
-    * Several common combinations are optimized, such as regular axes + int storage
 
 
 ## Supported platforms

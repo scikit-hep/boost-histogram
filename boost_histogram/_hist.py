@@ -27,6 +27,7 @@ def _make_histogram(*args, **kwargs):
     Make a histogram with an optional storage (keyword only).
     """
 
+    # Keyword only trick (change when Python2 is dropped)
     with KWArgs(kwargs) as k:
         storage = k.optional("storage", _core.storage.double())
 
@@ -34,6 +35,7 @@ def _make_histogram(*args, **kwargs):
     if isinstance(storage, type):
         storage = storage()
 
+    # Allow a tuple to represent a regular axis
     args = [_arg_shortcut(arg) for arg in args]
 
     if len(args) > _core.hist._axes_limit:
@@ -41,6 +43,7 @@ def _make_histogram(*args, **kwargs):
             "Too many axes, must be less than {}".format(_core.hist._axes_limit)
         )
 
+    # Check all available histograms, and if the storage matches, return that one
     for h in _histograms:
         if isinstance(storage, h._storage_type):
             return h(args, storage)
