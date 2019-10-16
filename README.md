@@ -7,15 +7,23 @@
 
 Python bindings for [Boost::Histogram][] ([source][Boost::Histogram source]), a C++14 library. This should become one of the [fastest libraries][] for histogramming, while still providing the power of a full histogram object.
 
-> ## Warning: These bindings are in progress and are not yet in a beta stage.
+> ## 0.5.0: First public beta
 >
-> Join the [discussion on gitter][gitter-link] to follow the development!
+> Please feel free to try out boost-histogram and give feedback.
+> Join the [discussion on gitter][gitter-link] or [open an issue](https://github.com/scikit-hep/boost-histogram/issues)!
 
 
 
 ## Installation
 
-This library is under development, but you can install directly from GitHub if you would like. You need a C++14 compiler and Python 2.7--3.8. Boost 1.71 is not required or needed (this only depends on included header-only dependencies).
+You can install this library from PyPI with pip:
+
+```
+python -m pip install boost-histogram
+```
+
+This library is under active development; you can install directly from GitHub if you would like. You need a C++14 compiler and Python 2.7--3.8. Boost 1.71 is not required or needed (this only depends on included header-only dependencies).
+
 All the normal best-practices for Python apply; you should be in a virtual environment, otherwise add `--user`, etc.
 
 ```bash
@@ -23,6 +31,8 @@ python -m pip install git+https://github.com/scikit-hep/boost-histogram.git@deve
 ```
 
 For the moment, you need to uninstall and reinstall to ensure you have the latest version - pip will not rebuild if it thinks the version number has not changed. In the future, this may be addressed differently in boost-histogram.
+
+Conda support is planned.
 
 ## Usage
 
@@ -119,22 +129,20 @@ The easiest way to get boost-histogram is to use a binary wheel. These are the s
 | System | Arch | Python versions |
 |---------|-----|------------------|
 | ManyLinux1 (custom GCC 8.3) | 64 & 32-bit | 2.7, 3.5, 3.6, 3.7 |
-| ManyLinux2010 | 64-bit | 2.7, 3.5, 3.6, 3.7 |
-| macOS 10.9+ | 64-bit | 2.7, 3.6, 3.7 |
+| ManyLinux2010 | 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8 |
+| macOS 10.9+ | 64-bit | 2.7, 3.6, 3.7, 3.8 |
 | Windows | 64 & 32-bit | 2.7, 3.6, 3.7 |
 
 
 * Linux: I'm not supporting 3.4 because I have to build the Numpy wheels to do so.
-* manylinux1: Using a custom docker container with GCC 8.3; should work but can't be called directly other compiled extensions unless they do the same thing (think that's the main caveat). Supporting 32 bits because it's there.
+* manylinux1: Using a custom docker container with GCC 9.2; should work but can't be called directly other compiled extensions unless they do the same thing (think that's the main caveat). Supporting 32 bits because it's there. Numpy does not build correctly with Python 3.8, GCC 9.2, and manylinux1, so Python 3.8 is not supported; use manylinux2010 instead.
 * manylinux2010: Requires pip 10+ and a version of Linux newer than 2010. This is very new technology.
 * MacOS: Uses the dedicated 64 bit 10.9+ Python.org builds. We are not supporting 3.5 because those no longer provide binaries (could add a 32+64 fat 10.6+ that really was 10.9+, but not worth it unless there is a need for it).
-* Windows: PyBind11 requires compilation with a newer copy of Visual Studio than Python 2.7's Visual Studio 2008; you need to have the [Visual Studio 2015 distributable][msvc2015] installed (the dll is included in 2017 and 2019, as well).
+* Windows: PyBind11 requires compilation with a newer copy of Visual Studio than Python 2.7's Visual Studio 2008; you need to have the [Visual Studio 2015 distributable][msvc2015] installed (the dll is included in 2017 and 2019, as well). Wheels are not provided for 3.8, waiting on support from Azure.
 
 [msvc2015]: https://www.microsoft.com/en-us/download/details.aspx?id=48145
 
 If you are on a Linux system that is not part of the "many" in manylinux, such as Alpine or ClearLinux, building from source is usually fine, since the compilers on those systems are often quite new. It will just take a little longer to install when it's using the sdist instead of a wheel.
-
-Conda support is planned.
 
 #### Source builds
 
