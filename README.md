@@ -3,6 +3,7 @@
 [![Gitter][gitter-badge]][gitter-link]
 [![Build Status][azure-badge]][azure-link]
 [![Documentation Status][rtd-badge]][rtd-link]
+[![DOI](https://zenodo.org/badge/148885351.svg)](https://zenodo.org/badge/latestdoi/148885351)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
 Python bindings for [Boost::Histogram][] ([source][Boost::Histogram source]), a C++14 library. This should become one of the [fastest libraries][] for histogramming, while still providing the power of a full histogram object.
