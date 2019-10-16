@@ -15,7 +15,7 @@ Python bindings for [Boost::Histogram][] ([source][Boost::Histogram source]), a 
 
 ## Installation
 
-This library is under development, but you can install directly from GitHub if you would like. You need a C++14 compiler and Python 2.7--3.7. Boost 1.71 is not required or needed (this only depends on included header-only dependencies).
+This library is under development, but you can install directly from GitHub if you would like. You need a C++14 compiler and Python 2.7--3.8. Boost 1.71 is not required or needed (this only depends on included header-only dependencies).
 All the normal best-practices for Python apply; you should be in a virtual environment, otherwise add `--user`, etc.
 
 ```bash

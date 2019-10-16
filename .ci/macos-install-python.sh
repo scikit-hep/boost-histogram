@@ -12,6 +12,9 @@ case $PYTHON_VERSION in
 3.7)
   FULL_VERSION=3.7.3
   ;;
+3.8)
+  FULL_VERSION=3.8.0
+  ;;
 esac
 
 INSTALLER_NAME=python-$FULL_VERSION-macosx10.9.pkg
