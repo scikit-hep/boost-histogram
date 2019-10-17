@@ -11,6 +11,7 @@ graft extern/core/include
 graft extern/histogram/include
 graft extern/mp11/include
 graft extern/throw_exception/include
+graft extern/variant2/include
 
 graft extern/pybind11/include
 graft extern/pybind11/tools
