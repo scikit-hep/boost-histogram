@@ -31,10 +31,17 @@ jobs:
   variables:
     python.architecture: 'none'
   steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.7'
+        architecture: 'x64'
     - script: |
         python -m pip install setuptools
         python setup.py sdist
       displayName: Publish sdist
+    - script: |
+        python -m pip install dist/*
+      displayName: Verify pip source install
     - template: azure-publish-dist.yml
 
 - job: LinuxCMake
