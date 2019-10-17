@@ -35,6 +35,9 @@ jobs:
         python -m pip install setuptools
         python setup.py sdist
       displayName: Publish sdist
+    - script: |
+        python -m pip install dist/*
+      displayName: Verify pip source install
     - template: azure-publish-dist.yml
 
 - job: LinuxCMake
