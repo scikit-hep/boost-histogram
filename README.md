@@ -8,7 +8,7 @@
 
 Python bindings for [Boost::Histogram][] ([source][Boost::Histogram source]), a C++14 library. This should become one of the [fastest libraries][] for histogramming, while still providing the power of a full histogram object.
 
-> ## 0.5.0: First public beta
+> ## 0.5.1: First public beta
 >
 > Please feel free to try out boost-histogram and give feedback.
 > Join the [discussion on gitter][gitter-link] or [open an issue](https://github.com/scikit-hep/boost-histogram/issues)!
@@ -67,24 +67,18 @@ counts = hist.view()
 * Axis features:
     * `.index(values)`: The index at a point (or points) on the axis
     * `.value(indexes)`: The value for a fractional bin in the axis
-    * `.bin(i)`: The bin given an integer index
-    * `.options`: The options the axis was created with
-    * `.metadata`: Anything a user wants to store
-    * `.size`: The number of bins (not including under/overflow)
-    * `.extent`: The number of bins (including under/overflow)
-    * `.bin(i)`: The bin or a bin view for continuous axis types
-        * `.lower()`: The lower value
-        * `.upper()`: The upper value
-        * `.center()`: The center value
-        * `.width()`: The bin width
-    * `.options()`: The options set on the axis (`bh.axis.options` bitfields)
-    * `.edges`: The N+1 bin edges (if continuous)
+    * `.bin(i)`: The bin edges or a bin value (categories)
     * `.centers`: The N bin centers (if continuous)
+    * `.edges`: The N+1 bin edges (if continuous)
+    * `.extent`: The number of bins (including under/overflow)
+    * `.metadata`: Anything a user wants to store
+    * `.options`: The options set on the axis (`bh.axis.options`)
+    * `.size`: The number of bins (not including under/overflow)
     * `.widths`: The N bin widths
 
 * Many storage types
     * `bh.storage.int`: 64 bit unsigned integers for high performance and useful view access
-    * `bh.storage.double`: Doubles for weighted values
+    * `bh.storage.double`: Doubles for weighted values (default)
     * `bh.storage.unlimited`: Starts small, but can go up to unlimited precision ints or doubles.
     * `bh.storage.atomic_int`: Threadsafe filling, for higher performance on multhreaded backends. Does not support growing axis in threads.
     * `bh.storage.weight`: Stores a weight and sum of weights squared.
@@ -105,17 +99,13 @@ counts = hist.view()
     * `/=`: Divide by a scaler (not all storages) (`hist / scalar` supported too)
     * `.to_numpy(flow=False)`: Convert to a numpy style tuple (with or without under/overflow bins)
     * `.view(flow=False)`: Get a view on the bin contents (with or without under/overflow bins)
-    * `.axis(i)`: Get the `i`th axis
+    * `.axes`: Get the axes
+        * `.axes[0]`: Get the 0th axis
+        * `.axes.edges`: The lower values as a broadcasting-ready array
+        * All other properties of axes available here, too
     * `.sum(flow=False)`: The total count of all bins
     * `.project(ax1, ax2, ...)`: Project down to listed axis (numbers)
     * `.reduce(ax, reduce_option, ...)`: shrink, rebin, or slice, or any combination
-    <!--
-    * `.indexed(flow=False)`: Iterate over the bins with a special "indexed" iterator
-        * `ind.content`: The contents of a bin (set or get)
-        * `ind.bins()`: A list of bins
-        * `ind.centers()`: The centers of each bin
-        * `ind.indices()`: A list of indices
-    -->
 * Indexing - Supports the Unified Histogram Indexing (UHI) proposal
 * Details
     * Use `bh.histogram(..., storage=...)` to make a histogram (there are several different types)

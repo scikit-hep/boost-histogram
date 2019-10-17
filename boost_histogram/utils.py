@@ -41,11 +41,6 @@ class overflow(object):
     flow = 1
 
 
-def indexed(histogram, flow=False):
-    """Set up an iterator, returns a special accessor for bin info and content."""
-    return histogram.indexed(flow=flow)
-
-
 class KWArgs(object):
     def __init__(self, kwargs):
         self.kwargs = kwargs
