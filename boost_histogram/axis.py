@@ -1,10 +1,13 @@
 from __future__ import absolute_import, division, print_function
 
+del absolute_import, division, print_function
+
 from .core.axis import regular_log, regular_sqrt, regular_pow, circular, options
 
 from .core import axis as ca
 
-from .utils import FactoryMeta, KWArgs
+from .utils import FactoryMeta
+from .utils import KWArgs as _KWArgs
 
 
 # When Python 2 is dropped, this could use keyword
@@ -14,7 +17,7 @@ def _make_regular(bins, start, stop, **kwargs):
     Make a regular axis with nice keyword arguments for underflow,
     overflow, and growth.
     """
-    with KWArgs(kwargs) as k:
+    with _KWArgs(kwargs) as k:
         metadata = k.optional("metadata")
         options = k.options(underflow=True, overflow=True, growth=False, circular=False)
 
@@ -55,7 +58,7 @@ def _make_variable(edges, **kwargs):
     Make a variable axis with nice keyword arguments for underflow,
     overflow, and growth.
     """
-    with KWArgs(kwargs) as k:
+    with _KWArgs(kwargs) as k:
         metadata = k.optional("metadata")
         options = k.options(underflow=True, overflow=True, growth=False)
 
@@ -90,7 +93,7 @@ def _make_integer(start, stop, **kwargs):
     Make an integer axis with nice keyword arguments for underflow,
     overflow, and growth.
     """
-    with KWArgs(kwargs) as k:
+    with _KWArgs(kwargs) as k:
         metadata = k.optional("metadata")
         options = k.options(underflow=True, overflow=True, growth=False)
 
@@ -127,7 +130,7 @@ def _make_category(categories, **kwargs):
     Make a category axis with ints or strings and with nice keyword
     arguments for growth.
     """
-    with KWArgs(kwargs) as k:
+    with _KWArgs(kwargs) as k:
         metadata = k.optional("metadata")
         options = k.options(growth=False)
 

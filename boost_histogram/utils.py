@@ -1,5 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
+del absolute_import, division, print_function
+
 
 class FactoryMeta(object):
     def __init__(self, f, types):
