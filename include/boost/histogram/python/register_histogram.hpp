@@ -42,7 +42,8 @@ bool is_pyiterable(const T &t) {
 template <class T, class VArg, class Arg>
 void set_varg(boost::mp11::mp_identity<T>, VArg &v, const Arg &x) {
     if(is_pyiterable(x)) {
-        auto arr = py::cast<py::array_t<T>>(x);
+        auto arr
+            = py::cast<py::array_t<T, py::array::c_style | py::array::forcecast>>(x);
         if(arr.ndim() != 1)
             throw std::invalid_argument("All arrays must be 1D");
         v = arr;
@@ -224,6 +225,11 @@ register_histogram(py::module &m, const char *name, const char *desc) {
         .def(
             "fill",
             [](histogram_t &self, py::args args, py::kwargs kwargs) {
+                using array_int_t
+                    = py::array_t<int, py::array::c_style | py::array::forcecast>;
+                using array_double_t
+                    = py::array_t<double, py::array::c_style | py::array::forcecast>;
+
                 if(args.size() != self.rank())
                     throw std::invalid_argument("Wrong number of args");
 
@@ -239,10 +245,10 @@ register_histogram(py::module &m, const char *name, const char *desc) {
                 // HD: std::vector<std::string> is for passing strings, this very very
                 // inefficient but works at least I need to change something in
                 // boost::histogram to make passing strings from a numpy array efficient
-                using varg_t = boost::variant2::variant<py::array_t<double>,
-                                                        double,
-                                                        py::array_t<int>,
+                using varg_t = boost::variant2::variant<array_int_t,
                                                         int,
+                                                        array_double_t,
+                                                        double,
                                                         std::vector<std::string>,
                                                         std::string>;
                 auto vargs   = bh::detail::make_stack_buffer<varg_t>(
@@ -259,14 +265,14 @@ register_histogram(py::module &m, const char *name, const char *desc) {
                 }
 
                 bool has_weight = false;
-                bv2::variant<py::array_t<double>, double>
+                bv2::variant<array_double_t, double>
                     weight; // default constructed as empty array
                 {
                     auto w = optional_arg(kwargs, "weight");
                     if(!w.is_none()) {
                         has_weight = true;
                         if(detail::is_pyiterable(w))
-                            weight = py::cast<py::array_t<double>>(w);
+                            weight = py::cast<array_double_t>(w);
                         else
                             weight = py::cast<double>(w);
                     }
@@ -280,7 +286,7 @@ register_histogram(py::module &m, const char *name, const char *desc) {
                         auto s = required_arg(kwargs, "sample");
                         finalize_args(kwargs);
 
-                        auto sarray = py::cast<py::array_t<double>>(s);
+                        auto sarray = py::cast<array_double_t>(s);
                         if(sarray.ndim() != 1)
                             throw std::invalid_argument("Sample array must be 1D");
 
