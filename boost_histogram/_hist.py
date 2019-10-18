@@ -4,6 +4,8 @@ from .utils import FactoryMeta, KWArgs
 
 from . import core as _core
 
+import numpy as np
+
 _histograms = (
     _core.hist._any_double,
     _core.hist._any_int,
@@ -166,8 +168,40 @@ def _compute_setitem(self, index, value):
     self._at_set(value, *indexes)
 
 
+class AxesTuple(tuple):
+    _MGRIDOPTS = {"sparse": True, "indexing": "ij"}
+
+    @property
+    def size(self):
+        return tuple(s.size for s in self)
+
+    @property
+    def metadata(self):
+        return tuple(s.metadata for s in self)
+
+    @property
+    def extent(self):
+        return tuple(s.extent for s in self)
+
+    @property
+    def centers(self):
+        gen = (s.centers for s in self)
+        return np.meshgrid(*gen, **self._MGRIDOPTS)
+
+    @property
+    def edges(self):
+        gen = (s.edges for s in self)
+        return np.meshgrid(*gen, **self._MGRIDOPTS)
+
+    @property
+    def widths(self):
+        gen = (s.widths for s in self)
+        return np.meshgrid(*gen, **self._MGRIDOPTS)
+
+
 for h in _histograms:
     h.__getitem__ = _compute_getitem
     h.__setitem__ = _compute_setitem
+    h.axes = property(lambda self: AxesTuple(self.axis(i) for i in range(self.rank)))
 
 del h

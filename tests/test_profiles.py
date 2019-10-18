@@ -14,15 +14,13 @@ def test_mean_hist():
     h.fill(0.86, sample=[1.9])
 
     results = (
-        dict(bin=0, count=2, value=3.0, variance=0.5),
-        dict(bin=1, count=2, value=2.3, variance=2.42),
-        dict(bin=2, count=2, value=1.6, variance=0.18),
+        dict(count=2, value=3.0, variance=0.5),
+        dict(count=2, value=2.3, variance=2.42),
+        dict(count=2, value=1.6, variance=0.18),
     )
 
-    for res, x in zip(results, bh.indexed(h)):
-        ind, = x.indices()
+    for i in range(len(h.axes[0])):
 
-        assert res["bin"] == ind
-        assert res["count"] == x.content.count
-        assert approx(res["value"]) == x.content.value
-        assert approx(res["variance"]) == x.content.variance
+        assert results[i]["count"] == h[i].count
+        assert results[i]["value"] == approx(h[i].value)
+        assert results[i]["variance"] == approx(h[i].variance)

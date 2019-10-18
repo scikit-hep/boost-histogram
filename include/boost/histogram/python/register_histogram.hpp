@@ -15,7 +15,6 @@
 #include <boost/histogram/python/axis.hpp>
 #include <boost/histogram/python/histogram.hpp>
 #include <boost/histogram/python/histogram_ostream.hpp>
-#include <boost/histogram/python/indexed.hpp>
 #include <boost/histogram/python/kwargs.hpp>
 #include <boost/histogram/python/serializion.hpp>
 #include <boost/histogram/python/storage.hpp>
@@ -323,20 +322,6 @@ register_histogram(py::module &m, const char *name, const char *desc) {
         .def(make_pickle<histogram_t>())
 
         ;
-
-    hist.def(
-        "indexed",
-        [](histogram_t &self, bool flow) {
-            return make_repeatable_iterator(
-                self, flow ? bh::coverage::all : bh::coverage::inner);
-        },
-        "flow"_a = false,
-        "Set up an iterator, returns a special accessor for bin info and content",
-        py::keep_alive<0, 1>());
-
-    register_ufunc_tools(hist);
-
-    register_indexed<histogram_t>(m, name);
 
     return hist;
 }
