@@ -7,6 +7,17 @@ from numpy.testing import assert_array_equal, assert_allclose
 methods = [bh.core.hist._any_double, bh.core.hist._any_unlimited, bh.core.hist._any_int]
 
 
+@pytest.mark.parametrize("dtype", [np.double, np.int_, np.float32])
+def test_noncontig_fill(dtype):
+    a = np.array([[0, 0], [1, 1]], dtype=dtype, order="C")
+    b = np.array([[0, 0], [1, 1]], dtype=dtype, order="F")
+
+    h1 = bh.histogram(bh.axis.regular(10, 0, 2)).fill(a[0])
+    h2 = bh.histogram(bh.axis.regular(10, 0, 2)).fill(b[0])
+
+    assert h1 == h2
+
+
 @pytest.mark.parametrize("hist_func", methods)
 def test_1D_fill_int(hist_func):
     bins = 10
