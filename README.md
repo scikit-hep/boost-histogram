@@ -8,7 +8,7 @@
 
 Python bindings for [Boost::Histogram][] ([source][Boost::Histogram source]), a C++14 library. This should become one of the [fastest libraries][] for histogramming, while still providing the power of a full histogram object.
 
-> ## 0.5.1: First public beta
+> ## 0.5.1: Public beta
 >
 > Please feel free to try out boost-histogram and give feedback.
 > Join the [discussion on gitter][gitter-link] or [open an issue](https://github.com/scikit-hep/boost-histogram/issues)!
