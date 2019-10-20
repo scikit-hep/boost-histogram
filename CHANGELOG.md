@@ -1,3 +1,11 @@
+### IN DEVELOPMENT
+
+* Use relative paths in setup.py to avoid resolving WSL paths on Windows [#162][]
+
+[#162]: https://github.com/scikit-hep/boost-histogram/pull/162
+
+
+
 ### Version 0.5.1
 
 * Removed the `bh.indexed`/`h.indexed` iterator [#150][]

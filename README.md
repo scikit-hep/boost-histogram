@@ -23,15 +23,7 @@ You can install this library from PyPI with pip:
 python -m pip install boost-histogram
 ```
 
-This library is under active development; you can install directly from GitHub if you would like. You need a C++14 compiler and Python 2.7--3.8. Boost 1.71 is not required or needed (this only depends on included header-only dependencies).
-
 All the normal best-practices for Python apply; you should be in a virtual environment, otherwise add `--user`, etc.
-
-```bash
-python -m pip install git+https://github.com/scikit-hep/boost-histogram.git@develop
-```
-
-For the moment, you need to uninstall and reinstall to ensure you have the latest version - pip will not rebuild if it thinks the version number has not changed. In the future, this may be addressed differently in boost-histogram.
 
 Conda support is planned.
 
@@ -77,17 +69,17 @@ counts = hist.view()
     * `.widths`: The N bin widths
 
 * Many storage types
-    * `bh.storage.int`: 64 bit unsigned integers for high performance and useful view access
     * `bh.storage.double`: Doubles for weighted values (default)
+    * `bh.storage.int`: 64 bit unsigned integers
     * `bh.storage.unlimited`: Starts small, but can go up to unlimited precision ints or doubles.
-    * `bh.storage.atomic_int`: Threadsafe filling, for higher performance on multhreaded backends. Does not support growing axis in threads.
-    * `bh.storage.weight`: Stores a weight and sum of weights squared.
-    * `bh.storage.mean`: Accepts a sample and computes the mean of the samples.
-    * `bh.storage.weighted_mean`: Accepts a sample and a weight. It computes the weighted mean of the samples.
+    * `bh.storage.atomic_int`: Threadsafe filling, experimental. Does not support growing axis in threads.
+    * `bh.storage.weight`: Stores a weight and sum of weights squared. (`.view` not yet supported)
+    * `bh.storage.mean`: Accepts a sample and computes the mean of the samples (profile). (`.view` not yet supported)
+    * `bh.storage.weighted_mean`: Accepts a sample and a weight. It computes the weighted mean of the samples. (`.view` not yet supported)
 * Accumulators
+    * `bh.accumulator.sum`: High accuracy sum (Neumaier)
     * `bh.accumulator.weighted_sum`: Tracks a weighted sum and variance
     * `bh.accumulator.weighted_mean`: Tracks a weighted sum, mean, and variance (West's incremental algorithm)
-    * `bh.accumulator.sum`: High accuracy sum (Neumaier)
     * `bh.accumulator.mean`: Running count, mean, and variance (Welfords's incremental algorithm)
 * Histogram operations
     * `h.fill(arr, ..., weight=...)` Fill with N arrays or single values
@@ -119,7 +111,7 @@ The easiest way to get boost-histogram is to use a binary wheel. These are the s
 
 | System | Arch | Python versions |
 |---------|-----|------------------|
-| ManyLinux1 (custom GCC 8.3) | 64 & 32-bit | 2.7, 3.5, 3.6, 3.7 |
+| ManyLinux1 (custom GCC 9.2) | 64 & 32-bit | 2.7, 3.5, 3.6, 3.7 |
 | ManyLinux2010 | 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8 |
 | macOS 10.9+ | 64-bit | 2.7, 3.6, 3.7, 3.8 |
 | Windows | 64 & 32-bit | 2.7, 3.6, 3.7 |
@@ -137,7 +129,17 @@ If you are on a Linux system that is not part of the "many" in manylinux, such a
 
 #### Source builds
 
-For a source build, for example from an "sdist" package, the only requirements are a C++14 compatible compiler. If you are using Python 2.7 on Windows, you will need to use a recent version of Visual studio and force distutils to use it, or just upgrade to Python 3.6 or newer. Check the PyBind11 documentation for [more help](https://pybind11.readthedocs.io/en/stable/faq.html#working-with-ancient-visual-studio-2009-builds-on-windows). On some Linux systems, you may need to use a newer compiler than the one your distribution ships with.
+For a source build, for example from an "sdist" package, the only requirements are a C++14 compatible compiler. The compiler requirements are dictated by Boost.Histogram's C++ requirements: gcc >= 5.5, clang >= 3.8, msvc >= 14.1.
+
+If you are using Python 2.7 on Windows, you will need to use a recent version of Visual studio and force distutils to use it, or just upgrade to Python 3.6 or newer. Check the PyBind11 documentation for [more help](https://pybind11.readthedocs.io/en/stable/faq.html#working-with-ancient-visual-studio-2009-builds-on-windows). On some Linux systems, you may need to use a newer compiler than the one your distribution ships with.
+
+Having Numpy before building is recommended (enables multithreaded builds). Boost 1.71 is not required or needed (this only depends on included header-only dependencies).This library is under active development; you can install directly from GitHub if you would like.
+
+```bash
+python -m pip install git+https://github.com/scikit-hep/boost-histogram.git@develop
+```
+
+For the moment, you need to uninstall and reinstall to ensure you have the latest version - pip will not rebuild if it thinks the version number has not changed. In the future, this may be addressed differently in boost-histogram.
 
 ## Developing
 
