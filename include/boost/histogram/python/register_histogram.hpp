@@ -148,6 +148,9 @@ register_histogram(py::module &m, const char *name, const char *desc) {
             "flow"_a = false,
             "convert to a numpy style tuple of returns")
 
+        .def("_copy_in",
+             [](histogram_t &h, py::array_t<double> input) { copy_in(h, input); })
+
         .def(
             "view",
             [](histogram_t &h, bool flow) { return py::array(make_buffer(h, flow)); },
