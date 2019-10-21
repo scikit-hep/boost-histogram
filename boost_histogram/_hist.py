@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 del absolute_import, division, print_function
 
-from .utils import FactoryMeta, KWArgs
+from ._utils import FactoryMeta, KWArgs
 
 from . import core as _core
 
@@ -92,8 +92,8 @@ def _compute_commonindex(self, index, expand):
 
     # Allow [bh.loc(...)] to work
     for i in range(len(indexes)):
-        if hasattr(indexes[i], "value"):
-            indexes[i] = self.axis(i).index(indexes[i].value)
+        if hasattr(indexes[i], "value") and hasattr(indexes[i], "offset"):
+            indexes[i] = self.axis(i).index(indexes[i].value) + indexes[i].offset
         elif hasattr(indexes[i], "flow"):
             if indexes[i].flow == 1:
                 indexes[i] = self.axis(i).size

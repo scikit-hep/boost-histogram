@@ -13,9 +13,10 @@ Access:
 
 .. code:: python
 
-   v = h[b]         # Returns bin contents, indexed by bin number
-   v = h[loc(b)]    # Returns the bin containing the value
-   v = h[underflow] # Underflow and overflow can be accessed with special tags
+   v = h[b]          # Returns bin contents, indexed by bin number
+   v = h[loc(b)]     # Returns the bin containing the value
+   v = h[loc(b) + 1] # Returns the bin above the one containing the value
+   v = h[underflow]  # Underflow and overflow can be accessed with special tags
 
 Slicing:
 ^^^^^^^^
@@ -26,7 +27,7 @@ Slicing:
    h2 = h[a:b]           # Slice of histogram (includes flow bins)
    h2 = h[:b]            # Leaving out endpoints is okay
    h2 = h[loc(v):]       # Slices can be in data coordinates, too
-   h2 = h[::project]     # Projection operations
+   h2 = h[::project]     # Projection operations # (name may change)
    h2 = h[::rebin(2)]    # Modification operations (rebin)
    h2 = h[a:b:rebin(2)]  # Modifications can combine with slices
    h2 = h[a:b, ...]      # Ellipsis work just like normal numpy
@@ -78,7 +79,7 @@ Rejected proposals or proposals for future consideration, maybe ``hist``-only:
 
 .. code:: python
 
-   h2 = h[1j:2j] # Adding a j suffix to a number could be used in place of `loc(x)`
+   h2 = h[1.0j:2.5j + 1] # Adding a j suffix to a number could be used in place of `loc(x)`
    h2 = h[1.0] # Floats in place of `loc(x)`: too easy to make a mistake
 
 --------------
@@ -101,7 +102,7 @@ here <https://gist.github.com/henryiii/d545a673ea2b3225cb985c9c02ac958b>`__.
 `Extra doc
 here <https://docs.google.com/document/d/1bJKA7Y0QXf46w53UFizJ4bnZlVIkb4aCqx6m2hoN0HM/edit#heading=h.jvegm6z8f387>`__.
 
-Note that the API comes in two forms; the ``__call__``/``__new__`` operator form is more powerful, slower, optional, and is not supported by boost-histogram.
+Note that the API comes in two forms; the ``__call__``/``__new__`` operator form is more powerful, slower, optional, and is currently not supported by boost-histogram.
 A fully conforming UHI implementation must allow the tag form without the operators.
 
 Basic implementation (WIP):
@@ -110,8 +111,11 @@ Basic implementation (WIP):
 
    class loc:
        "When used in the start or stop of a Histogram's slice, x is taken to be the position in data coordinates."
-       def __init__(self, x):
-           self.value = x
+       def __init__(self, value, offset):
+           self.value = value
+           self.offset = offest
+
+       # supporting __add__ and __sub__ also recommended
 
    # Other flags, such as callable functions, could be added and detected later.
 
