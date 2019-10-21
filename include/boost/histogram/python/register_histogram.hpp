@@ -16,7 +16,7 @@
 #include <boost/histogram/python/histogram.hpp>
 #include <boost/histogram/python/histogram_ostream.hpp>
 #include <boost/histogram/python/kwargs.hpp>
-#include <boost/histogram/python/serializion.hpp>
+#include <boost/histogram/python/make_pickle.hpp>
 #include <boost/histogram/python/storage.hpp>
 #include <boost/histogram/python/sum.hpp>
 #include <boost/histogram/python/variant.hpp>

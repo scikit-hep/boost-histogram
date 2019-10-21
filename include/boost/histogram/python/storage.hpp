@@ -7,7 +7,7 @@
 
 #include <boost/histogram/python/pybind11.hpp>
 
-#include <boost/histogram/accumulators/thread_safe.hpp>
+#include <boost/histogram/accumulators.hpp>
 #include <boost/histogram/storage_adaptor.hpp>
 #include <boost/histogram/unlimited_storage.hpp>
 
