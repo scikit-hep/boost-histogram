@@ -7,7 +7,6 @@
 
 #include <boost/histogram/python/pybind11.hpp>
 
-#include <boost/histogram/accumulators/ostream.hpp> // TODO: replace with internal repr
 #include <boost/histogram/python/serializion.hpp>
 
 #include <pybind11/operators.h>
@@ -23,8 +22,6 @@ py::class_<A> register_accumulator(py::module acc, Args &&... args) {
         .def(py::self != py::self)
 
         .def(py::self *= double())
-
-        .def("__repr__", &shift_to_string<A>)
 
         .def("__copy__", [](const A &self) { return A(self); })
         .def("__deepcopy__", [](const A &self, py::object) { return A(self); })

@@ -64,6 +64,12 @@ void register_accumulators(py::module &accumulators) {
 
         .def(py::self += double())
 
+        .def("__repr__",
+             [](const weighted_sum &self) {
+                 return py::str("weighted_sum(value={}, variance={})")
+                     .format(self.value(), self.variance());
+             })
+
         .def(
             "fill",
             [](weighted_sum &self, py::object value, py::kwargs kwargs) {
@@ -97,6 +103,11 @@ void register_accumulators(py::module &accumulators) {
 
         .def(py::self += double())
 
+        .def("__repr__",
+             [](const weighted_sum &self) {
+                 return py::str("sum({})").format(double(self));
+             })
+
         .def(
             "fill",
             [](sum &self, py::object value) {
@@ -121,12 +132,19 @@ void register_accumulators(py::module &accumulators) {
         .def(py::init<const double &, const double &, const double &, const double &>(),
              "wsum"_a,
              "wsum2"_a,
-             "mean"_a,
+             "value"_a,
              "variance"_a)
 
         .def_property_readonly("sum_of_weights", &weighted_mean::sum_of_weights)
         .def_property_readonly("variance", &weighted_mean::variance)
         .def_property_readonly("value", &weighted_mean::value)
+
+        .def("__repr__",
+             [](const weighted_mean &self) {
+                 return py::str(
+                            "weighted_mean(wsum={}, wsum2=..., mean={}, variance={})")
+                     .format(self.sum_of_weights(), self.value(), self.variance());
+             })
 
         .def("__call__",
              make_mean_call<weighted_mean>(),
@@ -144,13 +162,13 @@ void register_accumulators(py::module &accumulators) {
 
     register_accumulator<mean>(accumulators, "mean")
         .def(py::init<const double &, const double &, const double &>(),
+             "count"_a,
              "value"_a,
-             "mean"_a,
              "variance"_a)
 
         .def_property_readonly("count", &mean::count)
-        .def_property_readonly("variance", &mean::variance)
         .def_property_readonly("value", &mean::value)
+        .def_property_readonly("variance", &mean::variance)
 
         .def("__call__",
              make_mean_call<mean>(),
@@ -161,6 +179,12 @@ void register_accumulators(py::module &accumulators) {
              make_mean_fill<mean>(),
              "value"_a,
              "Fill the accumulator with values. Optional weight parameter.")
+
+        .def("__repr__",
+             [](const mean &self) {
+                 return py::str("mean(count={}, mean={}, variance={})")
+                     .format(self.count(), self.value(), self.variance());
+             })
 
         ;
 }
