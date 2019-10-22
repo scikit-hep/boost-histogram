@@ -6,7 +6,7 @@ from . import axis as _axis
 from . import _hist as _hist
 from . import core as _core
 
-from .utils import KWArgs as _KWArgs
+from ._utils import KWArgs as _KWArgs
 
 import numpy as _np
 

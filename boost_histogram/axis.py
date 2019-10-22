@@ -6,8 +6,8 @@ from .core.axis import regular_log, regular_sqrt, regular_pow, circular, options
 
 from .core import axis as ca
 
-from .utils import FactoryMeta
-from .utils import KWArgs as _KWArgs
+from ._utils import FactoryMeta
+from ._utils import KWArgs as _KWArgs
 
 
 # When Python 2 is dropped, this could use keyword

@@ -16,33 +16,6 @@ class FactoryMeta(object):
         return isinstance(other, self._types)
 
 
-class loc(object):
-    __slots__ = ("value",)
-
-    def __init__(self, value):
-        self.value = value
-
-
-class rebin(object):
-    __slots__ = ("factor",)
-    projection = False
-
-    def __init__(self, value):
-        self.factor = value
-
-
-class project(object):
-    projection = True
-
-
-class underflow(object):
-    flow = -1
-
-
-class overflow(object):
-    flow = 1
-
-
 class KWArgs(object):
     def __init__(self, kwargs):
         self.kwargs = kwargs

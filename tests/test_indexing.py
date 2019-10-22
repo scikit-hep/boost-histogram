@@ -14,6 +14,7 @@ def test_1D_get_bin():
 
     assert h[bh.loc(0)] == 0
     assert h[bh.loc(0.1)] == 1
+    assert h[bh.loc(0.1) + 1] == 3
     assert h[bh.loc(0.2)] == 3
 
     assert h.view()[2] == h[2]
@@ -32,6 +33,7 @@ def test_2D_get_bin():
     assert h[1, 1] == 1
     assert h[1, 2] == 3
     assert h[bh.loc(0.1), bh.loc(0.2)] == 3
+    assert h[bh.loc(0) + 1, bh.loc(0.3) - 1] == 3
 
     assert h.view()[1, 2] == h[1, 2]
 
