@@ -8,8 +8,10 @@
 
 #include <boost/histogram/python/pybind11.hpp>
 
+#include <algorithm>
 #include <boost/assert.hpp>
 #include <boost/core/nvp.hpp>
+#include <boost/histogram/detail/array_wrapper.hpp>
 #include <boost/mp11/function.hpp> // mp_or
 #include <boost/mp11/utility.hpp>  // mp_valid
 #include <type_traits>
@@ -109,8 +111,26 @@ struct tuple_oarchive {
     }
 
     tuple_oarchive &operator<<(py::object obj) {
-        // TODO: use growth factor 1.6 and shrink tuple to final size in destructor
+        // maybe use growth factor 1.6 and shrink tuple to final size in destructor?
         tup = tup + py::make_tuple(obj);
+        return *this;
+    }
+
+    // put specializations here that side-step normal serialization
+
+    template <class T>
+    std::enable_if_t<std::is_arithmetic<T>::value, tuple_oarchive &>
+    operator<<(const std::vector<T> &v) {
+        py::array_t<T> a(v.size(), v.data());
+        operator<<(static_cast<py::object>(a));
+        return *this;
+    }
+
+    template <class T>
+    std::enable_if_t<std::is_arithmetic<T>::value, tuple_oarchive &>
+    operator<<(const bh::detail::array_wrapper<T> &w) {
+        py::array_t<T> a(w.size, w.ptr);
+        operator<<(static_cast<py::object>(a));
         return *this;
     }
 };
@@ -124,6 +144,9 @@ struct tuple_iarchive {
 
     tuple_iarchive(const py::tuple &t)
         : tup_(t) {}
+
+    // no object tracking
+    void reset_object_address(const void *, const void *){};
 
     template <class T>
     tuple_iarchive &operator&(boost::nvp<T> t) {
@@ -152,8 +175,32 @@ struct tuple_iarchive {
         return *this;
     }
 
-    // no object tracking
-    void reset_object_address(const void *, const void *){};
+    // put specializations here that side-step normal serialization
+
+    template <class T>
+    std::enable_if_t<std::is_arithmetic<T>::value, tuple_iarchive &>
+    operator>>(std::vector<T> &v) {
+        py::object obj;
+        operator>>(obj);
+        auto a = py::cast<py::array_t<T>>(obj);
+        v.resize(static_cast<std::size_t>(a.size()));
+        // sadly we cannot move the memory from the numpy array into the vector
+        std::copy(a.data(), a.data() + a.size(), v.begin());
+        return *this;
+    }
+
+    template <class T>
+    std::enable_if_t<std::is_arithmetic<T>::value, tuple_iarchive &>
+    operator>>(bh::detail::array_wrapper<T> &w) {
+        py::object obj;
+        operator>>(obj);
+        auto a = py::cast<py::array_t<T>>(obj);
+        // buffer wrapped by array_wrapper must already have correct size
+        BOOST_ASSERT(static_cast<std::size_t>(a.size()) == w.size);
+        // sadly we cannot move the memory from the numpy array into the vector
+        std::copy(a.data(), a.data() + a.size(), w.ptr);
+        return *this;
+    }
 };
 
 /// Make a pickle serializer with a given type
