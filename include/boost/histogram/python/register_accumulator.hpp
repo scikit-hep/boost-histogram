@@ -23,6 +23,8 @@ py::class_<A> register_accumulator(py::module acc, Args &&... args) {
 
         .def(py::self *= double())
 
+        .def("__repr__", &shift_to_string<A>)
+
         .def("__copy__", [](const A &self) { return A(self); })
         .def("__deepcopy__", [](const A &self, py::object) { return A(self); })
 

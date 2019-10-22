@@ -5,8 +5,8 @@
 
 #pragma once
 
-#include <boost/histogram/accumulators/ostream.hpp>
 #include <boost/histogram/fwd.hpp>
+#include <boost/histogram/python/accumulators_ostream.hpp>
 #include <boost/histogram/python/axis_ostream.hpp>
 #include <boost/histogram/python/storage.hpp>
 #include <iosfwd>

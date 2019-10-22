@@ -6,10 +6,10 @@
 #include <boost/histogram/python/pybind11.hpp>
 
 #include <boost/histogram/accumulators/mean.hpp>
-#include <boost/histogram/accumulators/ostream.hpp>
 #include <boost/histogram/accumulators/sum.hpp>
 #include <boost/histogram/accumulators/weighted_mean.hpp>
 #include <boost/histogram/accumulators/weighted_sum.hpp>
+#include <boost/histogram/python/accumulators_ostream.hpp>
 #include <boost/histogram/python/kwargs.hpp>
 #include <boost/histogram/python/register_accumulator.hpp>
 #include <pybind11/operators.h>
@@ -59,16 +59,10 @@ void register_accumulators(py::module &accumulators) {
         .def(py::init<const double &>(), "value"_a)
         .def(py::init<const double &, const double &>(), "value"_a, "variance"_a)
 
-        .def_property_readonly("variance", &weighted_sum::variance)
         .def_property_readonly("value", &weighted_sum::value)
+        .def_property_readonly("variance", &weighted_sum::variance)
 
         .def(py::self += double())
-
-        .def("__repr__",
-             [](const weighted_sum &self) {
-                 return py::str("weighted_sum(value={}, variance={})")
-                     .format(self.value(), self.variance());
-             })
 
         .def(
             "fill",
@@ -103,11 +97,6 @@ void register_accumulators(py::module &accumulators) {
 
         .def(py::self += double())
 
-        .def("__repr__",
-             [](const weighted_sum &self) {
-                 return py::str("sum({})").format(double(self));
-             })
-
         .def(
             "fill",
             [](sum &self, py::object value) {
@@ -136,15 +125,8 @@ void register_accumulators(py::module &accumulators) {
              "variance"_a)
 
         .def_property_readonly("sum_of_weights", &weighted_mean::sum_of_weights)
-        .def_property_readonly("variance", &weighted_mean::variance)
         .def_property_readonly("value", &weighted_mean::value)
-
-        .def("__repr__",
-             [](const weighted_mean &self) {
-                 return py::str(
-                            "weighted_mean(wsum={}, wsum2=..., mean={}, variance={})")
-                     .format(self.sum_of_weights(), self.value(), self.variance());
-             })
+        .def_property_readonly("variance", &weighted_mean::variance)
 
         .def("__call__",
              make_mean_call<weighted_mean>(),
@@ -179,12 +161,6 @@ void register_accumulators(py::module &accumulators) {
              make_mean_fill<mean>(),
              "value"_a,
              "Fill the accumulator with values. Optional weight parameter.")
-
-        .def("__repr__",
-             [](const mean &self) {
-                 return py::str("mean(count={}, mean={}, variance={})")
-                     .format(self.count(), self.value(), self.variance());
-             })
 
         ;
 }
