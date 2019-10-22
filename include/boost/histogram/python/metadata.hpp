@@ -8,21 +8,11 @@
 inline bool PyObject_Check(void *value) { return value != nullptr; }
 
 struct metadata_t : py::object {
-    PYBIND11_OBJECT_DEFAULT(metadata_t, object, PyObject_Check);
+    PYBIND11_OBJECT(metadata_t, object, PyObject_Check);
 
-    metadata_t(const metadata_t &) = default;
-    metadata_t(metadata_t &&)      = default;
-    metadata_t &operator=(const metadata_t &) = default;
-    metadata_t &operator=(metadata_t &&) = default;
-
-    metadata_t &operator=(const object &obj) {
-        object::operator=(obj);
-        return *this;
-    }
-    metadata_t &operator=(py::object &&obj) {
-        object::operator=(std::move(obj));
-        return *this;
-    }
+    // default initialize to None
+    metadata_t()
+        : object(Py_None, borrowed_t{}) {}
 
     bool operator==(const metadata_t &other) const { return py::object::equal(other); }
     bool operator!=(const metadata_t &other) const {

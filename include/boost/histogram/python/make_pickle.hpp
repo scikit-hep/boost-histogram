@@ -24,14 +24,6 @@ template <class T>
 using has_method_serialize =
     typename boost::mp11::mp_valid<has_method_serialize_impl, T>::type;
 
-template <class T,
-          class = std::enable_if_t<
-              std::is_same<T, std::vector<typename T::value_type>>::value>>
-struct is_std_vector_impl {};
-
-template <class T>
-using is_std_vector = typename boost::mp11::mp_valid<is_std_vector_impl, T>::type;
-
 namespace boost {
 namespace serialization {
 // provide default implementation of boost::serialization::version
@@ -40,37 +32,46 @@ struct version : std::integral_constant<int, 0> {};
 } // namespace serialization
 } // namespace boost
 
+template <class Archive, class T>
+void serialize(Archive &ar, std::vector<T> &t, unsigned /* version */) {
+    auto size = t.size();
+    ar &size;
+    if(Archive::is_loading::value)
+        t.resize(size);
+    for(auto &&ti : t)
+        ar &ti;
+}
+
 template <class T>
 using is_serialization_primitive =
     typename boost::mp11::mp_or<std::is_arithmetic<T>,
                                 std::is_same<T, std::string>,
-                                std::is_same<T, char *>,
-                                is_std_vector<T>>::type;
+                                std::is_same<T, char *>>::type;
 
+// saving
 template <class Archive, class T>
-void serialize_impl(Archive &ar, T &t, unsigned version, std::true_type) {
-    t.serialize(ar, version);
+void serialize_primitive(Archive &ar, T &t, std::false_type) {
+    auto obj = py::cast(t);
+    ar << obj;
 }
 
-// is loading
+// loading
 template <class Archive, class T>
-void serialize_impl2(Archive &ar, T &t, std::true_type) {
+void serialize_primitive(Archive &ar, T &t, std::true_type) {
     py::object obj;
     ar >> obj;
     t = py::cast<T>(obj);
 }
 
-// is saving
-template <class Archive, class T>
-void serialize_impl2(Archive &ar, T &t, std::false_type) {
-    auto obj = py::cast(t);
-    ar << obj;
-}
-
 template <class Archive, class T>
 void serialize_impl(Archive &ar, T &t, unsigned, std::false_type) {
     static_assert(is_serialization_primitive<T>::value, "");
-    serialize_impl2(ar, t, typename Archive::is_loading{});
+    serialize_primitive(ar, t, typename Archive::is_loading{});
+}
+
+template <class Archive, class T>
+void serialize_impl(Archive &ar, T &t, unsigned version, std::true_type) {
+    t.serialize(ar, version);
 }
 
 template <class Archive, class T>
@@ -107,12 +108,9 @@ struct tuple_oarchive {
         return *this;
     }
 
-    tuple_oarchive &operator<<(const py::object &obj) {
+    tuple_oarchive &operator<<(py::object obj) {
         // TODO: use growth factor 1.6 and shrink tuple to final size in destructor
-        const auto i = static_cast<ssize_t>(tup.size());
-        if(_PyTuple_Resize(&tup.ptr(), i + 1) == -1)
-            throw py::error_already_set();
-        PyTuple_SET_ITEM(tup.ptr(), i, const_cast<py::object &>(obj).release().ptr());
+        tup = tup + py::make_tuple(obj);
         return *this;
     }
 };
@@ -153,6 +151,9 @@ struct tuple_iarchive {
         obj = tup_[cur_++];
         return *this;
     }
+
+    // no object tracking
+    void reset_object_address(const void *, const void *){};
 };
 
 /// Make a pickle serializer with a given type
