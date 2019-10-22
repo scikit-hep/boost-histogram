@@ -59,7 +59,7 @@ SRC_FILES = [
     "src/register_accumulators.cpp",
 ]
 
-INCLUDE_FILES = [
+INCLUDE_DIRS = [
     "include",
     "extern/assert/include",
     "extern/callable_traits/include",
@@ -74,10 +74,7 @@ INCLUDE_FILES = [
 
 ext_modules = [
     Extension(
-        "boost_histogram.core",
-        [str(BASE_DIR / f) for f in SRC_FILES],
-        include_dirs=[str(BASE_DIR / f) for f in INCLUDE_FILES],
-        language="c++",
+        "boost_histogram.core", SRC_FILES, include_dirs=INCLUDE_DIRS, language="c++"
     )
 ]
 
@@ -104,9 +101,7 @@ def cpp_flag(compiler):
     if has_flag(compiler, "-std=c++14"):
         return "-std=c++14"
     else:
-        raise RuntimeError(
-            "Unsupported compiler -- at least C++14 support " "is needed!"
-        )
+        raise RuntimeError("Unsupported compiler -- at least C++14 support is needed!")
 
 
 class BuildExt(build_ext):
@@ -157,7 +152,7 @@ setup(
     setup_requires=[] + pytest_runner,
     extras_require=extras,
     classifiers=[
-        "Development Status :: 2 - Pre-Alpha",
+        "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
         "Intended Audience :: Information Technology",
         "Intended Audience :: Science/Research",
@@ -171,6 +166,7 @@ setup(
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "Programming Language :: C++",
         "Topic :: Scientific/Engineering",
         "Topic :: Scientific/Engineering :: Information Analysis",
