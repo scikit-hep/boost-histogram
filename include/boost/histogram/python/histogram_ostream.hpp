@@ -19,8 +19,15 @@ std::basic_ostream<CharT, Traits> &operator<<(std::basic_ostream<CharT, Traits> 
                                               const histogram<A, S> &h) {
     os << "histogram(";
     h.for_each_axis([&](const auto &a) { os << "\n  " << a << ","; });
-    os << (h.rank() ? "\n  " : " ") << "storage=" << storage::name<S>();
-    os << (h.rank() ? "\n)" : ")");
+    os << "\n  "
+       << "storage=" << storage::name<S>();
+    os << "\n)";
+    auto inner = sum_histogram(h, false);
+    auto outer = sum_histogram(h, true);
+    if(outer != decltype(outer){})
+        os << " # Sum: " << inner;
+    if(inner != outer)
+        os << " (" << outer << " with flow)";
     return os;
 }
 

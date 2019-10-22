@@ -300,16 +300,22 @@ def test_add_2d_w(flow):
 
 
 def test_repr():
-    h = histogram(regular(3, 0, 1), integer(0, 1))
-    hr = repr(h)
-    assert (
-        hr
-        == """histogram(
+    hrepr = """histogram(
   regular(3, 0, 1),
   integer(0, 1),
   storage=double
 )"""
-    )
+
+    h = histogram(regular(3, 0, 1), integer(0, 1))
+    assert repr(h) == hrepr
+
+    h.fill([0.3, 0.5], [0, 0])
+    hrepr += " # Sum: 2"
+    assert repr(h) == hrepr
+
+    h.fill([0.3, 12], [3, 0])
+    hrepr += " (4 with flow)"
+    assert repr(h) == hrepr
 
 
 def test_axis():
