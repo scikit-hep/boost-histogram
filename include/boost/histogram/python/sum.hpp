@@ -11,17 +11,18 @@
 
 template <class histogram_t>
 decltype(auto) sum_histogram(const histogram_t &self, bool flow) {
+    using T       = typename histogram_t::value_type;
+    using AddType = boost::mp11::mp_if<std::is_arithmetic<T>, double, T>;
+    using Sum
+        = boost::mp11::mp_if<std::is_arithmetic<T>, bh::accumulators::sum<double>, T>;
+    using R = boost::mp11::mp_if<std::is_arithmetic<T>, double, T>;
+
     if(flow) {
-        return bh::algorithm::sum(self);
+        return static_cast<R>(bh::algorithm::sum(self));
     } else {
-        using T       = typename histogram_t::value_type;
-        using AddType = boost::mp11::mp_if<std::is_arithmetic<T>, double, T>;
-        using Sum     = boost::mp11::
-            mp_if<std::is_arithmetic<T>, bh::accumulators::sum<double>, T>;
         Sum sum;
         for(auto &&x : bh::indexed(self))
             sum += (AddType)*x;
-        using R = boost::mp11::mp_if<std::is_arithmetic<T>, double, T>;
         return static_cast<R>(sum);
     }
 }
