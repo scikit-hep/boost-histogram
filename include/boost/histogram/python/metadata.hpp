@@ -5,6 +5,10 @@
 
 #pragma once
 
+#include <boost/histogram/python/pybind11.hpp>
+
+#include <pybind11/pytypes.h>
+
 inline bool PyObject_Check(void *value) { return value != nullptr; }
 
 struct metadata_t : py::object {
