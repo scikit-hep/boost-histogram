@@ -83,10 +83,10 @@ def test_make_any_hist(storage):
 def test_make_any_hist_storage():
 
     assert float != type(
-        bh.histogram(bh.axis.regular(5, 1, 2), storage=bh.storage.int()).at(0)
+        bh.histogram(bh.axis.regular(5, 1, 2), storage=bh.storage.int())[0]
     )
     assert float == type(
-        bh.histogram(bh.axis.regular(5, 1, 2), storage=bh.storage.double()).at(0)
+        bh.histogram(bh.axis.regular(5, 1, 2), storage=bh.storage.double())[0]
     )
 
 
