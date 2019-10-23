@@ -18,7 +18,6 @@
 #include <cstddef>
 #include <string>
 #include <type_traits>
-#include <typeindex>
 #include <utility>
 #include <vector>
 
@@ -94,12 +93,9 @@ class tuple_oarchive {
     template <class T>
     std::enable_if_t<is_serialization_primitive<T>::value == false, tuple_oarchive &>
     operator<<(const T &t) {
-        // save version number once for each composite type that is seen first time
+        // save current class version with each non-primitive type
         const unsigned version = boost::serialization::version<T>::value;
-        if(std::find(types_.begin(), types_.end(), typeid(T)) == types_.end()) {
-            this->operator<<(version);
-            types_.emplace_back(typeid(T));
-        }
+        this->operator<<(version);
         serialize(*this, const_cast<T &>(t), version);
         return *this;
     }
@@ -159,7 +155,6 @@ class tuple_oarchive {
 
   private:
     py::tuple &tup_;
-    std::vector<std::type_index> types_;
 };
 
 class tuple_iarchive {
@@ -201,16 +196,9 @@ class tuple_iarchive {
     template <class T>
     std::enable_if_t<is_serialization_primitive<T>::value == false, tuple_iarchive &>
     operator>>(T &t) {
-        // load version number once for each composite type that is seen for first time
-        const auto iter = std::find_if(types_.begin(), types_.end(), [](auto &&p) {
-            return p.first == typeid(T);
-        });
+        // load saved class version of each non-primitive type to call legacy code
         unsigned saved_version;
-        if(iter == types_.end()) {
-            this->operator>>(saved_version);
-            types_.emplace_back(typeid(T), saved_version);
-        } else
-            saved_version = iter->second;
+        this->operator>>(saved_version);
         serialize(*this, t, saved_version);
         return *this;
     }
@@ -278,7 +266,6 @@ class tuple_iarchive {
   private:
     const py::tuple &tup_;
     std::size_t cur_ = 0;
-    std::vector<std::pair<std::type_index, unsigned>> types_;
 };
 
 /// Make a pickle serializer with a given type
