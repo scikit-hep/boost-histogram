@@ -108,9 +108,9 @@ def test_compare_copy_hist(metadata):
     new = copy.copy(orig)
     dnew = copy.deepcopy(orig)
 
-    assert orig.axis(0).metadata is new.axis(0).metadata
-    assert orig.axis(0).metadata == dnew.axis(0).metadata
-    assert orig.axis(0).metadata is not dnew.axis(0).metadata
+    assert orig.axes[0].metadata is new.axes[0].metadata
+    assert orig.axes[0].metadata == dnew.axes[0].metadata
+    assert orig.axes[0].metadata is not dnew.axes[0].metadata
 
 
 @pytest.mark.parametrize("axis,args", axes_creations)
