@@ -48,8 +48,8 @@ template <class C, class T>
 struct is_string<std::basic_string<C, T>> : std::true_type {};
 
 template <class T>
-using is_serialization_primitive = typename boost::mp11::
-    mp_or<std::is_arithmetic<T>, is_string<T>, std::is_same<T, py::object>>::type;
+using is_serialization_primitive =
+    typename boost::mp11::mp_or<std::is_arithmetic<T>, is_string<T>>::type;
 
 template <class Archive, class T>
 void serialize(Archive &ar, T &t, unsigned version) {
@@ -84,7 +84,7 @@ struct tuple_oarchive {
     std::enable_if_t<is_serialization_primitive<T>::value == true, tuple_oarchive &>
     operator<<(const T &t) {
         // no version number is saved for primitives
-        this->save_primitive(t);
+        this->operator<<(py::cast(t));
         return *this;
     }
 
@@ -93,26 +93,25 @@ struct tuple_oarchive {
     operator<<(const T &t) {
         // we save a version number with every composite type
         const unsigned version = boost::serialization::version<T>::value;
-        this->save_primitive(version);
+        this->operator<<(version);
         serialize(*this, const_cast<T &>(t), version);
         return *this;
     }
 
-    template <class T>
-    void save_primitive(const T &t) {
-        save_primitive(py::cast(t));
+    tuple_oarchive &operator<<(py::object &&obj) {
+        return operator<<(static_cast<const py::object &>(obj));
     }
 
-    void save_primitive(const py::object &obj) {
+    tuple_oarchive &operator<<(const py::object &obj) {
         // maybe use growth factor 1.6 and shrink tuple to final size in destructor?
         tup = tup + py::make_tuple(obj);
+        return *this;
     }
 
     // put specializations here that side-step normal serialization
 
     tuple_oarchive &operator<<(const metadata_t &m) {
-        save_primitive(static_cast<const py::object &>(m));
-        return *this;
+        return operator<<(static_cast<const py::object &>(m));
     }
 
     template <class T>
@@ -120,7 +119,7 @@ struct tuple_oarchive {
     operator<<(const std::vector<T> &v) {
         // fast version for vector of arithmetic types
         py::array_t<T> a(v.size(), v.data());
-        this->save_primitive(static_cast<py::object>(a));
+        this->operator<<(static_cast<const py::object &>(a));
         return *this;
     }
 
@@ -128,7 +127,7 @@ struct tuple_oarchive {
     std::enable_if_t<std::is_arithmetic<T>::value == false, tuple_oarchive &>
     operator<<(const std::vector<T> &v) {
         // generic version
-        this->save_primitive(v.size());
+        this->operator<<(v.size());
         for(auto &&item : v)
             this->operator<<(item);
         return *this;
@@ -139,7 +138,7 @@ struct tuple_oarchive {
     operator<<(const bh::detail::array_wrapper<T> &w) {
         // fast version
         py::array_t<T> a(w.size, w.ptr);
-        this->save_primitive(static_cast<py::object>(a));
+        this->operator<<(static_cast<const py::object &>(a));
         return *this;
     }
 
@@ -185,7 +184,9 @@ struct tuple_iarchive {
     std::enable_if_t<is_serialization_primitive<T>::value == true, tuple_iarchive &>
     operator>>(T &t) {
         // no version number is saved for primitives
-        this->load_primitive(t);
+        py::object obj;
+        this->operator>>(obj);
+        t = py::cast<T>(obj);
         return *this;
     }
 
@@ -194,28 +195,21 @@ struct tuple_iarchive {
     operator>>(T &t) {
         // we load a version number with every composite type
         unsigned saved_version;
-        this->load_primitive(saved_version);
+        this->operator>>(saved_version);
         serialize(*this, t, saved_version);
         return *this;
     }
 
-    template <class T>
-    void load_primitive(T &t) {
-        py::object obj;
-        this->load_primitive(obj);
-        t = py::cast<T>(obj);
-    }
-
-    void load_primitive(py::object &obj) {
+    tuple_iarchive &operator>>(py::object &obj) {
         BOOST_ASSERT(cur_ < tup_.size());
         obj = tup_[cur_++];
+        return *this;
     }
 
     // put specializations here that side-step normal serialization
 
     tuple_iarchive &operator>>(metadata_t &m) {
-        load_primitive(static_cast<py::object &>(m));
-        return *this;
+        return operator>>(static_cast<py::object &>(m));
     }
 
     template <class T>
@@ -223,7 +217,7 @@ struct tuple_iarchive {
     operator>>(std::vector<T> &v) {
         // fast version for vector of arithmetic types
         py::object obj;
-        this->load_primitive(obj);
+        this->operator>>(obj);
         auto a = py::cast<py::array_t<T>>(obj);
         v.resize(static_cast<std::size_t>(a.size()));
         // sadly we cannot move the memory from the numpy array into the vector
@@ -236,7 +230,7 @@ struct tuple_iarchive {
     operator>>(std::vector<T> &v) {
         // generic version
         std::size_t new_size;
-        this->load_primitive(new_size);
+        this->operator>>(new_size);
         v.resize(new_size);
         for(auto &&item : v)
             this->operator>>(item);
@@ -248,7 +242,7 @@ struct tuple_iarchive {
     operator>>(bh::detail::array_wrapper<T> &w) {
         // fast version
         py::object obj;
-        this->load_primitive(obj);
+        this->operator>>(obj);
         auto a = py::cast<py::array_t<T>>(obj);
         // buffer wrapped by array_wrapper must already have correct size
         BOOST_ASSERT(static_cast<std::size_t>(a.size()) == w.size);
