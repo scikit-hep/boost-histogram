@@ -18,6 +18,7 @@
 #include <cstddef>
 #include <string>
 #include <type_traits>
+#include <typeindex>
 #include <utility>
 #include <vector>
 
@@ -59,11 +60,13 @@ void serialize(Archive &ar, T &t, unsigned version) {
 }
 
 // builds a tuple of Python primitives from C++ primitives
-struct tuple_oarchive {
+class tuple_oarchive {
+  public:
     using is_saving  = std::true_type;
     using is_loading = std::false_type;
 
-    py::tuple &tup;
+    tuple_oarchive(py::tuple &tup)
+        : tup_(tup) {}
 
     template <class T>
     tuple_oarchive &operator&(boost::nvp<T> t) {
@@ -91,9 +94,12 @@ struct tuple_oarchive {
     template <class T>
     std::enable_if_t<is_serialization_primitive<T>::value == false, tuple_oarchive &>
     operator<<(const T &t) {
-        // we save a version number with every composite type
+        // save version number once for each composite type that is seen first time
         const unsigned version = boost::serialization::version<T>::value;
-        this->operator<<(version);
+        if(std::find(types_.begin(), types_.end(), typeid(T)) == types_.end()) {
+            this->operator<<(version);
+            types_.emplace_back(typeid(T));
+        }
         serialize(*this, const_cast<T &>(t), version);
         return *this;
     }
@@ -104,7 +110,7 @@ struct tuple_oarchive {
 
     tuple_oarchive &operator<<(const py::object &obj) {
         // maybe use growth factor 1.6 and shrink tuple to final size in destructor?
-        tup = tup + py::make_tuple(obj);
+        tup_ = tup_ + py::make_tuple(obj);
         return *this;
     }
 
@@ -150,14 +156,16 @@ struct tuple_oarchive {
             this->operator<<(item);
         return *this;
     }
+
+  private:
+    py::tuple &tup_;
+    std::vector<std::type_index> types_;
 };
 
-struct tuple_iarchive {
+class tuple_iarchive {
+  public:
     using is_saving  = std::false_type;
     using is_loading = std::true_type;
-
-    const py::tuple &tup_;
-    std::size_t cur_ = 0;
 
     tuple_iarchive(const py::tuple &t)
         : tup_(t) {}
@@ -193,9 +201,16 @@ struct tuple_iarchive {
     template <class T>
     std::enable_if_t<is_serialization_primitive<T>::value == false, tuple_iarchive &>
     operator>>(T &t) {
-        // we load a version number with every composite type
+        // load version number once for each composite type that is seen for first time
+        const auto iter = std::find_if(types_.begin(), types_.end(), [](auto &&p) {
+            return p.first == typeid(T);
+        });
         unsigned saved_version;
-        this->operator>>(saved_version);
+        if(iter == types_.end()) {
+            this->operator>>(saved_version);
+            types_.emplace_back(typeid(T), saved_version);
+        } else
+            saved_version = iter->second;
         serialize(*this, t, saved_version);
         return *this;
     }
@@ -259,6 +274,11 @@ struct tuple_iarchive {
             this->operator>>(item);
         return *this;
     }
+
+  private:
+    const py::tuple &tup_;
+    std::size_t cur_ = 0;
+    std::vector<std::pair<std::type_index, unsigned>> types_;
 };
 
 /// Make a pickle serializer with a given type
