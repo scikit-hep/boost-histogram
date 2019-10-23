@@ -16,12 +16,14 @@
 #include <boost/histogram/python/metadata.hpp>
 #include <boost/mp11/function.hpp> // mp_or
 #include <boost/mp11/utility.hpp>  // mp_valid
+#include <cstddef>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
 template <class T,
-          class = decltype(std::declval<T>().serialize(std::declval<nullptr_t &>(), 0))>
+          class = decltype(
+              std::declval<T &>().serialize(std::declval<std::nullptr_t &>(), 0))>
 struct has_method_serialize_impl {};
 
 template <class T>
@@ -42,10 +44,10 @@ using is_serialization_primitive =
                                 std::is_same<T, std::string>>::type;
 
 template <class Archive, class T>
-void serialize(Archive &ar, T &t, unsigned version) {
+std::enable_if_t<has_method_serialize<T>::value>
+serialize(Archive &ar, T &t, unsigned version) {
     // default implementation calls serialize method
     static_assert(std::is_const<T>::value == false, "");
-    static_assert(has_method_serialize<T>::value, "");
     t.serialize(ar, version);
 }
 
@@ -76,12 +78,12 @@ struct tuple_oarchive {
         bh::detail::static_if<is_serialization_primitive<T>>(
             [this](const auto &t) {
                 // no version number is saved for primitives
-                operator<<(py::cast(t));
+                this->operator<<(py::cast(t));
             },
             [this](const auto &t) {
                 // we save a version number with every composite type
                 const unsigned version = boost::serialization::version<T>::value;
-                operator<<(version);
+                this->operator<<(version);
                 serialize(*this, const_cast<T &>(t), version);
             },
             t);
@@ -107,13 +109,13 @@ struct tuple_oarchive {
             [this](auto &v) {
                 // fast version for vector of arithmetic types
                 py::array_t<T> a(v.size(), v.data());
-                operator<<(static_cast<py::object>(a));
+                this->operator<<(static_cast<py::object>(a));
             },
             [this](auto &v) {
                 // generic version
-                operator<<(v.size());
+                this->operator<<(v.size());
                 for(auto &&item : v)
-                    operator<<(item);
+                    this->operator<<(item);
             },
             v);
         return *this;
@@ -125,12 +127,12 @@ struct tuple_oarchive {
             [this](auto &w) {
                 // fast version
                 py::array_t<T> a(w.size, w.ptr);
-                operator<<(static_cast<py::object>(a));
+                this->operator<<(static_cast<py::object>(a));
             },
             [this](auto &w) {
                 // generic version
                 for(auto &&item : bh::detail::make_span(w.ptr, w.size))
-                    operator<<(item);
+                    this->operator<<(item);
             },
             w);
         return *this;
@@ -171,13 +173,13 @@ struct tuple_iarchive {
             [this](auto &t) {
                 // no version number is saved for primitives
                 py::object obj;
-                operator>>(obj);
+                this->operator>>(obj);
                 t = py::cast<T>(obj);
             },
             [this](auto &t) {
                 // we load a version number with every composite type
                 unsigned saved_version;
-                operator>>(saved_version);
+                this->operator>>(saved_version);
                 serialize(*this, t, saved_version);
             },
             t);
@@ -203,7 +205,7 @@ struct tuple_iarchive {
             [this](auto &v) {
                 // fast version for vector of arithmetic types
                 py::object obj;
-                operator>>(obj);
+                this->operator>>(obj);
                 auto a = py::cast<py::array_t<T>>(obj);
                 v.resize(static_cast<std::size_t>(a.size()));
                 // sadly we cannot move the memory from the numpy array into the vector
@@ -212,10 +214,10 @@ struct tuple_iarchive {
             [this](auto &v) {
                 // generic version
                 std::size_t new_size;
-                operator>>(new_size);
+                this->operator>>(new_size);
                 v.resize(new_size);
                 for(auto &&item : v)
-                    operator>>(item);
+                    this->operator>>(item);
             },
             v);
         return *this;
@@ -227,7 +229,7 @@ struct tuple_iarchive {
             [this](auto &w) {
                 // fast version
                 py::object obj;
-                operator>>(obj);
+                this->operator>>(obj);
                 auto a = py::cast<py::array_t<T>>(obj);
                 // buffer wrapped by array_wrapper must already have correct size
                 BOOST_ASSERT(static_cast<std::size_t>(a.size()) == w.size);
@@ -237,7 +239,7 @@ struct tuple_iarchive {
             [this](auto &w) {
                 // generic version
                 for(auto &&item : bh::detail::make_span(w.ptr, w.size))
-                    operator>>(item);
+                    this->operator>>(item);
             },
             w);
         return *this;
