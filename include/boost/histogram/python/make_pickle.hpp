@@ -12,6 +12,8 @@
 #include <boost/assert.hpp>
 #include <boost/core/nvp.hpp>
 #include <boost/histogram/detail/array_wrapper.hpp>
+#include <boost/histogram/detail/static_if.hpp>
+#include <boost/histogram/python/metadata.hpp>
 #include <boost/mp11/function.hpp> // mp_or
 #include <boost/mp11/utility.hpp>  // mp_valid
 #include <type_traits>
@@ -34,52 +36,17 @@ struct version : std::integral_constant<int, 0> {};
 } // namespace serialization
 } // namespace boost
 
-template <class Archive, class T>
-void serialize(Archive &ar, std::vector<T> &t, unsigned /* version */) {
-    auto size = t.size();
-    ar &size;
-    if(Archive::is_loading::value)
-        t.resize(size);
-    for(auto &&ti : t)
-        ar &ti;
-}
-
 template <class T>
 using is_serialization_primitive =
     typename boost::mp11::mp_or<std::is_arithmetic<T>,
-                                std::is_same<T, std::string>,
-                                std::is_same<T, char *>>::type;
-
-// saving
-template <class Archive, class T>
-void serialize_primitive(Archive &ar, T &t, std::false_type) {
-    auto obj = py::cast(t);
-    ar << obj;
-}
-
-// loading
-template <class Archive, class T>
-void serialize_primitive(Archive &ar, T &t, std::true_type) {
-    py::object obj;
-    ar >> obj;
-    t = py::cast<T>(obj);
-}
-
-template <class Archive, class T>
-void serialize_impl(Archive &ar, T &t, unsigned, std::false_type) {
-    static_assert(is_serialization_primitive<T>::value, "");
-    serialize_primitive(ar, t, typename Archive::is_loading{});
-}
-
-template <class Archive, class T>
-void serialize_impl(Archive &ar, T &t, unsigned version, std::true_type) {
-    t.serialize(ar, version);
-}
+                                std::is_same<T, std::string>>::type;
 
 template <class Archive, class T>
 void serialize(Archive &ar, T &t, unsigned version) {
+    // default implementation calls serialize method
     static_assert(std::is_const<T>::value == false, "");
-    serialize_impl(ar, t, version, has_method_serialize<T>{});
+    static_assert(has_method_serialize<T>::value, "");
+    t.serialize(ar, version);
 }
 
 // builds a tuple of Python primitives from C++ primitives
@@ -106,7 +73,18 @@ struct tuple_oarchive {
 
     template <class T>
     tuple_oarchive &operator<<(const T &t) {
-        serialize(*this, const_cast<T &>(t), boost::serialization::version<T>::value);
+        bh::detail::static_if<is_serialization_primitive<T>>(
+            [this](const auto &t) {
+                // no version number is saved for primitives
+                operator<<(py::cast(t));
+            },
+            [this](const auto &t) {
+                // we save a version number with every composite type
+                const unsigned version = boost::serialization::version<T>::value;
+                operator<<(version);
+                serialize(*this, const_cast<T &>(t), version);
+            },
+            t);
         return *this;
     }
 
@@ -118,19 +96,43 @@ struct tuple_oarchive {
 
     // put specializations here that side-step normal serialization
 
-    template <class T>
-    std::enable_if_t<std::is_arithmetic<T>::value, tuple_oarchive &>
-    operator<<(const std::vector<T> &v) {
-        py::array_t<T> a(v.size(), v.data());
-        operator<<(static_cast<py::object>(a));
+    tuple_oarchive &operator<<(const metadata_t &m) {
+        operator<<(static_cast<py::object>(m));
         return *this;
     }
 
     template <class T>
-    std::enable_if_t<std::is_arithmetic<T>::value, tuple_oarchive &>
-    operator<<(const bh::detail::array_wrapper<T> &w) {
-        py::array_t<T> a(w.size, w.ptr);
-        operator<<(static_cast<py::object>(a));
+    tuple_oarchive &operator<<(const std::vector<T> &v) {
+        bh::detail::static_if<std::is_arithmetic<T>>(
+            [this](auto &v) {
+                // fast version for vector of arithmetic types
+                py::array_t<T> a(v.size(), v.data());
+                operator<<(static_cast<py::object>(a));
+            },
+            [this](auto &v) {
+                // generic version
+                operator<<(v.size());
+                for(auto &&item : v)
+                    operator<<(item);
+            },
+            v);
+        return *this;
+    }
+
+    template <class T>
+    tuple_oarchive &operator<<(const bh::detail::array_wrapper<T> &w) {
+        bh::detail::static_if<std::is_arithmetic<T>>(
+            [this](auto &w) {
+                // fast version
+                py::array_t<T> a(w.size, w.ptr);
+                operator<<(static_cast<py::object>(a));
+            },
+            [this](auto &w) {
+                // generic version
+                for(auto &&item : bh::detail::make_span(w.ptr, w.size))
+                    operator<<(item);
+            },
+            w);
         return *this;
     }
 };
@@ -165,7 +167,20 @@ struct tuple_iarchive {
 
     template <class T>
     tuple_iarchive &operator>>(T &t) {
-        serialize(*this, t, boost::serialization::version<T>::value);
+        bh::detail::static_if<is_serialization_primitive<T>>(
+            [this](auto &t) {
+                // no version number is saved for primitives
+                py::object obj;
+                operator>>(obj);
+                t = py::cast<T>(obj);
+            },
+            [this](auto &t) {
+                // we load a version number with every composite type
+                unsigned saved_version;
+                operator>>(saved_version);
+                serialize(*this, t, saved_version);
+            },
+            t);
         return *this;
     }
 
@@ -177,28 +192,54 @@ struct tuple_iarchive {
 
     // put specializations here that side-step normal serialization
 
-    template <class T>
-    std::enable_if_t<std::is_arithmetic<T>::value, tuple_iarchive &>
-    operator>>(std::vector<T> &v) {
-        py::object obj;
-        operator>>(obj);
-        auto a = py::cast<py::array_t<T>>(obj);
-        v.resize(static_cast<std::size_t>(a.size()));
-        // sadly we cannot move the memory from the numpy array into the vector
-        std::copy(a.data(), a.data() + a.size(), v.begin());
+    tuple_iarchive &operator>>(metadata_t &m) {
+        operator>>(static_cast<py::object &>(m));
         return *this;
     }
 
     template <class T>
-    std::enable_if_t<std::is_arithmetic<T>::value, tuple_iarchive &>
-    operator>>(bh::detail::array_wrapper<T> &w) {
-        py::object obj;
-        operator>>(obj);
-        auto a = py::cast<py::array_t<T>>(obj);
-        // buffer wrapped by array_wrapper must already have correct size
-        BOOST_ASSERT(static_cast<std::size_t>(a.size()) == w.size);
-        // sadly we cannot move the memory from the numpy array into the vector
-        std::copy(a.data(), a.data() + a.size(), w.ptr);
+    tuple_iarchive &operator>>(std::vector<T> &v) {
+        bh::detail::static_if<std::is_arithmetic<T>>(
+            [this](auto &v) {
+                // fast version for vector of arithmetic types
+                py::object obj;
+                operator>>(obj);
+                auto a = py::cast<py::array_t<T>>(obj);
+                v.resize(static_cast<std::size_t>(a.size()));
+                // sadly we cannot move the memory from the numpy array into the vector
+                std::copy(a.data(), a.data() + a.size(), v.begin());
+            },
+            [this](auto &v) {
+                // generic version
+                std::size_t new_size;
+                operator>>(new_size);
+                v.resize(new_size);
+                for(auto &&item : v)
+                    operator>>(item);
+            },
+            v);
+        return *this;
+    }
+
+    template <class T>
+    tuple_iarchive &operator>>(bh::detail::array_wrapper<T> &w) {
+        bh::detail::static_if<std::is_arithmetic<T>>(
+            [this](auto &w) {
+                // fast version
+                py::object obj;
+                operator>>(obj);
+                auto a = py::cast<py::array_t<T>>(obj);
+                // buffer wrapped by array_wrapper must already have correct size
+                BOOST_ASSERT(static_cast<std::size_t>(a.size()) == w.size);
+                // sadly we cannot move the memory from the numpy array into the vector
+                std::copy(a.data(), a.data() + a.size(), w.ptr);
+            },
+            [this](auto &w) {
+                // generic version
+                for(auto &&item : bh::detail::make_span(w.ptr, w.size))
+                    operator>>(item);
+            },
+            w);
         return *this;
     }
 };

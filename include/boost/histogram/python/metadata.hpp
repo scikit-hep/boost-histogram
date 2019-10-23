@@ -22,9 +22,4 @@ struct metadata_t : py::object {
     bool operator!=(const metadata_t &other) const {
         return py::object::not_equal(other);
     }
-
-    template <class Archive>
-    void serialize(Archive &ar, unsigned /* version */) {
-        ar &static_cast<py::object &>(*this);
-    }
 };
