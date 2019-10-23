@@ -154,7 +154,7 @@ register_histogram(py::module &m, const char *name, const char *desc) {
             "Return a view into the data, optionally with overflow turned on")
 
         .def(
-            "axis",
+            "_axis",
             [](const histogram_t &self, int i) {
                 unsigned ii = i < 0 ? self.rank() - (unsigned)std::abs(i) : (unsigned)i;
                 if(ii < self.rank())
@@ -168,7 +168,7 @@ register_histogram(py::module &m, const char *name, const char *desc) {
             py::return_value_policy::move)
 
         .def(
-            "at",
+            "_at",
             [](const histogram_t &self, py::args &args) {
                 auto int_args = py::cast<std::vector<int>>(args);
                 return self.at(int_args);
