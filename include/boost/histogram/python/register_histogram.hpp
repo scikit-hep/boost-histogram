@@ -18,6 +18,7 @@
 #include <boost/histogram/python/kwargs.hpp>
 #include <boost/histogram/python/serializion.hpp>
 #include <boost/histogram/python/storage.hpp>
+#include <boost/histogram/python/sum.hpp>
 #include <boost/histogram/python/variant.hpp>
 #include <boost/histogram/unsafe_access.hpp>
 #include <boost/mp11.hpp>
@@ -188,20 +189,7 @@ register_histogram(py::module &m, const char *name, const char *desc) {
         .def(
             "sum",
             [](const histogram_t &self, bool flow) {
-                if(flow) {
-                    return bh::algorithm::sum(self);
-                } else {
-                    using T = typename bh::histogram<A, S>::value_type;
-                    using AddType
-                        = boost::mp11::mp_if<std::is_arithmetic<T>, double, T>;
-                    using Sum = boost::mp11::
-                        mp_if<std::is_arithmetic<T>, bh::accumulators::sum<double>, T>;
-                    Sum sum;
-                    for(auto &&x : bh::indexed(self))
-                        sum += (AddType)*x;
-                    using R = boost::mp11::mp_if<std::is_arithmetic<T>, double, T>;
-                    return static_cast<R>(sum);
-                }
+                return sum_histogram(self, flow);
             },
             "flow"_a = false)
 

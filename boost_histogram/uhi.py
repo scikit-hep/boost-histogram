@@ -19,6 +19,13 @@ class loc(object):
     def __sub__(self, offset):
         return self.__class__(self.value, self.offset - offset)
 
+    def __repr__(self):
+        s = "{self.__class__.__name__}({self.value}"
+        if offset != 0:
+            s += ", offset={self.offset}"
+        s += ")"
+        return s.format(self=self)
+
 
 class rebin(object):
     __slots__ = ("factor",)
@@ -26,6 +33,9 @@ class rebin(object):
 
     def __init__(self, value):
         self.factor = value
+
+    def __repr__(self):
+        return "{self.__class__.__name__}({self.factor})".format(self=self)
 
 
 class project(object):

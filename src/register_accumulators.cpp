@@ -6,10 +6,10 @@
 #include <boost/histogram/python/pybind11.hpp>
 
 #include <boost/histogram/accumulators/mean.hpp>
-#include <boost/histogram/accumulators/ostream.hpp>
 #include <boost/histogram/accumulators/sum.hpp>
 #include <boost/histogram/accumulators/weighted_mean.hpp>
 #include <boost/histogram/accumulators/weighted_sum.hpp>
+#include <boost/histogram/python/accumulators_ostream.hpp>
 #include <boost/histogram/python/kwargs.hpp>
 #include <boost/histogram/python/register_accumulator.hpp>
 #include <pybind11/operators.h>
@@ -59,8 +59,8 @@ void register_accumulators(py::module &accumulators) {
         .def(py::init<const double &>(), "value"_a)
         .def(py::init<const double &, const double &>(), "value"_a, "variance"_a)
 
-        .def_property_readonly("variance", &weighted_sum::variance)
         .def_property_readonly("value", &weighted_sum::value)
+        .def_property_readonly("variance", &weighted_sum::variance)
 
         .def(py::self += double())
 
@@ -121,12 +121,12 @@ void register_accumulators(py::module &accumulators) {
         .def(py::init<const double &, const double &, const double &, const double &>(),
              "wsum"_a,
              "wsum2"_a,
-             "mean"_a,
+             "value"_a,
              "variance"_a)
 
         .def_property_readonly("sum_of_weights", &weighted_mean::sum_of_weights)
-        .def_property_readonly("variance", &weighted_mean::variance)
         .def_property_readonly("value", &weighted_mean::value)
+        .def_property_readonly("variance", &weighted_mean::variance)
 
         .def("__call__",
              make_mean_call<weighted_mean>(),
@@ -144,13 +144,13 @@ void register_accumulators(py::module &accumulators) {
 
     register_accumulator<mean>(accumulators, "mean")
         .def(py::init<const double &, const double &, const double &>(),
+             "count"_a,
              "value"_a,
-             "mean"_a,
              "variance"_a)
 
         .def_property_readonly("count", &mean::count)
-        .def_property_readonly("variance", &mean::variance)
         .def_property_readonly("value", &mean::value)
+        .def_property_readonly("variance", &mean::variance)
 
         .def("__call__",
              make_mean_call<mean>(),

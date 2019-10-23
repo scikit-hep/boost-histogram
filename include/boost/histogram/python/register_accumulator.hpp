@@ -7,7 +7,6 @@
 
 #include <boost/histogram/python/pybind11.hpp>
 
-#include <boost/histogram/accumulators/ostream.hpp> // TODO: replace with internal repr
 #include <boost/histogram/python/serializion.hpp>
 
 #include <pybind11/operators.h>
