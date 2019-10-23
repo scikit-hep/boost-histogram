@@ -52,9 +52,9 @@ def test_init():
 
     h = histogram(integer(-1, 2))
     assert h.rank == 1
-    assert h.axis(0) == integer(-1, 2)
-    assert h.axis(0).extent == 5
-    assert h.axis(0).size == 3
+    assert h.axes[0] == integer(-1, 2)
+    assert h.axes[0].extent == 5
+    assert h.axes[0].size == 3
     assert h != histogram(regular(1, -1, 1))
     assert h != histogram(integer(-1, 1, metadata="ia"))
 
@@ -85,16 +85,12 @@ def test_fill_int_1d():
         h.fill(x)
     assert h.sum() == 6
     assert h.sum(flow=True) == 8
-    assert h.axis(0).extent == 5
+    assert h.axes[0].extent == 5
 
-    with pytest.raises(TypeError):
-        h.at(0, foo=None)
-    with pytest.raises(ValueError):
-        h.at(0, 1)
     with pytest.raises(IndexError):
         h[0, 1]
 
-    for get in (lambda h, arg: h.at(arg), lambda h, arg: h[arg]):
+    for get in (lambda h, arg: h[arg], lambda h, arg: h[arg]):
         # lambda h, arg: h[arg]):
         assert get(h, 0) == 2
         assert get(h, 1) == 1
@@ -103,10 +99,11 @@ def test_fill_int_1d():
         # assert get(h, 1).variance == 1
         # assert get(h, 2).variance == 3
 
-    assert h.at(3) == 1
-    assert h.at(-1) == 1
+    assert h[bh.overflow] == 1
+    assert h[bh.underflow] == 1
 
     assert h[-1] == 3
+
     with pytest.raises(IndexError):
         h[3]
     with pytest.raises(IndexError):
@@ -125,16 +122,12 @@ def test_fill_1d(flow):
 
     assert h.sum() == 6
     assert h.sum(flow=True) == 6 + 2 * flow
-    assert h.axis(0).extent == 3 + 2 * flow
+    assert h.axes[0].extent == 3 + 2 * flow
 
-    with pytest.raises(TypeError):
-        h.at(0, foo=None)
-    with pytest.raises(ValueError):
-        h.at(0, 1)
     with pytest.raises(IndexError):
         h[0, 1]
 
-    for get in (lambda h, arg: h.at(arg),):
+    for get in (lambda h, arg: h[arg],):
         # lambda h, arg: h[arg]):
         assert get(h, 0) == 2
         assert get(h, 1) == 1
@@ -144,8 +137,8 @@ def test_fill_1d(flow):
         # assert get(h, 2).variance == 3
 
     if flow is True:
-        assert get(h, -1) == 1
-        assert get(h, 3) == 1
+        assert get(h, bh.underflow) == 1
+        assert get(h, bh.overflow) == 1
 
 
 # TODO: atomic_int not supported
@@ -181,11 +174,11 @@ def test_growth():
     h.fill(0)
     for i in range(1000 - 256):
         h.fill(0)
-    assert h.at(-1) == 0
-    assert h.at(0) == 1
-    assert h.at(1) == 1000
-    assert h.at(2) == 2
-    assert h.at(3) == 0
+    assert h[bh.underflow] == 0
+    assert h[0] == 1
+    assert h[1] == 1000
+    assert h[2] == 2
+    assert h[bh.overflow] == 0
 
 
 @pytest.mark.parametrize("flow", [True, False])
@@ -215,10 +208,10 @@ def test_fill_2d(flow):
         [0, 0, 0, 0, 0, 0],
     ]
 
-    for get in (lambda h, x, y: h.at(x, y),):
+    for get in (lambda h, x, y: h._at(x, y),):
         # lambda h, x, y: h[x, y]):
-        for i in range(-flow, h.axis(0).size + flow):
-            for j in range(-flow, h.axis(1).size + flow):
+        for i in range(-flow, h.axes[0].size + flow):
+            for j in range(-flow, h.axes[1].size + flow):
                 assert get(h, i, j) == m[i][j]
 
 
@@ -248,9 +241,9 @@ def test_add_2d(flow):
 
     h += h
 
-    for i in range(-flow, h.axis(0).size + flow):
-        for j in range(-flow, h.axis(1).size + flow):
-            assert h.at(i, j) == 2 * m[i][j]
+    for i in range(-flow, h.axes[0].size + flow):
+        for j in range(-flow, h.axes[1].size + flow):
+            assert h._at(i, j) == 2 * m[i][j]
 
 
 def test_add_2d_bad():
@@ -294,9 +287,9 @@ def test_add_2d_w(flow):
     h += h
     assert h == h2
 
-    for i in range(-flow, h.axis(0).size + flow):
-        for j in range(-flow, h.axis(1).size + flow):
-            assert h.at(i, j) == 2 * m[i][j]
+    for i in range(-flow, h.axes[0].size + flow):
+        for j in range(-flow, h.axes[1].size + flow):
+            assert h._at(i, j) == 2 * m[i][j]
 
 
 def test_repr():
@@ -322,13 +315,13 @@ def test_axis():
     axes = (regular(10, 0, 1), integer(0, 1))
     h = histogram(*axes)
     for i, a in enumerate(axes):
-        assert h.axis(i) == a
+        assert h.axes[i] == a
     with pytest.raises(IndexError):
-        h.axis(2)
-    assert h.axis(-1) == axes[-1]
-    assert h.axis(-2) == axes[-2]
+        h.axes[2]
+    assert h.axes[-1] == axes[-1]
+    assert h.axes[-2] == axes[-2]
     with pytest.raises(IndexError):
-        h.axis(-3)
+        h.axes[-3]
 
 
 def test_out_of_limit_axis():
@@ -352,16 +345,10 @@ def test_out_of_range():
     h = histogram(regular(3, 0, 1))
     h.fill(-1)
     h.fill(2)
-    assert h.at(-1) == 1
-    assert h.at(3) == 1
+    assert h[bh.underflow] == 1
+    assert h[bh.overflow] == 1
     with pytest.raises(IndexError):
-        h.at(-2)
-    with pytest.raises(IndexError):
-        h.at(4)
-    # with pytest.raises(IndexError):
-    #    h.at(-2).variance
-    # with pytest.raises(IndexError):
-    #    h.at(4).variance
+        h[4]
 
 
 # CLASSIC: This used to have variance
@@ -369,13 +356,13 @@ def test_operators():
     h = histogram(integer(0, 2))
     h.fill(0)
     h += h
-    assert h.at(0) == 2
-    assert h.at(1) == 0
+    assert h[0] == 2
+    assert h[1] == 0
     h *= 2
-    assert h.at(0) == 4
-    assert h.at(1) == 0
-    assert (h + h).at(0) == (h * 2).at(0)
-    assert (h + h).at(0) == (2 * h).at(0)
+    assert h[0] == 4
+    assert h[1] == 0
+    assert (h + h)[0] == (h * 2)[0]
+    assert (h + h)[0] == (2 * h)[0]
     h2 = histogram(regular(2, 0, 2))
     with pytest.raises(ValueError):
         h + h2
@@ -390,13 +377,13 @@ def test_project():
 
     h0 = h.project(0)
     assert h0.rank == 1
-    assert h0.axis(0) == integer(0, 2)
-    assert [h0.at(i) for i in range(2)] == [2, 1]
+    assert h0.axes[0] == integer(0, 2)
+    assert [h0[i] for i in range(2)] == [2, 1]
 
     h1 = h.project(1)
     assert h1.rank == 1
-    assert h1.axis(0) == integer(1, 4)
-    assert [h1.at(i) for i in range(3)] == [1, 1, 1]
+    assert h1.axes[0] == integer(1, 4)
+    assert [h1[i] for i in range(3)] == [1, 1, 1]
 
     with pytest.raises(ValueError):
         h.project(*range(10))
@@ -442,15 +429,15 @@ def test_pickle_0():
         variable([0.0, 1.0, 2.0]),
         circular(4, 0, 2 * np.pi),
     )
-    for i in range(a.axis(0).extent):
+    for i in range(a.axes[0].extent):
         a.fill(i, 0, 0, 0, 0)
-        for j in range(a.axis(1).extent):
+        for j in range(a.axes[1].extent):
             a.fill(i, j, 0, 0, 0)
-            for k in range(a.axis(2).extent):
+            for k in range(a.axes[2].extent):
                 a.fill(i, j, k, 0, 0)
-                for l in range(a.axis(3).extent):
+                for l in range(a.axes[3].extent):
                     a.fill(i, j, k, l, 0)
-                    for m in range(a.axis(4).extent):
+                    for m in range(a.axes[4].extent):
                         a.fill(i, j, k, l, m * 0.5 * np.pi)
 
     io = pickle.dumps(a, -1)
@@ -458,11 +445,11 @@ def test_pickle_0():
 
     assert id(a) != id(b)
     assert a.rank == b.rank
-    assert a.axis(0) == b.axis(0)
-    assert a.axis(1) == b.axis(1)
-    assert a.axis(2) == b.axis(2)
-    assert a.axis(3) == b.axis(3)
-    assert a.axis(4) == b.axis(4)
+    assert a.axes[0] == b.axes[0]
+    assert a.axes[1] == b.axes[1]
+    assert a.axes[2] == b.axes[2]
+    assert a.axes[3] == b.axes[3]
+    assert a.axes[4] == b.axes[4]
     assert a.sum() == b.sum()
     assert repr(a) == repr(b)
     assert str(a) == str(b)
@@ -478,13 +465,13 @@ def test_pickle_1():
     )
     assert isinstance(a, histogram)
 
-    for i in range(a.axis(0).extent):
+    for i in range(a.axes[0].extent):
         a.fill(i, 0, 0, 0, weight=3)
-        for j in range(a.axis(1).extent):
+        for j in range(a.axes[1].extent):
             a.fill(i, j, 0, 0, weight=10)
-            for k in range(a.axis(2).extent):
+            for k in range(a.axes[2].extent):
                 a.fill(i, j, k, 0, weight=2)
-                for l in range(a.axis(3).extent):
+                for l in range(a.axes[3].extent):
                     a.fill(i, j, k, l, weight=5)
 
     io = BytesIO()
@@ -494,10 +481,10 @@ def test_pickle_1():
 
     assert id(a) != id(b)
     assert a.rank == b.rank
-    assert a.axis(0) == b.axis(0)
-    assert a.axis(1) == b.axis(1)
-    assert a.axis(2) == b.axis(2)
-    assert a.axis(3) == b.axis(3)
+    assert a.axes[0] == b.axes[0]
+    assert a.axes[1] == b.axes[1]
+    assert a.axes[2] == b.axes[2]
+    assert a.axes[3] == b.axes[3]
     assert a.sum() == b.sum()
     assert repr(a) == repr(b)
     assert str(a) == str(b)
@@ -554,18 +541,18 @@ def test_numpy_conversion_2():
         integer(0, 4, underflow=False, overflow=False),
     )
     r = np.zeros((2, 3, 4), dtype=np.int8)
-    for i in range(a.axis(0).extent):
-        for j in range(a.axis(1).extent):
-            for k in range(a.axis(2).extent):
+    for i in range(a.axes[0].extent):
+        for j in range(a.axes[1].extent):
+            for k in range(a.axes[2].extent):
                 for m in range(i + j + k):
                     a.fill(i, j, k)
                 r[i, j, k] = i + j + k
 
     d = np.zeros((2, 3, 4), dtype=np.int8)
-    for i in range(a.axis(0).extent):
-        for j in range(a.axis(1).extent):
-            for k in range(a.axis(2).extent):
-                d[i, j, k] = a.at(i, j, k)
+    for i in range(a.axes[0].extent):
+        for j in range(a.axes[1].extent):
+            for k in range(a.axes[2].extent):
+                d[i, j, k] = a[i, j, k]
 
     assert_array_equal(d, r)
 
@@ -583,20 +570,13 @@ def test_numpy_conversion_3():
     )
 
     r = np.zeros((4, 5, 6))
-    for i in range(a.axis(0).extent):
-        for j in range(a.axis(1).extent):
-            for k in range(a.axis(2).extent):
+    for i in range(a.axes[0].extent):
+        for j in range(a.axes[1].extent):
+            for k in range(a.axes[2].extent):
                 a.fill(i - 1, j - 1, k - 1, weight=i + j + k)
                 r[i, j, k] = i + j + k
     c = a.view(flow=True)
 
-    c2 = np.zeros((4, 5, 6))
-    for i in range(a.axis(0).extent):
-        for j in range(a.axis(1).extent):
-            for k in range(a.axis(2).extent):
-                c2[i, j, k] = a.at(i - 1, j - 1, k - 1)
-
-    assert_array_equal(c, c2)
     assert_array_equal(c, r)
 
     assert a.sum() == approx(144)
@@ -659,9 +639,9 @@ def test_fill_with_numpy_array_0():
     a = histogram(integer(0, 3, underflow=False, overflow=False))
     a.fill(ar(-1, 0, 1, 2, 1))
     a.fill((4, -1, 0, 1, 2))
-    assert a.at(0) == 2
-    assert a.at(1) == 3
-    assert a.at(2) == 2
+    assert a[0] == 2
+    assert a[1] == 3
+    assert a[2] == 2
 
     with pytest.raises(ValueError):
         a.fill(np.empty((2, 2)))
@@ -672,19 +652,19 @@ def test_fill_with_numpy_array_0():
     with pytest.raises(ValueError):
         a.fill("abc")
 
-    with pytest.raises(ValueError):
-        a.at(1, 2)
+    with pytest.raises(IndexError):
+        a[1, 2]
 
     a = histogram(
         integer(0, 2, underflow=False, overflow=False),
         regular(2, 0, 2, underflow=False, overflow=False),
     )
     a.fill(ar(-1, 0, 1), ar(-1.0, 1.0, 0.1))
-    assert a.at(0, 0) == 0
-    assert a.at(0, 1) == 1
-    assert a.at(1, 0) == 1
-    assert a.at(1, 1) == 0
-    # we don't support: assert a.at([1, 1]).value, 0
+    assert a[0, 0] == 0
+    assert a[0, 1] == 1
+    assert a[1, 0] == 1
+    assert a[1, 1] == 0
+    # we don't support: assert a[[1, 1]].value, 0
 
     with pytest.raises(ValueError):
         a.fill(1)
@@ -694,16 +674,16 @@ def test_fill_with_numpy_array_0():
     # This actually broadcasts
     a.fill([1, 0], [1])
 
-    with pytest.raises(ValueError):
-        a.at(1)
-    with pytest.raises(ValueError):
-        a.at(1, 2, 3)
+    with pytest.raises(IndexError):
+        a[1]
+    with pytest.raises(IndexError):
+        a[1, 2, 3]
 
     a = histogram(integer(0, 3, underflow=False, overflow=False))
     a.fill(ar(0, 0, 1, 2, 1, 0, 2, 2))
-    assert a.at(0) == 3
-    assert a.at(1) == 2
-    assert a.at(2) == 3
+    assert a[0] == 3
+    assert a[1] == 2
+    assert a[2] == 3
 
 
 def test_fill_with_numpy_array_1():
@@ -716,27 +696,27 @@ def test_fill_with_numpy_array_1():
     a.fill(v, weight=w)
     a.fill((0, 1), weight=(2, 3))
 
-    assert a.at(-1) == bh.accumulators.weighted_sum(2, 4)
-    assert a.at(0) == bh.accumulators.weighted_sum(5, 13)
-    assert a.at(1) == bh.accumulators.weighted_sum(7, 25)
-    assert a.at(2) == bh.accumulators.weighted_sum(5, 25)
+    assert a[bh.underflow] == bh.accumulators.weighted_sum(2, 4)
+    assert a[0] == bh.accumulators.weighted_sum(5, 13)
+    assert a[1] == bh.accumulators.weighted_sum(7, 25)
+    assert a[2] == bh.accumulators.weighted_sum(5, 25)
 
-    assert a.at(-1).value == 2
-    assert a.at(0).value == 5
-    assert a.at(1).value == 7
-    assert a.at(2).value == 5
+    assert a[bh.underflow].value == 2
+    assert a[0].value == 5
+    assert a[1].value == 7
+    assert a[2].value == 5
 
-    assert a.at(-1).variance == 4
-    assert a.at(0).variance == 13
-    assert a.at(1).variance == 25
-    assert a.at(2).variance == 25
+    assert a[bh.underflow].variance == 4
+    assert a[0].variance == 13
+    assert a[1].variance == 25
+    assert a[2].variance == 25
 
     a.fill((1, 2), weight=1)
     a.fill(0, weight=1)
     a.fill(0, weight=2)
-    assert a.at(0).value == 8
-    assert a.at(1).value == 8
-    assert a.at(2).value == 6
+    assert a[0].value == 8
+    assert a[1].value == 8
+    assert a[2].value == 6
 
     with pytest.raises(KeyError):
         a.fill((1, 2), foo=(1, 1))
@@ -752,39 +732,39 @@ def test_fill_with_numpy_array_1():
     # CLASSIC: Used to fail
     a = histogram(integer(0, 3))
     a.fill((1, 2), weight=(1,))
-    assert a.at(1) == 1.0
-    assert a.at(2) == 1.0
+    assert a[1] == 1.0
+    assert a[2] == 1.0
 
     a = histogram(
         integer(0, 2, underflow=False, overflow=False),
         regular(2, 0, 2, underflow=False, overflow=False),
     )
     a.fill((-1, 0, 1), (-1, 1, 0.1))
-    assert a.at(0, 0) == 0
-    assert a.at(0, 1) == 1
-    assert a.at(1, 0) == 1
-    assert a.at(1, 1) == 0
+    assert a[0, 0] == 0
+    assert a[0, 1] == 1
+    assert a[1, 0] == 1
+    assert a[1, 1] == 0
     a = histogram(integer(0, 3, underflow=False, overflow=False))
     a.fill((0, 0, 1, 2))
     a.fill((1, 0, 2, 2))
-    assert a.at(0) == 3
-    assert a.at(1) == 2
-    assert a.at(2) == 3
+    assert a[0] == 3
+    assert a[1] == 2
+    assert a[2] == 3
 
 
 def test_fill_with_numpy_array_2():
     a = histogram(category(["A", "B"]))
     a.fill(("A", "B", "C"))
     a.fill(np.array(("D", "A"), dtype="S5"))
-    assert a.at(0) == 2
-    assert a.at(1) == 1
-    assert a.at(2) == 2
+    assert a[0] == 2
+    assert a[1] == 1
+    assert a[bh.overflow] == 2
 
     b = histogram(integer(0, 2, underflow=False, overflow=False), category(["A", "B"]))
     b.fill((1, 0, 10), ("C", "B", "A"))
-    assert b.at(0, 0) == 0
-    assert b.at(1, 0) == 0
-    assert b.at(0, 1) == 1
-    assert b.at(1, 1) == 0
-    assert b.at(0, 2) == 0
-    assert b.at(1, 2) == 1
+    assert b[0, 0] == 0
+    assert b[1, 0] == 0
+    assert b[0, 1] == 1
+    assert b[1, 1] == 0
+    assert b[0, bh.overflow] == 0
+    assert b[1, bh.overflow] == 1

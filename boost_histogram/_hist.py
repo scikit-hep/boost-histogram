@@ -6,6 +6,7 @@ from ._utils import FactoryMeta, KWArgs
 
 from . import core as _core
 
+import warnings
 import numpy as np
 
 _histograms = (
@@ -93,18 +94,32 @@ def _compute_commonindex(self, index, expand):
     # Allow [bh.loc(...)] to work
     for i in range(len(indexes)):
         if hasattr(indexes[i], "value") and hasattr(indexes[i], "offset"):
-            indexes[i] = self.axis(i).index(indexes[i].value) + indexes[i].offset
+            indexes[i] = self._axis(i).index(indexes[i].value) + indexes[i].offset
         elif hasattr(indexes[i], "flow"):
             if indexes[i].flow == 1:
-                indexes[i] = self.axis(i).size
+                indexes[i] = self._axis(i).size
             elif indexes[i].flow == -1:
                 indexes[i] = -1
         elif isinstance(indexes[i], int):
-            if abs(indexes[i]) >= self.axis(i).size:
+            if abs(indexes[i]) >= self._axis(i).size:
                 raise IndexError("histogram index is out of range")
-            indexes[i] %= self.axis(i).size
+            indexes[i] %= self._axis(i).size
 
     return indexes
+
+
+def at(self, *ind):
+    warnings.warn(
+        ".at is deprecated, please use [] indexing instead", category=DeprecationWarning
+    )
+    return self._at(*ind)
+
+
+def axis(self, value):
+    warnings.warn(
+        ".axis() is deprecated, please use axes[] instead", category=DeprecationWarning
+    )
+    return self._axis(value)
 
 
 def _compute_getitem(self, index):
@@ -113,7 +128,7 @@ def _compute_getitem(self, index):
 
     # If this is (now) all integers, return the bin contents
     try:
-        return self.at(*indexes)
+        return self._at(*indexes)
     except RuntimeError:
         pass
 
@@ -149,10 +164,10 @@ def _compute_getitem(self, index):
             process_loc = (
                 lambda x, y: y
                 if x is None
-                else (self.axis(i).index(x.value) if hasattr(x, "value") else x)
+                else (self._axis(i).index(x.value) if hasattr(x, "value") else x)
             )
             begin = process_loc(ind.start, 0)
-            end = process_loc(ind.stop, len(self.axis(i)))
+            end = process_loc(ind.stop, len(self._axis(i)))
 
             slices.append(_core.algorithm.slice_and_rebin(i, begin, end, merge))
 
@@ -204,6 +219,8 @@ class AxesTuple(tuple):
 for h in _histograms:
     h.__getitem__ = _compute_getitem
     h.__setitem__ = _compute_setitem
-    h.axes = property(lambda self: AxesTuple(self.axis(i) for i in range(self.rank)))
+    h.at = at
+    h.axis = axis
+    h.axes = property(lambda self: AxesTuple(self._axis(i) for i in range(self.rank)))
 
 del h
