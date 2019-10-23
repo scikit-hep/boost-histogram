@@ -29,7 +29,7 @@ storages = (
     bh.storage.double,
     bh.storage.int,
     bh.storage.mean,
-    # bh.storage.unlimited, TODO: Does not convert to Python
+    bh.storage.unlimited,
     bh.storage.weight,
     bh.storage.weighted_mean,
 )
