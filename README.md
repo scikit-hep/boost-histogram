@@ -8,7 +8,7 @@
 
 Python bindings for [Boost::Histogram][] ([source][Boost::Histogram source]), a C++14 library. This should become one of the [fastest libraries][] for histogramming, while still providing the power of a full histogram object.
 
-> ## 0.5.1: Public beta
+> ## Version 0.5.2: Public beta
 >
 > Please feel free to try out boost-histogram and give feedback.
 > Join the [discussion on gitter][gitter-link] or [open an issue](https://github.com/scikit-hep/boost-histogram/issues)!
@@ -72,12 +72,12 @@ counts = hist.view()
     * `bh.storage.double`: Doubles for weighted values (default)
     * `bh.storage.int`: 64 bit unsigned integers
     * `bh.storage.unlimited`: Starts small, but can go up to unlimited precision ints or doubles.
-    * `bh.storage.atomic_int`: Threadsafe filling, experimental. Does not support growing axis in threads.
+    * `bh.storage.atomic_int`: Threadsafe filling, experimental. Does not support growing axis in threads. (`.view` not yet supported`)
     * `bh.storage.weight`: Stores a weight and sum of weights squared. (`.view` not yet supported)
     * `bh.storage.mean`: Accepts a sample and computes the mean of the samples (profile). (`.view` not yet supported)
     * `bh.storage.weighted_mean`: Accepts a sample and a weight. It computes the weighted mean of the samples. (`.view` not yet supported)
 * Accumulators
-    * `bh.accumulator.sum`: High accuracy sum (Neumaier)
+    * `bh.accumulator.sum`: High accuracy sum (Neumaier) - used by the sum method when summing a numerical histogram
     * `bh.accumulator.weighted_sum`: Tracks a weighted sum and variance
     * `bh.accumulator.weighted_mean`: Tracks a weighted sum, mean, and variance (West's incremental algorithm)
     * `bh.accumulator.mean`: Running count, mean, and variance (Welfords's incremental algorithm)
@@ -98,7 +98,7 @@ counts = hist.view()
     * `.sum(flow=False)`: The total count of all bins
     * `.project(ax1, ax2, ...)`: Project down to listed axis (numbers)
     * `.reduce(ax, reduce_option, ...)`: shrink, rebin, or slice, or any combination
-* Indexing - Supports the Unified Histogram Indexing (UHI) proposal
+* Indexing - Supports the [Unified Histogram Indexing (UHI)](https://boost-histogram.readthedocs.io/en/latest/usage/indexing.html) proposal
 * Details
     * Use `bh.histogram(..., storage=...)` to make a histogram (there are several different types)
 
