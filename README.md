@@ -5,6 +5,7 @@
 [![Documentation Status][rtd-badge]][rtd-link]
 [![DOI](https://zenodo.org/badge/148885351.svg)](https://zenodo.org/badge/latestdoi/148885351)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
+[![PyPI version](https://badge.fury.io/py/boost-histogram.svg)](https://badge.fury.io/py/boost-histogram)
 
 Python bindings for [Boost::Histogram][] ([source][Boost::Histogram source]), a C++14 library. This should become one of the [fastest libraries][] for histogramming, while still providing the power of a full histogram object.
 
@@ -12,20 +13,33 @@ Python bindings for [Boost::Histogram][] ([source][Boost::Histogram source]), a 
 >
 > Please feel free to try out boost-histogram and give feedback.
 > Join the [discussion on gitter][gitter-link] or [open an issue](https://github.com/scikit-hep/boost-histogram/issues)!
+>
+> #### Known issues:
+> * Non-simple storages do not support `.view()` or the buffer interface; you can access and set one element at a time
+> * Docstrings and signatures will improve in later versions (especially on Python 3)
+> * `bh.project` is expected to change names
+> * Setting with an array is not yet supported (`h[...] = np.array(...)`)
+> * Projections with a limited range ("cropped first") are not yet supported
+> * A compiler is required to install on Python 3.8 on Windows (waiting on CI update for wheels)
 
 
 
 ## Installation
 
-You can install this library from PyPI with pip:
+You can install this library from [PyPI](https://pypi.org/project/boost-histogram/) with pip:
 
-```
+```bash
 python -m pip install boost-histogram
 ```
 
-All the normal best-practices for Python apply; you should be in a virtual environment, otherwise add `--user`, etc.
+or you can use Conda through [conda-forge](https://github.com/conda-forge/boost-histogram-feedstock):
 
-Conda support is planned.
+```bash
+conda install -c conda-forge boost-histogram
+```
+
+All the normal best-practices for Python apply; you should be in a virtual environment, etc.
+
 
 ## Usage
 
@@ -149,10 +163,13 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for details on how to set up a developm
 ## Talks and other documentation/tutorial sources
 
 * [2019-4-15 IRIS-HEP Topical meeting](https://indico.cern.ch/event/803122/)
+* [2019-10-17 PyHEP Histogram session](https://indico.cern.ch/event/833895/contributions/3577833/) - [repo with talks and workbook](https://github.com/henryiii/pres-bhandhist)
 
 ---
 
 ## Acknowledgements
+
+This library was primarily developed by Henry Schreiner and Hans Dembinski.
 
 Support for this work was provided by the National Science Foundation cooperative agreement OAC-1836650 (IRIS-HEP) and OAC-1450377 (DIANA/HEP). Any opinions, findings, conclusions or recommendations expressed in this material are those of the authors and do not necessarily reflect the views of the National Science Foundation.
 
