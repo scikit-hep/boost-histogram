@@ -78,12 +78,10 @@ register_histogram(py::module &m, const char *name, const char *desc) {
             return make_buffer(h, false);
         })
 
-        .def_property_readonly(
-            "rank", &histogram_t::rank, "Number of axes (dimensions) of histogram")
-        .def_property_readonly(
-            "size",
-            &histogram_t::size,
-            "Total number of bins in the histogram (including underflow/overflow)")
+        .def("rank", &histogram_t::rank, "Number of axes (dimensions) of histogram")
+        .def("size",
+             &histogram_t::size,
+             "Total number of bins in the histogram (including underflow/overflow)")
         .def("reset", &histogram_t::reset, "Reset bin counters to zero")
 
         .def("__copy__", [](const histogram_t &self) { return histogram_t(self); })
@@ -145,8 +143,7 @@ register_histogram(py::module &m, const char *name, const char *desc) {
 
                 return tup;
             },
-            "flow"_a = false,
-            "convert to a numpy style tuple of returns")
+            "flow"_a = false)
 
         .def("_copy_in",
              [](histogram_t &h, py::array_t<double> input) { copy_in(h, input); })
@@ -154,11 +151,10 @@ register_histogram(py::module &m, const char *name, const char *desc) {
         .def(
             "view",
             [](histogram_t &h, bool flow) { return py::array(make_buffer(h, flow)); },
-            "flow"_a = false,
-            "Return a view into the data, optionally with overflow turned on")
+            "flow"_a = false)
 
         .def(
-            "_axis",
+            "axis",
             [](const histogram_t &self, int i) {
                 unsigned ii = i < 0 ? self.rank() - (unsigned)std::abs(i) : (unsigned)i;
                 if(ii < self.rank())
@@ -167,12 +163,11 @@ register_histogram(py::module &m, const char *name, const char *desc) {
                     throw std::out_of_range(
                         "The axis value must be less than the rank");
             },
-            "Get N-th axis with runtime index",
             "i"_a,
             py::return_value_policy::move)
 
         .def(
-            "_at",
+            "at",
             [](const histogram_t &self, py::args &args) {
                 auto int_args = py::cast<std::vector<int>>(args);
                 return self.at(int_args);
@@ -205,119 +200,114 @@ register_histogram(py::module &m, const char *name, const char *desc) {
             },
             "flow"_a = false)
 
-        .def(
-            "reduce",
-            [](const histogram_t &self, py::args args) {
-                return bh::algorithm::reduce(
-                    self, py::cast<std::vector<bh::algorithm::reduce_option>>(args));
-            },
-            "Reduce based on one or more reduce_option")
+        .def("reduce",
+             [](const histogram_t &self, py::args args) {
+                 return bh::algorithm::reduce(
+                     self, py::cast<std::vector<bh::algorithm::reduce_option>>(args));
+             })
 
-        .def(
-            "project",
-            [](const histogram_t &self, py::args values) {
-                return bh::algorithm::project(self,
-                                              py::cast<std::vector<unsigned>>(values));
-            },
-            "Project to a single axis or several axes on a multidiminsional histogram")
+        .def("project",
+             [](const histogram_t &self, py::args values) {
+                 return bh::algorithm::project(self,
+                                               py::cast<std::vector<unsigned>>(values));
+             })
 
-        .def(
-            "fill",
-            [](histogram_t &self, py::args args, py::kwargs kwargs) {
-                using array_int_t
-                    = py::array_t<int, py::array::c_style | py::array::forcecast>;
-                using array_double_t
-                    = py::array_t<double, py::array::c_style | py::array::forcecast>;
+        .def("fill",
+             [](histogram_t &self, py::args args, py::kwargs kwargs) {
+                 using array_int_t
+                     = py::array_t<int, py::array::c_style | py::array::forcecast>;
+                 using array_double_t
+                     = py::array_t<double, py::array::c_style | py::array::forcecast>;
 
-                if(args.size() != self.rank())
-                    throw std::invalid_argument("Wrong number of args");
+                 if(args.size() != self.rank())
+                     throw std::invalid_argument("Wrong number of args");
 
-                namespace bmp = boost::mp11;
-                static_assert(
-                    bmp::mp_empty<bmp::mp_set_difference<
-                        bmp::mp_unique<bmp::mp_transform<bh::axis::traits::value_type,
-                                                         axis_variant>>,
-                        bmp::mp_list<double, int, std::string>>>::value,
-                    "supported value types are double, int, std::string; new axis was "
-                    "added with different value type");
+                 namespace bmp = boost::mp11;
+                 static_assert(
+                     bmp::mp_empty<bmp::mp_set_difference<
+                         bmp::mp_unique<bmp::mp_transform<bh::axis::traits::value_type,
+                                                          axis_variant>>,
+                         bmp::mp_list<double, int, std::string>>>::value,
+                     "supported value types are double, int, std::string; new axis was "
+                     "added with different value type");
 
-                // HD: std::vector<std::string> is for passing strings, this very very
-                // inefficient but works at least I need to change something in
-                // boost::histogram to make passing strings from a numpy array efficient
-                using varg_t = boost::variant2::variant<array_int_t,
-                                                        int,
-                                                        array_double_t,
-                                                        double,
-                                                        std::vector<std::string>,
-                                                        std::string>;
-                auto vargs   = bh::detail::make_stack_buffer<varg_t>(
-                    bh::unsafe_access::axes(self));
+                 // HD: std::vector<std::string> is for passing strings, this very very
+                 // inefficient but works at least I need to change something in
+                 // boost::histogram to make passing strings from a numpy array
+                 // efficient
+                 using varg_t = boost::variant2::variant<array_int_t,
+                                                         int,
+                                                         array_double_t,
+                                                         double,
+                                                         std::vector<std::string>,
+                                                         std::string>;
+                 auto vargs   = bh::detail::make_stack_buffer<varg_t>(
+                     bh::unsafe_access::axes(self));
 
-                {
-                    auto args_it  = args.begin();
-                    auto vargs_it = vargs.begin();
-                    self.for_each_axis([&args_it, &vargs_it](const auto &ax) {
-                        using T = std::decay_t<decltype(ax.value(0))>;
-                        detail::set_varg(
-                            boost::mp11::mp_identity<T>{}, *vargs_it++, *args_it++);
-                    });
-                }
+                 {
+                     auto args_it  = args.begin();
+                     auto vargs_it = vargs.begin();
+                     self.for_each_axis([&args_it, &vargs_it](const auto &ax) {
+                         using T = std::decay_t<decltype(ax.value(0))>;
+                         detail::set_varg(
+                             boost::mp11::mp_identity<T>{}, *vargs_it++, *args_it++);
+                     });
+                 }
 
-                bool has_weight = false;
-                bv2::variant<array_double_t, double>
-                    weight; // default constructed as empty array
-                {
-                    auto w = optional_arg(kwargs, "weight");
-                    if(!w.is_none()) {
-                        has_weight = true;
-                        if(detail::is_pyiterable(w))
-                            weight = py::cast<array_double_t>(w);
-                        else
-                            weight = py::cast<double>(w);
-                    }
-                }
+                 bool has_weight = false;
+                 bv2::variant<array_double_t, double>
+                     weight; // default constructed as empty array
+                 {
+                     auto w = optional_arg(kwargs, "weight");
+                     if(!w.is_none()) {
+                         has_weight = true;
+                         if(detail::is_pyiterable(w))
+                             weight = py::cast<array_double_t>(w);
+                         else
+                             weight = py::cast<double>(w);
+                     }
+                 }
 
-                using storage_t = typename histogram_t::storage_type;
-                bh::detail::static_if<detail::is_one_of<storage_t,
-                                                        storage::mean,
-                                                        storage::weighted_mean>>(
-                    [&kwargs, &vargs, &weight, &has_weight](auto &h) {
-                        auto s = required_arg(kwargs, "sample");
-                        finalize_args(kwargs);
+                 using storage_t = typename histogram_t::storage_type;
+                 bh::detail::static_if<detail::is_one_of<storage_t,
+                                                         storage::mean,
+                                                         storage::weighted_mean>>(
+                     [&kwargs, &vargs, &weight, &has_weight](auto &h) {
+                         auto s = required_arg(kwargs, "sample");
+                         finalize_args(kwargs);
 
-                        auto sarray = py::cast<array_double_t>(s);
-                        if(sarray.ndim() != 1)
-                            throw std::invalid_argument("Sample array must be 1D");
+                         auto sarray = py::cast<array_double_t>(s);
+                         if(sarray.ndim() != 1)
+                             throw std::invalid_argument("Sample array must be 1D");
 
-                        // HD: is it safe to release the gil? sarray is a Python object,
-                        // could this cause trouble?
-                        py::gil_scoped_release lock;
-                        if(has_weight)
-                            bv2::visit(
-                                [&h, &vargs, &sarray](const auto &w) {
-                                    h.fill(vargs, bh::sample(sarray), bh::weight(w));
-                                },
-                                weight);
-                        else
-                            h.fill(vargs, bh::sample(sarray));
-                    },
-                    [&kwargs, &vargs, &weight, &has_weight](auto &h) {
-                        finalize_args(kwargs);
+                         // HD: is it safe to release the gil? sarray is a Python
+                         // object, could this cause trouble?
+                         py::gil_scoped_release lock;
+                         if(has_weight)
+                             bv2::visit(
+                                 [&h, &vargs, &sarray](const auto &w) {
+                                     h.fill(vargs, bh::sample(sarray), bh::weight(w));
+                                 },
+                                 weight);
+                         else
+                             h.fill(vargs, bh::sample(sarray));
+                     },
+                     [&kwargs, &vargs, &weight, &has_weight](auto &h) {
+                         finalize_args(kwargs);
 
-                        py::gil_scoped_release lock;
-                        if(has_weight)
-                            bv2::visit(
-                                [&h, &vargs](const auto &w) {
-                                    h.fill(vargs, bh::weight(w));
-                                },
-                                weight);
-                        else
-                            h.fill(vargs);
-                    },
-                    self);
-                return self;
-            },
-            "Insert data into the histogram")
+                         py::gil_scoped_release lock;
+                         if(has_weight)
+                             bv2::visit(
+                                 [&h, &vargs](const auto &w) {
+                                     h.fill(vargs, bh::weight(w));
+                                 },
+                                 weight);
+                         else
+                             h.fill(vargs);
+                     },
+                     self);
+                 return self;
+             })
 
         .def(make_pickle<histogram_t>())
 
