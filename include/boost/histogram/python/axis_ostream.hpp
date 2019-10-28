@@ -10,7 +10,6 @@
 
 #include <boost/assert.hpp>
 #include <boost/histogram/axis/regular.hpp>
-#include <boost/histogram/detail/cat.hpp>
 #include <boost/histogram/detail/static_if.hpp>
 #include <boost/histogram/detail/type_name.hpp>
 #include <boost/histogram/fwd.hpp>
@@ -150,7 +149,7 @@ std::basic_ostream<Ts...> &operator<<(std::basic_ostream<Ts...> &os,
                 [&os](const auto &x) { os << x; },
                 [](const auto &) {
                     BOOST_THROW_EXCEPTION(std::runtime_error(
-                        detail::cat(detail::type_name<A>(), " is not streamable")));
+                        std::string(detail::type_name<A>()) + " is not streamable"));
                 },
                 x);
         },

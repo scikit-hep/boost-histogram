@@ -76,14 +76,24 @@ def test_fill_int_1d():
 
     h = histogram(integer(-1, 2))
     assert isinstance(h, histogram)
+    assert h.empty()
+    assert h.empty(flow=True)
 
     with pytest.raises(ValueError):
         h.fill()
     with pytest.raises(ValueError):
         h.fill(1, 2)
+
+    h.fill(-3)
+    assert h.empty()
+    assert not h.empty(flow=True)
+    h.reset()
+
     for x in (-10, -1, -1, 0, 1, 1, 1, 10):
         h.fill(x)
     assert h.sum() == 6
+    assert not h.empty()
+    assert not h.empty(flow=True)
     assert h.sum(flow=True) == 8
     assert h.axes[0].extent == 5
 
