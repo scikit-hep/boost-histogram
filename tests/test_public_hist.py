@@ -303,7 +303,7 @@ def test_add_2d_w(flow):
 
 
 def test_repr():
-    hrepr = """histogram(
+    hrepr = """Histogram(
   regular(3, 0, 1),
   integer(0, 1),
   storage=double

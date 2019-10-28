@@ -106,69 +106,26 @@ def test_issue_axis_bin_swan():
     assert hist.axes[0].bin(2)[0] == approx(0.4)
 
 
-options = (
-    (
-        bh.core.hist._any_unlimited,
-        bh.core.axis._regular_uoflow(5, 1, 2, None),
-        bh.storage.unlimited,
-    ),
-    (
-        bh.core.hist._any_int,
-        bh.core.axis._regular_uoflow(5, 1, 2, None),
-        bh.storage.int,
-    ),
-    (
-        bh.core.hist._any_atomic_int,
-        bh.core.axis._regular_uoflow(5, 1, 2, None),
-        bh.storage.atomic_int,
-    ),
-    (bh.core.hist._any_int, bh.core.axis._regular_none(5, 1, 2, None), bh.storage.int),
-    (
-        bh.core.hist._any_double,
-        bh.core.axis._regular_uoflow(5, 1, 2, None),
-        bh.storage.double,
-    ),
-    (
-        bh.core.hist._any_weight,
-        bh.core.axis._regular_uoflow(5, 1, 2, None),
-        bh.storage.weight,
-    ),
-    (bh.core.hist._any_int, bh.core.axis._integer_uoflow(0, 5, None), bh.storage.int),
-    (
-        bh.core.hist._any_atomic_int,
-        bh.core.axis._integer_uoflow(0, 5, None),
-        bh.storage.atomic_int,
-    ),
-    (
-        bh.core.hist._any_double,
-        bh.core.axis._integer_uoflow(0, 5, None),
-        bh.storage.double,
-    ),
-    (
-        bh.core.hist._any_unlimited,
-        bh.core.axis._integer_uoflow(0, 5, None),
-        bh.storage.unlimited,
-    ),
-    (
-        bh.core.hist._any_weight,
-        bh.core.axis._integer_uoflow(0, 5, None),
-        bh.storage.weight,
-    ),
+hist_ax = (
+    bh.axis.regular(5, 1, 2, metadata=None),
+    bh.axis.regular(5, 1, 2, metadata=None, overflow=False, underflow=False),
+    bh.axis.integer(0, 5, metadata=None),
+)
+hist_storage = (
+    bh.storage.double,
+    bh.storage.unlimited,
+    bh.storage.int,
+    bh.storage.atomic_int,
+    bh.storage.weight,
 )
 
 
-@pytest.mark.parametrize("histclass, ax, storage", options)
-def test_make_selection(histclass, ax, storage):
+@pytest.mark.parametrize("ax", hist_ax)
+@pytest.mark.parametrize("storage", hist_storage)
+def test_make_selection(ax, storage):
     histogram = bh.histogram(ax, storage=storage())
-    assert isinstance(histogram, histclass)
+    assert isinstance(histogram, bh.histogram)
 
     histogram = bh.histogram(ax, ax, storage=storage())
-    assert isinstance(histogram, histclass)
-
-
-def test_make_selection_special():
-    histogram = bh.histogram(
-        bh.axis.regular(5, 1, 2),
-        bh.axis.regular(10, 1, 2, underflow=False, overflow=False),
-    )
-    assert isinstance(histogram, bh.core.hist._any_double)
+    assert isinstance(histogram, bh.histogram)
+    # TODO: Make this test do something useful
