@@ -1,3 +1,5 @@
+![boost-histogram logo][boost-histogram-logo]
+
 # boost-histogram for Python
 
 [![Gitter][gitter-badge]][gitter-link]
@@ -173,6 +175,7 @@ This library was primarily developed by Henry Schreiner and Hans Dembinski.
 
 Support for this work was provided by the National Science Foundation cooperative agreement OAC-1836650 (IRIS-HEP) and OAC-1450377 (DIANA/HEP). Any opinions, findings, conclusions or recommendations expressed in this material are those of the authors and do not necessarily reflect the views of the National Science Foundation.
 
+[boost-histogram-logo]:    https://raw.githubusercontent.com/scikit-hep/boost-histogram/develop/docs/_images/BoostHistogramPythonLogo.svg
 [gitter-badge]:            https://badges.gitter.im/HSF/PyHEP-histogramming.svg
 [gitter-link]:             https://gitter.im/HSF/PyHEP-histogramming?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
 [azure-badge]:             https://dev.azure.com/scikit-hep/boost-histogram/_apis/build/status/scikit-hep.boost-histogram?branchName=develop
