@@ -8,7 +8,6 @@
 #include <boost/histogram/python/pybind11.hpp>
 
 #include <boost/histogram/axis/traits.hpp>
-#include <boost/histogram/detail/cat.hpp>
 #include <boost/histogram/detail/iterator_adaptor.hpp>
 #include <boost/histogram/detail/span.hpp>
 #include <boost/histogram/python/axis.hpp>
@@ -124,7 +123,7 @@ void vectorized_index_and_value_methods(
                 for(unsigned i = 0; i < indices.ndim(); ++i)
                     strides.push_back(indices.strides()[i]
                                       / static_cast<ssize_t>(sizeof(int)) * itemsize);
-                py::array values(py::dtype(bh::detail::cat("U", itemsize / 4)),
+                py::array values(py::dtype("U" + std::to_string(itemsize / 4)),
                                  bh::detail::span<const ssize_t>(
                                      indices.shape(), indices.shape() + indices.ndim()),
                                  strides);

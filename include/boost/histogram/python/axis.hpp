@@ -139,6 +139,8 @@ py::array bins_impl(const bh::axis::category<int, Ts...> &ax, bool flow) {
 
 template <class... Ts>
 py::array bins_impl(const bh::axis::category<std::string, Ts...> &ax, bool flow) {
+    using namespace pybind11::literals;
+
     static_assert(!(std::decay_t<decltype(ax)>::options() & option::underflow),
                   "discrete axis never has underflow");
 
@@ -147,7 +149,7 @@ py::array bins_impl(const bh::axis::category<std::string, Ts...> &ax, bool flow)
 
     const auto n = max_string_length(ax);
     // TODO: this should return unicode
-    py::array result(py::dtype(bh::detail::cat("S", n + 1)), ax.size() + overflow);
+    py::array result(py::dtype("S" + std::to_string(n + 1)), ax.size() + overflow);
 
     for(auto i = 0; i < ax.size() + overflow; i++) {
         auto sout     = static_cast<char *>(result.mutable_data(i));
