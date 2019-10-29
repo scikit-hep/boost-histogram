@@ -8,6 +8,7 @@
 #include <boost/histogram/python/kwargs.hpp>
 #include <boost/histogram/python/pybind11.hpp>
 
+#include <boost/histogram/algorithm/empty.hpp>
 #include <boost/histogram/algorithm/project.hpp>
 #include <boost/histogram/algorithm/reduce.hpp>
 #include <boost/histogram/algorithm/sum.hpp>
@@ -190,6 +191,14 @@ register_histogram(py::module &m, const char *name, const char *desc) {
             "sum",
             [](const histogram_t &self, bool flow) {
                 return sum_histogram(self, flow);
+            },
+            "flow"_a = false)
+
+        .def(
+            "empty",
+            [](const histogram_t &self, bool flow) {
+                return bh::algorithm::empty(
+                    self, flow ? bh::coverage::all : bh::coverage::inner);
             },
             "flow"_a = false)
 
