@@ -6,8 +6,11 @@
 #pragma once
 
 #include <boost/histogram/algorithm/sum.hpp>
+#include <boost/histogram/indexed.hpp>
 #include <boost/mp11.hpp>
 #include <type_traits>
+
+namespace bh = boost::histogram;
 
 template <class histogram_t>
 decltype(auto) sum_histogram(const histogram_t &self, bool flow) {

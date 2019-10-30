@@ -48,3 +48,5 @@
 # Other editor files
 *.swp
 *~
+*.clangd
+compile_commands.json
