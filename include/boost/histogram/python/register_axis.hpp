@@ -217,19 +217,6 @@ py::class_<A> register_axis(py::module &m, const char *name, Args &&... args) {
             "i"_a,
             "Return bin at index (-1 accesses underflow bin, size access overflow)")
 
-        .def("__len__", &A::size, "Return number of bins excluding under- and overflow")
-        .def(
-            "__getitem__",
-            [](const A &ax, int i) {
-                // Python-style indexing
-                if(i < 0)
-                    i += ax.size();
-                if(i >= ax.size())
-                    throw py::index_error();
-                return axis::unchecked_bin<A>(ax, i);
-            },
-            "i"_a,
-            "Return bin at index")
         .def(
             "__iter__",
             [](const A &ax) {

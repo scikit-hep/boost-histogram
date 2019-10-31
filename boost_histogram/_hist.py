@@ -5,6 +5,7 @@ del absolute_import, division, print_function
 from ._utils import FactoryMeta, KWArgs
 
 from . import core as _core
+from .axis import _to_axis, Axis as _Axis
 
 import warnings
 import numpy as np
@@ -22,38 +23,14 @@ _histograms = (
 
 def _arg_shortcut(item):
     if isinstance(item, tuple):
-        return _core.axis._regular_uoflow(*item)
+        return _core.axis.regular_uoflow(*item)
+    elif isinstance(item, _Axis):
+        return item._ax
     else:
         return item
-
-
-def _make_histogram(*args, **kwargs):
-    """
-    Make a histogram with an optional storage (keyword only).
-    """
-
-    # Keyword only trick (change when Python2 is dropped)
-    with KWArgs(kwargs) as k:
-        storage = k.optional("storage", _core.storage.double())
-
-    # Initialize storage if user has not
-    if isinstance(storage, type):
-        storage = storage()
-
-    # Allow a tuple to represent a regular axis
-    args = [_arg_shortcut(arg) for arg in args]
-
-    if len(args) > _core.hist._axes_limit:
-        raise IndexError(
-            "Too many axes, must be less than {}".format(_core.hist._axes_limit)
-        )
-
-    # Check all available histograms, and if the storage matches, return that one
-    for h in _histograms:
-        if isinstance(storage, h._storage_type):
-            return h(args, storage)
-
-    raise TypeError("Unsupported storage")
+        # TODO: This currently support raw axis object for old tests.
+        # Replace with:
+        # raise TypeError("Only axes supported in histogram constructor")
 
 
 def _expand_ellipsis(indexes, rank):
@@ -141,10 +118,35 @@ class BaseHistogram(object):
         # Allow construction from a raw histogram object (internal)
         if not kwargs and len(args) == 1 and isinstance(args[0], _histograms):
             self._hist = args[0]
-        elif not kwargs and len(args) == 1 and isinstance(args[0], BaseHistogram):
+            return
+
+        if not kwargs and len(args) == 1 and isinstance(args[0], BaseHistogram):
             self._hist = args[0]._hist.__copy__()  # Replace with copy?
-        else:
-            self._hist = _make_histogram(*args, **kwargs)
+            return
+
+        # Keyword only trick (change when Python2 is dropped)
+        with KWArgs(kwargs) as k:
+            storage = k.optional("storage", _core.storage.double())
+
+        # Initialize storage if user has not
+        if isinstance(storage, type):
+            storage = storage()
+
+        # Allow a tuple to represent a regular axis
+        args = [_arg_shortcut(arg) for arg in args]
+
+        if len(args) > _core.hist._axes_limit:
+            raise IndexError(
+                "Too many axes, must be less than {}".format(_core.hist._axes_limit)
+            )
+
+        # Check all available histograms, and if the storage matches, return that one
+        for h in _histograms:
+            if isinstance(storage, h._storage_type):
+                self._hist = h(args, storage)
+                return
+
+        raise TypeError("Unsupported storage")
 
     def __repr__(self):
         return self.__class__.__name__ + repr(self._hist)[9:]
@@ -221,13 +223,15 @@ class BaseHistogram(object):
     def sum(self, flow=False):
         return self._hist.sum(flow)
 
-
-class BoostHistogram(BaseHistogram):
-    def axis(self, axis_number):
+    def _axis(self, i):
         """
         Get N-th axis.
         """
-        return self._hist.axis(axis_number)
+        return _to_axis(self._hist.axis(i))
+
+
+class BoostHistogram(BaseHistogram):
+    axis = BaseHistogram._axis
 
     def rank(self):
         return self._hist.rank()
@@ -244,7 +248,7 @@ class Histogram(BaseHistogram):
         super(Histogram, self).__init__(*args, **kwargs)
 
         # If this is a property, tab completion in IPython does not work
-        self.axes = AxesTuple(self._hist.axis(i) for i in range(self.rank))
+        self.axes = AxesTuple(self._axis(i) for i in range(self.rank))
 
     def to_numpy(self, flow=False):
         """
@@ -312,12 +316,10 @@ class Histogram(BaseHistogram):
                 process_loc = (
                     lambda x, y: y
                     if x is None
-                    else (
-                        self._hist.axis(i).index(x.value) if hasattr(x, "value") else x
-                    )
+                    else (self._axis(i).index(x.value) if hasattr(x, "value") else x)
                 )
                 begin = process_loc(ind.start, 0)
-                end = process_loc(ind.stop, len(self._hist.axis(i)))
+                end = process_loc(ind.stop, len(self._axis(i)))
 
                 slices.append(_core.algorithm.slice_and_rebin(i, begin, end, merge))
 

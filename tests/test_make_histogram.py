@@ -21,7 +21,6 @@ def test_shortcuts():
     assert hist.rank == 2
     for i in range(2):
         assert isinstance(hist.axes[i], bh.axis.regular)
-        assert isinstance(hist.axes[i], bh.core.axis._regular_uoflow)
         assert not isinstance(hist.axes[i], bh.axis.variable)
 
 
