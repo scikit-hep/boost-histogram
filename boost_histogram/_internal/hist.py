@@ -210,6 +210,13 @@ class BoostHistogram(BaseHistogram):
     def at(self, *indexes):
         return self._hist.at(*indexes)
 
+    # Call uses fill since it supports strings,
+    # runtime argument list, etc.
+    def __call__(self, *args, **kargs):
+        args = (((a,) if isinstance(a, str) else a) for a in args)
+        self._hist.fill(*args, **kargs)
+        return self
+
 
 class Histogram(BaseHistogram):
     def __init__(self, *args, **kwargs):
