@@ -54,20 +54,20 @@ def test_accumulators(accum, args, copy_fn):
 
 
 axes_creations = (
-    (bh.core.axis._regular_none, (4, 2, 4)),
-    (bh.core.axis._regular_uoflow, (4, 2, 4)),
-    (bh.core.axis._regular_uoflow_growth, (4, 2, 4)),
+    (bh.core.axis.regular_none, (4, 2, 4)),
+    (bh.core.axis.regular_uoflow, (4, 2, 4)),
+    (bh.core.axis.regular_uoflow_growth, (4, 2, 4)),
     (bh.axis.regular_log, (4, 2, 4)),
     (bh.axis.regular_sqrt, (4, 2, 4)),
     (bh.axis.regular_pow, (4, 2, 4, 0.5)),
-    (bh.core.axis._regular_numpy, (4, 2, 4)),
+    (bh.core.axis.regular_numpy, (4, 2, 4)),
     (bh.axis.circular, (4, 2, 4)),
     (bh.axis.variable, ([1, 2, 3, 4],)),
-    (bh.core.axis._integer_uoflow, (1, 4)),
-    (bh.core.axis._category_int, ([1, 2, 3],)),
-    (bh.core.axis._category_int_growth, ([1, 2, 3],)),
-    (bh.core.axis._category_str, (["1", "2", "3"],)),
-    (bh.core.axis._category_str_growth, (["1", "2", "3"],)),
+    (bh.core.axis.integer_uoflow, (1, 4)),
+    (bh.core.axis.category_int, ([1, 2, 3],)),
+    (bh.core.axis.category_int_growth, ([1, 2, 3],)),
+    (bh.core.axis.category_str, (["1", "2", "3"],)),
+    (bh.core.axis.category_str_growth, (["1", "2", "3"],)),
 )
 
 
@@ -159,7 +159,7 @@ def test_histogram_metadata(copy_fn, metadata):
 
 @pytest.mark.parametrize("copy_fn", copy_fns)
 def test_numpy_edge(copy_fn):
-    ax1 = bh.core.axis._regular_numpy(10, 0, 1)
+    ax1 = bh.core.axis.regular_numpy(10, 0, 1)
     ax2 = copy_fn(ax1)
 
     # stop defaults to 0, so this fails if the copy fails
