@@ -72,37 +72,37 @@ void register_histograms(py::module &hist) {
 
     register_histogram<vector_axis_variant, storage::int_>(
         hist,
-        "_any_int",
+        "any_int",
         "N-dimensional histogram for unlimited size data with any axis types.");
 
     register_histogram<vector_axis_variant, storage::unlimited>(
         hist,
-        "_any_unlimited",
+        "any_unlimited",
         "N-dimensional histogram for unlimited size data with any axis types.");
 
     register_histogram<vector_axis_variant, storage::double_>(
         hist,
-        "_any_double",
+        "any_double",
         "N-dimensional histogram for real-valued data with weights with any axis "
         "types.");
 
     register_histogram<vector_axis_variant, storage::atomic_int>(
         hist,
-        "_any_atomic_int",
+        "any_atomic_int",
         "N-dimensional histogram for threadsafe integer data with any axis types.");
 
     register_histogram<vector_axis_variant, storage::weight>(
         hist,
-        "_any_weight",
+        "any_weight",
         "N-dimensional histogram for weighted data with any axis types.");
 
     register_histogram<vector_axis_variant, storage::mean>(
         hist,
-        "_any_mean",
+        "any_mean",
         "N-dimensional histogram for sampled data with any axis types.");
 
     register_histogram<vector_axis_variant, storage::weighted_mean>(
         hist,
-        "_any_weighted_mean",
+        "any_weighted_mean",
         "N-dimensional histogram for weighted and sampled data with any axis types.");
 }

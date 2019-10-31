@@ -3,10 +3,10 @@ from __future__ import absolute_import, division, print_function
 del absolute_import, division, print_function  # hides these from IPython
 
 from . import axis as _axis
-from . import _hist
+from ._internal import hist as _hist
 from . import _core
 
-from ._utils import KWArgs as _KWArgs
+from ._internal.kwargs import KWArgs as _KWArgs
 
 import numpy as _np
 

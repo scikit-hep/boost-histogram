@@ -1,24 +1,22 @@
 from __future__ import absolute_import, division, print_function
 
-del absolute_import, division, print_function
+from .kwargs import KWArgs
 
-from ._utils import KWArgs
-
-from . import _core
+from .. import _core
 from .axis import _to_axis, Axis as _Axis
-from ._axistuple import AxesTuple
+from .axistuple import AxesTuple
 
 import warnings
 import numpy as np
 
 _histograms = (
-    _core.hist._any_double,
-    _core.hist._any_int,
-    _core.hist._any_atomic_int,
-    _core.hist._any_unlimited,
-    _core.hist._any_weight,
-    _core.hist._any_mean,
-    _core.hist._any_weighted_mean,
+    _core.hist.any_double,
+    _core.hist.any_int,
+    _core.hist.any_atomic_int,
+    _core.hist.any_unlimited,
+    _core.hist.any_weight,
+    _core.hist.any_mean,
+    _core.hist.any_weighted_mean,
 )
 
 
