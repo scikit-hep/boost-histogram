@@ -72,8 +72,8 @@ std::basic_ostream<CharT, Traits> &operator<<(std::basic_ostream<CharT, Traits> 
                                               const weighted_mean<W> &x) {
     if(os.width() == 0)
         return os << "weighted_mean(wsum=" << x.sum_of_weights()
-                  << " wsum2=..., value=" << x.value() << ", variance=" << x.variance()
-                  << ")";
+                  << ", wsum2=" << x.sum_of_weights_squared() << ", value=" << x.value()
+                  << ", variance=" << x.variance() << ")";
     return detail::handle_nonzero_width(os, x);
 }
 
