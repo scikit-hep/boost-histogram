@@ -1,7 +1,6 @@
 import pytest
 from pytest import approx
 
-import boost_histogram.core.axis as bha
 from boost_histogram.axis import options
 from boost_histogram.axis import (
     regular,
@@ -129,7 +128,7 @@ class TestRegular(Axis):
         with pytest.raises(TypeError):
             regular()
         with pytest.raises(TypeError):
-            bha._regular_uoflow()
+            regular(overflow=False, underflow=False)
         with pytest.raises(TypeError):
             regular(1)
         with pytest.raises(TypeError):
@@ -151,27 +150,22 @@ class TestRegular(Axis):
 
         ax = regular(1, 2, 3)
         assert isinstance(ax, regular)
-        assert isinstance(ax, bha._regular_uoflow)
         assert ax.options == options(underflow=True, overflow=True)
 
         ax = regular(1, 2, 3, overflow=False)
         assert isinstance(ax, regular)
-        assert isinstance(ax, bha._regular_uflow)
         assert ax.options == options(underflow=True)
 
         ax = regular(1, 2, 3, underflow=False)
         assert isinstance(ax, regular)
-        assert isinstance(ax, bha._regular_oflow)
         assert ax.options == options(overflow=True)
 
         ax = regular(1, 2, 3, underflow=False, overflow=False)
         assert isinstance(ax, regular)
-        assert isinstance(ax, bha._regular_none)
         assert ax.options == options()
 
         ax = regular(1, 2, 3, growth=True)
         assert isinstance(ax, regular)
-        assert isinstance(ax, bha._regular_uoflow_growth)
         assert ax.options == options(underflow=True, overflow=True, growth=True)
 
     def test_equal(self):
@@ -314,7 +308,9 @@ class TestCircular(Axis):
         # Should not throw
         circular(1, 2, 3)
         circular(1, 2, 3, metadata="pa")
-        circular(1, 2, 3, "pa")
+
+        with pytest.raises(TypeError):
+            circular(1, 2, 3, "pa")
 
         with pytest.raises(TypeError):
             circular()
@@ -333,7 +329,7 @@ class TestCircular(Axis):
         a = circular(4, 0.0, 1.0)
         assert a == circular(4, 0, 1)
         assert a != circular(2, 0, 1)
-        assert isinstance(a, circular)
+        assert isinstance(a, regular)
 
     def test_len(self):
         assert len(circular(4, 0.0, 1.0)) == 4
@@ -418,22 +414,18 @@ class TestVariable(Axis):
 
         ax = variable([1, 2, 3])
         assert isinstance(ax, variable)
-        assert isinstance(ax, bha._variable_uoflow)
         assert ax.options == options(underflow=True, overflow=True)
 
         ax = variable([1, 2, 3], overflow=False)
         assert isinstance(ax, variable)
-        assert isinstance(ax, bha._variable_uflow)
         assert ax.options == options(underflow=True)
 
         ax = variable([1, 2, 3], underflow=False)
         assert isinstance(ax, variable)
-        assert isinstance(ax, bha._variable_oflow)
         assert ax.options == options(overflow=True)
 
         ax = variable([1, 2, 3], underflow=False, overflow=False)
         assert isinstance(ax, variable)
-        assert isinstance(ax, bha._variable_none)
         assert ax.options == options()
 
     def test_equal(self):
@@ -529,27 +521,22 @@ class TestInteger:
 
         ax = integer(1, 3)
         assert isinstance(ax, integer)
-        assert isinstance(ax, bha._integer_uoflow)
         assert ax.options == options(underflow=True, overflow=True)
 
         ax = integer(1, 3, overflow=False)
         assert isinstance(ax, integer)
-        assert isinstance(ax, bha._integer_uflow)
         assert ax.options == options(underflow=True)
 
         ax = integer(1, 3, underflow=False)
         assert isinstance(ax, integer)
-        assert isinstance(ax, bha._integer_oflow)
         assert ax.options == options(overflow=True)
 
         ax = integer(1, 3, underflow=False, overflow=False)
         assert isinstance(ax, integer)
-        assert isinstance(ax, bha._integer_none)
         assert ax.options == options()
 
         ax = integer(1, 3, growth=True)
         assert isinstance(ax, integer)
-        assert isinstance(ax, bha._integer_growth)
         assert ax.options == options(growth=True)
 
     def test_equal(self):
@@ -642,22 +629,18 @@ class TestCategory(Axis):
 
         ax = category([1, 2, 3])
         assert isinstance(ax, category)
-        assert isinstance(ax, bha._category_int)
         assert ax.options == options(overflow=True)
 
         ax = category([1, 2, 3], growth=True)
         assert isinstance(ax, category)
-        assert isinstance(ax, bha._category_int_growth)
         assert ax.options == options(growth=True)
 
         ax = category(["1", "2", "3"])
         assert isinstance(ax, category)
-        assert isinstance(ax, bha._category_str)
         assert ax.options == options(overflow=True)
 
         ax = category(["1", "2", "3"], growth=True)
         assert isinstance(ax, category)
-        assert isinstance(ax, bha._category_str_growth)
         assert ax.options == options(growth=True)
 
     def test_equal(self):
