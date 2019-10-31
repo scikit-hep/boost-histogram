@@ -74,7 +74,7 @@ INCLUDE_DIRS = [
 
 ext_modules = [
     Extension(
-        "boost_histogram.core", SRC_FILES, include_dirs=INCLUDE_DIRS, language="c++"
+        "boost_histogram._core", SRC_FILES, include_dirs=INCLUDE_DIRS, language="c++"
     )
 ]
 
