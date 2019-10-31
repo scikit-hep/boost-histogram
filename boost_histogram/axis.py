@@ -14,17 +14,25 @@ class Axis(object):
 
     def index(self, x):
         """
-        Index for value (or values) on the axis.
+        Return the fractional index(es) given a value (or values) on the axis.
         """
 
         return self._ax.index(x)
 
     def value(self, i):
         """
-        Value at index (or indices).
+        Return the value(s) given an index (or indices).
         """
 
         return self._ax.value(i)
+
+    def bin(self, i):
+        """
+        Return the edges of the bins for a continuous axis or the
+        bin value for a non-continuous axis, when given an index.
+        """
+
+        return self._ax.bin(i)
 
     def __repr__(self):
         return repr(self._ax)
@@ -57,9 +65,6 @@ class Axis(object):
     @property
     def extent(self):
         return self._ax.extent
-
-    def bin(self, i):
-        return self._ax.bin(i)
 
     def __len__(self):
         return self._ax.size

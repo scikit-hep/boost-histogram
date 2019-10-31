@@ -1,0 +1,42 @@
+import pytest
+
+import boost_histogram as bh
+
+import numpy as np
+
+
+def test_axes_all_at_once():
+    h = bh.histogram(
+        bh.axis.regular(10, 0, 10, metadata=2),
+        bh.axis.integer(0, 5, metadata="hi"),
+        bh.axis.category(["HI", "HO"]),
+    )
+
+    assert h.axes.bin(1, 2, 0) == ((1.0, 2.0), 2, "HI")
+    assert h.axes.value(0, 0, 0) == (0.0, 0, "HI")
+    assert h.axes.index(2, 3, "HO") == (2, 3, 1)
+
+    assert h.axes.size == (10, 5, 2)
+    assert h.axes.extent == (12, 7, 3)
+    assert h.axes.metadata == (2, "hi", None)
+
+    centers = h.axes.centers
+    answers = np.ogrid[0.5:10, 0.5:5, 0.5:2]
+
+    for i in range(3):
+        np.testing.assert_allclose(centers[i], answers[i])
+        np.testing.assert_allclose(h.axes[i].centers, answers[i].ravel())
+
+    edges = h.axes.edges
+    answers = np.ogrid[0:11, 0:6, 0:3]
+
+    for i in range(3):
+        np.testing.assert_allclose(edges[i], answers[i])
+        np.testing.assert_allclose(h.axes[i].edges, answers[i].ravel())
+
+    widths = h.axes.widths
+    answers = np.ogrid[1:1:10j, 1:1:5j, 1:1:2j]
+
+    for i in range(3):
+        np.testing.assert_allclose(widths[i], answers[i])
+        np.testing.assert_allclose(h.axes[i].widths, answers[i].ravel())
