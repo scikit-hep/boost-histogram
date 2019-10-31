@@ -87,6 +87,9 @@ jobs:
       Python37:
         python.version: '3.7'
         python.architecture: 'x64'
+      Python38:
+        python.version: '3.8'
+        python.architecture: 'x64'
       Python27_32:
         python.version: '2.7'
         python.architecture: 'x86'
@@ -95,6 +98,9 @@ jobs:
         python.architecture: 'x86'
       Python37_32:
         python.version: '3.7'
+        python.architecture: 'x86'
+      Python38_32:
+        python.version: '3.8'
         python.architecture: 'x86'
   pool:
     vmImage: 'vs2017-win2016'
