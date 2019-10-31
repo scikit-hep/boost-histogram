@@ -8,6 +8,7 @@
 #include <boost/histogram/python/pybind11.hpp>
 
 #include <boost/histogram/axis.hpp>
+#include <boost/histogram/indexed.hpp>
 #include <boost/histogram/python/axis_setup.hpp>
 #include <boost/histogram/python/regular_numpy.hpp>
 
