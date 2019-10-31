@@ -11,7 +11,7 @@ void register_axes(py::module &);
 void register_histograms(py::module &);
 void register_accumulators(py::module &);
 
-PYBIND11_MODULE(core, m) {
+PYBIND11_MODULE(_core, m) {
     py::module storage = m.def_submodule("storage");
     register_storages(storage);
 
