@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 del absolute_import, division, print_function
 
-from ._utils import FactoryMeta, KWArgs
+from ._utils import KWArgs
 
 from . import _core
 from .axis import _to_axis, Axis as _Axis

@@ -3,19 +3,6 @@ from __future__ import absolute_import, division, print_function
 del absolute_import, division, print_function
 
 
-class FactoryMeta(object):
-    def __init__(self, f, types):
-        self._f = f
-        self._types = types
-        self.__doc__ = f.__doc__
-
-    def __call__(self, *args, **kwargs):
-        return self._f(*args, **kwargs)
-
-    def __instancecheck__(self, other):
-        return isinstance(other, self._types)
-
-
 class KWArgs(object):
     def __init__(self, kwargs):
         self.kwargs = kwargs
