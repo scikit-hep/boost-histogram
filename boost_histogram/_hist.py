@@ -6,6 +6,7 @@ from ._utils import KWArgs
 
 from . import _core
 from .axis import _to_axis, Axis as _Axis
+from ._axistuple import AxesTuple
 
 import warnings
 import numpy as np
@@ -80,37 +81,6 @@ def _compute_commonindex(hist, index, expand):
             indexes[i] %= hist.axis(i).size
 
     return indexes
-
-
-class AxesTuple(tuple):
-    _MGRIDOPTS = {"sparse": True, "indexing": "ij"}
-
-    @property
-    def size(self):
-        return tuple(s.size for s in self)
-
-    @property
-    def metadata(self):
-        return tuple(s.metadata for s in self)
-
-    @property
-    def extent(self):
-        return tuple(s.extent for s in self)
-
-    @property
-    def centers(self):
-        gen = (s.centers for s in self)
-        return np.meshgrid(*gen, **self._MGRIDOPTS)
-
-    @property
-    def edges(self):
-        gen = (s.edges for s in self)
-        return np.meshgrid(*gen, **self._MGRIDOPTS)
-
-    @property
-    def widths(self):
-        gen = (s.widths for s in self)
-        return np.meshgrid(*gen, **self._MGRIDOPTS)
 
 
 class BaseHistogram(object):
