@@ -2,9 +2,9 @@ from __future__ import absolute_import, division, print_function
 
 del absolute_import, division, print_function
 
-from .core.axis import options
+from ._core.axis import options
 
-from .core import axis as ca
+from ._core import axis as ca
 
 from ._utils import KWArgs as _KWArgs
 

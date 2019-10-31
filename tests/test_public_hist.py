@@ -336,7 +336,7 @@ def test_axis():
 
 def test_out_of_limit_axis():
 
-    lim = bh.core.hist._axes_limit
+    lim = bh._core.hist._axes_limit
     ax = (
         bh.axis.regular(1, -1, 1, underflow=False, overflow=False) for a in range(lim)
     )
