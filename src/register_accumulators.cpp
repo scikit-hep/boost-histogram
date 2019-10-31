@@ -27,7 +27,7 @@ decltype(auto) make_mean_fill() {
             })(self, value);
         } else {
             py::vectorize([](T &self, double wei, double val) {
-                self(wei, val);
+                self(bh::weight(wei), val);
                 return false;
             })(self, weight, value);
         }
@@ -45,7 +45,7 @@ decltype(auto) make_mean_call() {
         if(weight.is_none())
             self(value);
         else
-            self(py::cast<double>(weight), value);
+            self(bh::weight(py::cast<double>(weight)), value);
 
         return self;
     };
