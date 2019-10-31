@@ -10,11 +10,6 @@ echo "All Pythons: ${pys[@]}"
 # Filter out Python 3.4
 pys=(${pys[@]//*34*/})
 
-# Filter out Python 3.8 on manylinux1
-if [[ $PLAT =~ "manylinux1" ]]; then
-    pys=(${pys[@]//*38*/})
-fi
-
 # Print list of Python's being used
 echo "Using Pythons: ${pys[@]}"
 
