@@ -13,6 +13,9 @@ class loc(object):
         self.value = value
         self.offset = offset
 
+    def __call__(self, axis):
+        return axis.index(self.value) + self.offset
+
     def __add__(self, offset):
         return self.__class__(self.value, self.offset + offset)
 
@@ -41,10 +44,30 @@ class rebin(object):
 class project(object):
     projection = True
 
+    def __new__(cls, *args, **kargs):
+        return sum(*args, **kargs)
 
-class underflow(object):
-    flow = -1
+
+def underflow(axis):
+    return -1
 
 
-class overflow(object):
-    flow = 1
+def overflow(axis):
+    return len(axis)
+
+
+def end(axis):
+    return len(axis) - 1
+
+
+class at(object):
+    __slots__ = ("value",)
+
+    def __init__(self, value):
+        self.value = value
+
+    def __call__(self, axis):
+        if self.value < -2:
+            raise IndexError("Index cannot be less than -1")
+
+        return self.value

@@ -66,8 +66,8 @@ def _compute_commonindex(hist, index, expand):
 
     # Allow [bh.loc(...)] to work
     for i in range(len(indexes)):
-        if hasattr(indexes[i], "value") and hasattr(indexes[i], "offset"):
-            indexes[i] = hist.axis(i).index(indexes[i].value) + indexes[i].offset
+        if callable(indexes[i]):
+            indexes[i] = indexes[i](_to_axis(hist.axis(i)))
         elif hasattr(indexes[i], "flow"):
             if indexes[i].flow == 1:
                 indexes[i] = hist.axis(i).size
@@ -351,7 +351,9 @@ class Histogram(BaseHistogram):
                 process_loc = (
                     lambda x, y: y
                     if x is None
-                    else (self._axis(i).index(x.value) if hasattr(x, "value") else x)
+                    else x(self._axis(i))
+                    if callable(x)
+                    else x
                 )
                 begin = process_loc(ind.start, 0)
                 end = process_loc(ind.stop, len(self._axis(i)))

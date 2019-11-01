@@ -117,25 +117,27 @@ Basic implementation (WIP):
 
        # supporting __add__ and __sub__ also recommended
 
+       def __call__(self, axis):
+           return axis.index(self.value) + self.offset
+
    # Other flags, such as callable functions, could be added and detected later.
 
-   class project:
+   class sum:
        "When used in the step of a Histogram's slice, project sums over and eliminates what remains of the axis after slicing."
        projection = True
 
-       # Optional, not supported in boost-histogram
+       # Optional, not supported in boost-histogram yet
        def __new__(cls, binning, axis, counts):
-         return None, numpy.add.reduce(counts, axis=axis)
+           return None, numpy.add.reduce(counts, axis=axis)
 
 
    class end:
        ?
 
-   # Only these values have defined behavior
-   class underflow:
-       flow = -1
-   class overflow:
-       flow = 1
+   def underflow(axis):
+       return -1
+   def overflow(axis):
+       return len(axis)
 
 
    class rebin:
