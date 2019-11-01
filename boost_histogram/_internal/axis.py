@@ -21,15 +21,16 @@ class Axis(object):
 
     def value(self, i):
         """
-        Return the value(s) given an index (or indices).
+        Return the value(s) given an (fractional) index (or indices).
         """
 
         return self._ax.value(i)
 
     def bin(self, i):
         """
-        Return the edges of the bins for a continuous axis or the
-        bin value for a non-continuous axis, when given an index.
+        Return the edges of the bins as a tuple for a
+        continuous axis or the bin value for a
+        non-continuous axis, when given an index.
         """
 
         return self._ax.bin(i)
@@ -45,10 +46,21 @@ class Axis(object):
 
     @property
     def options(self):
+        """
+        Return the options.  Fields:
+          .underflow - True if axes captures values that are too small
+          .overflow  - True if axes captures values that are too large
+                       (or non-valid for category axes)
+          .growth    - True if axis can grow
+          .circular  - True if axis wraps around
+        """
         return self._ax.options
 
     @property
     def metadata(self):
+        """
+        Get or set the metadata associated with this axis.
+        """
         return self._ax.metadata
 
     @metadata.setter
@@ -58,18 +70,24 @@ class Axis(object):
     @property
     def size(self):
         """
-        Return number of bins excluding under- and overflow
+        Return number of bins excluding under- and overflow.
         """
         return self._ax.size
 
     @property
     def extent(self):
+        """
+        Return number of bins including under- and overflow.
+        """
         return self._ax.extent
 
     def __len__(self):
         return self._ax.size
 
     def __getitem__(self, i):
+        """
+        Access a bin, using normal Python syntax for wraparound.
+        """
         if i < 0:
             i += self._ax.size
         if i >= self._ax.size:
@@ -85,10 +103,16 @@ class Axis(object):
 
     @property
     def centers(self):
+        """
+        An array of bin centers.
+        """
         return self._ax.centers
 
     @property
     def widths(self):
+        """
+        An array of bin widths.
+        """
         return self._ax.widths
 
 
@@ -111,6 +135,35 @@ class Regular(Axis):
         """
         Make a regular axis with nice keyword arguments for underflow,
         overflow, and growth.
+
+        Parameters
+        ----------
+        bins : int
+            The number of bins between start and stop
+        start : float
+            The beginning value for the axis
+        stop : float
+            The ending value for the axis
+        metadata : object
+            Any Python object to attach to the axis, like a label.
+        underflow : bool = True
+            Enable the underflow bin
+        overflow : bool = True
+            Enable the overflow bin
+        growth : bool = False
+            Allow the axis to grow if a value is encountered out of range.
+            Be careful, the axis will grow as large as needed.
+
+        See also
+        --------
+        .sqrt
+            Square root regular binning
+        .pow
+            Power binning
+        .log
+            Log space binning
+        .circular
+            Circular _to_axis
         """
 
         with KWArgs(kwargs) as k:
@@ -179,8 +232,22 @@ class Variable(Axis):
 
     def __init__(self, edges, **kwargs):
         """
-        Make a variable axis with nice keyword arguments for underflow,
-        overflow, and growth.
+        Make an axis with irregularly spaced bins. Provide a list
+        or array of bin edges, and len(edges)-1 bins will be made.
+
+        Parameters
+        ----------
+        edges : Array[float]
+            The edges for the bins. There will be one less bin than edges.
+        metadata : object
+            Any Python object to attach to the axis, like a label.
+        underflow : bool = True
+            Enable the underflow bin
+        overflow : bool = True
+            Enable the overflow bin
+        growth : bool = False
+            Allow the axis to grow if a value is encountered out of range.
+            Be careful, the axis will grow as large as needed.
         """
         with KWArgs(kwargs) as k:
             metadata = k.optional("metadata")
@@ -212,8 +279,23 @@ class Integer(Axis):
 
     def __init__(self, start, stop, **kwargs):
         """
-        Make an integer axis with nice keyword arguments for underflow,
-        overflow, and growth.
+        Make an integer axis, with a collection of consecutive integers.
+
+        Parameters
+        ----------
+        start : int
+            The beginning value for the axis
+        stop : int
+            The ending value for the axis. (start-stop) bins will be created.
+        metadata : object
+            Any Python object to attach to the axis, like a label.
+        underflow : bool = True
+            Enable the underflow bin
+        overflow : bool = True
+            Enable the overflow bin
+        growth : bool = False
+            Allow the axis to grow if a value is encountered out of range.
+            Be careful, the axis will grow as large as needed.
         """
         with KWArgs(kwargs) as k:
             metadata = k.optional("metadata")
@@ -246,8 +328,20 @@ class Category(Axis):
 
     def __init__(self, categories, **kwargs):
         """
-        Make a category axis with ints or strings and with nice keyword
-        arguments for growth.
+        Make a category axis with either ints or strings; items will
+        be added to a predefined list of bins or a growing (with growth=True)
+        list of bins.
+
+
+        Parameters
+        ----------
+        categories : Union[Array[int], Array[str]]
+            The bin values, either ints or strings.
+        metadata : object
+            Any Python object to attach to the axis, like a label.
+        growth : bool = False
+            Allow the axis to grow if a value is encountered out of range.
+            Be careful, the axis will grow as large as needed.
         """
         with KWArgs(kwargs) as k:
             metadata = k.optional("metadata")

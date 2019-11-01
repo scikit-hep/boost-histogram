@@ -78,11 +78,9 @@ register_histogram(py::module &m, const char *name, const char *desc) {
             return make_buffer(h, false);
         })
 
-        .def("rank", &histogram_t::rank, "Number of axes (dimensions) of histogram")
-        .def("size",
-             &histogram_t::size,
-             "Total number of bins in the histogram (including underflow/overflow)")
-        .def("reset", &histogram_t::reset, "Reset bin counters to zero")
+        .def("rank", &histogram_t::rank)
+        .def("size", &histogram_t::size)
+        .def("reset", &histogram_t::reset)
 
         .def("__copy__", [](const histogram_t &self) { return histogram_t(self); })
         .def("__deepcopy__",
@@ -166,22 +164,17 @@ register_histogram(py::module &m, const char *name, const char *desc) {
             "i"_a,
             py::return_value_policy::move)
 
-        .def(
-            "at",
-            [](const histogram_t &self, py::args &args) {
-                auto int_args = py::cast<std::vector<int>>(args);
-                return self.at(int_args);
-            },
-            "Select a contents given indices. Also consider [] indexing to get "
-            "contents.")
+        .def("at",
+             [](const histogram_t &self, py::args &args) {
+                 auto int_args = py::cast<std::vector<int>>(args);
+                 return self.at(int_args);
+             })
 
-        .def(
-            "_at_set",
-            [](histogram_t &self, const value_type &input, py::args &args) {
-                auto int_args     = py::cast<std::vector<int>>(args);
-                self.at(int_args) = input;
-            },
-            "Use [] indexing to set instead")
+        .def("_at_set",
+             [](histogram_t &self, const value_type &input, py::args &args) {
+                 auto int_args     = py::cast<std::vector<int>>(args);
+                 self.at(int_args) = input;
+             })
 
         .def("__repr__", &shift_to_string<histogram_t>)
 
