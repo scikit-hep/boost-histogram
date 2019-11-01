@@ -83,6 +83,21 @@ def _compute_commonindex(hist, index, expand):
 
 class BaseHistogram(object):
     def __init__(self, *args, **kwargs):
+        """
+        Construct a new histogram.
+
+        If you pass in a single argument, this will be treated as a
+        histogram and this will convert the histogram to this type of
+        histogram (DensityHistogram, Histogram, BoostHistogram).
+
+        Parameters
+        ----------
+        *args : Axis
+            Provide 1 or more axis instances.
+        storage : Storage = bh.storage.double
+            Select a storage to use in the histogram
+        """
+
         # Allow construction from a raw histogram object (internal)
         if not kwargs and len(args) == 1 and isinstance(args[0], _histograms):
             self._hist = args[0]
@@ -121,15 +136,21 @@ class BaseHistogram(object):
 
     def __array__(self):
         return np.asarray(self._hist)
+        # TODO: .view does not seem to return an editable view
+        #        so we have to use the buffer interface here
 
     def reset(self):
         """
-        Reset bin counters to default values
+        Reset bin counters to default values.
         """
         self._hist.reset()
         return self
 
     def empty(self, flow=False):
+        """
+        Check to see if the histogram has any non-default values.
+        You can use flow=True to check flow bins too.
+        """
         return self._hist.empty(flow)
 
     def __add__(self, other):
@@ -168,14 +189,16 @@ class BaseHistogram(object):
 
     def reduce(self, *args):
         """
-        Reduce based on one or more reduce_option.
+        Reduce based on one or more reduce_option. Generally,
+        the [] indexing is easier, but this might be useful in
+        some cases, and is lighter-weight.
         """
 
         return self.__class__(self._hist.reduce(*args))
 
     def project(self, *args):
         """
-        Project to a single axis or several axes on a multidiminsional histogram.
+        Project to a single axis or several axes on a multidiminsional histogram. Provided a list of axis numbers, this will produce the histogram over those axes only. Flow bins are used if available.
         """
 
         return self.__class__(self._hist.project(*args))
@@ -183,12 +206,25 @@ class BaseHistogram(object):
     def fill(self, *args, **kwargs):
         """
         Insert data into the histogram.
+
+        Parameters
+        ----------
+        *args : Union[Array[float], Array[int], Array[str], float, int, str]
+            Provide one value or array per dimension.
+        weight : List[Union[Array[float], Array[int], Array[str], float, int, str]]]
+            Provide weights (only if the histogram storage supports it)
+        sample : List[Union[Array[float], Array[int], Array[str], float, int, str]]]
+            Provide samples (only if the histogram storage supports it)
+
         """
 
         self._hist.fill(*args, **kwargs)
         return self
 
     def sum(self, flow=False):
+        """
+        Compute the sum over the histogram bins (optionally including the flow bins).
+        """
         return self._hist.sum(flow)
 
     def _axis(self, i):
@@ -202,12 +238,21 @@ class BoostHistogram(BaseHistogram):
     axis = BaseHistogram._axis
 
     def rank(self):
+        """
+        Number of axes (dimensions) of histogram.
+        """
         return self._hist.rank()
 
     def size(self):
+        """
+        Total number of bins in the histogram (including underflow/overflow).
+        """
         return self._hist.size()
 
     def at(self, *indexes):
+        """
+        Select a contents given indices. -1 is the underflow bin, N is the overflow bin.
+        """
         return self._hist.at(*indexes)
 
     # Call uses fill since it supports strings,
@@ -225,9 +270,18 @@ class Histogram(BaseHistogram):
         # If this is a property, tab completion in IPython does not work
         self.axes = AxesTuple(self._axis(i) for i in range(self.rank))
 
+    __init__.__doc__ = BaseHistogram.__doc__
+
     def to_numpy(self, flow=False):
         """
         Convert to a Numpy style tuple of return arrays.
+
+        Return
+        ------
+        contents : Array[Any]
+            The bin contents
+        *edges : Array[float]
+            The edges for each dimension
         """
         return self._hist.to_numpy(flow)
 
@@ -243,10 +297,16 @@ class Histogram(BaseHistogram):
 
     @property
     def rank(self):
+        """
+        Number of axes (dimensions) of histogram.
+        """
         return self._hist.rank()
 
     @property
     def size(self):
+        """
+        Total number of bins in the histogram (including underflow/overflow).
+        """
         return self._hist.size()
 
     def __getitem__(self, index):
@@ -312,6 +372,3 @@ class Histogram(BaseHistogram):
     def __setitem__(self, index, value):
         indexes = _compute_commonindex(self._hist, index, expand=True)
         self._hist._at_set(value, *indexes)
-
-
-histogram = Histogram
