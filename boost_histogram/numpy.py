@@ -60,9 +60,9 @@ def histogramdd(
             axs.append(_axis.variable(b))
 
     if weights is None:
-        hist = _hist.histogram(*axs).fill(*a)
+        hist = _hist.Histogram(*axs).fill(*a)
     else:
-        hist = _hist.histogram(*axis).fill(*a, weight=weights)
+        hist = _hist.Histogram(*axis).fill(*a, weight=weights)
 
     return hist if boost else hist.to_numpy()
 

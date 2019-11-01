@@ -1,4 +1,4 @@
-<img alt="boost-histogram logo" width="402" height="165" src="https://raw.githubusercontent.com/scikit-hep/boost-histogram/develop/docs/_images/BoostHistogramPythonLogo.png"/>
+<img alt="boost-histogram logo" width="402" src="https://raw.githubusercontent.com/scikit-hep/boost-histogram/develop/docs/_images/BoostHistogramPythonLogo.png"/>
 
 # boost-histogram for Python
 
