@@ -13,10 +13,54 @@
 #include <type_traits>
 
 namespace pybind11 {
+
+/// The descriptor for atomic_* is the same as the descriptor for *, as long this uses
+/// standard layout
 template <class T>
 struct format_descriptor<bh::accumulators::thread_safe<T>> : format_descriptor<T> {
     static_assert(std::is_standard_layout<bh::accumulators::thread_safe<T>>::value, "");
 };
+
+/// This descriptor depends on the memory format for mean<double> remaining unchanged
+template <>
+struct format_descriptor<bh::accumulators::mean<double>> {
+    static std::string format() {
+        return std::string("T{"
+                           "d:sum_:"
+                           "d:mean_:"
+                           "d:sum_of_deltas_squared_:}");
+    }
+};
+
+// If made public, could be:
+// PYBIND11_NUMPY_DTYPE(mean, sum_, mean_, sum_of_deltas_squared_);
+
+/// This descriptor depends on the memory format for weighted_mean<double> remaining
+/// unchanged
+template <>
+struct format_descriptor<bh::accumulators::weighted_mean<double>> {
+    static std::string format() {
+        return std::string("T{"
+                           "d:sum_of_weights_:"
+                           "d:sum_of_weights_squared_:"
+                           "d:weighted_mean_:"
+                           "d:sum_of_weighted_deltas_squared_:"
+                           "}");
+    }
+};
+
+/// This descriptor depends on the memory format for weighted_sum<double> remaining
+/// unchanged
+template <>
+struct format_descriptor<bh::accumulators::weighted_sum<double>> {
+    static std::string format() {
+        return std::string("T{"
+                           "d:sum_of_weights_:"
+                           "d:sum_of_weights_squared_:"
+                           "}");
+    }
+};
+
 } // namespace pybind11
 
 namespace detail {
