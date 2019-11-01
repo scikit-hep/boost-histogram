@@ -302,6 +302,18 @@ register_histogram(py::module &m, const char *name, const char *desc) {
                  return self;
              })
 
+        .def("_reset_row",
+             [](histogram_t &self, unsigned ax, int row) {
+                 // Reset just a single row. Used by indexing as a workaround
+                 // to remove the flow bins when missing crop
+
+                 for(auto &&ind : bh::indexed(self, bh::coverage::all)) {
+                     if(ind.index(ax) == row) {
+                         *ind = typename histogram_t::value_type();
+                     }
+                 }
+             })
+
         .def(make_pickle<histogram_t>())
 
         ;

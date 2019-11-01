@@ -21,7 +21,6 @@ Python bindings for [Boost::Histogram][] ([source][Boost::Histogram source]), a 
 > * Docstrings and signatures will improve in later versions (especially on Python 3)
 > * `bh.project` is expected to change names
 > * Setting with an array is not yet supported (`h[...] = np.array(...)`)
-> * Projections with a limited range ("cropped first") are not yet supported
 > * A compiler is required to install on Python 3.8 on Windows (waiting on CI update for wheels)
 
 

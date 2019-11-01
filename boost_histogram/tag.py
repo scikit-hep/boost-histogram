@@ -56,8 +56,9 @@ def overflow(axis):
     return len(axis)
 
 
+# Only valid in :: indexing, use -1 instead for normal indexing
 def end(axis):
-    return len(axis) - 1
+    return len(axis)
 
 
 class at(object):

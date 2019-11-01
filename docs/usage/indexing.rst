@@ -27,15 +27,12 @@ Slicing:
    h2 = h[a:b]           # Slice of histogram (includes flow bins)
    h2 = h[:b]            # Leaving out endpoints is okay
    h2 = h[loc(v):]       # Slices can be in data coordinates, too
-   h2 = h[::project]     # Projection operations # (name may change)
    h2 = h[::rebin(2)]    # Modification operations (rebin)
    h2 = h[a:b:rebin(2)]  # Modifications can combine with slices
+   h2 = h[::project]     # Projection operations # (name may change)
+   h2 = h[a:b:project]   # Adding endpoints to projection operations
+   h2 = h[0:end:project] #   removes under or overflow from the calculation
    h2 = h[a:b, ...]      # Ellipsis work just like normal numpy
-
-   # Not yet supported!
-   h2 = h[a:b:project] # Adding endpoints to projection operations removes under or overflow from the calculation
-   h2 = h[0:end:project] # Special end functor (TBD)
-   h2 = h[0:len(h2.axis(0)):project] # Projection without flow bins
 
 Setting
 ^^^^^^^

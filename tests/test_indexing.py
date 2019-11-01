@@ -1,4 +1,5 @@
 import boost_histogram as bh
+import numpy as np
 
 import pytest
 
@@ -109,3 +110,40 @@ def test_basic_projection():
     assert h1 == h2[:, :: bh.project, :: bh.project]
     assert h1 == h2[..., :: bh.project, :: bh.project]
     assert h2.sum(flow=True) == h2[:: bh.project, :: bh.project, :: bh.project]
+
+
+def test_slicing_projection():
+    h1 = bh.histogram(
+        bh.axis.regular(10, 0, 10),
+        bh.axis.regular(10, 0, 10),
+        bh.axis.regular(10, 0, 10),
+    )
+
+    X, Y, Z = np.mgrid[-0.5:10.5:12j, -0.5:10.5:12j, -0.5:10.5:12j]
+
+    h1.fill(X.ravel(), Y.ravel(), Z.ravel())
+
+    assert h1[:: bh.project, :: bh.project, :: bh.project] == 12 ** 3
+    assert (
+        h1[
+            0 : bh.tag.end : bh.project,
+            0 : bh.tag.end : bh.project,
+            0 : len : bh.project,
+        ]
+        == 10 ** 3
+    )
+    assert (
+        h1[0 : bh.tag.end : bh.project, 0 : len : bh.project, :: bh.project]
+        == 10 * 10 * 12
+    )
+    assert h1[:: bh.project, 0 : len : bh.project, :: bh.project] == 10 * 12 * 12
+
+    # make sure nothing was modified
+    assert h1.sum() == 10 ** 3
+    assert h1.sum(flow=True) == 12 ** 3
+
+    h2 = h1[0 : 3 : bh.project, ...]
+    assert h2[1, 2] == 3
+
+    h3 = h2[:, 5 : 7 : bh.project]
+    assert h3[1] == 6
