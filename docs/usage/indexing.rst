@@ -2,10 +2,10 @@ Indexing
 ========
 
 This is the design document for Unified Histogram Indexing (UHI).  Much of the original plan is now implemented in boost-histogram.
-Other histogramming libraries can implement support for this as well, and the "tag" functors, like ``project`` and ``loc`` can be
+Other histogramming libraries can implement support for this as well, and the "tag" functors, like ``sum`` and ``loc`` can be
 used between libraries.
 
-The following examples assume you have imported ``loc``, ``project``, ``rebin``, ``end``, ``underflow``, and ``overflow`` from boost-histogram or any other
+The following examples assume you have imported ``loc``, ``sum``, ``rebin``, ``end``, ``underflow``, and ``overflow`` from boost-histogram or any other
 library that implements UHI.
 
 Access:
@@ -29,9 +29,9 @@ Slicing:
    h2 = h[loc(v):]       # Slices can be in data coordinates, too
    h2 = h[::rebin(2)]    # Modification operations (rebin)
    h2 = h[a:b:rebin(2)]  # Modifications can combine with slices
-   h2 = h[::project]     # Projection operations # (name may change)
-   h2 = h[a:b:project]   # Adding endpoints to projection operations
-   h2 = h[0:end:project] #   removes under or overflow from the calculation
+   h2 = h[::sum]     # Projection operations # (name may change)
+   h2 = h[a:b:sum]   # Adding endpoints to projection operations
+   h2 = h[0:end:sum] #   removes under or overflow from the calculation
    h2 = h[a:b, ...]      # Ellipsis work just like normal numpy
 
 Setting
@@ -91,7 +91,7 @@ TODO: Possibly extend to axes. Would follow the 1D cases above.
 Implementation notes
 --------------------
 
-loc, rebin, and project are *not* unique tags, or special types, but rather
+loc, rebin, and sum are *not* unique tags, or special types, but rather
 APIs for classes. New versions of these could be added, and
 implementations could be shared among Histogram libraries. For clarity,
 the following code is written in Python 3.6+. `Prototype
@@ -120,7 +120,7 @@ Basic implementation (WIP):
    # Other flags, such as callable functions, could be added and detected later.
 
    class sum:
-       "When used in the step of a Histogram's slice, project sums over and eliminates what remains of the axis after slicing."
+       "When used in the step of a Histogram's slice, sum sums over and eliminates what remains of the axis after slicing."
        projection = True
 
        # Optional, not supported in boost-histogram yet

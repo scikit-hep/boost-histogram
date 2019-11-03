@@ -6,6 +6,9 @@ from ._internal.hist import Histogram as histogram
 
 from . import axis, storage, accumulators, algorithm, numpy
 
-from .tag import loc, rebin, project, underflow, overflow
+from .tag import loc, rebin, sum, underflow, overflow
+
+# Workaround for bh.project being available
+project = sum
 
 from .version import __version__

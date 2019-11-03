@@ -107,9 +107,9 @@ def test_basic_projection():
     h1.fill(contents[0])
     h2.fill(*contents)
 
-    assert h1 == h2[:, :: bh.project, :: bh.project]
-    assert h1 == h2[..., :: bh.project, :: bh.project]
-    assert h2.sum(flow=True) == h2[:: bh.project, :: bh.project, :: bh.project]
+    assert h1 == h2[:, :: bh.sum, :: bh.sum]
+    assert h1 == h2[..., :: bh.sum, :: bh.sum]
+    assert h2.sum(flow=True) == h2[:: bh.sum, :: bh.sum, :: bh.sum]
 
 
 def test_slicing_projection():
@@ -123,22 +123,33 @@ def test_slicing_projection():
 
     h1.fill(X.ravel(), Y.ravel(), Z.ravel())
 
-    assert h1[:: bh.project, :: bh.project, :: bh.project] == 12 ** 3
-    assert (
-        h1[0 : len : bh.project, 0 : len : bh.project, 0 : len : bh.project] == 10 ** 3
-    )
-    assert (
-        h1[0 : bh.overflow : bh.project, 0 : len : bh.project, :: bh.project]
-        == 10 * 10 * 12
-    )
-    assert h1[:: bh.project, 0 : len : bh.project, :: bh.project] == 10 * 12 * 12
+    assert h1[:: bh.sum, :: bh.sum, :: bh.sum] == 12 ** 3
+    assert h1[0 : len : bh.sum, 0 : len : bh.sum, 0 : len : bh.sum] == 10 ** 3
+    assert h1[0 : bh.overflow : bh.sum, 0 : len : bh.sum, :: bh.sum] == 10 * 10 * 12
+    assert h1[:: bh.sum, 0 : len : bh.sum, :: bh.sum] == 10 * 12 * 12
 
     # make sure nothing was modified
     assert h1.sum() == 10 ** 3
     assert h1.sum(flow=True) == 12 ** 3
 
-    h2 = h1[0 : 3 : bh.project, ...]
+    h2 = h1[0 : 3 : bh.sum, ...]
     assert h2[1, 2] == 3
 
-    h3 = h2[:, 5 : 7 : bh.project]
+    h3 = h2[:, 5 : 7 : bh.sum]
     assert h3[1] == 6
+
+
+def test_repr():
+    assert repr(bh.loc(2)) == "loc(2)"
+    assert repr(bh.loc(3) + 1) == "loc(3) + 1"
+    assert repr(bh.loc(1) - 2) == "loc(1) - 2"
+
+    assert repr(bh.underflow) == "underflow"
+    assert repr(bh.underflow + 1) == "underflow + 1"
+    assert repr(bh.underflow - 1) == "underflow - 1"
+
+    assert repr(bh.overflow) == "overflow"
+    assert repr(bh.overflow + 1) == "overflow + 1"
+    assert repr(bh.overflow - 1) == "overflow - 1"
+
+    assert repr(bh.rebin(2)) == "rebin(2)"

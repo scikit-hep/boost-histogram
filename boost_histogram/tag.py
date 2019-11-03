@@ -32,12 +32,12 @@ class Locator(object):
         return ""
 
     def __repr__(self):
-        s = "{self.__class__.__name__}("
-        v = _print_self()
-        if offset != 0:
-            s += (", " if v else "") + " + offset={self.offset}"
-        s += ")"
-        return s.format(self=self)
+        s = self.__class__.__name__
+        s += self._print_self_()
+        if self.offset != 0:
+            s += " + " if self.offset > 0 else " - "
+            s += str(abs(self.offset))
+        return s
 
 
 class loc(Locator):
@@ -47,8 +47,8 @@ class loc(Locator):
         super(loc, self).__init__(offset)
         self.value = value
 
-    def _print_self(self):
-        return "{self.value}"
+    def _print_self_(self):
+        return "({0})".format(self.value)
 
     def __call__(self, axis):
         return axis.index(self.value) + self.offset
@@ -108,7 +108,3 @@ class sum(object):
     # if imported from boost_histogram directly
     def __new__(cls, *args, **kargs):
         return _np.sum(*args, **kargs)
-
-
-# Workaround for bh.project being available
-project = sum

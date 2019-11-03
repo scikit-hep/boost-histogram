@@ -19,7 +19,6 @@ Python bindings for [Boost::Histogram][] ([source][Boost::Histogram source]), a 
 > #### Known issues:
 > * Non-simple storages do not support `.view()` or the buffer interface; you can access and set one element at a time
 > * Docstrings and signatures will improve in later versions (especially on Python 3)
-> * `bh.project` is expected to change names
 > * Setting with an array is not yet supported (`h[...] = np.array(...)`)
 > * A compiler is required to install on Python 3.8 on Windows (waiting on CI update for wheels)
 
