@@ -2,9 +2,11 @@
 
 #### User changes
 
+* You can now sum over a range with endpoints [#185][]
 * You can now access the functional regular axis directly, `regular_sqrt` becomes `regular.sqrt`, etc.. [#183][]
 * `h.axis()` and `h.at()` are now completely removed unless you use the cpp version of histogram. [#183][]
 * `h.axes` now has the functions from axis as well. [#183][]
+* `bh.project` has become `bh.sum` [#185][]
 
 
 #### Developer changes
@@ -13,8 +15,11 @@
 * Most internal names changed, `core->_core`, etc. [#183][]
 * The `uhi` module is now `tag`. [#183][]
 * `boost_histogram.cpp as bh` provides C++ high-compatibility mode. [#183][]
+* Indexing tags now use full UHI instead of workarounds [#185][]
 
 
+[#183]: https://github.com/scikit-hep/boost-histogram/pull/183
+[#185]: https://github.com/scikit-hep/boost-histogram/pull/185
 
 
 ### Version 0.5.2

@@ -2,29 +2,89 @@ from __future__ import absolute_import, division, print_function
 
 del absolute_import, division, print_function
 
+import numpy as _np
 
-class loc(object):
-    __slots__ = ("value", "offset")
 
-    def __init__(self, value, offset=0):
+class Locator(object):
+    __slots__ = "offset"
+
+    def __init__(self, offset=0):
         if not isinstance(offset, int):
             raise ValueError("The offset must be an integer")
 
-        self.value = value
         self.offset = offset
 
     def __add__(self, offset):
-        return self.__class__(self.value, self.offset + offset)
+        from copy import copy
+
+        other = copy(self)
+        other.offset += offset
+        return other
 
     def __sub__(self, offset):
-        return self.__class__(self.value, self.offset - offset)
+        from copy import copy
+
+        other = copy(self)
+        other.offset -= offset
+        return other
+
+    def _print_self_(self):
+        return ""
 
     def __repr__(self):
-        s = "{self.__class__.__name__}({self.value}"
-        if offset != 0:
-            s += ", offset={self.offset}"
-        s += ")"
-        return s.format(self=self)
+        s = self.__class__.__name__
+        s += self._print_self_()
+        if self.offset != 0:
+            s += " + " if self.offset > 0 else " - "
+            s += str(abs(self.offset))
+        return s
+
+
+class loc(Locator):
+    __slots__ = ("value",)
+
+    def __init__(self, value, offset=0):
+        super(loc, self).__init__(offset)
+        self.value = value
+
+    def _print_self_(self):
+        return "({0})".format(self.value)
+
+    def __call__(self, axis):
+        return axis.index(self.value) + self.offset
+
+
+class underflow(Locator):
+    __slots__ = ()
+
+    def __call__(self, axis):
+        return -1 + self.offset
+
+
+underflow = underflow()
+
+
+class overflow(Locator):
+    __slots__ = ()
+
+    def __call__(self, axis):
+        return len(axis) + self.offset
+
+
+overflow = overflow()
+
+
+class at(object):
+    __slots__ = ("value",)
+
+    def __init__(self, value):
+        self.value = value
+
+    def __call__(self, axis):
+        if self.value < -2:
+            raise IndexError("Index cannot be less than -1")
+
+        return self.value
 
 
 class rebin(object):
@@ -37,14 +97,14 @@ class rebin(object):
     def __repr__(self):
         return "{self.__class__.__name__}({self.factor})".format(self=self)
 
+    # TODO: Add __call__ to support UHI
 
-class project(object):
+
+class sum(object):
+    __slots__ = ()
     projection = True
 
-
-class underflow(object):
-    flow = -1
-
-
-class overflow(object):
-    flow = 1
+    # Supports UHI on general histograms, and acts nicely
+    # if imported from boost_histogram directly
+    def __new__(cls, *args, **kargs):
+        return _np.sum(*args, **kargs)
