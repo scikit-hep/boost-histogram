@@ -66,8 +66,8 @@ def _compute_commonindex(hist, index, expand):
 
     # Allow [bh.loc(...)] to work
     for i in range(len(indexes)):
-        if hasattr(indexes[i], "value") and hasattr(indexes[i], "offset"):
-            indexes[i] = hist.axis(i).index(indexes[i].value) + indexes[i].offset
+        if callable(indexes[i]):
+            indexes[i] = indexes[i](_to_axis(hist.axis(i)))
         elif hasattr(indexes[i], "flow"):
             if indexes[i].flow == 1:
                 indexes[i] = hist.axis(i).size
@@ -321,6 +321,8 @@ class Histogram(BaseHistogram):
 
         integrations = set()
         slices = []
+        zeroes_start = []
+        zeroes_stop = []
 
         # Compute needed slices and projections
         for i, ind in enumerate(indexes):
@@ -335,10 +337,10 @@ class Histogram(BaseHistogram):
                     if hasattr(ind.step, "projection"):
                         if ind.step.projection:
                             integrations.add(i)
-                            if ind.start is not None or ind.stop is not None:
-                                raise IndexError(
-                                    "Currently cut projections are not supported"
-                                )
+                            if ind.start is not None:  # TODO: Support callables too
+                                zeroes_start.append(i)
+                            if ind.stop is not None:
+                                zeroes_stop.append(i)
                         elif hasattr(ind.step, "factor"):
                             merge = ind.step.factor
                         else:
@@ -351,7 +353,9 @@ class Histogram(BaseHistogram):
                 process_loc = (
                     lambda x, y: y
                     if x is None
-                    else (self._axis(i).index(x.value) if hasattr(x, "value") else x)
+                    else x(self._axis(i))
+                    if callable(x)
+                    else x
                 )
                 begin = process_loc(ind.start, 0)
                 end = process_loc(ind.stop, len(self._axis(i)))
@@ -363,10 +367,19 @@ class Histogram(BaseHistogram):
             return self.__class__(reduced)
         else:
             projections = [i for i in range(self.rank) if i not in integrations]
+
+            # Replacement for crop missing in BH
+            for i in zeroes_start:
+                if self.axes[i].options.underflow:
+                    reduced._hist._reset_row(i, -1)
+            for i in zeroes_stop:
+                if self.axes[i].options.underflow:
+                    reduced._hist._reset_row(i, reduced.axes[i].size)
+
             return (
                 self.__class__(reduced.project(*projections))
                 if projections
-                else self.sum(flow=True)
+                else reduced.sum(flow=True)
             )
 
     def __setitem__(self, index, value):

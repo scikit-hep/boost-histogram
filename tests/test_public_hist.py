@@ -109,8 +109,10 @@ def test_fill_int_1d():
         # assert get(h, 1).variance == 1
         # assert get(h, 2).variance == 3
 
+    assert h[bh.overflow - 1] == 3
     assert h[bh.overflow] == 1
     assert h[bh.underflow] == 1
+    assert h[bh.underflow + 1] == 2
 
     assert h[-1] == 3
 
@@ -184,6 +186,7 @@ def test_growth():
     h.fill(0)
     for i in range(1000 - 256):
         h.fill(0)
+    print(h.view(flow=True))
     assert h[bh.underflow] == 0
     assert h[0] == 1
     assert h[1] == 1000
@@ -218,7 +221,7 @@ def test_fill_2d(flow):
         [0, 0, 0, 0, 0, 0],
     ]
 
-    for get in (lambda h, x, y: h._at(x, y),):
+    for get in (lambda h, x, y: h[bh.tag.at(x), bh.tag.at(y)],):
         # lambda h, x, y: h[x, y]):
         for i in range(-flow, h.axes[0].size + flow):
             for j in range(-flow, h.axes[1].size + flow):
@@ -253,7 +256,7 @@ def test_add_2d(flow):
 
     for i in range(-flow, h.axes[0].size + flow):
         for j in range(-flow, h.axes[1].size + flow):
-            assert h._at(i, j) == 2 * m[i][j]
+            assert h[bh.tag.at(i), bh.tag.at(j)] == 2 * m[i][j]
 
 
 def test_add_2d_bad():
@@ -299,7 +302,7 @@ def test_add_2d_w(flow):
 
     for i in range(-flow, h.axes[0].size + flow):
         for j in range(-flow, h.axes[1].size + flow):
-            assert h._at(i, j) == 2 * m[i][j]
+            assert h[bh.tag.at(i), bh.tag.at(j)] == 2 * m[i][j]
 
 
 def test_repr():
