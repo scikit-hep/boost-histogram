@@ -125,15 +125,10 @@ def test_slicing_projection():
 
     assert h1[:: bh.project, :: bh.project, :: bh.project] == 12 ** 3
     assert (
-        h1[
-            0 : bh.tag.end : bh.project,
-            0 : bh.tag.end : bh.project,
-            0 : len : bh.project,
-        ]
-        == 10 ** 3
+        h1[0 : len : bh.project, 0 : len : bh.project, 0 : len : bh.project] == 10 ** 3
     )
     assert (
-        h1[0 : bh.tag.end : bh.project, 0 : len : bh.project, :: bh.project]
+        h1[0 : bh.overflow : bh.project, 0 : len : bh.project, :: bh.project]
         == 10 * 10 * 12
     )
     assert h1[:: bh.project, 0 : len : bh.project, :: bh.project] == 10 * 12 * 12

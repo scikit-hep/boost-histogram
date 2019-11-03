@@ -2,63 +2,76 @@ from __future__ import absolute_import, division, print_function
 
 del absolute_import, division, print_function
 
+import numpy as _np
 
-class loc(object):
-    __slots__ = ("value", "offset")
 
-    def __init__(self, value, offset=0):
+class Locator(object):
+    __slots__ = "offset"
+
+    def __init__(self, offset=0):
         if not isinstance(offset, int):
             raise ValueError("The offset must be an integer")
 
-        self.value = value
         self.offset = offset
 
-    def __call__(self, axis):
-        return axis.index(self.value) + self.offset
-
     def __add__(self, offset):
-        return self.__class__(self.value, self.offset + offset)
+        from copy import copy
+
+        other = copy(self)
+        other.offset += offset
+        return other
 
     def __sub__(self, offset):
-        return self.__class__(self.value, self.offset - offset)
+        from copy import copy
+
+        other = copy(self)
+        other.offset -= offset
+        return other
+
+    def _print_self_(self):
+        return ""
 
     def __repr__(self):
-        s = "{self.__class__.__name__}({self.value}"
+        s = "{self.__class__.__name__}("
+        v = _print_self()
         if offset != 0:
-            s += ", offset={self.offset}"
+            s += (", " if v else "") + " + offset={self.offset}"
         s += ")"
         return s.format(self=self)
 
 
-class rebin(object):
-    __slots__ = ("factor",)
-    projection = False
+class loc(Locator):
+    __slots__ = ("value",)
 
-    def __init__(self, value):
-        self.factor = value
+    def __init__(self, value, offset=0):
+        super(loc, self).__init__(offset)
+        self.value = value
 
-    def __repr__(self):
-        return "{self.__class__.__name__}({self.factor})".format(self=self)
+    def _print_self(self):
+        return "{self.value}"
 
-
-class project(object):
-    projection = True
-
-    def __new__(cls, *args, **kargs):
-        return sum(*args, **kargs)
+    def __call__(self, axis):
+        return axis.index(self.value) + self.offset
 
 
-def underflow(axis):
-    return -1
+class underflow(Locator):
+    __slots__ = ()
+
+    def __call__(self, axis):
+        return -1 + self.offset
 
 
-def overflow(axis):
-    return len(axis)
+underflow = underflow()
 
 
-# Only valid in :: indexing, use -1 instead for normal indexing
-def end(axis):
-    return len(axis)
+class overflow(Locator):
+    __slots__ = ()
+
+    def __call__(self, axis):
+        return len(axis) + self.offset
+
+
+overflow = overflow()
 
 
 class at(object):
@@ -72,3 +85,30 @@ class at(object):
             raise IndexError("Index cannot be less than -1")
 
         return self.value
+
+
+class rebin(object):
+    __slots__ = ("factor",)
+    projection = False
+
+    def __init__(self, value):
+        self.factor = value
+
+    def __repr__(self):
+        return "{self.__class__.__name__}({self.factor})".format(self=self)
+
+    # TODO: Add __call__ to support UHI
+
+
+class sum(object):
+    __slots__ = ()
+    projection = True
+
+    # Supports UHI on general histograms, and acts nicely
+    # if imported from boost_histogram directly
+    def __new__(cls, *args, **kargs):
+        return _np.sum(*args, **kargs)
+
+
+# Workaround for bh.project being available
+project = sum
