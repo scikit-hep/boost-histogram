@@ -7,6 +7,7 @@ from .._core.axis import options
 from .._core import axis as ca
 
 from .kwargs import KWArgs
+from .sig_tools import inject_signature
 
 
 class Axis(object):
@@ -131,6 +132,9 @@ class Regular(Axis):
         ca.circular,
     }
 
+    @inject_signature(
+        "self, bins, start, stop, *, metadata=None, underflow=True, overflow=True, growth=False"
+    )
     def __init__(self, bins, start, stop, **kwargs):
         """
         Make a regular axis with nice keyword arguments for underflow,
@@ -188,6 +192,7 @@ class Regular(Axis):
             raise KeyError("Unsupported collection of options")
 
     @classmethod
+    @inject_signature("cls, bins, start, stop, *, metadata=None")
     def sqrt(cls, bins, start, stop, **kwargs):
         self = cls.__new__(cls)
         with KWArgs(kwargs) as k:
@@ -196,6 +201,7 @@ class Regular(Axis):
         return self
 
     @classmethod
+    @inject_signature("cls, bins, start, stop, *, metadata=None")
     def log(cls, bins, start, stop, **kwargs):
         self = cls.__new__(cls)
         with KWArgs(kwargs) as k:
@@ -204,6 +210,7 @@ class Regular(Axis):
         return self
 
     @classmethod
+    @inject_signature("cls, bins, start, stop, power, *, metadata=None")
     def pow(cls, bins, start, stop, power, **kwargs):
         self = cls.__new__(cls)
         with KWArgs(kwargs) as k:
@@ -212,6 +219,7 @@ class Regular(Axis):
         return self
 
     @classmethod
+    @inject_signature("cls, bins, start, stop, *, metadata=None")
     def circular(cls, bins, start, stop, **kwargs):
         self = cls.__new__(cls)
         with KWArgs(kwargs) as k:
@@ -230,6 +238,9 @@ class Variable(Axis):
         ca.variable_uoflow_growth,
     }
 
+    @inject_signature(
+        "self, edges, *, metadata=None, underflow=True, overflow=True, growth=False"
+    )
     def __init__(self, edges, **kwargs):
         """
         Make an axis with irregularly spaced bins. Provide a list
@@ -277,6 +288,9 @@ class Integer(Axis):
         ca.integer_growth,
     }
 
+    @inject_signature(
+        "self, start, stop, *, metadata=None, underflow=True, overflow=True, growth=False"
+    )
     def __init__(self, start, stop, **kwargs):
         """
         Make an integer axis, with a collection of consecutive integers.
@@ -326,6 +340,7 @@ class Category(Axis):
         ca.category_str,
     }
 
+    @inject_signature("self, categories, *, metadata=None, growth=False")
     def __init__(self, categories, **kwargs):
         """
         Make a category axis with either ints or strings; items will

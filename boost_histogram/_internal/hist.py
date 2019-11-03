@@ -5,6 +5,7 @@ from .kwargs import KWArgs
 from .. import _core
 from .axis import _to_axis, Axis as _Axis
 from .axistuple import AxesTuple
+from .sig_tools import inject_signature
 
 import warnings
 import numpy as np
@@ -82,7 +83,10 @@ def _compute_commonindex(hist, index, expand):
 
 
 class BaseHistogram(object):
-    def __init__(self, *args, **kwargs):
+    @inject_signature(
+        "self, *axes, storage=_core.storage.double", locals={"_core": _core}
+    )
+    def __init__(self, *axes, **kwargs):
         """
         Construct a new histogram.
 
@@ -99,12 +103,12 @@ class BaseHistogram(object):
         """
 
         # Allow construction from a raw histogram object (internal)
-        if not kwargs and len(args) == 1 and isinstance(args[0], _histograms):
-            self._hist = args[0]
+        if not kwargs and len(axes) == 1 and isinstance(axes[0], _histograms):
+            self._hist = axes[0]
             return
 
-        if not kwargs and len(args) == 1 and isinstance(args[0], BaseHistogram):
-            self._hist = args[0]._hist.__copy__()  # Replace with copy?
+        if not kwargs and len(axes) == 1 and isinstance(axes[0], BaseHistogram):
+            self._hist = axes[0]._hist.__copy__()  # Replace with copy?
             return
 
         # Keyword only trick (change when Python2 is dropped)
@@ -116,9 +120,9 @@ class BaseHistogram(object):
             storage = storage()
 
         # Allow a tuple to represent a regular axis
-        args = [_arg_shortcut(arg) for arg in args]
+        axes = [_arg_shortcut(arg) for arg in axes]
 
-        if len(args) > _core.hist._axes_limit:
+        if len(axes) > _core.hist._axes_limit:
             raise IndexError(
                 "Too many axes, must be less than {}".format(_core.hist._axes_limit)
             )
@@ -126,7 +130,7 @@ class BaseHistogram(object):
         # Check all available histograms, and if the storage matches, return that one
         for h in _histograms:
             if isinstance(storage, h._storage_type):
-                self._hist = h(args, storage)
+                self._hist = h(axes, storage)
                 return
 
         raise TypeError("Unsupported storage")
@@ -203,6 +207,7 @@ class BaseHistogram(object):
 
         return self.__class__(self._hist.project(*args))
 
+    @inject_signature("self, *args, weight=None, sample=None")
     def fill(self, *args, **kwargs):
         """
         Insert data into the histogram.
@@ -257,6 +262,7 @@ class BoostHistogram(BaseHistogram):
 
     # Call uses fill since it supports strings,
     # runtime argument list, etc.
+    @inject_signature("self, *args, weight=None, sample=None")
     def __call__(self, *args, **kargs):
         args = (((a,) if isinstance(a, str) else a) for a in args)
         self._hist.fill(*args, **kargs)
@@ -264,6 +270,9 @@ class BoostHistogram(BaseHistogram):
 
 
 class Histogram(BaseHistogram):
+    @inject_signature(
+        "self, *axes, storage=_core.storage.double", locals={"_core": _core}
+    )
     def __init__(self, *args, **kwargs):
         super(Histogram, self).__init__(*args, **kwargs)
 
