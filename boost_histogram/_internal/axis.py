@@ -125,9 +125,6 @@ class Regular(Axis):
         ca.regular_uflow,
         ca.regular_oflow,
         ca.regular_none,
-        ca.regular_log,
-        ca.regular_pow,
-        ca.regular_sqrt,
         ca.regular_numpy,
         ca.circular,
     }
@@ -193,39 +190,45 @@ class Regular(Axis):
 
     @classmethod
     @inject_signature("cls, bins, start, stop, *, metadata=None")
-    def sqrt(cls, bins, start, stop, **kwargs):
-        self = cls.__new__(cls)
-        with KWArgs(kwargs) as k:
-            metadata = k.optional("metadata")
-        self._ax = ca.regular_sqrt(bins, start, stop, metadata)
-        return self
-
-    @classmethod
-    @inject_signature("cls, bins, start, stop, *, metadata=None")
-    def log(cls, bins, start, stop, **kwargs):
-        self = cls.__new__(cls)
-        with KWArgs(kwargs) as k:
-            metadata = k.optional("metadata")
-        self._ax = ca.regular_log(bins, start, stop, metadata)
-        return self
-
-    @classmethod
-    @inject_signature("cls, bins, start, stop, power, *, metadata=None")
-    def pow(cls, bins, start, stop, power, **kwargs):
-        self = cls.__new__(cls)
-        with KWArgs(kwargs) as k:
-            metadata = k.optional("metadata")
-        self._ax = ca.regular_pow(bins, start, stop, power, metadata)
-        return self
-
-    @classmethod
-    @inject_signature("cls, bins, start, stop, *, metadata=None")
     def circular(cls, bins, start, stop, **kwargs):
         self = cls.__new__(cls)
         with KWArgs(kwargs) as k:
             metadata = k.optional("metadata")
         self._ax = ca.circular(bins, start, stop, metadata)
         return self
+
+
+class Sqrt(Regular):
+    __slots__ = ()
+    _CLASSES = {ca.regular_sqrt}
+
+    @inject_signature("self, bins, start, stop, *, metadata=None")
+    def __init__(self, bins, start, stop, **kwargs):
+        with KWArgs(kwargs) as k:
+            metadata = k.optional("metadata")
+        self._ax = ca.regular_sqrt(bins, start, stop, metadata)
+
+
+class Log(Regular):
+    __slots__ = ()
+    _CLASSES = {ca.regular_log}
+
+    @inject_signature("self, bins, start, stop, *, metadata=None")
+    def __init__(self, bins, start, stop, **kwargs):
+        with KWArgs(kwargs) as k:
+            metadata = k.optional("metadata")
+        self._ax = ca.regular_log(bins, start, stop, metadata)
+
+
+class Pow(Regular):
+    __slots__ = ()
+    _CLASSES = {ca.regular_pow}
+
+    @inject_signature("self, bins, start, stop, power, *, metadata=None")
+    def __init__(self, bins, start, stop, power, **kwargs):
+        with KWArgs(kwargs) as k:
+            metadata = k.optional("metadata")
+        self._ax = ca.regular_pow(bins, start, stop, power, metadata)
 
 
 class Variable(Axis):
@@ -379,10 +382,18 @@ class Category(Axis):
             raise KeyError("Unsupported collection of options")
 
 
+def _walk_subclasses(cls):
+    for base in cls.__subclasses__():
+        yield base
+        for inner in _walk_subclasses(base):
+            yield inner
+
+
 def _to_axis(ax):
-    for base in Axis.__subclasses__():
+    for base in _walk_subclasses(Axis):
         if ax.__class__ in base._CLASSES:
             nice_ax = base.__new__(base)
             nice_ax._ax = ax
             return nice_ax
+
     raise TypeError("Invalid axes passed in")

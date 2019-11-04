@@ -7,6 +7,7 @@
 * `h.axis()` and `h.at()` are now completely removed unless you use the cpp version of histogram. [#183][]
 * `h.axes` now has the functions from axis as well. [#183][]
 * `bh.project` has become `bh.sum` [#185][]
+* Signatures are much nicer in Python 3 [#188][]
 
 
 #### Developer changes
@@ -20,6 +21,7 @@
 
 [#183]: https://github.com/scikit-hep/boost-histogram/pull/183
 [#185]: https://github.com/scikit-hep/boost-histogram/pull/185
+[#188]: https://github.com/scikit-hep/boost-histogram/pull/188
 
 
 ### Version 0.5.2
