@@ -7,7 +7,8 @@
 [![Documentation Status][rtd-badge]][rtd-link]
 [![DOI](https://zenodo.org/badge/148885351.svg)](https://zenodo.org/badge/latestdoi/148885351)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
-[![PyPI version](https://badge.fury.io/py/boost-histogram.svg)](https://badge.fury.io/py/boost-histogram)
+[![PyPI version](https://badge.fury.io/py/boost-histogram.svg)](https://pypi.org/project/boost-histogram/)
+[![Conda-Forge](https://img.shields.io/conda/vn/conda-forge/boost-histogram)][conda-link]
 
 Python bindings for [Boost::Histogram][] ([source][Boost::Histogram source]), a C++14 library. This should become one of the [fastest libraries][] for histogramming, while still providing the power of a full histogram object.
 
@@ -16,12 +17,10 @@ Python bindings for [Boost::Histogram][] ([source][Boost::Histogram source]), a 
 > Please feel free to try out boost-histogram and give feedback.
 > Join the [discussion on gitter][gitter-link] or [open an issue](https://github.com/scikit-hep/boost-histogram/issues)!
 >
-> #### Known issues:
-> * Non-simple storages do not support `.view()` or the buffer interface; you can access and set one element at a time
-> * Docstrings and signatures will improve in later versions (especially on Python 3)
-> * Setting with an array is not yet supported (`h[...] = np.array(...)`)
-> * A compiler is required to install on Python 3.8 on Windows (waiting on CI update for wheels)
-
+> #### Known issues (develop):
+> * Non-simple storages do not support `.view()` or the buffer interface; you can access and set one element at a time.
+> * Setting with an array is not yet supported (`h[...] = np.array(...)`).
+> * A compiler is required to install on Python 3.8 on Windows with pip (waiting on CI update for wheels) (conda-forge already has Python 3.8 packages).
 
 
 ## Installation
@@ -141,6 +140,11 @@ The easiest way to get boost-histogram is to use a binary wheel. These are the s
 
 If you are on a Linux system that is not part of the "many" in manylinux, such as Alpine or ClearLinux, building from source is usually fine, since the compilers on those systems are often quite new. It will just take a little longer to install when it's using the sdist instead of a wheel.
 
+
+#### Conda-Forge
+
+The boost-histogram package is available on Conda-Forge, as well. All supported versions are available with the exception of Windows + Python 2.7, which cannot build due to the age of the compiler. Please use Pip if you *really* need Python 2.7 on Windows. You will also need the VS 2015 distributable, as described above.
+
 #### Source builds
 
 For a source build, for example from an "sdist" package, the only requirements are a C++14 compatible compiler. The compiler requirements are dictated by Boost.Histogram's C++ requirements: gcc >= 5.5, clang >= 3.8, msvc >= 14.1.
@@ -183,3 +187,4 @@ Support for this work was provided by the National Science Foundation cooperativ
 [Boost::Histogram]:        https://www.boost.org/doc/libs/1_71_0/libs/histogram/doc/html/index.html
 [Boost::Histogram source]: https://github.com/boostorg/histogram
 [fastest libraries]:       https://iscinumpy.gitlab.io/post/histogram-speeds-in-python/
+[conda-link]:              https://github.com/conda-forge/boost-histogram-feedstock
