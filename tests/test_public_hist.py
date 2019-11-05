@@ -312,7 +312,7 @@ def test_repr():
   storage=double
 )"""
 
-    h = histogram(regular(3, 0, 1), integer(0, 1))
+    h = bh.Histogram(regular(3, 0, 1), integer(0, 1))
     assert repr(h) == hrepr
 
     h.fill([0.3, 0.5], [0, 0])
