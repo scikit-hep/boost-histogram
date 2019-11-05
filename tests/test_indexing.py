@@ -6,7 +6,7 @@ import pytest
 
 def test_1D_get_bin():
 
-    h = bh.histogram(bh.axis.regular(10, 0, 1))
+    h = bh.Histogram(bh.axis.Regular(10, 0, 1))
     h.fill([0.25, 0.25, 0.25, 0.15])
 
     assert h[0] == 0
@@ -26,7 +26,7 @@ def test_1D_get_bin():
 
 def test_2D_get_bin():
 
-    h = bh.histogram(bh.axis.regular(10, 0, 1), bh.axis.regular(10, 0, 1))
+    h = bh.Histogram(bh.axis.Regular(10, 0, 1), bh.axis.Regular(10, 0, 1))
     h.fill(0.15, [0.25, 0.25, 0.25, 0.15])
 
     assert h[0, 0] == 0
@@ -43,7 +43,7 @@ def test_2D_get_bin():
 
 
 def test_get_1D_histogram():
-    h = bh.histogram(bh.axis.regular(10, 0, 1))
+    h = bh.Histogram(bh.axis.Regular(10, 0, 1))
     h.fill([0.25, 0.25, 0.25, 0.15])
 
     h2 = h[:]
@@ -56,8 +56,8 @@ def test_get_1D_histogram():
 
 
 def test_get_1D_slice():
-    h1 = bh.histogram(bh.axis.regular(10, 0, 1))
-    h2 = bh.histogram(bh.axis.regular(5, 0, 0.5))
+    h1 = bh.Histogram(bh.axis.Regular(10, 0, 1))
+    h2 = bh.Histogram(bh.axis.Regular(5, 0, 0.5))
     h1.fill([0.25, 0.25, 0.25, 0.15])
     h2.fill([0.25, 0.25, 0.25, 0.15])
 
@@ -73,7 +73,7 @@ def test_get_1D_slice():
 
 def test_ellipsis():
 
-    h = bh.histogram(bh.axis.regular(10, 0, 1), bh.axis.regular(10, 0, 1))
+    h = bh.Histogram(bh.axis.Regular(10, 0, 1), bh.axis.Regular(10, 0, 1))
 
     assert h == h[...]
     assert h == h[:, ...]
@@ -95,12 +95,12 @@ def test_ellipsis():
 
 
 def test_basic_projection():
-    h2 = bh.histogram(
-        bh.axis.regular(10, 0, 10),
-        bh.axis.regular(10, 0, 10),
-        bh.axis.regular(10, 0, 10),
+    h2 = bh.Histogram(
+        bh.axis.Regular(10, 0, 10),
+        bh.axis.Regular(10, 0, 10),
+        bh.axis.Regular(10, 0, 10),
     )
-    h1 = bh.histogram(bh.axis.regular(10, 0, 10))
+    h1 = bh.Histogram(bh.axis.Regular(10, 0, 10))
 
     contents = [[2, 2, 2, 3, 4, 5, 6], [1, 2, 2, 3, 2, 1, 2], [-12, 33, 4, 9, 2, 4, 9]]
 
@@ -113,10 +113,10 @@ def test_basic_projection():
 
 
 def test_slicing_projection():
-    h1 = bh.histogram(
-        bh.axis.regular(10, 0, 10),
-        bh.axis.regular(10, 0, 10),
-        bh.axis.regular(10, 0, 10),
+    h1 = bh.Histogram(
+        bh.axis.Regular(10, 0, 10),
+        bh.axis.Regular(10, 0, 10),
+        bh.axis.Regular(10, 0, 10),
     )
 
     X, Y, Z = np.mgrid[-0.5:10.5:12j, -0.5:10.5:12j, -0.5:10.5:12j]

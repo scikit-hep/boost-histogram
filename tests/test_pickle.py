@@ -54,20 +54,20 @@ def test_accumulators(accum, args, copy_fn):
 
 
 axes_creations = (
-    (bh.axis.regular, (4, 2, 4), {"underflow": False, "overflow": False}),
-    (bh.axis.regular, (4, 2, 4), {}),
-    (bh.axis.regular, (4, 2, 4), {"growth": True}),
-    (bh.axis.regular_log, (4, 2, 4), {}),
-    (bh.axis.regular_sqrt, (4, 2, 4), {}),
-    (bh.axis.regular_pow, (4, 2, 4, 0.5), {}),
+    (bh.axis.Regular, (4, 2, 4), {"underflow": False, "overflow": False}),
+    (bh.axis.Regular, (4, 2, 4), {}),
+    (bh.axis.Regular, (4, 2, 4), {"growth": True}),
+    (bh.axis.Regular, (4, 2, 4), {"transform": bh.axis.transform.Log}),
+    (bh.axis.Regular, (4, 2, 4), {"transform": bh.axis.transform.Sqrt}),
+    (bh.axis.Regular, (4, 2, 4), {"transform": bh.axis.transform.Pow(0.5)}),
     (bh._core.axis.regular_numpy, (4, 2, 4), {}),
-    (bh.axis.circular, (4, 2, 4), {}),
-    (bh.axis.variable, ([1, 2, 3, 4],), {}),
-    (bh.axis.integer, (1, 4), {}),
-    (bh.axis.category, ([1, 2, 3],), {}),
-    (bh.axis.category, ([1, 2, 3],), {"growth": True}),
-    (bh.axis.category, (["1", "2", "3"],), {}),
-    (bh.axis.category, (["1", "2", "3"],), {"growth": True}),
+    (bh.axis.Regular, (4, 2, 4), {"circular": True}),
+    (bh.axis.Variable, ([1, 2, 3, 4],), {}),
+    (bh.axis.Integer, (1, 4), {}),
+    (bh.axis.Category, ([1, 2, 3],), {}),
+    (bh.axis.Category, ([1, 2, 3],), {"growth": True}),
+    (bh.axis.Category, (["1", "2", "3"],), {}),
+    (bh.axis.Category, (["1", "2", "3"],), {"growth": True}),
 )
 
 
@@ -92,7 +92,7 @@ def test_metadata_str(axis, args, opts, copy_fn):
 # Special test: Deepcopy should change metadata id, copy should not
 @pytest.mark.parametrize("metadata", ({1: 2}, [1, 2, 3]))
 def test_compare_copy_axis(metadata):
-    orig = bh.axis.regular(4, 0, 2, metadata=metadata)
+    orig = bh.axis.Regular(4, 0, 2, metadata=metadata)
     new = copy.copy(orig)
     dnew = copy.deepcopy(orig)
 
@@ -104,7 +104,7 @@ def test_compare_copy_axis(metadata):
 # Special test: Deepcopy should change metadata id, copy should not
 @pytest.mark.parametrize("metadata", ({1: 2}, [1, 2, 3]))
 def test_compare_copy_hist(metadata):
-    orig = bh.histogram(bh.axis.regular(4, 0, 2, metadata=metadata))
+    orig = bh.Histogram(bh.axis.Regular(4, 0, 2, metadata=metadata))
     new = copy.copy(orig)
     dnew = copy.deepcopy(orig)
 
@@ -134,7 +134,7 @@ def test_storage_int(copy_fn, storage):
 
 @pytest.mark.parametrize("copy_fn", copy_fns)
 def test_histogram_regular(copy_fn):
-    hist = bh.histogram(bh.axis.regular(4, 1, 2), bh.axis.regular(8, 3, 6))
+    hist = bh.Histogram(bh.axis.Regular(4, 1, 2), bh.axis.Regular(8, 3, 6))
 
     new = copy_fn(hist)
     assert hist == new
@@ -142,7 +142,7 @@ def test_histogram_regular(copy_fn):
 
 @pytest.mark.parametrize("copy_fn", copy_fns)
 def test_histogram_fancy(copy_fn):
-    hist = bh.histogram(bh.axis.regular(4, 1, 2), bh.axis.integer(0, 6))
+    hist = bh.Histogram(bh.axis.Regular(4, 1, 2), bh.axis.Integer(0, 6))
 
     new = copy_fn(hist)
     assert hist == new
@@ -152,7 +152,7 @@ def test_histogram_fancy(copy_fn):
 @pytest.mark.parametrize("metadata", ("This", (1, 2, 3)))
 def test_histogram_metadata(copy_fn, metadata):
 
-    hist = bh.histogram(bh.axis.regular(4, 1, 2, metadata=metadata))
+    hist = bh.Histogram(bh.axis.Regular(4, 1, 2, metadata=metadata))
     new = copy_fn(hist)
     assert hist == new
 

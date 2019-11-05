@@ -57,7 +57,7 @@ def histogramdd(
         else:
             b = np.asarray(b, dtype=np.double)
             b[-1] = np.nextafter(b[-1], np.finfo("d").max)
-            axs.append(_axis.variable(b))
+            axs.append(_axis.Variable(b))
 
     if weights is None:
         hist = _hist.Histogram(*axs).fill(*a)

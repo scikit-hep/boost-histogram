@@ -1,7 +1,6 @@
 import pytest
 
 import boost_histogram as bh
-from boost_histogram.axis import regular
 
 import numpy as np
 from numpy.testing import assert_array_equal, assert_allclose
@@ -31,8 +30,8 @@ def test_numpy_1d(benchmark, dtype):
 
 
 def make_and_run_hist(flow, storage, vals):
-    histo = bh.histogram(
-        regular(bins, *ranges, underflow=flow, overflow=flow), storage=storage()
+    histo = bh.Histogram(
+        bh.axis.Regular(bins, *ranges, underflow=flow, overflow=flow), storage=storage()
     )
     histo.fill(vals)
     return histo.view()

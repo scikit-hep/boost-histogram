@@ -18,12 +18,12 @@ def test_usage_bh():
 
 def test_convert_bh():
     h = bhc.histogram(
-        bh.histogram(bh.axis.regular(10, 0, 1), bh.axis.category(["one", "two"]))
+        bh.Histogram(bh.axis.Regular(10, 0, 1), bh.axis.Category(["one", "two"]))
     )
     assert hasattr(h, "axis")
     assert not hasattr(h, "axes")
 
-    h = bh.histogram(h)
+    h = bh.Histogram(h)
 
     assert not hasattr(h, "axis")
     assert hasattr(h, "axes")

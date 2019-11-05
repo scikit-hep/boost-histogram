@@ -4,7 +4,6 @@ import numpy as np
 from numpy.testing import assert_array_equal
 
 import boost_histogram as bh
-from boost_histogram.axis import regular
 
 STORAGES = (bh.storage.int, bh.storage.double, bh.storage.unlimited)
 DTYPES = (np.float64, np.float32, np.int64, np.int32)
@@ -35,9 +34,9 @@ def test_numpy_perf_2d(benchmark, dtype):
 
 def make_and_run_hist(flow, storage, vals):
 
-    histo = bh.histogram(
-        regular(bins[0], *ranges[0], underflow=flow, overflow=flow),
-        regular(bins[1], *ranges[1], underflow=flow, overflow=flow),
+    histo = bh.Histogram(
+        bh.axis.Regular(bins[0], *ranges[0], underflow=flow, overflow=flow),
+        bh.axis.Regular(bins[1], *ranges[1], underflow=flow, overflow=flow),
         storage=storage(),
     )
     histo.fill(*vals)

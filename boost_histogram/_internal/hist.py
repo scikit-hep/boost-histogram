@@ -27,10 +27,11 @@ def _arg_shortcut(item):
     elif isinstance(item, _Axis):
         return item._ax
     else:
-        return item
         # TODO: This currently support raw axis object for old tests.
         # Replace with:
         # raise TypeError("Only axes supported in histogram constructor")
+        # TODO: Currently segfaults if we pass in a non-axis to the C++ code
+        return _to_axis(item)._ax
 
 
 def _expand_ellipsis(indexes, rank):
@@ -263,9 +264,9 @@ class BoostHistogram(BaseHistogram):
     # Call uses fill since it supports strings,
     # runtime argument list, etc.
     @inject_signature("self, *args, weight=None, sample=None")
-    def __call__(self, *args, **kargs):
+    def __call__(self, *args, **kwargs):
         args = (((a,) if isinstance(a, str) else a) for a in args)
-        self._hist.fill(*args, **kargs)
+        self._hist.fill(*args, **kwargs)
         return self
 
 
