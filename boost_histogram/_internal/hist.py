@@ -98,7 +98,7 @@ class BaseHistogram(object):
         ----------
         *args : Axis
             Provide 1 or more axis instances.
-        storage : Storage = bh.storage.double
+        storage : Storage = bh.storage.Double
             Select a storage to use in the histogram
         """
 
@@ -272,9 +272,7 @@ class BoostHistogram(BaseHistogram):
 
 
 class Histogram(BaseHistogram):
-    @inject_signature(
-        "self, *axes, storage=_core.storage.double", locals={"_core": _core}
-    )
+    @inject_signature("self, *axes, storage=Double()", locals={"Double": Double})
     def __init__(self, *args, **kwargs):
         super(Histogram, self).__init__(*args, **kwargs)
 

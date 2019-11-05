@@ -53,10 +53,10 @@ def test_make_regular_2D(opt, extent):
 @pytest.mark.parametrize(
     "storage",
     (
-        bh.storage.int(),
-        bh.storage.double(),
-        bh.storage.unlimited(),
-        bh.storage.weight(),
+        bh.storage.Int(),
+        bh.storage.Double(),
+        bh.storage.Unlimited(),
+        bh.storage.Weight(),
     ),
 )
 def test_make_any_hist(storage):
@@ -82,10 +82,10 @@ def test_make_any_hist(storage):
 def test_make_any_hist_storage():
 
     assert float != type(
-        bh.Histogram(bh.axis.Regular(5, 1, 2), storage=bh.storage.int())[0]
+        bh.Histogram(bh.axis.Regular(5, 1, 2), storage=bh.storage.Int())[0]
     )
     assert float == type(
-        bh.Histogram(bh.axis.Regular(5, 1, 2), storage=bh.storage.double())[0]
+        bh.Histogram(bh.axis.Regular(5, 1, 2), storage=bh.storage.Double())[0]
     )
 
 
@@ -111,11 +111,11 @@ hist_ax = (
     bh.axis.Integer(0, 5, metadata=None),
 )
 hist_storage = (
-    bh.storage.double,
-    bh.storage.unlimited,
-    bh.storage.int,
-    bh.storage.atomic_int,
-    bh.storage.weight,
+    bh.storage.Double,
+    bh.storage.Unlimited,
+    bh.storage.Int,
+    bh.storage.AtomicInt,
+    bh.storage.Weight,
 )
 
 
