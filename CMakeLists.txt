@@ -137,6 +137,7 @@ if(NOT "${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_BINARY_DIR}")
             file(COPY       "${CMAKE_CURRENT_SOURCE_DIR}/${F}"
                 DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/${FDIR}")
         else()
+            file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/${F}")
             file(CREATE_LINK
                 "${CMAKE_CURRENT_SOURCE_DIR}/${F}"
                 "${CMAKE_CURRENT_BINARY_DIR}/${F}"
