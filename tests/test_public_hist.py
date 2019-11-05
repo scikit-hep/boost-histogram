@@ -139,7 +139,7 @@ def test_fill_1d(flow):
 # TODO: atomic_int not supported
 @pytest.mark.parametrize("storage", [bh.storage.Int, bh.storage.Double])
 def test_setting(storage):
-    h = bh.Histogram(bh.axis.Regular(10, 0, 1), storage=storage)
+    h = bh.Histogram(bh.axis.Regular(10, 0, 1), storage=storage())
     h[bh.underflow] = 1
     h[0] = 2
     h[1] = 3
@@ -560,12 +560,11 @@ def test_numpy_conversion_2():
 
 
 def test_numpy_conversion_3():
-    # It's okay to forget the () on a storage
     a = bh.Histogram(
         bh.axis.Integer(0, 2),
         bh.axis.Integer(0, 3),
         bh.axis.Integer(0, 4),
-        storage=bh.storage.Double,
+        storage=bh.storage.Double(),
     )
 
     r = np.zeros((4, 5, 6))
