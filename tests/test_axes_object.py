@@ -6,10 +6,10 @@ import numpy as np
 
 
 def test_axes_all_at_once():
-    h = bh.histogram(
-        bh.axis.regular(10, 0, 10, metadata=2),
-        bh.axis.integer(0, 5, metadata="hi"),
-        bh.axis.category(["HI", "HO"]),
+    h = bh.Histogram(
+        bh.axis.Regular(10, 0, 10, metadata=2),
+        bh.axis.Integer(0, 5, metadata="hi"),
+        bh.axis.Category(["HI", "HO"]),
     )
 
     assert h.axes.bin(1, 2, 0) == ((1.0, 2.0), 2, "HI")

@@ -106,5 +106,10 @@ class sum(object):
 
     # Supports UHI on general histograms, and acts nicely
     # if imported from boost_histogram directly
-    def __new__(cls, *args, **kargs):
-        return _np.sum(*args, **kargs)
+    def __new__(cls, *args, **kwargs):
+        return _np.sum(*args, **kwargs)
+
+
+# Compat only, will be removed after 0.6 release
+class project(sum):
+    pass
