@@ -347,9 +347,11 @@ class Category(Axis):
 
 def _walk_subclasses(cls):
     for base in cls.__subclasses__():
-        yield base
+        # Find the furthest child to allow
+        # user subclasses to work
         for inner in _walk_subclasses(base):
             yield inner
+        yield base
 
 
 def _to_axis(ax):

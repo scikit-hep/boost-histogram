@@ -6,7 +6,7 @@ from operator import add
 
 
 def mk_and_fill(axes, vals):
-    hist = bh.histogram(*axes)
+    hist = bh.Histogram(*axes)
     hist.fill(vals)
     return hist
 
@@ -23,7 +23,7 @@ def thread_fill(axes, threads, vals):
 
 
 def atomic_fill(axes, threads, vals):
-    hist = bh.histogram(*axes, storage=bh.storage.atomic_int())
+    hist = bh.Histogram(*axes, storage=bh.storage.atomic_int())
     with ThreadPoolExecutor(threads) as pool:
         sz = len(vals) // threads
         pool.map(hist.fill, [vals[i * sz : (i + 1) * sz] for i in range(threads)])
@@ -31,6 +31,6 @@ def atomic_fill(axes, threads, vals):
 
 
 def classic_fill(axes, threads, vals):
-    hist = bh.histogram(*axes)
+    hist = bh.Histogram(*axes)
     hist.fill(vals)
     return hist

@@ -1,17 +1,7 @@
 import pytest
 from pytest import approx
 
-from boost_histogram.axis import options
-from boost_histogram.axis import (
-    regular,
-    regular_log,
-    regular_sqrt,
-    regular_pow,
-    circular,
-    variable,
-    integer,
-    category,
-)
+import boost_histogram as bh
 
 import numpy as np
 from numpy.testing import assert_array_equal, assert_allclose
@@ -24,51 +14,43 @@ ABC = abc.ABCMeta("ABC", (object,), {"__slots__": ()})
 
 
 @pytest.mark.parametrize(
-    "axis_and_args",
+    "axis,args,opt,kwargs",
     [
-        (regular, (1, 2, 3, "")),
-        (regular, (1, 2, 3, "u")),
-        (regular, (1, 2, 3, "o")),
-        (regular, (1, 2, 3, "uo")),
-        (regular, (1, 2, 3, "uog")),
-        (circular, (1, 2, 3, "")),
-        (regular_log, (1, 2, 3, "")),
-        (regular_sqrt, (1, 2, 3, "")),
-        (regular_pow, (1, 2, 3, 1, "")),
-        (variable, ((1, 2, 3), "")),
-        (variable, ((1, 2, 3), "u")),
-        (variable, ((1, 2, 3), "o")),
-        (variable, ((1, 2, 3), "uo")),
-        (variable, ((1, 2, 3), "uog")),
-        (integer, (1, 2, "")),
-        (integer, (1, 2, "u")),
-        (integer, (1, 2, "o")),
-        (integer, (1, 2, "uo")),
-        (integer, (1, 2, "g")),
-        (category, ((1, 2, 3), "")),
-        (category, ((1, 2, 3), "g")),
-        (category, ("ABC", "")),
-        (category, ("ABC", "g")),
+        (bh.axis.Regular, (1, 2, 3), "", {}),
+        (bh.axis.Regular, (1, 2, 3), "u", {}),
+        (bh.axis.Regular, (1, 2, 3), "o", {}),
+        (bh.axis.Regular, (1, 2, 3), "uo", {}),
+        (bh.axis.Regular, (1, 2, 3), "g", {}),
+        (bh.axis.Regular, (1, 2, 3), "", {"circular": True}),
+        (bh.axis.Regular, (1, 2, 3), "", {"transform": bh.axis.transform.Log}),
+        (bh.axis.Regular, (1, 2, 3), "", {"transform": bh.axis.transform.Sqrt}),
+        (bh.axis.Regular, (1, 2, 3), "", {"transform": bh.axis.transform.Pow(1)}),
+        (bh.axis.Variable, ((1, 2, 3),), "", {}),
+        (bh.axis.Variable, ((1, 2, 3),), "u", {}),
+        (bh.axis.Variable, ((1, 2, 3),), "o", {}),
+        (bh.axis.Variable, ((1, 2, 3),), "uo", {}),
+        (bh.axis.Variable, ((1, 2, 3),), "g", {}),
+        (bh.axis.Integer, (1, 2), "", {}),
+        (bh.axis.Integer, (1, 2), "u", {}),
+        (bh.axis.Integer, (1, 2), "o", {}),
+        (bh.axis.Integer, (1, 2), "uo", {}),
+        (bh.axis.Integer, (1, 2), "g", {}),
+        (bh.axis.Category, ((1, 2, 3),), "", {}),
+        (bh.axis.Category, ((1, 2, 3),), "g", {}),
+        (bh.axis.Category, (tuple("ABC"),), "", {}),
+        (bh.axis.Category, (tuple("ABC"),), "g", {}),
     ],
 )
-def test_metadata(axis_and_args):
-    axis, args_opt = axis_and_args
-    args = args_opt[:-1]
-    opt = args_opt[-1]
+def test_metadata(axis, args, opt, kwargs):
     for m in ("foo", 64, {"one": 1}):
-        kwargs = {
-            "underflow": "u" in opt,
-            "overflow": "o" in opt,
-            "growth": "g" in opt,
-            "metadata": m,
-        }
-        if axis is category:
-            del kwargs["underflow"]
-            del kwargs["overflow"]
-        if axis in (circular, regular_log, regular_sqrt, regular_pow):
-            del kwargs["underflow"]
-            del kwargs["overflow"]
-            del kwargs["growth"]
+        if "u" in opt:
+            kwargs["underflow"] = False
+        if "o" in opt:
+            kwargs["overflow"] = False
+        if "g" in opt:
+            kwargs["growth"] = True
+        kwargs["metadata"] = m
+
         assert axis(*args, **kwargs).metadata is m
         mcopy = copy.deepcopy(m)
         # assert axis(*args, m).metadata is not mcopy
@@ -76,7 +58,9 @@ def test_metadata(axis_and_args):
         assert axis(*args, **kwargs).metadata == mcopy
         assert axis(*args, **kwargs).metadata != "bar"
         assert axis(*args, **kwargs) == axis(*args, **kwargs)
-        assert axis(*args, **kwargs) != axis(*args, metadata="bar")
+        assert axis(*args, **kwargs) != axis(
+            *args, metadata="bar"
+        )  # TODO: Add original args
 
 
 class Axis(ABC):
@@ -116,100 +100,109 @@ class Axis(ABC):
 class TestRegular(Axis):
     def test_init(self):
         # Should not throw
-        regular(1, 1.0, 2.0)
-        regular(1, 1.0, 2.0, metadata="ra")
-        regular(1, 1.0, 2.0, underflow=False)
-        regular(1, 1.0, 2.0, underflow=False, overflow=False, metadata="ra")
-        regular(1, 1.0, 2.0, metadata=0)
-        regular_log(1, 1.0, 2.0)
-        regular_sqrt(1, 1.0, 2.0)
-        regular_pow(1, 1.0, 2.0, 1.5)
+        bh.axis.Regular(1, 1.0, 2.0)
+        bh.axis.Regular(1, 1.0, 2.0, metadata="ra")
+        bh.axis.Regular(1, 1.0, 2.0, underflow=False)
+        bh.axis.Regular(1, 1.0, 2.0, underflow=False, overflow=False, metadata="ra")
+        bh.axis.Regular(1, 1.0, 2.0, metadata=0)
+        bh.axis.Regular(1, 1.0, 2.0, transform=bh.axis.transform.Log)
+        bh.axis.Regular(1, 1.0, 2.0, transform=bh.axis.transform.Sqrt)
+        bh.axis.Regular(1, 1.0, 2.0, transform=bh.axis.transform.Pow(1.5))
 
         with pytest.raises(TypeError):
-            regular()
+            bh.axis.Regular()
         with pytest.raises(TypeError):
-            regular(overflow=False, underflow=False)
+            bh.axis.Regular(overflow=False, underflow=False)
         with pytest.raises(TypeError):
-            regular(1)
+            bh.axis.Regular(1)
         with pytest.raises(TypeError):
-            regular(1, 1.0)
+            bh.axis.Regular(1, 1.0)
         with pytest.raises(ValueError):
-            regular(0, 1.0, 2.0)
+            bh.axis.Regular(0, 1.0, 2.0)
         with pytest.raises(TypeError):
-            regular("1", 1.0, 2.0)
+            bh.axis.Regular("1", 1.0, 2.0)
         with pytest.raises(Exception):
-            regular(-1, 1.0, 2.0)
+            bh.axis.Regular(-1, 1.0, 2.0)
 
         with pytest.raises(ValueError):
-            regular(1, 1.0, 1.0)
+            bh.axis.Regular(1, 1.0, 1.0)
 
         with pytest.raises(TypeError):
-            regular(1, 1.0, 2.0, bad_keyword="ra")
+            bh.axis.Regular(1, 1.0, 2.0, bad_keyword="ra")
+        with pytest.raises(AttributeError):
+            bh.axis.Regular(1, 1.0, 2.0, transform=lambda x: 2)
         with pytest.raises(TypeError):
-            regular_pow(1, 1.0, 2.0)
+            bh.axis.Regular(1, 1.0, 2.0, transform=bh.axis.transform.Pow)
+        # TODO: These errors could be better
 
-        ax = regular(1, 2, 3)
-        assert isinstance(ax, regular)
-        assert ax.options == options(underflow=True, overflow=True)
+        ax = bh.axis.Regular(1, 2, 3)
+        assert isinstance(ax, bh.axis.Regular)
+        assert ax.options == bh.axis.options(underflow=True, overflow=True)
 
-        ax = regular(1, 2, 3, overflow=False)
-        assert isinstance(ax, regular)
-        assert ax.options == options(underflow=True)
+        ax = bh.axis.Regular(1, 2, 3, overflow=False)
+        assert isinstance(ax, bh.axis.Regular)
+        assert ax.options == bh.axis.options(underflow=True)
 
-        ax = regular(1, 2, 3, underflow=False)
-        assert isinstance(ax, regular)
-        assert ax.options == options(overflow=True)
+        ax = bh.axis.Regular(1, 2, 3, underflow=False)
+        assert isinstance(ax, bh.axis.Regular)
+        assert ax.options == bh.axis.options(overflow=True)
 
-        ax = regular(1, 2, 3, underflow=False, overflow=False)
-        assert isinstance(ax, regular)
-        assert ax.options == options()
+        ax = bh.axis.Regular(1, 2, 3, underflow=False, overflow=False)
+        assert isinstance(ax, bh.axis.Regular)
+        assert ax.options == bh.axis.options()
 
-        ax = regular(1, 2, 3, growth=True)
-        assert isinstance(ax, regular)
-        assert ax.options == options(underflow=True, overflow=True, growth=True)
+        ax = bh.axis.Regular(1, 2, 3, growth=True)
+        assert isinstance(ax, bh.axis.Regular)
+        assert ax.options == bh.axis.options(underflow=True, overflow=True, growth=True)
 
     def test_equal(self):
-        a = regular(4, 1.0, 2.0)
-        assert a == regular(4, 1.0, 2.0)
-        assert a != regular(3, 1.0, 2.0)
-        assert a != regular(4, 1.1, 2.0)
-        assert a != regular(4, 1.0, 2.1)
+        a = bh.axis.Regular(4, 1.0, 2.0)
+        assert a == bh.axis.Regular(4, 1.0, 2.0)
+        assert a != bh.axis.Regular(3, 1.0, 2.0)
+        assert a != bh.axis.Regular(4, 1.1, 2.0)
+        assert a != bh.axis.Regular(4, 1.0, 2.1)
 
         # metadata compare
-        assert regular(1, 2, 3, metadata=1) == regular(1, 2, 3, metadata=1)
-        assert regular(1, 2, 3, metadata=1) != regular(1, 2, 3, metadata="1")
-        assert regular(1, 2, 3, metadata=1) != regular(1, 2, 3, metadata=[1])
+        assert bh.axis.Regular(1, 2, 3, metadata=1) == bh.axis.Regular(
+            1, 2, 3, metadata=1
+        )
+        assert bh.axis.Regular(1, 2, 3, metadata=1) != bh.axis.Regular(
+            1, 2, 3, metadata="1"
+        )
+        assert bh.axis.Regular(1, 2, 3, metadata=1) != bh.axis.Regular(
+            1, 2, 3, metadata=[1]
+        )
 
     def test_len(self):
-        a = regular(4, 1.0, 2.0)
+        a = bh.axis.Regular(4, 1.0, 2.0)
         assert len(a) == 4
         assert a.size == 4
         assert a.extent == 6
 
     def test_repr(self):
-        ax = regular(4, 1.1, 2.2)
+        ax = bh.axis.Regular(4, 1.1, 2.2)
         assert repr(ax) == "regular(4, 1.1, 2.2)"
 
-        ax = regular(4, 1.1, 2.2, metadata="ra")
+        ax = bh.axis.Regular(4, 1.1, 2.2, metadata="ra")
         assert repr(ax) == 'regular(4, 1.1, 2.2, metadata="ra")'
 
-        ax = regular(4, 1.1, 2.2, underflow=False)
+        ax = bh.axis.Regular(4, 1.1, 2.2, underflow=False)
         assert repr(ax) == "regular(4, 1.1, 2.2, underflow=False)"
 
-        ax = regular(4, 1.1, 2.2, metadata="ra", overflow=False)
+        ax = bh.axis.Regular(4, 1.1, 2.2, metadata="ra", overflow=False)
         assert repr(ax) == 'regular(4, 1.1, 2.2, metadata="ra", overflow=False)'
 
-        ax = regular_log(4, 1.1, 2.2)
+        ax = bh.axis.Regular(4, 1.1, 2.2, transform=bh.axis.transform.Log)
         assert repr(ax) == "regular_log(4, 1.1, 2.2)"
 
-        ax = regular_sqrt(3, 1.1, 2.2)
+        ax = bh.axis.Regular(3, 1.1, 2.2, transform=bh.axis.transform.Sqrt)
         assert repr(ax) == "regular_sqrt(3, 1.1, 2.2)"
 
-        ax = regular_pow(4, 1.1, 2.2, 0.5)
+        ax = bh.axis.Regular(4, 1.1, 2.2, transform=bh.axis.transform.Pow(0.5))
         assert repr(ax) == "regular_pow(4, 1.1, 2.2, power=0.5)"
 
     def test_getitem(self):
-        a = regular(2, 1.0, 2.0)
+        a = bh.axis.Regular(2, 1.0, 2.0)
         ref = [1.0, 1.5, 2.0]
         for i in range(2):
             assert_allclose(a.bin(i), ref[i : i + 2])
@@ -228,12 +221,12 @@ class TestRegular(Axis):
             a.bin(3)
 
     def test_iter(self):
-        a = regular(2, 1.0, 2.0)
+        a = bh.axis.Regular(2, 1.0, 2.0)
         ref = [(1.0, 1.5), (1.5, 2.0)]
         assert_allclose(a, ref)
 
     def test_index(self):
-        a = regular(4, 1.0, 2.0)
+        a = bh.axis.Regular(4, 1.0, 2.0)
 
         assert a.index(-1) == -1
         assert a.index(0.99) == -1
@@ -249,7 +242,7 @@ class TestRegular(Axis):
         assert a.index(20) == 4
 
     def test_reversed_index(self):
-        a = regular(4, 2.0, 1.0)
+        a = bh.axis.Regular(4, 2.0, 1.0)
 
         assert a.index(-1) == 4
         assert a.index(0.99) == 4
@@ -265,7 +258,7 @@ class TestRegular(Axis):
         assert a.index(20) == -1
 
     def test_log_transform(self):
-        a = regular_log(2, 1e0, 1e2)
+        a = bh.axis.Regular(2, 1e0, 1e2, transform=bh.axis.transform.Log)
 
         assert a.index(-1) == 2
         assert a.index(0.99) == -1
@@ -281,7 +274,7 @@ class TestRegular(Axis):
         assert a.bin(1)[1] == approx(1e2)
 
     def test_pow_transform(self):
-        a = regular_pow(2, 1.0, 9.0, power=0.5)
+        a = bh.axis.Regular(2, 1.0, 9.0, transform=bh.axis.transform.Pow(0.5))
 
         assert a.index(-1) == 2
         assert a.index(0.99) == -1
@@ -297,7 +290,7 @@ class TestRegular(Axis):
         assert a.bin(1)[1] == approx(9.0)
 
     def test_edges_centers_widths(self):
-        a = regular(2, 0, 1)
+        a = bh.axis.Regular(2, 0, 1)
         assert_allclose(a.edges, [0, 0.5, 1])
         assert_allclose(a.centers, [0.25, 0.75])
         assert_allclose(a.widths, [0.5, 0.5])
@@ -306,45 +299,45 @@ class TestRegular(Axis):
 class TestCircular(Axis):
     def test_init(self):
         # Should not throw
-        circular(1, 2, 3)
-        circular(1, 2, 3, metadata="pa")
+        bh.axis.Regular(1, 2, 3, circular=True)
+        bh.axis.Regular(1, 2, 3, metadata="pa", circular=True)
 
         with pytest.raises(TypeError):
-            circular(1, 2, 3, "pa")
+            bh.axis.Regular(1, 2, 3, "pa", circular=True)
 
         with pytest.raises(TypeError):
-            circular()
+            bh.axis.Regular(circular=True)
         with pytest.raises(TypeError):
-            circular(1)
+            bh.axis.Regular(1, circular=True)
         with pytest.raises(TypeError):
-            circular(1, -1)
+            bh.axis.Regular(1, -1, circular=True)
         with pytest.raises(Exception):
-            circular(-1)
+            bh.axis.Regular(-1, circular=True)
         with pytest.raises(TypeError):
-            circular(1, 1.0, metadata=1)
+            bh.axis.Regular(1, 1.0, metadata=1, circular=True)
         with pytest.raises(TypeError):
-            circular("1")
+            bh.axis.Regular("1", circular=True)
 
     def test_equal(self):
-        a = circular(4, 0.0, 1.0)
-        assert a == circular(4, 0, 1)
-        assert a != circular(2, 0, 1)
-        assert isinstance(a, regular)
+        a = bh.axis.Regular(4, 0.0, 1.0, circular=True)
+        assert a == bh.axis.Regular(4, 0, 1, circular=True)
+        assert a != bh.axis.Regular(2, 0, 1, circular=True)
+        assert isinstance(a, bh.axis.Regular)
 
     def test_len(self):
-        assert len(circular(4, 0.0, 1.0)) == 4
-        assert circular(4, 0.0, 1.0).size == 4
-        assert circular(4, 0.0, 1.0).extent == 5
+        assert len(bh.axis.Regular(4, 0.0, 1.0, circular=True)) == 4
+        assert bh.axis.Regular(4, 0.0, 1.0, circular=True).size == 4
+        assert bh.axis.Regular(4, 0.0, 1.0, circular=True).extent == 5
 
     def test_repr(self):
-        ax = circular(4, 1.1, 2.2)
+        ax = bh.axis.Regular(4, 1.1, 2.2, circular=True)
         assert repr(ax) == "circular(4, 1.1, 2.2)"
 
-        ax = circular(4, 1.1, 2.2, metadata="hi")
+        ax = bh.axis.Regular(4, 1.1, 2.2, metadata="hi", circular=True)
         assert repr(ax) == 'circular(4, 1.1, 2.2, metadata="hi")'
 
     def test_getitem(self):
-        a = circular(2, 1, 1 + np.pi * 2)
+        a = bh.axis.Regular(2, 1, 1 + np.pi * 2, circular=True)
         ref = [1.0, 1.0 + np.pi, 1.0 + 2.0 * np.pi]
         for i in range(2):
             assert_allclose(a.bin(i), ref[i : i + 2])
@@ -363,12 +356,12 @@ class TestCircular(Axis):
             a.bin(3)
 
     def test_iter(self):
-        a = circular(2, 1, 2)
+        a = bh.axis.Regular(2, 1, 2, circular=True)
         ref = [(1, 1.5), (1.5, 2)]
         assert_allclose(a, ref)
 
     def test_index(self):
-        a = circular(4, 1, 1 + np.pi * 2)
+        a = bh.axis.Regular(4, 1, 1 + np.pi * 2, circular=True)
         d = 0.5 * np.pi
         assert a.index(0.99 - 4 * d) == 3
         assert a.index(0.99 - 3 * d) == 0
@@ -385,7 +378,7 @@ class TestCircular(Axis):
         assert a.index(1.0 + 5 * d) == 1
 
     def test_edges_centers_widths(self):
-        a = circular(2, 0, 1)
+        a = bh.axis.Regular(2, 0, 1, circular=True)
         assert_allclose(a.edges, [0, 0.5, 1])
         assert_allclose(a.centers, [0.25, 0.75])
         assert_allclose(a.widths, [0.5, 0.5])
@@ -394,63 +387,63 @@ class TestCircular(Axis):
 class TestVariable(Axis):
     def test_init(self):
         # should not raise
-        variable([0, 1])
-        variable((0, 1, 2, 3, 4))
-        variable([0, 1], metadata="va")
+        bh.axis.Variable([0, 1])
+        bh.axis.Variable((0, 1, 2, 3, 4))
+        bh.axis.Variable([0, 1], metadata="va")
         with pytest.raises(TypeError):
-            variable()
+            bh.axis.Variable()
         with pytest.raises(ValueError):
-            variable([1])
+            bh.axis.Variable([1])
         with pytest.raises(TypeError):
-            variable(1)
+            bh.axis.Variable(1)
         with pytest.raises(ValueError):
-            variable([1, -1])
+            bh.axis.Variable([1, -1])
         with pytest.raises(ValueError):
-            variable([1, 1])
+            bh.axis.Variable([1, 1])
         with pytest.raises(TypeError):
-            variable(["1", 2])
+            bh.axis.Variable(["1", 2])
         with pytest.raises(TypeError):
-            variable([0.0, 1.0, 2.0], bad_keyword="ra")
+            bh.axis.Variable([0.0, 1.0, 2.0], bad_keyword="ra")
 
-        ax = variable([1, 2, 3])
-        assert isinstance(ax, variable)
-        assert ax.options == options(underflow=True, overflow=True)
+        ax = bh.axis.Variable([1, 2, 3])
+        assert isinstance(ax, bh.axis.Variable)
+        assert ax.options == bh.axis.options(underflow=True, overflow=True)
 
-        ax = variable([1, 2, 3], overflow=False)
-        assert isinstance(ax, variable)
-        assert ax.options == options(underflow=True)
+        ax = bh.axis.Variable([1, 2, 3], overflow=False)
+        assert isinstance(ax, bh.axis.Variable)
+        assert ax.options == bh.axis.options(underflow=True)
 
-        ax = variable([1, 2, 3], underflow=False)
-        assert isinstance(ax, variable)
-        assert ax.options == options(overflow=True)
+        ax = bh.axis.Variable([1, 2, 3], underflow=False)
+        assert isinstance(ax, bh.axis.Variable)
+        assert ax.options == bh.axis.options(overflow=True)
 
-        ax = variable([1, 2, 3], underflow=False, overflow=False)
-        assert isinstance(ax, variable)
-        assert ax.options == options()
+        ax = bh.axis.Variable([1, 2, 3], underflow=False, overflow=False)
+        assert isinstance(ax, bh.axis.Variable)
+        assert ax.options == bh.axis.options()
 
     def test_equal(self):
-        a = variable([-0.1, 0.2, 0.3])
-        assert a == variable((-0.1, 0.2, 0.3))
-        assert a != variable([0, 0.2, 0.3])
-        assert a != variable([-0.1, 0.1, 0.3])
-        assert a != variable([-0.1, 0.1])
+        a = bh.axis.Variable([-0.1, 0.2, 0.3])
+        assert a == bh.axis.Variable((-0.1, 0.2, 0.3))
+        assert a != bh.axis.Variable([0, 0.2, 0.3])
+        assert a != bh.axis.Variable([-0.1, 0.1, 0.3])
+        assert a != bh.axis.Variable([-0.1, 0.1])
 
     def test_len(self):
-        a = variable([-0.1, 0.2, 0.3])
+        a = bh.axis.Variable([-0.1, 0.2, 0.3])
         assert len(a) == 2
         assert a.size == 2
         assert a.extent == 4
 
     def test_repr(self):
-        a = variable([-0.1, 0.2])
+        a = bh.axis.Variable([-0.1, 0.2])
         assert repr(a) == "variable([-0.1, 0.2])"
 
-        a = variable([-0.1, 0.2], metadata="hi")
+        a = bh.axis.Variable([-0.1, 0.2], metadata="hi")
         assert repr(a) == 'variable([-0.1, 0.2], metadata="hi")'
 
     def test_getitem(self):
         ref = [-0.1, 0.2, 0.3]
-        a = variable(ref)
+        a = bh.axis.Variable(ref)
 
         for i in range(2):
             assert_allclose(a.bin(i), ref[i : i + 2])
@@ -473,12 +466,12 @@ class TestVariable(Axis):
 
     def test_iter(self):
         ref = [-0.1, 0.2, 0.3]
-        a = variable(ref)
+        a = bh.axis.Variable(ref)
         for i, bin in enumerate(a):
             assert_array_equal(bin, ref[i : i + 2])
 
     def test_index(self):
-        a = variable([-0.1, 0.2, 0.3])
+        a = bh.axis.Variable([-0.1, 0.2, 0.3])
         assert a.index(-10.0) == -1
         assert a.index(-0.11) == -1
         assert a.index(-0.1) == 0
@@ -492,7 +485,7 @@ class TestVariable(Axis):
         assert a.index(10) == 2
 
     def test_edges_centers_widths(self):
-        a = variable([0, 1, 3])
+        a = bh.axis.Variable([0, 1, 3])
         assert_allclose(a.edges, [0, 1, 3])
         assert_allclose(a.centers, [0.5, 2])
         assert_allclose(a.widths, [1, 2])
@@ -500,82 +493,84 @@ class TestVariable(Axis):
 
 class TestInteger:
     def test_init(self):
-        integer(-1, 2)
-        integer(-1, 2, metadata="foo")
-        integer(-1, 2, underflow=False)
-        integer(-1, 2, underflow=False, overflow=False)
-        integer(-1, 2, growth=True)
+        bh.axis.Integer(-1, 2)
+        bh.axis.Integer(-1, 2, metadata="foo")
+        bh.axis.Integer(-1, 2, underflow=False)
+        bh.axis.Integer(-1, 2, underflow=False, overflow=False)
+        bh.axis.Integer(-1, 2, growth=True)
 
         with pytest.raises(TypeError):
-            integer()
+            bh.axis.Integer()
         with pytest.raises(TypeError):
-            integer(1)
+            bh.axis.Integer(1)
         with pytest.raises(TypeError):
-            integer("1", 2)
+            bh.axis.Integer("1", 2)
         with pytest.raises(ValueError):
-            integer(2, -1)
+            bh.axis.Integer(2, -1)
         with pytest.raises(TypeError):
-            integer(-1, 2, "foo")
+            bh.axis.Integer(-1, 2, "foo")
         with pytest.raises(TypeError):
-            integer(20, 30, 40)
+            bh.axis.Integer(20, 30, 40)
 
-        ax = integer(1, 3)
-        assert isinstance(ax, integer)
-        assert ax.options == options(underflow=True, overflow=True)
+        ax = bh.axis.Integer(1, 3)
+        assert isinstance(ax, bh.axis.Integer)
+        assert ax.options == bh.axis.options(underflow=True, overflow=True)
 
-        ax = integer(1, 3, overflow=False)
-        assert isinstance(ax, integer)
-        assert ax.options == options(underflow=True)
+        ax = bh.axis.Integer(1, 3, overflow=False)
+        assert isinstance(ax, bh.axis.Integer)
+        assert ax.options == bh.axis.options(underflow=True)
 
-        ax = integer(1, 3, underflow=False)
-        assert isinstance(ax, integer)
-        assert ax.options == options(overflow=True)
+        ax = bh.axis.Integer(1, 3, underflow=False)
+        assert isinstance(ax, bh.axis.Integer)
+        assert ax.options == bh.axis.options(overflow=True)
 
-        ax = integer(1, 3, underflow=False, overflow=False)
-        assert isinstance(ax, integer)
-        assert ax.options == options()
+        ax = bh.axis.Integer(1, 3, underflow=False, overflow=False)
+        assert isinstance(ax, bh.axis.Integer)
+        assert ax.options == bh.axis.options()
 
-        ax = integer(1, 3, growth=True)
-        assert isinstance(ax, integer)
-        assert ax.options == options(growth=True)
+        ax = bh.axis.Integer(1, 3, growth=True)
+        assert isinstance(ax, bh.axis.Integer)
+        assert ax.options == bh.axis.options(growth=True)
 
     def test_equal(self):
-        assert integer(-1, 2) == integer(-1, 2)
-        assert integer(-1, 2) != integer(-1, 2, metadata="Other")
-        assert integer(-1, 2, underflow=True) != integer(-1, 2, underflow=False)
+        assert bh.axis.Integer(-1, 2) == bh.axis.Integer(-1, 2)
+        assert bh.axis.Integer(-1, 2) != bh.axis.Integer(-1, 2, metadata="Other")
+        assert bh.axis.Integer(-1, 2, underflow=True) != bh.axis.Integer(
+            -1, 2, underflow=False
+        )
 
     @pytest.mark.parametrize("underflow", [0, 1])
     @pytest.mark.parametrize("overflow", [0, 1])
     def test_len(self, underflow, overflow):
-        a = integer(-1, 3, underflow=underflow, overflow=overflow)
+        a = bh.axis.Integer(-1, 3, underflow=underflow, overflow=overflow)
         assert len(a) == 4
         assert a.size == 4
         assert a.extent == 4 + underflow + overflow
 
     def test_repr(self):
-        a = integer(-1, 1)
+        a = bh.axis.Integer(-1, 1)
         assert repr(a) == "integer(-1, 1)"
 
-        a = integer(-1, 1, metadata="hi")
+        a = bh.axis.Integer(-1, 1, metadata="hi")
         assert repr(a) == 'integer(-1, 1, metadata="hi")'
 
-        a = integer(-1, 1, underflow=False)
+        a = bh.axis.Integer(-1, 1, underflow=False)
         assert repr(a) == "integer(-1, 1, underflow=False)"
 
-        a = integer(-1, 1, overflow=False)
+        a = bh.axis.Integer(-1, 1, overflow=False)
         assert repr(a) == "integer(-1, 1, overflow=False)"
 
-        a = integer(-1, 1, growth=True)
+        a = bh.axis.Integer(-1, 1, growth=True)
         assert repr(a) == "integer(-1, 1, growth=True)"
 
     def test_label(self):
-        a = integer(-1, 2, metadata="foo")
+        a = bh.axis.Integer(-1, 2, metadata="foo")
         assert a.metadata == "foo"
         a.metadata = "bar"
         assert a.metadata == "bar"
 
     def test_getitem(self):
-        a = integer(-1, 3)
+        a = bh.axis.Integer(-1, 3)
         ref = [-1, 0, 1, 2]
         for i, r in enumerate(ref):
             assert a.bin(i) == r
@@ -584,12 +579,12 @@ class TestInteger:
         assert a.bin(4) == 3
 
     def test_iter(self):
-        a = integer(-1, 3)
+        a = bh.axis.Integer(-1, 3)
         ref = (-1, 0, 1, 2)
         assert_array_equal(a, ref)
 
     def test_index(self):
-        a = integer(-1, 3)
+        a = bh.axis.Integer(-1, 3)
         assert a.index(-3) == -1
         assert a.index(-2) == -1
         assert a.index(-1) == 0
@@ -600,7 +595,7 @@ class TestInteger:
         assert a.index(4) == 4
 
     def test_edges_centers_widths(self):
-        a = integer(1, 3)
+        a = bh.axis.Integer(1, 3)
         assert_allclose(a.edges, [1, 2, 3])
         assert_allclose(a.centers, [1.5, 2.5])
         assert_allclose(a.widths, [1, 1])
@@ -609,68 +604,68 @@ class TestInteger:
 class TestCategory(Axis):
     def test_init(self):
         # should not raise
-        category([1, 2])
-        category((1, 2), metadata="foo")
-        category(["A", "B"])
-        category("AB")
-        category("AB", metadata="foo")
+        bh.axis.Category([1, 2])
+        bh.axis.Category((1, 2), metadata="foo")
+        bh.axis.Category(["A", "B"])
+        bh.axis.Category("AB")
+        bh.axis.Category("AB", metadata="foo")
 
         with pytest.raises(TypeError):
-            category([1, 2], "foo")
+            bh.axis.Category([1, 2], "foo")
         with pytest.raises(TypeError):
-            category("AB", "foo")
+            bh.axis.Category("AB", "foo")
 
         with pytest.raises(TypeError):
-            category()
+            bh.axis.Category()
         with pytest.raises(TypeError):
-            category([1, "2"])
+            bh.axis.Category([1, "2"])
         with pytest.raises(TypeError):
-            category([1, 2, 3], underflow=True)
+            bh.axis.Category([1, 2, 3], underflow=True)
 
-        ax = category([1, 2, 3])
-        assert isinstance(ax, category)
-        assert ax.options == options(overflow=True)
+        ax = bh.axis.Category([1, 2, 3])
+        assert isinstance(ax, bh.axis.Category)
+        assert ax.options == bh.axis.options(overflow=True)
 
-        ax = category([1, 2, 3], growth=True)
-        assert isinstance(ax, category)
-        assert ax.options == options(growth=True)
+        ax = bh.axis.Category([1, 2, 3], growth=True)
+        assert isinstance(ax, bh.axis.Category)
+        assert ax.options == bh.axis.options(growth=True)
 
-        ax = category(["1", "2", "3"])
-        assert isinstance(ax, category)
-        assert ax.options == options(overflow=True)
+        ax = bh.axis.Category(["1", "2", "3"])
+        assert isinstance(ax, bh.axis.Category)
+        assert ax.options == bh.axis.options(overflow=True)
 
-        ax = category(["1", "2", "3"], growth=True)
-        assert isinstance(ax, category)
-        assert ax.options == options(growth=True)
+        ax = bh.axis.Category(["1", "2", "3"], growth=True)
+        assert isinstance(ax, bh.axis.Category)
+        assert ax.options == bh.axis.options(growth=True)
 
     def test_equal(self):
-        assert category([1, 2, 3]) == category([1, 2, 3])
-        assert category([1, 2, 3]) != category([1, 3, 2])
-        assert category(["A", "B"]) == category("AB")
-        assert category(["A", "B"]) != category("BA")
+        assert bh.axis.Category([1, 2, 3]) == bh.axis.Category([1, 2, 3])
+        assert bh.axis.Category([1, 2, 3]) != bh.axis.Category([1, 3, 2])
+        assert bh.axis.Category(["A", "B"]) == bh.axis.Category("AB")
+        assert bh.axis.Category(["A", "B"]) != bh.axis.Category("BA")
 
     @pytest.mark.parametrize("ref", ([1, 2, 3], "ABC"))
     @pytest.mark.parametrize("growth", (False, True))
     def test_len(self, ref, growth):
-        a = category(ref, growth=growth)
+        a = bh.axis.Category(ref, growth=growth)
         assert len(a) == 3
         assert a.size == 3
         assert a.extent == 3 if growth else 4
 
     def test_repr(self):
-        ax = category([1, 2, 3])
+        ax = bh.axis.Category([1, 2, 3])
         assert repr(ax) == "category([1, 2, 3])"
 
-        ax = category([1, 2, 3], metadata="foo")
+        ax = bh.axis.Category([1, 2, 3], metadata="foo")
         assert repr(ax) == 'category([1, 2, 3], metadata="foo")'
 
-        ax = category("ABC", metadata="foo")
+        ax = bh.axis.Category("ABC", metadata="foo")
         assert repr(ax) == 'category(["A", "B", "C"], metadata="foo")'
 
     @pytest.mark.parametrize("ref", ([1, 2, 3], "ABC"))
     @pytest.mark.parametrize("growth", (False, True))
     def test_getitem(self, ref, growth):
-        a = category(ref, growth=growth)
+        a = bh.axis.Category(ref, growth=growth)
 
         for i in range(3):
             assert a.bin(i) == ref[i]
@@ -682,7 +677,7 @@ class TestCategory(Axis):
 
         with pytest.raises(IndexError):
             a.bin(-1)
-        # Even if category axis has overflow enabled, we cannot return a bin value for the overflow,
+        # Even if bh.axis.Category axis has overflow enabled, we cannot return a bin value for the overflow,
         # because it is not clear what that value should be. So we raise an IndexError when this bin is accessed.
         with pytest.raises(IndexError):
             a.bin(3)
@@ -690,13 +685,13 @@ class TestCategory(Axis):
     @pytest.mark.parametrize("ref", ([1, 2, 3], ("A", "B", "C")))
     @pytest.mark.parametrize("growth", (False, True))
     def test_iter(self, ref, growth):
-        a = category(ref, growth=growth)
+        a = bh.axis.Category(ref, growth=growth)
         assert_array_equal(a, ref)
 
     @pytest.mark.parametrize("ref", ([1, 2, 3], ("A", "B", "C")))
     @pytest.mark.parametrize("growth", (False, True))
     def test_index(self, ref, growth):
-        a = category(ref, growth=growth)
+        a = bh.axis.Category(ref, growth=growth)
         for i, r in enumerate(ref):
             assert a.index(r) == i
         assert_array_equal(a.index(ref), [0, 1, 2])
@@ -704,7 +699,7 @@ class TestCategory(Axis):
     @pytest.mark.parametrize("ref", ([1, 2, 3], "ABC"))
     @pytest.mark.parametrize("growth", (False, True))
     def test_edges_centers_widths(self, ref, growth):
-        a = category(ref, growth=growth)
+        a = bh.axis.Category(ref, growth=growth)
         assert_allclose(a.edges, [0, 1, 2, 3])
         assert_allclose(a.centers, [0.5, 1.5, 2.5])
         assert_allclose(a.widths, [1, 1, 1])
