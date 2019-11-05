@@ -2,6 +2,8 @@
 
 #### User changes
 
+* Histogram and Axis classes now follow PEP 8 naming scheme (`histogram`->`Histogram`, `regular`->`Regular`, etc.) [#192][]
+* Added axes transforms [#192][]
 * You can now sum over a range with endpoints [#185][]
 * You can now access the functional regular axis directly, `regular_sqrt` becomes `regular.sqrt`, etc.. [#183][]
 * `h.axis()` and `h.at()` are now completely removed unless you use the cpp version of histogram. [#183][]
@@ -22,6 +24,7 @@
 [#183]: https://github.com/scikit-hep/boost-histogram/pull/183
 [#185]: https://github.com/scikit-hep/boost-histogram/pull/185
 [#188]: https://github.com/scikit-hep/boost-histogram/pull/188
+[#192]: https://github.com/scikit-hep/boost-histogram/pull/192
 
 
 ### Version 0.5.2

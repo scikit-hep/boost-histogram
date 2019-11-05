@@ -47,8 +47,8 @@ All the normal best-practices for Python apply; you should be in a virtual envir
 import boost_histogram as bh
 
 # Compose axis however you like; this is a 2D histogram
-hist = bh.histogram(bh.axis.regular(2, 0, 1),
-                    bh.axis.regular(4, 0.0, 1.0))
+hist = bh.Histogram(bh.axis.Regular(2, 0, 1),
+                    bh.axis.Regular(4, 0.0, 1.0))
 
 # Filling can be done with arrays, one per dimension
 hist.fill([.3, .5, .2],
@@ -61,14 +61,17 @@ counts = hist.view()
 ## Features
 
 * Many axis types (all support `metadata=...`)
-    * `bh.axis.regular(n, start, stop, underflow=True, overflow=True, growth=False)`: shortcut to make the types below. `flow=False` is also supported.
-    * `bh.axis.circular(n, start, stop)`: Value outside the range wrap into the range
-    * `bh.axis.regular_log(n, start, stop)`: Regularly spaced values in log 10 scale
-    * `bh.axis.regular_sqrt(n, start, stop)`: Regularly spaced value in sqrt scale
-    * `bh.axis.regular_pow(n, start, stop, power)`: Regularly spaced value to some `power`
-    * `bh.axis.integer(start, stop, underflow=True, overflow=True, growth=False)`: Special high-speed version of `regular` for evenly spaced bins of width 1
-    * `bh.axis.variable([start, edge1, edge2, ..., stop], underflow=True, overflow=True)`: Uneven bin spacing
-    * `bh.axis.category([...], growth=False)`: Integer or string categories
+    * `bh.axis.Regular(n, start, stop, ...)`: Make a regular axis. Options listed below.
+        * `overflow=False`: Turn off overflow bin
+        * `underflow=False`: Turn off underflow bin
+        * `growth=True`: Turn on growing axis, bins added when out-of-range items added
+        * `circular=True`: Turn on wrapping, so that out-of-range values wrap around into the axis
+        * `transform=bh.axis.transform.Log`: Log spacing
+        * `transform=bh.axis.transform.Sqrt`: Square root spacing
+        * `transform=bh.axis.transform.Pow(v)`: Power spacing
+    * `bh.axis.Integer(start, stop, underflow=True, overflow=True, growth=False)`: Special high-speed version of `regular` for evenly spaced bins of width 1
+    * `bh.axis.Variable([start, edge1, edge2, ..., stop], underflow=True, overflow=True)`: Uneven bin spacing
+    * `bh.axis.Category([...], growth=False)`: Integer or string categories
 * Axis features:
     * `.index(values)`: The index at a point (or points) on the axis
     * `.value(indexes)`: The value for a fractional bin in the axis
@@ -113,7 +116,7 @@ counts = hist.view()
     * `.reduce(ax, reduce_option, ...)`: shrink, rebin, or slice, or any combination
 * Indexing - Supports the [Unified Histogram Indexing (UHI)](https://boost-histogram.readthedocs.io/en/latest/usage/indexing.html) proposal
 * Details
-    * Use `bh.histogram(..., storage=...)` to make a histogram (there are several different types)
+    * Use `bh.Histogram(..., storage=...)` to make a histogram (there are several different types)
 
 
 ## Supported platforms
