@@ -25,13 +25,13 @@ accumulators = (
 )
 
 storages = (
-    bh.storage.atomic_int,
-    bh.storage.double,
-    bh.storage.int,
-    bh.storage.mean,
-    bh.storage.unlimited,
-    bh.storage.weight,
-    bh.storage.weighted_mean,
+    bh.storage.AtomicInt,
+    bh.storage.Double,
+    bh.storage.Int,
+    bh.storage.Mean,
+    bh.storage.Unlimited,
+    bh.storage.Weight,
+    bh.storage.WeightedMean,
 )
 
 

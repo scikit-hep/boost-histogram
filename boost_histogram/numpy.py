@@ -5,6 +5,7 @@ del absolute_import, division, print_function  # hides these from IPython
 from . import axis as _axis
 from ._internal import hist as _hist
 from . import _core
+from . import storage as _storage
 
 from ._internal.kwargs import KWArgs as _KWArgs
 
@@ -20,7 +21,7 @@ def histogramdd(
 
     with _KWArgs(kwargs) as k:
         boost = k.optional("bh", False)
-        storage = k.optional("bh_storage", _core.storage.double)
+        storage = k.optional("bh_storage", _storage.Double())
 
     if normed is not None:
         raise KeyError(
@@ -80,7 +81,7 @@ def histogram(
 
     # numpy 1d histogram returns integers in some cases
     if "bh_storage" not in kwargs and not (weights or normed or density):
-        kwargs["bh_storage"] = _core.storage.int
+        kwargs["bh_storage"] = _storage.Int()
 
     if isinstance(bins, str):
         if tuple(int(x) for x in np.__version__.split(".")[:2]) < (1, 13):
