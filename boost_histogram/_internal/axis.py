@@ -9,6 +9,7 @@ from .._core import axis as ca
 from .kwargs import KWArgs
 from .sig_tools import inject_signature
 from .axis_transform import AxisTransform
+from .utils import _walk_subclasses
 
 
 class Axis(object):
@@ -343,15 +344,6 @@ class Category(Axis):
                 self._ax = ca.category_str(categories, metadata)
         else:
             raise KeyError("Unsupported collection of options")
-
-
-def _walk_subclasses(cls):
-    for base in cls.__subclasses__():
-        # Find the furthest child to allow
-        # user subclasses to work
-        for inner in _walk_subclasses(base):
-            yield inner
-        yield base
 
 
 def _to_axis(ax):
