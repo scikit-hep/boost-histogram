@@ -93,10 +93,10 @@ counts = hist.view()
     * `bh.storage.Mean()`: Accepts a sample and computes the mean of the samples (profile). (`.view` not yet supported)
     * `bh.storage.WeightedMean()`: Accepts a sample and a weight. It computes the weighted mean of the samples. (`.view` not yet supported)
 * Accumulators
-    * `bh.accumulator.sum`: High accuracy sum (Neumaier) - used by the sum method when summing a numerical histogram
-    * `bh.accumulator.weighted_sum`: Tracks a weighted sum and variance
-    * `bh.accumulator.weighted_mean`: Tracks a weighted sum, mean, and variance (West's incremental algorithm)
-    * `bh.accumulator.mean`: Running count, mean, and variance (Welfords's incremental algorithm)
+    * `bh.accumulator.Sum`: High accuracy sum (Neumaier) - used by the sum method when summing a numerical histogram
+    * `bh.accumulator.WeightedSum`: Tracks a weighted sum and variance
+    * `bh.accumulator.Mean`: Running count, mean, and variance (Welfords's incremental algorithm)
+    * `bh.accumulator.WeightedMean`: Tracks a weighted sum, mean, and variance (West's incremental algorithm)
 * Histogram operations
     * `h.fill(arr, ..., weight=...)` Fill with N arrays or single values
     * `h.rank`: The number of dimensions

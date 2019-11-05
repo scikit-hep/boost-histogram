@@ -6,7 +6,7 @@ import numpy as np
 
 
 def test_weighted_sum():
-    a = bh.accumulators.weighted_sum(1.5, 2.5)
+    a = bh.accumulators.WeightedSum(1.5, 2.5)
 
     assert a.value == 1.5
     assert a.variance == 2.5
@@ -19,37 +19,37 @@ def test_weighted_sum():
     vals = [1, 2, 3]
     vari = [4, 5, 6]
 
-    a = bh.accumulators.weighted_sum()
+    a = bh.accumulators.WeightedSum()
     for val, var in zip(vals, vari):
-        a += bh.accumulators.weighted_sum(val, variance=var)
+        a += bh.accumulators.WeightedSum(val, variance=var)
 
     assert a.value == 6
     assert a.variance == 15
 
-    a2 = bh.accumulators.weighted_sum().fill(vals, variance=vari)
+    a2 = bh.accumulators.WeightedSum().fill(vals, variance=vari)
     assert a == a2
 
-    assert a == bh.accumulators.weighted_sum(6, 15)
+    assert a == bh.accumulators.WeightedSum(6, 15)
 
 
 def test_sum():
     vals = [1, 2, 3]
-    a = bh.accumulators.sum()
+    a = bh.accumulators.Sum()
     for val in vals:
         a += val
 
     assert a.value == 6
 
-    a2 = bh.accumulators.sum().fill(vals)
+    a2 = bh.accumulators.Sum().fill(vals)
     assert a == a2
 
-    assert a == bh.accumulators.sum(6)
+    assert a == bh.accumulators.Sum(6)
 
 
 def test_weighted_mean():
     vals = [4, 1]
     weights = [1, 2]
-    a = bh.accumulators.weighted_mean()
+    a = bh.accumulators.WeightedMean()
     for v, w in zip(vals, weights):
         a(v, weight=w)
 
@@ -57,15 +57,15 @@ def test_weighted_mean():
     assert a.variance == 4.5
     assert a.value == 2.0
 
-    a2 = bh.accumulators.weighted_mean().fill(vals, weight=weights)
+    a2 = bh.accumulators.WeightedMean().fill(vals, weight=weights)
     assert a == a2
 
-    assert a == bh.accumulators.weighted_mean(3, 5, 2, 4.5)
+    assert a == bh.accumulators.WeightedMean(3, 5, 2, 4.5)
 
 
 def test_mean():
     vals = [1, 2, 3]
-    a = bh.accumulators.mean()
+    a = bh.accumulators.Mean()
     for val in vals:
         a(val)
 
@@ -73,7 +73,7 @@ def test_mean():
     assert a.value == 2
     assert a.variance == 1
 
-    a2 = bh.accumulators.mean().fill([1, 2, 3])
+    a2 = bh.accumulators.Mean().fill([1, 2, 3])
     assert a == a2
 
-    assert a == bh.accumulators.mean(3, 2, 1)
+    assert a == bh.accumulators.Mean(3, 2, 1)
