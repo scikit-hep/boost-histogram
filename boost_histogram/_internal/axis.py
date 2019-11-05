@@ -8,6 +8,7 @@ from .._core import axis as ca
 
 from .kwargs import KWArgs
 from .sig_tools import inject_signature
+from .axis_transform import AxisTransform
 
 
 class Axis(object):
@@ -126,11 +127,14 @@ class Regular(Axis):
         ca.regular_oflow,
         ca.regular_none,
         ca.regular_numpy,
+        ca.regular_sqrt,
+        ca.regular_pow,
+        ca.regular_log,
         ca.circular,
     }
 
     @inject_signature(
-        "self, bins, start, stop, *, metadata=None, underflow=True, overflow=True, growth=False"
+        "self, bins, start, stop, *, metadata=None, underflow=True, overflow=True, growth=False, circular=False, transform=None"
     )
     def __init__(self, bins, start, stop, **kwargs):
         """
@@ -154,26 +158,26 @@ class Regular(Axis):
         growth : bool = False
             Allow the axis to grow if a value is encountered out of range.
             Be careful, the axis will grow as large as needed.
-
-        See also
-        --------
-        .sqrt
-            Square root regular binning
-        .pow
-            Power binning
-        .log
-            Log space binning
-        .circular
-            Circular _to_axis
+        circular : bool = False
+            Filling wraps around.
+        transform : Optional[AxisTransform] = None
+            Transform the regular bins (Log, Sqrt, and Pow(v))
         """
 
         with KWArgs(kwargs) as k:
             metadata = k.optional("metadata")
+            transform = k.optional("transform")
             options = k.options(
                 underflow=True, overflow=True, growth=False, circular=False
             )
 
-        if options == {"growth", "underflow", "overflow"}:
+        if transform is not None:
+            if options != {"underflow", "overflow"}:
+                raise KeyError("Transform supplied, cannot change other options")
+
+            self._ax = transform._produce(bins, start, stop, metadata)
+
+        elif options == {"growth", "underflow", "overflow"}:
             self._ax = ca.regular_uoflow_growth(bins, start, stop, metadata)
         elif options == {"underflow", "overflow"}:
             self._ax = ca.regular_uoflow(bins, start, stop, metadata)
@@ -183,52 +187,11 @@ class Regular(Axis):
             self._ax = ca.regular_oflow(bins, start, stop, metadata)
         elif options == {"circular", "underflow", "overflow"}:
             self._ax = ca.circular(bins, start, stop, metadata)
+
         elif options == set():
             self._ax = ca.regular_none(bins, start, stop, metadata)
         else:
             raise KeyError("Unsupported collection of options")
-
-    @classmethod
-    @inject_signature("cls, bins, start, stop, *, metadata=None")
-    def circular(cls, bins, start, stop, **kwargs):
-        self = cls.__new__(cls)
-        with KWArgs(kwargs) as k:
-            metadata = k.optional("metadata")
-        self._ax = ca.circular(bins, start, stop, metadata)
-        return self
-
-
-class Sqrt(Regular):
-    __slots__ = ()
-    _CLASSES = {ca.regular_sqrt}
-
-    @inject_signature("self, bins, start, stop, *, metadata=None")
-    def __init__(self, bins, start, stop, **kwargs):
-        with KWArgs(kwargs) as k:
-            metadata = k.optional("metadata")
-        self._ax = ca.regular_sqrt(bins, start, stop, metadata)
-
-
-class Log(Regular):
-    __slots__ = ()
-    _CLASSES = {ca.regular_log}
-
-    @inject_signature("self, bins, start, stop, *, metadata=None")
-    def __init__(self, bins, start, stop, **kwargs):
-        with KWArgs(kwargs) as k:
-            metadata = k.optional("metadata")
-        self._ax = ca.regular_log(bins, start, stop, metadata)
-
-
-class Pow(Regular):
-    __slots__ = ()
-    _CLASSES = {ca.regular_pow}
-
-    @inject_signature("self, bins, start, stop, power, *, metadata=None")
-    def __init__(self, bins, start, stop, power, **kwargs):
-        with KWArgs(kwargs) as k:
-            metadata = k.optional("metadata")
-        self._ax = ca.regular_pow(bins, start, stop, power, metadata)
 
 
 class Variable(Axis):
