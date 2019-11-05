@@ -4,7 +4,7 @@ import boost_histogram as bh
 
 def test_mean_hist():
 
-    h = bh.Histogram(bh.axis.Regular(3, 0, 1), storage=bh.storage.mean)
+    h = bh.Histogram(bh.axis.Regular(3, 0, 1), storage=bh.storage.Mean)
 
     h.fill(0.10, sample=[2.5])
     h.fill(0.25, sample=[3.5])

@@ -3,17 +3,15 @@ from __future__ import absolute_import, division, print_function
 del absolute_import, division, print_function
 
 from .._core import storage as store
-from .utils import _walk_subclasses
 
 
 class Storage(object):
     __slots__ = ()
 
     def __eq__(self, other):
-        return self.__class__ == other.__class__
-
-    def __ne__(self, other):
-        return self.__class__ != other.__class__
+        return issubclass(other.__class__, self.__class__) or issubclass(
+            self.__class__, other.__class__
+        )
 
     # Override this to allow configurable storages
     @classmethod
@@ -50,7 +48,7 @@ class WeightedMean(Storage):
 
 
 def _to_storage(st):
-    for base in _walk_subclasses(Storage):
+    for base in Storage.__subclasses__():
         if st == base._STORAGE:
             return base
 

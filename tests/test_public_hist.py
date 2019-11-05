@@ -137,7 +137,7 @@ def test_fill_1d(flow):
 
 
 # TODO: atomic_int not supported
-@pytest.mark.parametrize("storage", [bh.storage.int, bh.storage.double])
+@pytest.mark.parametrize("storage", [bh.storage.Int, bh.storage.Double])
 def test_setting(storage):
     h = bh.Histogram(bh.axis.Regular(10, 0, 1), storage=storage)
     h[bh.underflow] = 1
@@ -565,7 +565,7 @@ def test_numpy_conversion_3():
         bh.axis.Integer(0, 2),
         bh.axis.Integer(0, 3),
         bh.axis.Integer(0, 4),
-        storage=bh.storage.double,
+        storage=bh.storage.Double,
     )
 
     r = np.zeros((4, 5, 6))
@@ -605,7 +605,7 @@ def test_numpy_conversion_5():
     a = bh.Histogram(
         bh.axis.Integer(0, 3, underflow=False, overflow=False),
         bh.axis.Integer(0, 2, underflow=False, overflow=False),
-        storage=bh.storage.unlimited(),
+        storage=bh.storage.Unlimited(),
     )
 
     a.fill(0, 0)
@@ -689,7 +689,7 @@ def test_fill_with_numpy_array_1():
     def ar(*args):
         return np.array(args, dtype=float)
 
-    a = bh.Histogram(bh.axis.Integer(0, 3), storage=bh.storage.weight())
+    a = bh.Histogram(bh.axis.Integer(0, 3), storage=bh.storage.Weight())
     v = ar(-1, 0, 1, 2, 3, 4)
     w = ar(2, 3, 4, 5, 6, 7)  # noqa
     a.fill(v, weight=w)

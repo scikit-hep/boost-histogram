@@ -5,7 +5,7 @@ import boost_histogram as bh
 import numpy as np
 from numpy.testing import assert_array_equal, assert_allclose
 
-STORAGES = (bh.storage.int, bh.storage.double, bh.storage.unlimited)
+STORAGES = (bh.storage.Int, bh.storage.Double, bh.storage.Unlimited)
 DTYPES = (np.float64, np.float32, np.int64, np.int32)
 
 bins = 100
