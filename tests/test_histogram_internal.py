@@ -26,7 +26,7 @@ def test_1D_fill_int(storage):
     vals = (0.15, 0.25, 0.25)
 
     hist = bh.Histogram(bh.axis.Regular(bins, *ranges), storage=storage)
-    assert hist._hist._storage_type == storage
+    assert hist._storage_type == storage
     hist.fill(vals)
 
     H = np.array([0, 1, 2, 0, 0, 0, 0, 0, 0, 0])
@@ -51,7 +51,7 @@ def test_2D_fill_int(storage):
         bh.axis.Regular(bins[1], *ranges[1]),
         storage=storage,
     )
-    assert hist._hist._storage_type == storage
+    assert hist._storage_type == storage
     hist.fill(*vals)
 
     H = np.histogram2d(*vals, bins=bins, range=ranges)[0]

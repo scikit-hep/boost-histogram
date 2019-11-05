@@ -3,9 +3,10 @@ from __future__ import absolute_import, division, print_function
 from .kwargs import KWArgs
 
 from .. import _core
-from .axis import _to_axis, Axis as _Axis
+from .axis import _to_axis, Axis
 from .axistuple import AxesTuple
 from .sig_tools import inject_signature
+from .storage import Double, _to_storage
 
 import warnings
 import numpy as np
@@ -24,7 +25,7 @@ _histograms = (
 def _arg_shortcut(item):
     if isinstance(item, tuple):
         return _core.axis.regular_uoflow(*item)
-    elif isinstance(item, _Axis):
+    elif isinstance(item, Axis):
         return item._ax
     else:
         # TODO: This currently support raw axis object for old tests.
@@ -84,9 +85,7 @@ def _compute_commonindex(hist, index, expand):
 
 
 class BaseHistogram(object):
-    @inject_signature(
-        "self, *axes, storage=_core.storage.double", locals={"_core": _core}
-    )
+    @inject_signature("self, *axes, storage=Double()", locals={"Double": Double})
     def __init__(self, *axes, **kwargs):
         """
         Construct a new histogram.
@@ -114,11 +113,9 @@ class BaseHistogram(object):
 
         # Keyword only trick (change when Python2 is dropped)
         with KWArgs(kwargs) as k:
-            storage = k.optional("storage", _core.storage.double())
+            storage = k.optional("storage", Double())
 
-        # Initialize storage if user has not
-        if isinstance(storage, type):
-            storage = storage()
+        storage = storage._get_storage_()
 
         # Allow a tuple to represent a regular axis
         axes = [_arg_shortcut(arg) for arg in axes]
@@ -218,6 +215,10 @@ class BaseHistogram(object):
         Get N-th axis.
         """
         return _to_axis(self._hist.axis(i))
+
+    @property
+    def _storage_type(self):
+        return _to_storage(self._hist._storage_type)
 
 
 class BoostHistogram(BaseHistogram):
