@@ -25,7 +25,7 @@ def test_1D_fill_int(storage):
 
     vals = (0.15, 0.25, 0.25)
 
-    hist = bh.Histogram(bh.axis.Regular(bins, *ranges), storage=storage)
+    hist = bh.Histogram(bh.axis.Regular(bins, *ranges), storage=storage())
     assert hist._storage_type == storage
     hist.fill(vals)
 
@@ -49,7 +49,7 @@ def test_2D_fill_int(storage):
     hist = bh.Histogram(
         bh.axis.Regular(bins[0], *ranges[0]),
         bh.axis.Regular(bins[1], *ranges[1]),
-        storage=storage,
+        storage=storage(),
     )
     assert hist._storage_type == storage
     hist.fill(*vals)
@@ -69,7 +69,7 @@ def test_2D_fill_int(storage):
 
 def test_edges_histogram():
     edges = (1, 12, 22, 79)
-    hist = bh.Histogram(bh.axis.Variable(edges), storage=bh.storage.Int)
+    hist = bh.Histogram(bh.axis.Variable(edges), storage=bh.storage.Int())
 
     vals = (13, 15, 24, 29)
     hist.fill(vals)
@@ -81,7 +81,7 @@ def test_edges_histogram():
 
 
 def test_int_histogram():
-    hist = bh.Histogram(bh.axis.Integer(3, 7), storage=bh.storage.Int)
+    hist = bh.Histogram(bh.axis.Integer(3, 7), storage=bh.storage.Int())
 
     vals = (1, 2, 3, 4, 5, 6, 7, 8, 9)
     hist.fill(vals)
@@ -93,14 +93,16 @@ def test_int_histogram():
 
 
 def test_str_categories_histogram():
-    hist = bh.Histogram(bh.axis.Category(["a", "b", "c"]), storage=bh.storage.Int)
+    hist = bh.Histogram(bh.axis.Category(["a", "b", "c"]), storage=bh.storage.Int())
 
     vals = ["a", "b", "b", "c"]
     # Can't fill yet
 
 
 def test_growing_histogram():
-    hist = bh.Histogram(bh.axis.Regular(10, 0, 1, growth=True), storage=bh.storage.Int)
+    hist = bh.Histogram(
+        bh.axis.Regular(10, 0, 1, growth=True), storage=bh.storage.Int()
+    )
 
     hist.fill(1.45)
 
@@ -109,7 +111,7 @@ def test_growing_histogram():
 
 def test_numpy_flow():
     h = bh.Histogram(
-        bh.axis.Regular(10, 0, 1), bh.axis.Regular(5, 0, 1), storage=bh.storage.Int
+        bh.axis.Regular(10, 0, 1), bh.axis.Regular(5, 0, 1), storage=bh.storage.Int()
     )
 
     for i in range(10):
@@ -133,7 +135,7 @@ def test_numpy_flow():
 
 def test_numpy_compare():
     h = bh.Histogram(
-        bh.axis.Regular(10, 0, 1), bh.axis.Regular(5, 0, 1), storage=bh.storage.Int
+        bh.axis.Regular(10, 0, 1), bh.axis.Regular(5, 0, 1), storage=bh.storage.Int()
     )
 
     xs = []
@@ -158,10 +160,10 @@ def test_numpy_compare():
 
 def test_project():
     h = bh.Histogram(
-        bh.axis.Regular(10, 0, 1), bh.axis.Regular(5, 0, 1), storage=bh.storage.Int
+        bh.axis.Regular(10, 0, 1), bh.axis.Regular(5, 0, 1), storage=bh.storage.Int()
     )
-    h0 = bh.Histogram(bh.axis.Regular(10, 0, 1), storage=bh.storage.Int)
-    h1 = bh.Histogram(bh.axis.Regular(5, 0, 1), storage=bh.storage.Int)
+    h0 = bh.Histogram(bh.axis.Regular(10, 0, 1), storage=bh.storage.Int())
+    h1 = bh.Histogram(bh.axis.Regular(5, 0, 1), storage=bh.storage.Int())
 
     for x, y in (
         (0.3, 0.3),
@@ -193,7 +195,7 @@ def test_sums():
 
 
 def test_int_cat_hist():
-    h = bh.Histogram(bh.axis.Category([1, 2, 3]), storage=bh.storage.Int)
+    h = bh.Histogram(bh.axis.Category([1, 2, 3]), storage=bh.storage.Int())
 
     h.fill(1)
     h.fill(2)
