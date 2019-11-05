@@ -695,10 +695,10 @@ def test_fill_with_numpy_array_1():
     a.fill(v, weight=w)
     a.fill((0, 1), weight=(2, 3))
 
-    assert a[bh.underflow] == bh.accumulators.weighted_sum(2, 4)
-    assert a[0] == bh.accumulators.weighted_sum(5, 13)
-    assert a[1] == bh.accumulators.weighted_sum(7, 25)
-    assert a[2] == bh.accumulators.weighted_sum(5, 25)
+    assert a[bh.underflow] == bh.accumulators.WeightedSum(2, 4)
+    assert a[0] == bh.accumulators.WeightedSum(5, 13)
+    assert a[1] == bh.accumulators.WeightedSum(7, 25)
+    assert a[2] == bh.accumulators.WeightedSum(5, 25)
 
     assert a[bh.underflow].value == 2
     assert a[0].value == 5

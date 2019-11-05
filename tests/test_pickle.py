@@ -18,10 +18,10 @@ copy_fns = (
 )
 
 accumulators = (
-    (bh.accumulators.sum, (12,)),
-    (bh.accumulators.weighted_sum, (1.5, 2.5)),
-    (bh.accumulators.mean, (5, 1.5, 2.5)),
-    (bh.accumulators.weighted_mean, (1.5, 2.5, 3.5, 4.5)),
+    (bh.accumulators.Sum, (12,)),
+    (bh.accumulators.WeightedSum, (1.5, 2.5)),
+    (bh.accumulators.Mean, (5, 1.5, 2.5)),
+    (bh.accumulators.WeightedMean, (1.5, 2.5, 3.5, 4.5)),
 )
 
 storages = (
