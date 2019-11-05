@@ -144,20 +144,6 @@ class BaseHistogram(object):
         # TODO: .view does not seem to return an editable view
         #        so we have to use the buffer interface here
 
-    def reset(self):
-        """
-        Reset bin counters to default values.
-        """
-        self._hist.reset()
-        return self
-
-    def empty(self, flow=False):
-        """
-        Check to see if the histogram has any non-default values.
-        You can use flow=True to check flow bins too.
-        """
-        return self._hist.empty(flow)
-
     def __add__(self, other):
         return self.__class__(self._hist + other._hist)
 
@@ -227,12 +213,6 @@ class BaseHistogram(object):
         self._hist.fill(*args, **kwargs)
         return self
 
-    def sum(self, flow=False):
-        """
-        Compute the sum over the histogram bins (optionally including the flow bins).
-        """
-        return self._hist.sum(flow)
-
     def _axis(self, i):
         """
         Get N-th axis.
@@ -269,6 +249,26 @@ class BoostHistogram(BaseHistogram):
         self._hist.fill(*args, **kwargs)
         return self
 
+    def _reset(self):
+        """
+        Reset bin counters to default values.
+        """
+        self._hist.reset()
+        return self
+
+    def _empty(self, flow=False):
+        """
+        Check to see if the histogram has any non-default values.
+        You can use flow=True to check flow bins too.
+        """
+        return self._hist.empty(flow)
+
+    def _sum(self, flow=False):
+        """
+        Compute the sum over the histogram bins (optionally including the flow bins).
+        """
+        return self._hist.sum(flow)
+
 
 class Histogram(BaseHistogram):
     @inject_signature(
@@ -301,9 +301,25 @@ class Histogram(BaseHistogram):
         """
         return self._hist.view(flow)
 
-    def _at(self, *ind):
-        "Temporary workaround for looping from -1 in old tests"
-        return self._hist.at(*ind)
+    def reset(self):
+        """
+        Reset bin counters to default values.
+        """
+        self._hist.reset()
+        return self
+
+    def empty(self, flow=False):
+        """
+        Check to see if the histogram has any non-default values.
+        You can use flow=True to check flow bins too.
+        """
+        return self._hist.empty(flow)
+
+    def sum(self, flow=False):
+        """
+        Compute the sum over the histogram bins (optionally including the flow bins).
+        """
+        return self._hist.sum(flow)
 
     @property
     def rank(self):
