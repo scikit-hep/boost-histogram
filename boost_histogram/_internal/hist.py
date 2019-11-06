@@ -6,7 +6,7 @@ from .. import _core
 from .axis import _to_axis, Axis
 from .axistuple import AxesTuple
 from .sig_tools import inject_signature
-from .storage import Double, _to_storage
+from .storage import Double
 
 import warnings
 import numpy as np
@@ -115,8 +115,6 @@ class BaseHistogram(object):
         with KWArgs(kwargs) as k:
             storage = k.optional("storage", Double())
 
-        storage = storage._get_storage_()
-
         # Allow a tuple to represent a regular axis
         axes = [_arg_shortcut(arg) for arg in axes]
 
@@ -218,7 +216,7 @@ class BaseHistogram(object):
 
     @property
     def _storage_type(self):
-        return _to_storage(self._hist._storage_type)
+        return self._hist._storage_type
 
 
 class BoostHistogram(BaseHistogram):

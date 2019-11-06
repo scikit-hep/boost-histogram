@@ -1,6 +1,6 @@
-from __future__ import absolute_import, division, print_function
+from __future__ import absolute_import
 
-del absolute_import, division, print_function
+del absolute_import
 
 import warnings
 
@@ -15,36 +15,36 @@ from ._internal.storage import (
 )
 
 
-class DepStorageMixin(object):
-    @classmethod
-    def _get_storage_(cls):
-        warnings.warn("Use Int instead", DeprecationWarning)
-        return cls._STORAGE()
+def int():
+    warnings.warn("Use Int instead", DeprecationWarning)
+    return Int()
 
 
-class int(DepStorageMixin, Int):
-    pass
+def double():
+    warnings.warn("Use Double instead", DeprecationWarning)
+    return Double()
 
 
-class double(DepStorageMixin, Double):
-    pass
+def unlimited():
+    warnings.warn("Use Unlimited instead", DeprecationWarning)
+    return Unlimited()
 
 
-class unlimited(DepStorageMixin, Unlimited):
-    pass
+def atomic_int():
+    warnings.warn("Use AtomicInt instead", DeprecationWarning)
+    return AtomicInt()
 
 
-class atomic_int(DepStorageMixin, AtomicInt):
-    pass
+def weight():
+    warnings.warn("Use Weight instead", DeprecationWarning)
+    return Weight()
 
 
-class weight(DepStorageMixin, Weight):
-    pass
+def mean():
+    warnings.warn("Use Mean instead", DeprecationWarning)
+    return Mean()
 
 
-class mean(DepStorageMixin, Mean):
-    pass
-
-
-class weighted_mean(DepStorageMixin, WeightedMean):
-    pass
+def weighted_mean():
+    warnings.warn("Use WeightedMean instead", DeprecationWarning)
+    return WeightedMean()
