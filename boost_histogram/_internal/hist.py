@@ -4,6 +4,7 @@ from .kwargs import KWArgs
 
 from .. import _core
 from .axis import _to_axis, Axis
+from .view import _to_view
 from .axistuple import AxesTuple
 from .sig_tools import inject_signature
 from .storage import Double
@@ -135,7 +136,7 @@ class BaseHistogram(object):
         return self.__class__.__name__ + repr(self._hist)[9:]
 
     def __array__(self):
-        return np.asarray(self._hist)
+        return _to_view(np.asarray(self._hist))
         # TODO: .view does not seem to return an editable view
         #        so we have to use the buffer interface here
 
@@ -296,7 +297,7 @@ class Histogram(BaseHistogram):
         """
         Return a view into the data, optionally with overflow turned on.
         """
-        return self._hist.view(flow)
+        return _to_view(self._hist.view(flow))
 
     def reset(self):
         """

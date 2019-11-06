@@ -7,6 +7,10 @@
 
 #include <boost/histogram/python/pybind11.hpp>
 
+#include <boost/histogram/python/accumulators/mean.hpp>
+#include <boost/histogram/python/accumulators/weighted_mean.hpp>
+#include <boost/histogram/python/accumulators/weighted_sum.hpp>
+
 #include <boost/histogram/detail/axes.hpp>
 #include <boost/histogram/histogram.hpp>
 #include <boost/histogram/unsafe_access.hpp>
@@ -19,46 +23,6 @@ namespace pybind11 {
 template <class T>
 struct format_descriptor<bh::accumulators::thread_safe<T>> : format_descriptor<T> {
     static_assert(std::is_standard_layout<bh::accumulators::thread_safe<T>>::value, "");
-};
-
-/// This descriptor depends on the memory format for mean<double> remaining unchanged
-template <>
-struct format_descriptor<bh::accumulators::mean<double>> {
-    static std::string format() {
-        return std::string("T{"
-                           "d:sum_:"
-                           "d:mean_:"
-                           "d:sum_of_deltas_squared_:}");
-    }
-};
-
-// If made public, could be:
-// PYBIND11_NUMPY_DTYPE(mean, sum_, mean_, sum_of_deltas_squared_);
-
-/// This descriptor depends on the memory format for weighted_mean<double> remaining
-/// unchanged
-template <>
-struct format_descriptor<bh::accumulators::weighted_mean<double>> {
-    static std::string format() {
-        return std::string("T{"
-                           "d:sum_of_weights_:"
-                           "d:sum_of_weights_squared_:"
-                           "d:weighted_mean_:"
-                           "d:sum_of_weighted_deltas_squared_:"
-                           "}");
-    }
-};
-
-/// This descriptor depends on the memory format for weighted_sum<double> remaining
-/// unchanged
-template <>
-struct format_descriptor<bh::accumulators::weighted_sum<double>> {
-    static std::string format() {
-        return std::string("T{"
-                           "d:sum_of_weights_:"
-                           "d:sum_of_weights_squared_:"
-                           "}");
-    }
 };
 
 } // namespace pybind11
