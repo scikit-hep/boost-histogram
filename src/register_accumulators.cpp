@@ -5,10 +5,10 @@
 
 #include <boost/histogram/python/pybind11.hpp>
 
-#include <boost/histogram/accumulators/mean.hpp>
 #include <boost/histogram/accumulators/sum.hpp>
-#include <boost/histogram/accumulators/weighted_mean.hpp>
-#include <boost/histogram/accumulators/weighted_sum.hpp>
+#include <boost/histogram/python/accumulators/mean.hpp>
+#include <boost/histogram/python/accumulators/weighted_mean.hpp>
+#include <boost/histogram/python/accumulators/weighted_sum.hpp>
 #include <boost/histogram/python/accumulators_ostream.hpp>
 #include <boost/histogram/python/kwargs.hpp>
 #include <boost/histogram/python/register_accumulator.hpp>
@@ -52,7 +52,7 @@ decltype(auto) make_mean_call() {
 }
 
 void register_accumulators(py::module &accumulators) {
-    using weighted_sum = bh::accumulators::weighted_sum<double>;
+    using weighted_sum = bh::python::weighted_sum<double>;
 
     register_accumulator<weighted_sum>(accumulators, "weighted_sum")
 
@@ -115,7 +115,7 @@ void register_accumulators(py::module &accumulators) {
 
         ;
 
-    using weighted_mean = bh::accumulators::weighted_mean<double>;
+    using weighted_mean = bh::python::weighted_mean<double>;
 
     register_accumulator<weighted_mean>(accumulators, "weighted_mean")
         .def(py::init<const double &, const double &, const double &, const double &>(),
@@ -140,7 +140,7 @@ void register_accumulators(py::module &accumulators) {
 
         ;
 
-    using mean = bh::accumulators::mean<double>;
+    using mean = bh::python::mean<double>;
 
     register_accumulator<mean>(accumulators, "mean")
         .def(py::init<const double &, const double &, const double &>(),
