@@ -8,6 +8,10 @@
 
 #pragma once
 
+#include <boost/histogram/python/accumulators/mean.hpp>
+#include <boost/histogram/python/accumulators/weighted_mean.hpp>
+#include <boost/histogram/python/accumulators/weighted_sum.hpp>
+
 #include <boost/histogram/detail/counting_streambuf.hpp>
 #include <boost/histogram/fwd.hpp>
 #include <iosfwd>
@@ -40,10 +44,11 @@ handle_nonzero_width(std::basic_ostream<CharT, Traits> &os, const T &x) {
 
 } // namespace detail
 
-namespace accumulators {
+namespace python {
+
 template <class CharT, class Traits, class W>
 std::basic_ostream<CharT, Traits> &operator<<(std::basic_ostream<CharT, Traits> &os,
-                                              const sum<W> &x) {
+                                              const accumulators::sum<W> &x) {
     if(os.width() == 0)
         return os << "sum(" << x.large() << " + " << x.small() << ")";
     return detail::handle_nonzero_width(os, x);
@@ -79,10 +84,10 @@ std::basic_ostream<CharT, Traits> &operator<<(std::basic_ostream<CharT, Traits> 
 
 template <class CharT, class Traits, class T>
 std::basic_ostream<CharT, Traits> &operator<<(std::basic_ostream<CharT, Traits> &os,
-                                              const thread_safe<T> &x) {
+                                              const accumulators::thread_safe<T> &x) {
     os << x.load();
     return os;
 }
-} // namespace accumulators
+} // namespace python
 } // namespace histogram
 } // namespace boost
