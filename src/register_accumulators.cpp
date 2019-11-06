@@ -53,6 +53,7 @@ decltype(auto) make_mean_call() {
 
 void register_accumulators(py::module &accumulators) {
     using weighted_sum = bh::python::weighted_sum<double>;
+    PYBIND11_NUMPY_DTYPE(weighted_sum, sum_of_weights_, sum_of_weights_squared_);
 
     register_accumulator<weighted_sum>(accumulators, "weighted_sum")
 
@@ -85,6 +86,10 @@ void register_accumulators(py::module &accumulators) {
             "value"_a,
             "Fill the accumulator with values. Optional variance parameter.")
 
+        .def_static("_make", py::vectorize([](const double &a, const double &b) {
+                        return weighted_sum(a, b);
+                    }))
+
         ;
 
     using sum = bh::accumulators::sum<double>;
@@ -116,6 +121,11 @@ void register_accumulators(py::module &accumulators) {
         ;
 
     using weighted_mean = bh::python::weighted_mean<double>;
+    PYBIND11_NUMPY_DTYPE(weighted_mean,
+                         sum_of_weights_,
+                         sum_of_weights_squared_,
+                         weighted_mean_,
+                         sum_of_weighted_deltas_squared_);
 
     register_accumulator<weighted_mean>(accumulators, "weighted_mean")
         .def(py::init<const double &, const double &, const double &, const double &>(),
@@ -138,9 +148,17 @@ void register_accumulators(py::module &accumulators) {
              "value"_a,
              "Fill the accumulator with values. Optional weight parameter.")
 
+        .def_static(
+            "_make",
+            py::vectorize(
+                [](const double &a, const double &b, const double &c, double &d) {
+                    return weighted_mean(a, b, c, d, true);
+                }))
+
         ;
 
     using mean = bh::python::mean<double>;
+    PYBIND11_NUMPY_DTYPE(mean, sum_, mean_, sum_of_deltas_squared_);
 
     register_accumulator<mean>(accumulators, "mean")
         .def(py::init<const double &, const double &, const double &>(),
@@ -161,6 +179,12 @@ void register_accumulators(py::module &accumulators) {
              make_mean_fill<mean>(),
              "value"_a,
              "Fill the accumulator with values. Optional weight parameter.")
+
+        .def_static(
+            "_make",
+            py::vectorize([](const double &a, const double &b, const double &c) {
+                return mean(a, b, c, true);
+            }))
 
         ;
 }

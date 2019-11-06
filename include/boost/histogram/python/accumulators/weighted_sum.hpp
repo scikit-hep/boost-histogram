@@ -18,7 +18,7 @@ namespace python {
 
 /// Holds sum of weights and its variance estimate
 template <typename RealType>
-class weighted_sum {
+struct weighted_sum {
   public:
     weighted_sum() = default;
     explicit weighted_sum(const RealType &value) noexcept
@@ -87,7 +87,6 @@ class weighted_sum {
         ar &make_nvp("sum_of_weights_squared", sum_of_weights_squared_);
     }
 
-  private:
     RealType sum_of_weights_         = RealType();
     RealType sum_of_weights_squared_ = RealType();
 };

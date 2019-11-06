@@ -25,13 +25,21 @@ namespace python {
   stability of mean and variance computation.
 */
 template <class RealType>
-class mean {
+struct mean {
   public:
     mean() = default;
     mean(const RealType &n, const RealType &mean, const RealType &variance) noexcept
         : sum_(n)
         , mean_(mean)
         , sum_of_deltas_squared_(variance * (n - 1)) {}
+
+    mean(const RealType &sum,
+         const RealType &mean,
+         const RealType &sum_of_deltas_squared,
+         bool /* Tag to trigger python internal constructor */)
+        : sum_(sum)
+        , mean_(mean)
+        , sum_of_deltas_squared_(sum_of_deltas_squared) {}
 
     void operator()(const RealType &x) noexcept {
         sum_ += static_cast<RealType>(1);
@@ -93,7 +101,6 @@ class mean {
         ar &make_nvp("sum_of_deltas_squared", sum_of_deltas_squared_);
     }
 
-  private:
     RealType sum_ = 0, mean_ = 0, sum_of_deltas_squared_ = 0;
 };
 

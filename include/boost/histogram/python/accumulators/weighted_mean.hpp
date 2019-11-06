@@ -25,7 +25,7 @@ namespace python {
   of mean and variance computation.
 */
 template <typename RealType>
-class weighted_mean {
+struct weighted_mean {
   public:
     weighted_mean() = default;
     weighted_mean(const RealType &wsum,
@@ -38,6 +38,16 @@ class weighted_mean {
         , sum_of_weighted_deltas_squared_(
               variance
               * (sum_of_weights_ - sum_of_weights_squared_ / sum_of_weights_)) {}
+
+    weighted_mean(const RealType &wsum,
+                  const RealType &wsum2,
+                  const RealType &mean,
+                  const RealType &sum_of_weighted_deltas_squared,
+                  bool)
+        : sum_of_weights_(wsum)
+        , sum_of_weights_squared_(wsum2)
+        , weighted_mean_(mean)
+        , sum_of_weighted_deltas_squared_(sum_of_weighted_deltas_squared) {}
 
     void operator()(const RealType &x) { operator()(weight(1), x); }
 
@@ -103,7 +113,6 @@ class weighted_mean {
         ar &make_nvp("sum_of_weighted_deltas_squared", sum_of_weighted_deltas_squared_);
     }
 
-  private:
     RealType sum_of_weights_ = RealType(), sum_of_weights_squared_ = RealType(),
              weighted_mean_ = RealType(), sum_of_weighted_deltas_squared_ = RealType();
 };
