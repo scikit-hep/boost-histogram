@@ -51,6 +51,10 @@ class WeightedSumView(View):
         return self["sum_of_weights_"]
 
     @property
+    def value(self):
+        return self["sum_of_weights_"]
+
+    @property
     def sum_of_weights_squared(self):
         return self["sum_of_weights_squared_"]
 
@@ -85,8 +89,12 @@ class WeightedMeanView(View):
         )
 
 
-def _to_view(item):
+def _to_view(item, value=False):
     for cls in View.__subclasses__():
-        if cls._FIELDS == item.dtype.fields:
-            return item.view(cls)
+        if cls._FIELDS == item.dtype.names:
+            ret = item.view(cls)
+            if value and ret.shape:
+                return ret.value
+            else:
+                return ret
     return item

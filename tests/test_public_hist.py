@@ -136,7 +136,6 @@ def test_fill_1d(flow):
         assert get(h, bh.overflow) == 1
 
 
-# TODO: atomic_int not supported
 @pytest.mark.parametrize("storage", [bh.storage.Int, bh.storage.Double])
 def test_setting(storage):
     h = bh.Histogram(bh.axis.Regular(10, 0, 1), storage=storage())

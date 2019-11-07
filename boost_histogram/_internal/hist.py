@@ -136,7 +136,7 @@ class BaseHistogram(object):
         return self.__class__.__name__ + repr(self._hist)[9:]
 
     def __array__(self):
-        return _to_view(np.asarray(self._hist))
+        return _to_view(np.asarray(self._hist), value=True)
         # TODO: .view does not seem to return an editable view
         #        so we have to use the buffer interface here
 
@@ -407,5 +407,5 @@ class Histogram(BaseHistogram):
             )
 
     def __setitem__(self, index, value):
-        indexes = _compute_commonindex(self._hist, index, expand=True)
+        indexes = _compute_commonindex(self._hist, index, value)
         self._hist._at_set(value, *indexes)
