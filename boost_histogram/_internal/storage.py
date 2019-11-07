@@ -6,17 +6,19 @@ from .._core import storage as store
 
 
 class Storage(object):
-    __slots__ = ()
+    __slots__ = "_storage"
+
+    def __init__(self):
+        self._storage = self._STORAGE()
 
     def __eq__(self, other):
-        return issubclass(other.__class__, self.__class__) or issubclass(
-            self.__class__, other.__class__
-        )
+        return self._storage == other._storage
 
-    # Override this to allow configurable storages
-    @classmethod
-    def _get_storage_(cls):
-        return cls._STORAGE()
+    def _get_storage_(self):
+        return self._storage
+
+    def __repr__(self):
+        return "{self.__class__.__name__}()".format(self=self)
 
 
 class Int(Storage):
@@ -48,6 +50,7 @@ class WeightedMean(Storage):
 
 
 def _to_storage(st):
+    """Get a storage class from C++ class"""
     for base in Storage.__subclasses__():
         if st == base._STORAGE:
             return base

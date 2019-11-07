@@ -6,7 +6,7 @@ from .. import _core
 from .axis import _to_axis, Axis
 from .axistuple import AxesTuple
 from .sig_tools import inject_signature
-from .storage import Double, _to_storage
+from .storage import Storage, Double, _to_storage
 
 import warnings
 import numpy as np
@@ -98,7 +98,7 @@ class BaseHistogram(object):
         ----------
         *args : Axis
             Provide 1 or more axis instances.
-        storage : Storage = bh.storage.Double
+        storage : Storage = bh.storage.Double()
             Select a storage to use in the histogram
         """
 
@@ -114,6 +114,16 @@ class BaseHistogram(object):
         # Keyword only trick (change when Python2 is dropped)
         with KWArgs(kwargs) as k:
             storage = k.optional("storage", Double())
+
+        # Check for missed parenthesis
+        if not isinstance(storage, Storage) and callable(storage):
+            storage = storage()
+            if not isinstance(storage, Storage):
+                raise KeyError("Only storages allowed in storage argument")
+            else:
+                warnings.warn(
+                    "Passing in an initialized storage may be removed in the next release. Please add ()."
+                )
 
         storage = storage._get_storage_()
 

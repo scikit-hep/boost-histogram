@@ -16,8 +16,7 @@ from ._internal.storage import (
 
 
 class DepStorageMixin(object):
-    @classmethod
-    def _get_storage_(cls):
+    def _get_storage_(self):
         warnings.warn("Use Int instead", DeprecationWarning)
         return cls._STORAGE()
 
