@@ -99,7 +99,7 @@ class BaseHistogram(object):
         ----------
         *args : Axis
             Provide 1 or more axis instances.
-        storage : Storage = bh.storage.Double
+        storage : Storage = bh.storage.Double()
             Select a storage to use in the histogram
         """
 
@@ -115,6 +115,18 @@ class BaseHistogram(object):
         # Keyword only trick (change when Python2 is dropped)
         with KWArgs(kwargs) as k:
             storage = k.optional("storage", Double())
+
+        # Check for missed parenthesis
+        if not isinstance(storage, Storage) and callable(storage):
+            storage = storage()
+            if not isinstance(storage, Storage):
+                raise KeyError("Only storages allowed in storage argument")
+            else:
+                raise KeyError(
+                    "Passing in an initialized storage has been removed. Please add ()."
+                )
+
+        storage = storage._get_storage_()
 
         # Allow a tuple to represent a regular axis
         axes = [_arg_shortcut(arg) for arg in axes]
