@@ -119,6 +119,9 @@ class Axis(object):
         return self._ax.widths
 
 
+Axis.__module__ = "boost_histogram.axis"
+
+
 class Regular(Axis):
     __slots__ = ()
     _CLASSES = {
@@ -195,6 +198,9 @@ class Regular(Axis):
             raise KeyError("Unsupported collection of options")
 
 
+Regular.__module__ = "boost_histogram.axis"
+
+
 class Variable(Axis):
     __slots__ = ()
     _CLASSES = {
@@ -243,6 +249,9 @@ class Variable(Axis):
             self._ax = ca.variable_none(edges, metadata)
         else:
             raise KeyError("Unsupported collection of options")
+
+
+Variable.__module__ = "boost_histogram.axis"
 
 
 class Integer(Axis):
@@ -298,6 +307,9 @@ class Integer(Axis):
             raise KeyError("Unsupported collection of options")
 
 
+Integer.__module__ = "boost_histogram.axis"
+
+
 class Category(Axis):
     __slots__ = ()
     _CLASSES = {
@@ -344,6 +356,9 @@ class Category(Axis):
                 self._ax = ca.category_str(categories, metadata)
         else:
             raise KeyError("Unsupported collection of options")
+
+
+Category.__module__ = "boost_histogram.axis"
 
 
 def _to_axis(ax):

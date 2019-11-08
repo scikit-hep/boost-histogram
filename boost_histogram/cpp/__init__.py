@@ -4,7 +4,7 @@ del absolute_import, division, print_function
 
 __all__ = ("histogram", "axis", "storage", "accumulators", "algorithm", "__version__")
 
-from .._internal.hist import BoostHistogram as histogram
+from .._internal.hist import histogram
 
 histogram.__module__ = "boost_histogram.cpp"
 

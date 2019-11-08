@@ -230,7 +230,7 @@ class BaseHistogram(object):
         return _to_storage(self._hist._storage_type)
 
 
-class BoostHistogram(BaseHistogram):
+class histogram(BaseHistogram):
     axis = BaseHistogram._axis
 
     def rank(self):
