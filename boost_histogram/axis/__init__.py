@@ -8,6 +8,7 @@ from . import transform
 
 import warnings as _warnings
 
+__all__ = ("Regular", "Variable", "Integer", "Category", "Axis", "options", "transform")
 
 # Workarounds for smooth transitions from 0.5 series. Will be removed in later release.
 

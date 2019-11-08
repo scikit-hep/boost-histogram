@@ -7,7 +7,7 @@ from .axis import _to_axis, Axis
 from .view import _to_view
 from .axistuple import AxesTuple
 from .sig_tools import inject_signature
-from .storage import Double
+from .storage import Double, _to_storage, Storage
 
 import warnings
 import numpy as np
@@ -227,7 +227,7 @@ class BaseHistogram(object):
 
     @property
     def _storage_type(self):
-        return self._hist._storage_type
+        return _to_storage(self._hist._storage_type)
 
 
 class BoostHistogram(BaseHistogram):
