@@ -135,9 +135,9 @@ extras = {
 setup(
     name="boost-histogram",
     version=about["__version__"],
-    author="Henry Schreiner",
+    author="Hans Dembinski and Henry Schreiner",
     author_email="hschrein@cern.ch",
-    maintainer="Henry Schreiner",
+    maintainer="Hans Dembinski and Henry Schreiner",
     maintainer_email="hschrein@cern.ch",
     url="https://github.com/scikit-hep/boost-histogram",
     description="The Boost::Histogram Python wrapper.",
