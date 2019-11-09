@@ -2,13 +2,13 @@ from __future__ import absolute_import, division, print_function
 
 del absolute_import, division, print_function
 
+__all__ = ("Regular", "Variable", "Integer", "Category", "Axis", "options", "transform")
+
 from .._internal.axis import Axis, options
 from .._internal.axis import Regular, Variable, Integer, Category
 from . import transform
 
 import warnings as _warnings
-
-__all__ = ("Regular", "Variable", "Integer", "Category", "Axis", "options", "transform")
 
 # Workarounds for smooth transitions from 0.5 series. Will be removed in later release.
 

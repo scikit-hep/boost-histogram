@@ -2,9 +2,9 @@ from __future__ import absolute_import, division, print_function
 
 del absolute_import, division, print_function
 
-import numpy as _np
-
 __all__ = ("Locator", "at", "loc", "overflow", "underflow", "rebin", "sum")
+
+import numpy as _np
 
 
 class Locator(object):
