@@ -184,22 +184,6 @@ class BaseHistogram(object):
     def __idiv__(self, other):
         return self.__class__(self._hist.__idiv__(other._hist))
 
-    def reduce(self, *args):
-        """
-        Reduce based on one or more reduce_option. Generally,
-        the [] indexing is easier, but this might be useful in
-        some cases, and is lighter-weight.
-        """
-
-        return self.__class__(self._hist.reduce(*args))
-
-    def project(self, *args):
-        """
-        Project to a single axis or several axes on a multidiminsional histogram. Provided a list of axis numbers, this will produce the histogram over those axes only. Flow bins are used if available.
-        """
-
-        return self.__class__(self._hist.project(*args))
-
     @inject_signature("self, *args, weight=None, sample=None")
     def fill(self, *args, **kwargs):
         """
@@ -260,24 +244,20 @@ class histogram(BaseHistogram):
         return self
 
     def _reset(self):
-        """
-        Reset bin counters to default values.
-        """
         self._hist.reset()
         return self
 
     def _empty(self, flow=False):
-        """
-        Check to see if the histogram has any non-default values.
-        You can use flow=True to check flow bins too.
-        """
         return self._hist.empty(flow)
 
     def _sum(self, flow=False):
-        """
-        Compute the sum over the histogram bins (optionally including the flow bins).
-        """
         return self._hist.sum(flow)
+
+    def _reduce(self, *args):
+        return self.__class__(self._hist.reduce(*args))
+
+    def _project(self, *args):
+        return self.__class__(self._hist.project(*args))
 
 
 class Histogram(BaseHistogram):
@@ -419,3 +399,17 @@ class Histogram(BaseHistogram):
     def __setitem__(self, index, value):
         indexes = _compute_commonindex(self._hist, index, expand_ellipsis=False)
         self._hist._at_set(value, *indexes)
+
+    def reduce(self, *args):
+        """
+        Reduce based on one or more reduce_option's. If you are operating on most or all of your axis, consider slicing with [] notation.
+        """
+
+        return self.__class__(self._hist.reduce(*args))
+
+    def project(self, *args):
+        """
+        Project to a single axis or several axes on a multidiminsional histogram. Provided a list of axis numbers, this will produce the histogram over those axes only. Flow bins are used if available.
+        """
+
+        return self.__class__(self._hist.project(*args))
