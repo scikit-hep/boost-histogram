@@ -8,7 +8,7 @@ from .._core import axis as ca
 
 from .kwargs import KWArgs
 from .sig_tools import inject_signature
-from .axis_transform import AxisTransform, _to_transform
+from .axis_transform import AxisTransform
 from .utils import cast, register
 
 
@@ -183,7 +183,7 @@ class Regular(Axis):
     @property
     def transform(self):
         if hasattr(self._ax, "transform"):
-            return _to_transform(self._ax.transform)
+            return cast(self._ax.transform, AxisTransform)
         return None
 
     @inject_signature(
