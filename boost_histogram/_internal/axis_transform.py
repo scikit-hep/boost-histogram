@@ -8,24 +8,34 @@ from .._core import axis as ca
 class AxisTransform(object):
     __slots__ = ()
 
-
-class Log(AxisTransform):
-    @staticmethod
-    def _produce(bins, start, stop, metadata):
-        return ca.regular_log(bins, start, stop, metadata)
-
-
-class Sqrt(AxisTransform):
-    @staticmethod
-    def _produce(bins, start, stop, metadata):
-        return ca.regular_sqrt(bins, start, stop, metadata)
-
-
-class Pow(AxisTransform):
-    __slots__ = ("power",)
-
-    def __init__(self, power):
-        self.power = power
-
+    # This should be a @classmethod because it
+    # does not depend on self
+    # But if it was, then Func() would be replaceable by Func
     def _produce(self, bins, start, stop, metadata):
-        return ca.regular_pow(bins, start, stop, self.power, metadata)
+        return self.__class__._type(bins, start, stop, metadata)
+
+
+class Log(ca.transform.log, AxisTransform):
+    __slots__ = ()
+    _type = ca.regular_log
+
+
+class Sqrt(ca.transform.sqrt, AxisTransform):
+    __slots__ = ()
+    _type = ca.regular_sqrt
+
+
+class Pow(ca.transform.pow, AxisTransform):
+    __slots__ = ()
+    _type = ca.regular_pow
+
+    # This one does need to be a normal method
+    def _produce(self, bins, start, stop, metadata):
+        return self.__class__._type(bins, start, stop, self.power, metadata)
+
+
+def _to_transform(trans):
+    for trans_class in AxisTransform.__subclasses__():
+        if isinstance(trans, trans_class.__bases__):
+            return trans_class(trans)
+    raise TypeError("Cannot find transform")

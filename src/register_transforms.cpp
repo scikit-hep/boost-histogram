@@ -5,11 +5,14 @@
 
 #include <boost/histogram/python/pybind11.hpp>
 
+#include <pybind11/operators.h>
+
 #include <boost/histogram/axis/regular.hpp>
 
 template <class T, class... Args>
 py::class_<T> register_transform(py::module &mod, Args &&... args) {
     py::class_<T> transform(mod, std::forward<Args>(args)...);
+    transform.def(py::init<T>());
     transform.def("forward", [](const T &self, double v) { return self.forward(v); });
     transform.def("inverse", [](const T &self, double v) { return self.inverse(v); });
     return transform;

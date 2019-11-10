@@ -8,7 +8,7 @@ from .._core import axis as ca
 
 from .kwargs import KWArgs
 from .sig_tools import inject_signature
-from .axis_transform import AxisTransform
+from .axis_transform import AxisTransform, _to_transform
 from .utils import _walk_subclasses
 
 
@@ -171,12 +171,16 @@ class Regular(Axis):
     def _repr_kwargs(self):
         ret = super(Regular, self)._repr_kwargs()
 
-        if hasattr(self._ax, "transform"):
-            ret += ", transform={0}".format(self._ax.transform)
-
-        # Get the transform object here
+        if self.transform is not None:
+            ret += ", transform={0}".format(self.transform)
 
         return ret
+
+    @property
+    def transform(self):
+        if hasattr(self._ax, "transform"):
+            return _to_transform(self._ax.transform)
+        return None
 
     @inject_signature(
         "self, bins, start, stop, *, metadata=None, underflow=True, overflow=True, growth=False, circular=False, transform=None"
@@ -194,7 +198,7 @@ class Regular(Axis):
             The beginning value for the axis
         stop : float
             The ending value for the axis
-        metadata : object
+        metadata : Any
             Any Python object to attach to the axis, like a label.
         underflow : bool = True
             Enable the underflow bin
@@ -219,6 +223,12 @@ class Regular(Axis):
         if transform is not None:
             if options != {"underflow", "overflow"}:
                 raise KeyError("Transform supplied, cannot change other options")
+
+            if (
+                not isinstance(transform, AxisTransform)
+                and AxisTransform in transform.__bases__
+            ):
+                raise TypeError("You must pass an instance, use {}()".format(transform))
 
             self._ax = transform._produce(bins, start, stop, metadata)
 

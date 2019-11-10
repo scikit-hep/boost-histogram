@@ -22,8 +22,8 @@ ABC = abc.ABCMeta("ABC", (object,), {"__slots__": ()})
         (bh.axis.Regular, (1, 2, 3), "uo", {}),
         (bh.axis.Regular, (1, 2, 3), "g", {}),
         (bh.axis.Regular, (1, 2, 3), "", {"circular": True}),
-        (bh.axis.Regular, (1, 2, 3), "", {"transform": bh.axis.transform.Log}),
-        (bh.axis.Regular, (1, 2, 3), "", {"transform": bh.axis.transform.Sqrt}),
+        (bh.axis.Regular, (1, 2, 3), "", {"transform": bh.axis.transform.Log()}),
+        (bh.axis.Regular, (1, 2, 3), "", {"transform": bh.axis.transform.Sqrt()}),
         (bh.axis.Regular, (1, 2, 3), "", {"transform": bh.axis.transform.Pow(1)}),
         (bh.axis.Variable, ((1, 2, 3),), "", {}),
         (bh.axis.Variable, ((1, 2, 3),), "u", {}),
@@ -192,10 +192,10 @@ class TestRegular(Axis):
         ax = bh.axis.Regular(4, 1.1, 2.2, metadata="ra", overflow=False)
         assert repr(ax) == "Regular(4, 1.1, 2.2, overflow=False, metadata='ra')"
 
-        ax = bh.axis.Regular(4, 1.1, 2.2, transform=bh.axis.transform.Log)
+        ax = bh.axis.Regular(4, 1.1, 2.2, transform=bh.axis.transform.Log())
         assert repr(ax) == "Regular(4, 1.1, 2.2, transform=Log())"
 
-        ax = bh.axis.Regular(3, 1.1, 2.2, transform=bh.axis.transform.Sqrt)
+        ax = bh.axis.Regular(3, 1.1, 2.2, transform=bh.axis.transform.Sqrt())
         assert repr(ax) == "Regular(3, 1.1, 2.2, transform=Sqrt())"
 
         ax = bh.axis.Regular(4, 1.1, 2.2, transform=bh.axis.transform.Pow(0.5))
@@ -258,7 +258,7 @@ class TestRegular(Axis):
         assert a.index(20) == -1
 
     def test_log_transform(self):
-        a = bh.axis.Regular(2, 1e0, 1e2, transform=bh.axis.transform.Log)
+        a = bh.axis.Regular(2, 1e0, 1e2, transform=bh.axis.transform.Log())
 
         assert a.index(-1) == 2
         assert a.index(0.99) == -1
