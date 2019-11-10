@@ -39,7 +39,31 @@ class Axis(object):
         return self._ax.bin(i)
 
     def __repr__(self):
-        return repr(self._ax)
+        return "{self.__class__.__name__}({args}{kwargs})".format(
+            self=self, args=self._repr_args(), kwargs=self._repr_kwargs()
+        )
+
+    def _repr_kwargs(self):
+        """
+        Return options for use in repr. Metadata is last,
+        just in case it spans multiple lines.
+        """
+
+        ret = ""
+        if self.options.growth:
+            ret += ", growth=True"
+        elif self.options.circular:
+            ret += ", circular=True"
+        else:
+            if not self.options.underflow:
+                ret += ", underflow=False"
+            if not self.options.overflow:
+                ret += ", overflow=False"
+
+        if self.metadata is not None:
+            ret += ", metadata={0!r}".format(self.metadata)
+
+        return ret
 
     def __eq__(self, other):
         return self._ax == other._ax
@@ -137,6 +161,23 @@ class Regular(Axis):
         ca.circular,
     }
 
+    def _repr_args(self):
+        "Return inner part of signature for use in repr"
+
+        return "{bins:g}, {start:g}, {stop:g}".format(
+            bins=self.size, start=self.edges[0], stop=self.edges[-1]
+        )
+
+    def _repr_kwargs(self):
+        ret = super(Regular, self)._repr_kwargs()
+
+        if hasattr(self._ax, "transform"):
+            ret += ", transform={0}".format(self._ax.transform)
+
+        # Get the transform object here
+
+        return ret
+
     @inject_signature(
         "self, bins, start, stop, *, metadata=None, underflow=True, overflow=True, growth=False, circular=False, transform=None"
     )
@@ -211,6 +252,14 @@ class Variable(Axis):
         ca.variable_uoflow_growth,
     }
 
+    def _repr_args(self):
+        "Return inner part of signature for use in repr"
+
+        if len(self) > 20:
+            return repr(self.edges)
+        else:
+            return "[{}]".format(", ".join(format(v, "g") for v in self.edges))
+
     @inject_signature(
         "self, edges, *, metadata=None, underflow=True, overflow=True, growth=False"
     )
@@ -263,6 +312,11 @@ class Integer(Axis):
         ca.integer_uoflow,
         ca.integer_growth,
     }
+
+    def _repr_args(self):
+        "Return inner part of signature for use in repr"
+
+        return "{start:g}, {stop:g}".format(start=self.edges[0], stop=self.edges[-1])
 
     @inject_signature(
         "self, start, stop, *, metadata=None, underflow=True, overflow=True, growth=False"
@@ -318,6 +372,38 @@ class Category(Axis):
         ca.category_int,
         ca.category_str,
     }
+
+    def _repr_kwargs(self):
+        """
+        Return options for use in repr. Metadata is last,
+        just in case it spans multiple lines.
+
+
+        This is specialized for Category axes to avoid repeating
+        the flow arguments unnecessarily.
+        """
+
+        ret = ""
+        if self.options.growth:
+            ret += ", growth=True"
+        elif self.options.circular:
+            ret += ", circular=True"
+
+        if self.metadata is not None:
+            ret += ", metadata={0!r}".format(self.metadata)
+
+        return ret
+
+    def _repr_args(self):
+        "Return inner part of signature for use in repr"
+
+        return (
+            "["
+            + ", ".join(
+                (repr(c) if isinstance(c, str) else format(c, "g")) for c in self
+            )
+            + "]"
+        )
 
     @inject_signature("self, categories, *, metadata=None, growth=False")
     def __init__(self, categories, **kwargs):

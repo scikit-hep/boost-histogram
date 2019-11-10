@@ -10,6 +10,7 @@ void register_storages(py::module &);
 void register_axes(py::module &);
 void register_histograms(py::module &);
 void register_accumulators(py::module &);
+void register_transforms(py::module &);
 
 PYBIND11_MODULE(_core, m) {
     py::module storage = m.def_submodule("storage");
@@ -17,6 +18,9 @@ PYBIND11_MODULE(_core, m) {
 
     py::module ax = m.def_submodule("axis");
     register_axes(ax);
+
+    py::module trans = ax.def_submodule("transform");
+    register_transforms(trans);
 
     py::module hist = m.def_submodule("hist");
     register_histograms(hist);

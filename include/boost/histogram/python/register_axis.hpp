@@ -182,6 +182,7 @@ py::class_<A> register_axis(py::module &m, const char *name, Args &&... args) {
             "size",
             &A::size,
             "Returns the number of bins excluding under- and overflow")
+
         .def_property_readonly(
             "extent",
             &bh::axis::traits::extent<A>,
