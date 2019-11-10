@@ -30,11 +30,9 @@ def _arg_shortcut(item):
     elif isinstance(item, Axis):
         return item._ax
     else:
-        # TODO: This currently support raw axis object for old tests.
-        # Replace with:
-        # raise TypeError("Only axes supported in histogram constructor")
+        raise TypeError("Only axes supported in histogram constructor")
         # TODO: Currently segfaults if we pass in a non-axis to the C++ code
-        return cast(item, Axis)._ax
+        # Using the public interface above, this should never be possible.
 
 
 def _expand_ellipsis(indexes, rank):
@@ -72,7 +70,7 @@ def _compute_commonindex(hist, index, expand_ellipsis):
     # Allow [bh.loc(...)] to work
     for i in range(len(indexes)):
         if callable(indexes[i]):
-            indexes[i] = indexes[i](cast(hist.axis(i), Axis))
+            indexes[i] = indexes[i](cast(hist.axis(i), Axis, cpp=False))
         elif hasattr(indexes[i], "flow"):
             if indexes[i].flow == 1:
                 indexes[i] = hist.axis(i).size
@@ -202,14 +200,17 @@ class BaseHistogram(object):
         """
         Get N-th axis.
         """
-        return cast(self._hist.axis(i), Axis)
+        return cast(self._hist.axis(i), Axis, self._cpp_module)
 
     @property
     def _storage_type(self):
-        return cast(self._hist._storage_type, Storage, is_class=True)
+        return cast(
+            self._hist._storage_type, Storage, cpp=self._cpp_module, is_class=True
+        )
 
 
 class histogram(BaseHistogram):
+    _cpp_module = True
     axis = BaseHistogram._axis
 
     def rank(self):
@@ -259,6 +260,8 @@ class histogram(BaseHistogram):
 
 
 class Histogram(BaseHistogram):
+    _cpp_module = False
+
     @inject_signature("self, *axes, storage=Double()", locals={"Double": Double})
     def __init__(self, *args, **kwargs):
         super(Histogram, self).__init__(*args, **kwargs)

@@ -27,3 +27,42 @@ def test_convert_bh():
 
     assert not hasattr(h, "axis")
     assert hasattr(h, "axes")
+
+
+def test_reprs():
+    # Mixing bh/bhc is fine; histogram correctly always returns matching axis,
+    # axis returns matching transform, etc.
+    h = bhc.histogram(bh.axis.Regular(4, 0, 4))
+    assert (
+        repr(h)
+        == """\
+histogram(regular(4, 0, 4, metadata="None", options=underflow | overflow))
+              +--------------------------------------------------------------+
+[-inf,   0) 0 |                                                              |
+[   0,   1) 0 |                                                              |
+[   1,   2) 0 |                                                              |
+[   2,   3) 0 |                                                              |
+[   3,   4) 0 |                                                              |
+[   4, inf) 0 |                                                              |
+              +--------------------------------------------------------------+
+"""
+    )
+
+    assert (
+        repr(h.axis(0))
+        == 'regular(4, 0, 4, metadata="None", options=underflow | overflow)'
+    )
+
+
+def test_axis_reprs():
+    ax = bhc.axis.regular(4, 0, 4)
+    assert repr(ax) == 'regular(4, 0, 4, metadata="None", options=underflow | overflow)'
+    assert repr(type(ax)) == "<class 'boost_histogram.cpp.axis.regular'>"
+
+
+def test_storage_repr():
+    pass  # TODO: Not implemented yet
+
+
+def test_transform_repr():
+    pass  # TODO: Not implemented yet
