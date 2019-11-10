@@ -3,11 +3,12 @@ from __future__ import absolute_import, division, print_function
 from .kwargs import KWArgs
 
 from .. import _core
-from .axis import _to_axis, Axis
 from .view import _to_view
+from .axis import Axis
 from .axistuple import AxesTuple
 from .sig_tools import inject_signature
 from .storage import Double, _to_storage, Storage
+from .utils import cast
 
 import warnings
 import numpy as np
@@ -33,7 +34,7 @@ def _arg_shortcut(item):
         # Replace with:
         # raise TypeError("Only axes supported in histogram constructor")
         # TODO: Currently segfaults if we pass in a non-axis to the C++ code
-        return _to_axis(item)._ax
+        return cast(item, Axis)._ax
 
 
 def _expand_ellipsis(indexes, rank):
@@ -71,7 +72,7 @@ def _compute_commonindex(hist, index, expand_ellipsis):
     # Allow [bh.loc(...)] to work
     for i in range(len(indexes)):
         if callable(indexes[i]):
-            indexes[i] = indexes[i](_to_axis(hist.axis(i)))
+            indexes[i] = indexes[i](cast(hist.axis(i), Axis))
         elif hasattr(indexes[i], "flow"):
             if indexes[i].flow == 1:
                 indexes[i] = hist.axis(i).size
@@ -204,7 +205,7 @@ class BaseHistogram(object):
         """
         Get N-th axis.
         """
-        return _to_axis(self._hist.axis(i))
+        return cast(self._hist.axis(i), Axis)
 
     @property
     def _storage_type(self):

@@ -6,6 +6,7 @@ __all__ = ("histogram", "histogram2d", "histogramdd")
 
 from . import axis as _axis
 from ._internal import hist as _hist
+from ._internal.utils import cast as _cast
 from . import _core
 from . import storage as _storage
 
@@ -54,7 +55,9 @@ def histogramdd(
             if r is None:
                 # Nextafter may affect bin edges slightly
                 r = (np.min(a[n]), np.max(a[n]))
-            axs.append(_core.axis.regular_numpy(b, r[0], r[1]))
+            cpp_ax = _core.axis.regular_numpy(b, r[0], r[1])
+            new_ax = _cast(cpp_ax, _axis.Axis)
+            axs.append(new_ax)
         else:
             b = np.asarray(b, dtype=np.double)
             b[-1] = np.nextafter(b[-1], np.finfo("d").max)

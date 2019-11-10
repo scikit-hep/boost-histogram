@@ -9,7 +9,7 @@ from .._core import axis as ca
 from .kwargs import KWArgs
 from .sig_tools import inject_signature
 from .axis_transform import AxisTransform, _to_transform
-from .utils import _walk_subclasses
+from .utils import cast, register
 
 
 class Axis(object):
@@ -142,24 +142,28 @@ class Axis(object):
         """
         return self._ax.widths
 
+    @classmethod
+    def _convert_cpp(cls, cpp_object):
+        nice_ax = cls.__new__(cls)
+        nice_ax._ax = cpp_object
+        return nice_ax
+
 
 Axis.__module__ = "boost_histogram.axis"
 
 
+@register(ca.regular_uoflow)
+@register(ca.regular_uoflow_growth)
+@register(ca.regular_uflow)
+@register(ca.regular_oflow)
+@register(ca.regular_none)
+@register(ca.regular_numpy)
+@register(ca.regular_sqrt)
+@register(ca.regular_pow)
+@register(ca.regular_log)
+@register(ca.circular)
 class Regular(Axis):
     __slots__ = ()
-    _CLASSES = {
-        ca.regular_uoflow,
-        ca.regular_uoflow_growth,
-        ca.regular_uflow,
-        ca.regular_oflow,
-        ca.regular_none,
-        ca.regular_numpy,
-        ca.regular_sqrt,
-        ca.regular_pow,
-        ca.regular_log,
-        ca.circular,
-    }
 
     def _repr_args(self):
         "Return inner part of signature for use in repr"
@@ -252,15 +256,13 @@ class Regular(Axis):
 Regular.__module__ = "boost_histogram.axis"
 
 
+@register(ca.variable_none)
+@register(ca.variable_uflow)
+@register(ca.variable_oflow)
+@register(ca.variable_uoflow)
+@register(ca.variable_uoflow_growth)
 class Variable(Axis):
     __slots__ = ()
-    _CLASSES = {
-        ca.variable_none,
-        ca.variable_uflow,
-        ca.variable_oflow,
-        ca.variable_uoflow,
-        ca.variable_uoflow_growth,
-    }
 
     def _repr_args(self):
         "Return inner part of signature for use in repr"
@@ -313,15 +315,13 @@ class Variable(Axis):
 Variable.__module__ = "boost_histogram.axis"
 
 
+@register(ca.integer_none)
+@register(ca.integer_uflow)
+@register(ca.integer_oflow)
+@register(ca.integer_uoflow)
+@register(ca.integer_growth)
 class Integer(Axis):
     __slots__ = ()
-    _CLASSES = {
-        ca.integer_none,
-        ca.integer_uflow,
-        ca.integer_oflow,
-        ca.integer_uoflow,
-        ca.integer_growth,
-    }
 
     def _repr_args(self):
         "Return inner part of signature for use in repr"
@@ -374,14 +374,12 @@ class Integer(Axis):
 Integer.__module__ = "boost_histogram.axis"
 
 
+@register(ca.category_int_growth)
+@register(ca.category_str_growth)
+@register(ca.category_int)
+@register(ca.category_str)
 class Category(Axis):
     __slots__ = ()
-    _CLASSES = {
-        ca.category_int_growth,
-        ca.category_str_growth,
-        ca.category_int,
-        ca.category_str,
-    }
 
     def _repr_kwargs(self):
         """
@@ -455,13 +453,3 @@ class Category(Axis):
 
 
 Category.__module__ = "boost_histogram.axis"
-
-
-def _to_axis(ax):
-    for base in _walk_subclasses(Axis):
-        if ax.__class__ in base._CLASSES:
-            nice_ax = base.__new__(base)
-            nice_ax._ax = ax
-            return nice_ax
-
-    raise TypeError("Invalid axes passed in")
