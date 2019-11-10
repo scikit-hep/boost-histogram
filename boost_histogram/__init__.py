@@ -21,6 +21,15 @@ __all__ = (
 )
 
 
+try:
+    from . import _core
+except ImportError as err:
+    err.msg += (
+        "\nDid you forget to compile? Use CMake or Setuptools to build, see the readme"
+    )
+    raise err
+
+
 from ._internal.hist import Histogram
 from . import axis, storage, accumulators, algorithm, numpy
 from .tag import loc, rebin, sum, underflow, overflow
