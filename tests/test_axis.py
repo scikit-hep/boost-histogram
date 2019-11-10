@@ -105,8 +105,8 @@ class TestRegular(Axis):
         bh.axis.Regular(1, 1.0, 2.0, underflow=False)
         bh.axis.Regular(1, 1.0, 2.0, underflow=False, overflow=False, metadata="ra")
         bh.axis.Regular(1, 1.0, 2.0, metadata=0)
-        bh.axis.Regular(1, 1.0, 2.0, transform=bh.axis.transform.Log)
-        bh.axis.Regular(1, 1.0, 2.0, transform=bh.axis.transform.Sqrt)
+        bh.axis.Regular(1, 1.0, 2.0, transform=bh.axis.transform.Log())
+        bh.axis.Regular(1, 1.0, 2.0, transform=bh.axis.transform.Sqrt())
         bh.axis.Regular(1, 1.0, 2.0, transform=bh.axis.transform.Pow(1.5))
 
         with pytest.raises(TypeError):

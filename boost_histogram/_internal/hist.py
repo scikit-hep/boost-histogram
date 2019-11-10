@@ -144,9 +144,6 @@ class BaseHistogram(object):
 
         raise TypeError("Unsupported storage")
 
-    def __repr__(self):
-        return self.__class__.__name__ + repr(self._hist)[9:]
-
     def __array__(self):
         return self.view()
 
@@ -235,6 +232,9 @@ class histogram(BaseHistogram):
         """
         return self._hist.at(*indexes)
 
+    def __repr__(self):
+        return repr(self._hist)
+
     # Call uses fill since it supports strings,
     # runtime argument list, etc.
     @inject_signature("self, *args, weight=None, sample=None")
@@ -268,7 +268,20 @@ class Histogram(BaseHistogram):
         # If this is a property, tab completion in IPython does not work
         self.axes = AxesTuple(self._axis(i) for i in range(self.rank))
 
-    __init__.__doc__ = BaseHistogram.__doc__
+    __init__.__doc__ = BaseHistogram.__init__.__doc__
+
+    def __repr__(self):
+        ret = "{self.__class__.__name__}(\n  ".format(self=self)
+        ret += ",\n  ".join(repr(ax) for ax in self.axes)
+        ret += ",\n  storage={0}".format(self._storage_type())
+        ret += ")"
+        outer = self.sum(flow=True)
+        if outer:
+            inner = self.sum(flow=False)
+            ret += " # Sum: {0}".format(inner)
+            if inner != outer:
+                ret += " ({0} with flow)".format(outer)
+        return ret
 
     def to_numpy(self, flow=False):
         """
