@@ -3,56 +3,45 @@ from __future__ import absolute_import, division, print_function
 del absolute_import, division, print_function
 
 from .._core import storage as store
+from .utils import register
 
-
+# Simple mixin to provide a common base class for types
+# and nice reprs
 class Storage(object):
-    __slots__ = "_storage"
-
-    def __init__(self):
-        self._storage = self._STORAGE()
-
-    def __eq__(self, other):
-        return self._storage == other._storage
-
-    def _get_storage_(self):
-        return self._storage
-
     def __repr__(self):
         return "{self.__class__.__name__}()".format(self=self)
 
 
-class Int(Storage):
-    _STORAGE = store.int
+@register(store.int)
+class Int(store.int, Storage):
+    pass
 
 
-class Double(Storage):
-    _STORAGE = store.double
+@register(store.double)
+class Double(store.double, Storage):
+    pass
 
 
-class AtomicInt(Storage):
-    _STORAGE = store.atomic_int
+@register(store.atomic_int)
+class AtomicInt(store.atomic_int, Storage):
+    pass
 
 
-class Unlimited(Storage):
-    _STORAGE = store.unlimited
+@register(store.unlimited)
+class Unlimited(store.unlimited, Storage):
+    pass
 
 
-class Weight(Storage):
-    _STORAGE = store.weight
+@register(store.weight)
+class Weight(store.weight, Storage):
+    pass
 
 
-class Mean(Storage):
-    _STORAGE = store.mean
+@register(store.mean)
+class Mean(store.mean, Storage):
+    pass
 
 
-class WeightedMean(Storage):
-    _STORAGE = store.weighted_mean
-
-
-def _to_storage(st):
-    """Get a storage class from C++ class"""
-    for base in Storage.__subclasses__():
-        if st == base._STORAGE:
-            return base
-
-    raise TypeError("Invalid storage passed in")
+@register(store.weighted_mean)
+class WeightedMean(store.weighted_mean, Storage):
+    pass

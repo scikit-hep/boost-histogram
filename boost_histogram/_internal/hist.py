@@ -7,7 +7,7 @@ from .view import _to_view
 from .axis import Axis
 from .axistuple import AxesTuple
 from .sig_tools import inject_signature
-from .storage import Double, _to_storage, Storage
+from .storage import Double, Storage
 from .utils import cast
 
 import warnings
@@ -117,17 +117,14 @@ class BaseHistogram(object):
         with KWArgs(kwargs) as k:
             storage = k.optional("storage", Double())
 
-        # Check for missed parenthesis
-        if not isinstance(storage, Storage) and callable(storage):
-            storage = storage()
-            if not isinstance(storage, Storage):
-                raise KeyError("Only storages allowed in storage argument")
-            else:
+        # Check for missed parenthesis or incorrect types
+        if not isinstance(storage, Storage):
+            if issubclass(storage, Storage):
                 raise KeyError(
                     "Passing in an initialized storage has been removed. Please add ()."
                 )
-
-        storage = storage._get_storage_()
+            else:
+                raise KeyError("Only storages allowed in storage argument")
 
         # Allow a tuple to represent a regular axis
         axes = [_arg_shortcut(arg) for arg in axes]
@@ -209,7 +206,7 @@ class BaseHistogram(object):
 
     @property
     def _storage_type(self):
-        return _to_storage(self._hist._storage_type)
+        return cast(self._hist._storage_type, Storage, is_class=True)
 
 
 class histogram(BaseHistogram):

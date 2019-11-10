@@ -38,12 +38,14 @@ def register(*args):
     return add_registration
 
 
-def cast(cpp_object, parent_class, cpp=False):
+def cast(cpp_object, parent_class, cpp=False, is_class=False):
     """
     This converts a C++ object into a Python object.
     This takes the parent Python class, and an optional
     base parameter, which will only return classes that
     are in the base module.
+
+    Can also return the class directly with find_class=True.
 
     If a class does not support direction conversion in
     the constructor, it should have _convert_cpp class
@@ -51,23 +53,22 @@ def cast(cpp_object, parent_class, cpp=False):
 
     cpp setting must match the register setting.
     """
+    cpp_class = cpp_object if is_class else cpp_object.__class__
 
     for canidate_class in _walk_subclasses(parent_class):
-        print(canidate_class)
         if (
             hasattr(canidate_class, "_types")
-            and cpp_object.__class__ in canidate_class._types
+            and cpp_class in canidate_class._types
             and canidate_class._cpp_mode == cpp
         ):
-            print("Making")
-            if hasattr(canidate_class, "_convert_cpp"):
+            if is_class:
+                return canidate_class
+            elif hasattr(canidate_class, "_convert_cpp"):
                 return canidate_class._convert_cpp(cpp_object)
             else:
                 return canidate_class(cpp_object)
     raise TypeError(
-        "No conversion to {0} from {1} found.".format(
-            parent_class.__name__, cpp_object.__class__.__name__
-        )
+        "No conversion to {0} from {1} found.".format(parent_class.__name__, cpp_object)
     )
 
 
