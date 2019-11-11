@@ -5,6 +5,9 @@
 // or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 // Based on boost/histogram/accumulators/mean.hpp
+// Changes:
+//  * Internal values are public for access from Python
+//  * A special constructor added for construction from Python
 
 #pragma once
 

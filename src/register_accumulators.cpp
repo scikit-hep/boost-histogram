@@ -52,8 +52,16 @@ decltype(auto) make_mean_call() {
 }
 
 void register_accumulators(py::module &accumulators) {
+    // Naming convention:
+    // If a value is publically available in Boost.Histogram accumulators
+    // as a method, it has the same name in the numpy record array.
+    // If it is not available except through a computation, it has
+    // the same name as the private property without the trailing _.
+
     using weighted_sum = bh::python::weighted_sum<double>;
-    PYBIND11_NUMPY_DTYPE(weighted_sum, sum_of_weights_, sum_of_weights_squared_);
+
+    PYBIND11_NUMPY_DTYPE_EX(
+        weighted_sum, sum_of_weights_, "value", sum_of_weights_squared_, "variance");
 
     register_accumulator<weighted_sum>(accumulators, "weighted_sum")
 
@@ -121,11 +129,15 @@ void register_accumulators(py::module &accumulators) {
         ;
 
     using weighted_mean = bh::python::weighted_mean<double>;
-    PYBIND11_NUMPY_DTYPE(weighted_mean,
-                         sum_of_weights_,
-                         sum_of_weights_squared_,
-                         weighted_mean_,
-                         sum_of_weighted_deltas_squared_);
+    PYBIND11_NUMPY_DTYPE_EX(weighted_mean,
+                            sum_of_weights_,
+                            "sum_of_weights",
+                            sum_of_weights_squared_,
+                            "sum_of_weights_squared",
+                            weighted_mean_,
+                            "value",
+                            sum_of_weighted_deltas_squared_,
+                            "sum_of_weighted_deltas_squared");
 
     register_accumulator<weighted_mean>(accumulators, "weighted_mean")
         .def(py::init<const double &, const double &, const double &, const double &>(),
@@ -158,7 +170,13 @@ void register_accumulators(py::module &accumulators) {
         ;
 
     using mean = bh::python::mean<double>;
-    PYBIND11_NUMPY_DTYPE(mean, sum_, mean_, sum_of_deltas_squared_);
+    PYBIND11_NUMPY_DTYPE_EX(mean,
+                            sum_,
+                            "count",
+                            mean_,
+                            "value",
+                            sum_of_deltas_squared_,
+                            "sum_of_deltas_squared");
 
     register_accumulator<mean>(accumulators, "mean")
         .def(py::init<const double &, const double &, const double &>(),

@@ -22,70 +22,51 @@ class View(np.ndarray):
         return str(self.view(np.ndarray))
 
 
-class MeanView(View):
-    __slots__ = ()
-    _PARENT = Mean
-    _FIELDS = ("sum_", "mean_", "sum_of_deltas_squared_")
-
-    @property
-    def count(self):
-        return self["mean_"]
-
-    @property
-    def value(self):
-        return self["sum_"]
-
-    # Variance is a computation
-    @property
-    def variance(self):
-        return self["sum_of_deltas_squared_"] / (self["sum_"] - 1)
-
-
 class WeightedSumView(View):
     __slots__ = ()
     _PARENT = WeightedSum
-    _FIELDS = ("sum_of_weights_", "sum_of_weights_squared_")
-
-    @property
-    def sum_of_weights(self):
-        return self["sum_of_weights_"]
+    _FIELDS = ("value", "variance")
 
     @property
     def value(self):
-        return self["sum_of_weights_"]
+        return self["value"]
 
     @property
-    def sum_of_weights_squared(self):
-        return self["sum_of_weights_squared_"]
+    def variance(self):
+        return self["variance"]
 
 
 class WeightedMeanView(View):
     __slots__ = ()
     _PARENT = WeightedMean
     _FIELDS = (
-        "sum_of_weights_",
-        "sum_of_weights_squared_",
-        "weighted_mean_",
-        "sum_of_weighted_deltas_squared_",
+        "sum_of_weights",
+        "sum_of_weights_squared",
+        "value",
+        "sum_of_weighted_deltas_squared",
     )
 
     @property
     def sum_of_weights(self):
-        return self["sum_of_weights_"]
+        return self["sum_of_weights"]
 
     @property
     def sum_of_weights_squared(self):
-        return self["sum_of_weights_squared_"]
+        return self["sum_of_weights_squared"]
 
     @property
     def value(self):
-        return self["weighted_mean_"]
+        return self["value"]
+
+    @property
+    def sum_of_weighted_deltas_squared(self):
+        return self["sum_of_weighted_deltas_squared"]
 
     @property
     def variance(self):
-        return self["sum_of_weighted_deltas_squared_"] / (
-            self["sum_of_weights_"]
-            - self["sum_of_weights_squared_"] / self["sum_of_weights_"]
+        return self["sum_of_weighted_deltas_squared"] / (
+            self["sum_of_weights"]
+            - self["sum_of_weights_squared"] / self["sum_of_weights"]
         )
 
 
@@ -98,3 +79,26 @@ def _to_view(item, value=False):
             else:
                 return ret
     return item
+
+
+class MeanView(View):
+    __slots__ = ()
+    _PARENT = Mean
+    _FIELDS = ("count", "value", "sum_of_deltas_squared")
+
+    @property
+    def count(self):
+        return self["count"]
+
+    @property
+    def value(self):
+        return self["value"]
+
+    @property
+    def sum_of_deltas_squared(self):
+        return self["sum_of_deltas_squared"]
+
+    # Variance is a computation
+    @property
+    def variance(self):
+        return self["sum_of_deltas_squared"] / (self["count"] - 1)
