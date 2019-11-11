@@ -10,10 +10,16 @@ class View(np.ndarray):
 
     def __getitem__(self, ind):
         sliced = super(View, self).__getitem__(ind)
-        if sliced.shape:
-            return sliced
-        else:
+
+        # If the shape is empty, return the parent type
+        if not sliced.shape:
             return self._PARENT._make(*sliced)
+        # If the dtype has changed, return a normal array (no longer a record)
+        elif sliced.dtype != self.dtype:
+            return np.asarray(sliced)
+        # Otherwise, no change, return the same View type
+        else:
+            return sliced
 
     def __repr__(self):
         # Numpy starts the ndarray class name with "array", so we replace it
@@ -30,45 +36,59 @@ class View(np.ndarray):
         )
 
 
+def fields(*names):
+    """
+    This decorator adds the name to the _FIELDS
+    class property (for printing in reprs), and
+    adds a property that looks like this:
+
+    @property
+    def name(self):
+        return self["name"]
+    @name.setter
+    def name(self, value):
+        self["name"] = value
+    """
+
+    def injector(cls):
+        if hasattr(cls, "_FIELDS"):
+            raise RuntimeError(
+                "{0} already has had a fields decorator applied".format(
+                    self.__class__.__name__
+                )
+            )
+        fields = []
+        for name in names:
+            fields.append(name)
+
+            def fget(self):
+                return self[name]
+
+            def fset(self, value):
+                self[name] = value
+
+            setattr(cls, name, property(fget, fset))
+            cls._FIELDS = tuple(fields)
+        return cls
+
+    return injector
+
+
+@fields("value", "variance")
 class WeightedSumView(View):
     __slots__ = ()
     _PARENT = WeightedSum
-    _FIELDS = ("value", "variance")
-
-    @property
-    def value(self):
-        return self["value"]
-
-    @property
-    def variance(self):
-        return self["variance"]
 
 
+@fields(
+    "sum_of_weights",
+    "sum_of_weights_squared",
+    "value",
+    "sum_of_weighted_deltas_squared",
+)
 class WeightedMeanView(View):
     __slots__ = ()
     _PARENT = WeightedMean
-    _FIELDS = (
-        "sum_of_weights",
-        "sum_of_weights_squared",
-        "value",
-        "sum_of_weighted_deltas_squared",
-    )
-
-    @property
-    def sum_of_weights(self):
-        return self["sum_of_weights"]
-
-    @property
-    def sum_of_weights_squared(self):
-        return self["sum_of_weights_squared"]
-
-    @property
-    def value(self):
-        return self["value"]
-
-    @property
-    def sum_of_weighted_deltas_squared(self):
-        return self["sum_of_weighted_deltas_squared"]
 
     @property
     def variance(self):
@@ -76,6 +96,17 @@ class WeightedMeanView(View):
             self["sum_of_weights"]
             - self["sum_of_weights_squared"] / self["sum_of_weights"]
         )
+
+
+@fields("count", "value", "sum_of_deltas_squared")
+class MeanView(View):
+    __slots__ = ()
+    _PARENT = Mean
+
+    # Variance is a computation
+    @property
+    def variance(self):
+        return self["sum_of_deltas_squared"] / (self["count"] - 1)
 
 
 def _to_view(item, value=False):
@@ -87,26 +118,3 @@ def _to_view(item, value=False):
             else:
                 return ret
     return item
-
-
-class MeanView(View):
-    __slots__ = ()
-    _PARENT = Mean
-    _FIELDS = ("count", "value", "sum_of_deltas_squared")
-
-    @property
-    def count(self):
-        return self["count"]
-
-    @property
-    def value(self):
-        return self["value"]
-
-    @property
-    def sum_of_deltas_squared(self):
-        return self["sum_of_deltas_squared"]
-
-    # Variance is a computation
-    @property
-    def variance(self):
-        return self["sum_of_deltas_squared"] / (self["count"] - 1)
