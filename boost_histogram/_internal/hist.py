@@ -136,9 +136,7 @@ class BaseHistogram(object):
         return self.__class__.__name__ + repr(self._hist)[9:]
 
     def __array__(self):
-        return _to_view(np.asarray(self._hist), value=True)
-        # TODO: .view does not seem to return an editable view
-        #        so we have to use the buffer interface here
+        return np.asarray(self._hist)
 
     def __add__(self, other):
         return self.__class__(self._hist + other._hist)
