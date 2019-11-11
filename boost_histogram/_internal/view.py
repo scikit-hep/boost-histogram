@@ -16,10 +16,18 @@ class View(np.ndarray):
             return self._PARENT._make(*sliced)
 
     def __repr__(self):
-        return repr(self.view(np.ndarray))
+        # Numpy starts the ndarray class name with "array", so we replace it
+        # with our class name
+        return (
+            "{self.__class__.__name__}(\n      ".format(self=self)
+            + repr(self.view(np.ndarray))[6:]
+        )
 
     def __str__(self):
-        return str(self.view(np.ndarray))
+        fields = ", ".join(self._FIELDS)
+        return "{self.__class__.__name__}: ({fields})\n{arr}".format(
+            self=self, fields=fields, arr=self.view(np.ndarray)
+        )
 
 
 class WeightedSumView(View):
