@@ -405,5 +405,5 @@ class Histogram(BaseHistogram):
             )
 
     def __setitem__(self, index, value):
-        indexes = _compute_commonindex(self._hist, index, value)
+        indexes = _compute_commonindex(self._hist, index, expand=False)
         self._hist._at_set(value, *indexes)
