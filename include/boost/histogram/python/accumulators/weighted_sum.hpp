@@ -13,59 +13,55 @@
 #pragma once
 
 #include <boost/core/nvp.hpp>
-#include <boost/histogram/fwd.hpp> // for weighted_sum<>
+#include <boost/histogram/weight.hpp>
 #include <type_traits>
 
-namespace boost {
-namespace histogram {
-namespace python {
+namespace accumulators {
 
 /// Holds sum of weights and its variance estimate
 template <typename RealType>
 struct weighted_sum {
-  public:
     weighted_sum() = default;
     explicit weighted_sum(const RealType &value) noexcept
-        : sum_of_weights_(value)
-        , sum_of_weights_squared_(value) {}
+        : value(value)
+        , variance(value) {}
     weighted_sum(const RealType &value, const RealType &variance) noexcept
-        : sum_of_weights_(value)
-        , sum_of_weights_squared_(variance) {}
+        : value(value)
+        , variance(variance) {}
 
     /// Increment by one.
     weighted_sum &operator++() { return operator+=(1); }
 
     /// Increment by value.
     template <typename T>
-    weighted_sum &operator+=(const T &value) {
-        sum_of_weights_ += value;
-        sum_of_weights_squared_ += value * value;
+    weighted_sum &operator+=(const T &val) {
+        value += val;
+        variance += val * val;
         return *this;
     }
 
     /// Added another weighted sum.
     template <typename T>
     weighted_sum &operator+=(const weighted_sum<T> &rhs) {
-        sum_of_weights_ += static_cast<RealType>(rhs.sum_of_weights_);
-        sum_of_weights_squared_ += static_cast<RealType>(rhs.sum_of_weights_squared_);
+        value += static_cast<RealType>(rhs.value);
+        variance += static_cast<RealType>(rhs.variance);
         return *this;
     }
 
     /// Scale by value.
     weighted_sum &operator*=(const RealType &x) {
-        sum_of_weights_ *= x;
-        sum_of_weights_squared_ *= x * x;
+        value *= x;
+        variance *= x * x;
         return *this;
     }
 
     bool operator==(const RealType &rhs) const noexcept {
-        return sum_of_weights_ == rhs && sum_of_weights_squared_ == rhs;
+        return value == rhs && variance == rhs;
     }
 
     template <typename T>
     bool operator==(const weighted_sum<T> &rhs) const noexcept {
-        return sum_of_weights_ == rhs.sum_of_weights_
-               && sum_of_weights_squared_ == rhs.sum_of_weights_squared_;
+        return value == rhs.value && variance == rhs.variance;
     }
 
     template <typename T>
@@ -73,48 +69,20 @@ struct weighted_sum {
         return !operator==(rhs);
     }
 
-    /// Return value of the sum.
-    const RealType &value() const noexcept { return sum_of_weights_; }
-
-    /// Return estimated variance of the sum.
-    const RealType &variance() const noexcept { return sum_of_weights_squared_; }
-
     // lossy conversion must be explicit
     template <class T>
     explicit operator T() const {
-        return static_cast<T>(sum_of_weights_);
+        return static_cast<T>(value);
     }
 
     template <class Archive>
     void serialize(Archive &ar, unsigned /* version */) {
-        ar &make_nvp("sum_of_weights", sum_of_weights_);
-        ar &make_nvp("sum_of_weights_squared", sum_of_weights_squared_);
+        ar &boost::make_nvp("value", value);
+        ar &boost::make_nvp("variance", variance);
     }
 
-    RealType sum_of_weights_         = RealType();
-    RealType sum_of_weights_squared_ = RealType();
+    RealType value    = RealType();
+    RealType variance = RealType();
 };
 
-} // namespace python
-} // namespace histogram
-} // namespace boost
-
-#ifndef BOOST_HISTOGRAM_DOXYGEN_INVOKED
-namespace std {
-template <class T, class U>
-struct common_type<boost::histogram::accumulators::weighted_sum<T>,
-                   boost::histogram::accumulators::weighted_sum<U>> {
-    using type = boost::histogram::accumulators::weighted_sum<common_type_t<T, U>>;
-};
-
-template <class T, class U>
-struct common_type<boost::histogram::accumulators::weighted_sum<T>, U> {
-    using type = boost::histogram::accumulators::weighted_sum<common_type_t<T, U>>;
-};
-
-template <class T, class U>
-struct common_type<T, boost::histogram::accumulators::weighted_sum<U>> {
-    using type = boost::histogram::accumulators::weighted_sum<common_type_t<T, U>>;
-};
-} // namespace std
-#endif
+} // namespace accumulators

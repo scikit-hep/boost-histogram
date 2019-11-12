@@ -14,13 +14,10 @@
 
 #include <boost/assert.hpp>
 #include <boost/core/nvp.hpp>
-#include <boost/histogram/fwd.hpp> // for weighted_mean<>
 #include <boost/histogram/weight.hpp>
 #include <type_traits>
 
-namespace boost {
-namespace histogram {
-namespace python {
+namespace accumulators {
 
 /**
   Calculates mean and variance of weighted sample.
@@ -30,68 +27,64 @@ namespace python {
 */
 template <typename RealType>
 struct weighted_mean {
-  public:
     weighted_mean() = default;
     weighted_mean(const RealType &wsum,
                   const RealType &wsum2,
                   const RealType &mean,
                   const RealType &variance)
-        : sum_of_weights_(wsum)
-        , sum_of_weights_squared_(wsum2)
-        , weighted_mean_(mean)
-        , sum_of_weighted_deltas_squared_(
-              variance
-              * (sum_of_weights_ - sum_of_weights_squared_ / sum_of_weights_)) {}
+        : sum_of_weights(wsum)
+        , sum_of_weights_squared(wsum2)
+        , value(mean)
+        , sum_of_weighted_deltas_squared(
+              variance * (sum_of_weights - sum_of_weights_squared / sum_of_weights)) {}
 
     weighted_mean(const RealType &wsum,
                   const RealType &wsum2,
                   const RealType &mean,
                   const RealType &sum_of_weighted_deltas_squared,
                   bool)
-        : sum_of_weights_(wsum)
-        , sum_of_weights_squared_(wsum2)
-        , weighted_mean_(mean)
-        , sum_of_weighted_deltas_squared_(sum_of_weighted_deltas_squared) {}
+        : sum_of_weights(wsum)
+        , sum_of_weights_squared(wsum2)
+        , value(mean)
+        , sum_of_weighted_deltas_squared(sum_of_weighted_deltas_squared) {}
 
-    void operator()(const RealType &x) { operator()(weight(1), x); }
+    void operator()(const RealType &x) { operator()(boost::histogram::weight(1), x); }
 
-    void operator()(const weight_type<RealType> &w, const RealType &x) {
-        sum_of_weights_ += w.value;
-        sum_of_weights_squared_ += w.value * w.value;
-        const auto delta = x - weighted_mean_;
-        weighted_mean_ += w.value * delta / sum_of_weights_;
-        sum_of_weighted_deltas_squared_ += w.value * delta * (x - weighted_mean_);
+    void operator()(const boost::histogram::weight_type<RealType> &w,
+                    const RealType &x) {
+        sum_of_weights += w.value;
+        sum_of_weights_squared += w.value * w.value;
+        const auto delta = x - value;
+        value += w.value * delta / sum_of_weights;
+        sum_of_weighted_deltas_squared += w.value * delta * (x - value);
     }
 
     template <typename T>
     weighted_mean &operator+=(const weighted_mean<T> &rhs) {
-        if(sum_of_weights_ != 0 || rhs.sum_of_weights_ != 0) {
-            const auto tmp
-                = weighted_mean_ * sum_of_weights_
-                  + static_cast<RealType>(rhs.weighted_mean_ * rhs.sum_of_weights_);
-            sum_of_weights_ += static_cast<RealType>(rhs.sum_of_weights_);
-            sum_of_weights_squared_
-                += static_cast<RealType>(rhs.sum_of_weights_squared_);
-            weighted_mean_ = tmp / sum_of_weights_;
+        if(sum_of_weights != 0 || rhs.sum_of_weights != 0) {
+            const auto tmp = value * sum_of_weights
+                             + static_cast<RealType>(rhs.value * rhs.sum_of_weights);
+            sum_of_weights += static_cast<RealType>(rhs.sum_of_weights);
+            sum_of_weights_squared += static_cast<RealType>(rhs.sum_of_weights_squared);
+            value = tmp / sum_of_weights;
         }
-        sum_of_weighted_deltas_squared_
-            += static_cast<RealType>(rhs.sum_of_weighted_deltas_squared_);
+        sum_of_weighted_deltas_squared
+            += static_cast<RealType>(rhs.sum_of_weighted_deltas_squared);
         return *this;
     }
 
     weighted_mean &operator*=(const RealType &s) {
-        weighted_mean_ *= s;
-        sum_of_weighted_deltas_squared_ *= s * s;
+        value *= s;
+        sum_of_weighted_deltas_squared *= s * s;
         return *this;
     }
 
     template <typename T>
     bool operator==(const weighted_mean<T> &rhs) const noexcept {
-        return sum_of_weights_ == rhs.sum_of_weights_
-               && sum_of_weights_squared_ == rhs.sum_of_weights_squared_
-               && weighted_mean_ == rhs.weighted_mean_
-               && sum_of_weighted_deltas_squared_
-                      == rhs.sum_of_weighted_deltas_squared_;
+        return sum_of_weights == rhs.sum_of_weights
+               && sum_of_weights_squared == rhs.sum_of_weights_squared
+               && value == rhs.value
+               && sum_of_weighted_deltas_squared == rhs.sum_of_weighted_deltas_squared;
     }
 
     template <typename T>
@@ -99,39 +92,22 @@ struct weighted_mean {
         return !operator==(rhs);
     }
 
-    const RealType &sum_of_weights() const noexcept { return sum_of_weights_; }
-    const RealType &sum_of_weights_squared() const noexcept {
-        return sum_of_weights_squared_;
-    }
-    const RealType &value() const noexcept { return weighted_mean_; }
     RealType variance() const {
-        return sum_of_weighted_deltas_squared_
-               / (sum_of_weights_ - sum_of_weights_squared_ / sum_of_weights_);
+        return sum_of_weighted_deltas_squared
+               / (sum_of_weights - sum_of_weights_squared / sum_of_weights);
     }
 
     template <class Archive>
     void serialize(Archive &ar, unsigned /* version */) {
-        ar &make_nvp("sum_of_weights", sum_of_weights_);
-        ar &make_nvp("sum_of_weights_squared", sum_of_weights_squared_);
-        ar &make_nvp("weighted_mean", weighted_mean_);
-        ar &make_nvp("sum_of_weighted_deltas_squared", sum_of_weighted_deltas_squared_);
+        ar &boost::make_nvp("sum_of_weights", sum_of_weights);
+        ar &boost::make_nvp("sum_of_weights_squared", sum_of_weights_squared);
+        ar &boost::make_nvp("value", value);
+        ar &boost::make_nvp("sum_of_weighted_deltas_squared",
+                            sum_of_weighted_deltas_squared);
     }
 
-    RealType sum_of_weights_ = RealType(), sum_of_weights_squared_ = RealType(),
-             weighted_mean_ = RealType(), sum_of_weighted_deltas_squared_ = RealType();
+    RealType sum_of_weights = RealType(), sum_of_weights_squared = RealType(),
+             value = RealType(), sum_of_weighted_deltas_squared = RealType();
 };
 
-} // namespace python
-} // namespace histogram
-} // namespace boost
-
-#ifndef BOOST_HISTOGRAM_DOXYGEN_INVOKED
-namespace std {
-template <class T, class U>
-/// Specialization for boost::histogram::accumulators::weighted_mean.
-struct common_type<boost::histogram::accumulators::weighted_mean<T>,
-                   boost::histogram::accumulators::weighted_mean<U>> {
-    using type = boost::histogram::accumulators::weighted_mean<common_type_t<T, U>>;
-};
-} // namespace std
-#endif
+} // namespace accumulators

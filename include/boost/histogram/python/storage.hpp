@@ -24,9 +24,9 @@ using int_          = bh::dense_storage<uint64_t>;
 using atomic_int    = bh::dense_storage<bh::accumulators::thread_safe<uint64_t>>;
 using double_       = bh::dense_storage<double>;
 using unlimited     = bh::unlimited_storage<>;
-using weight        = bh::dense_storage<bh::python::weighted_sum<double>>;
-using mean          = bh::dense_storage<bh::python::mean<double>>;
-using weighted_mean = bh::dense_storage<bh::python::weighted_mean<double>>;
+using weight        = bh::dense_storage<accumulators::weighted_sum<double>>;
+using mean          = bh::dense_storage<accumulators::mean<double>>;
+using weighted_mean = bh::dense_storage<accumulators::weighted_mean<double>>;
 
 // Allow repr to show python name
 template <class S>

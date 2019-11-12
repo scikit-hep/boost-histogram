@@ -58,18 +58,17 @@ void register_accumulators(py::module &accumulators) {
     // If it is not available except through a computation, it has
     // the same name as the private property without the trailing _.
 
-    using weighted_sum = bh::python::weighted_sum<double>;
+    using weighted_sum = accumulators::weighted_sum<double>;
 
-    PYBIND11_NUMPY_DTYPE_EX(
-        weighted_sum, sum_of_weights_, "value", sum_of_weights_squared_, "variance");
+    PYBIND11_NUMPY_DTYPE(weighted_sum, value, variance);
 
     register_accumulator<weighted_sum>(accumulators, "weighted_sum")
 
         .def(py::init<const double &>(), "value"_a)
         .def(py::init<const double &, const double &>(), "value"_a, "variance"_a)
 
-        .def_property_readonly("value", &weighted_sum::value)
-        .def_property_readonly("variance", &weighted_sum::variance)
+        .def_readonly("value", &weighted_sum::value)
+        .def_readonly("variance", &weighted_sum::variance)
 
         .def(py::self += double())
 
@@ -128,16 +127,12 @@ void register_accumulators(py::module &accumulators) {
 
         ;
 
-    using weighted_mean = bh::python::weighted_mean<double>;
-    PYBIND11_NUMPY_DTYPE_EX(weighted_mean,
-                            sum_of_weights_,
-                            "sum_of_weights",
-                            sum_of_weights_squared_,
-                            "sum_of_weights_squared",
-                            weighted_mean_,
-                            "value",
-                            sum_of_weighted_deltas_squared_,
-                            "sum_of_weighted_deltas_squared");
+    using weighted_mean = accumulators::weighted_mean<double>;
+    PYBIND11_NUMPY_DTYPE(weighted_mean,
+                         sum_of_weights,
+                         sum_of_weights_squared,
+                         value,
+                         sum_of_weighted_deltas_squared);
 
     register_accumulator<weighted_mean>(accumulators, "weighted_mean")
         .def(py::init<const double &, const double &, const double &, const double &>(),
@@ -146,8 +141,12 @@ void register_accumulators(py::module &accumulators) {
              "value"_a,
              "variance"_a)
 
-        .def_property_readonly("sum_of_weights", &weighted_mean::sum_of_weights)
-        .def_property_readonly("value", &weighted_mean::value)
+        .def_readonly("sum_of_weights", &weighted_mean::sum_of_weights)
+        .def_readonly("sum_of_weights_squared", &weighted_mean::sum_of_weights_squared)
+        .def_readonly("value", &weighted_mean::value)
+        .def_readonly("sum_of_weighted_deltas_squared",
+                      &weighted_mean::sum_of_weighted_deltas_squared)
+
         .def_property_readonly("variance", &weighted_mean::variance)
 
         .def("__call__",
@@ -169,14 +168,8 @@ void register_accumulators(py::module &accumulators) {
 
         ;
 
-    using mean = bh::python::mean<double>;
-    PYBIND11_NUMPY_DTYPE_EX(mean,
-                            sum_,
-                            "count",
-                            mean_,
-                            "value",
-                            sum_of_deltas_squared_,
-                            "sum_of_deltas_squared");
+    using mean = accumulators::mean<double>;
+    PYBIND11_NUMPY_DTYPE(mean, count, value, sum_of_deltas_squared);
 
     register_accumulator<mean>(accumulators, "mean")
         .def(py::init<const double &, const double &, const double &>(),
@@ -184,8 +177,10 @@ void register_accumulators(py::module &accumulators) {
              "value"_a,
              "variance"_a)
 
-        .def_property_readonly("count", &mean::count)
-        .def_property_readonly("value", &mean::value)
+        .def_readonly("count", &mean::count)
+        .def_readonly("value", &mean::value)
+        .def_readonly("sum_of_deltas_squared", &mean::sum_of_deltas_squared)
+
         .def_property_readonly("variance", &mean::variance)
 
         .def("__call__",

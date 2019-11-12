@@ -54,13 +54,13 @@ def _expand_ellipsis(indexes, rank):
         raise IndexError("an index can only have a single ellipsis ('...')")
 
 
-def _compute_commonindex(hist, index, expand):
+def _compute_commonindex(hist, index, expand_ellipsis):
     # Normalize -> h[i] == h[i,]
     if not isinstance(index, tuple):
         index = (index,)
 
     # Now a list
-    if expand:
+    if expand_ellipsis:
         indexes = _expand_ellipsis(index, hist.rank())
     else:
         indexes = list(index)
@@ -333,7 +333,7 @@ class Histogram(BaseHistogram):
 
     def __getitem__(self, index):
 
-        indexes = _compute_commonindex(self._hist, index, expand=True)
+        indexes = _compute_commonindex(self._hist, index, expand_ellipsis=True)
 
         # If this is (now) all integers, return the bin contents
         try:
@@ -405,5 +405,5 @@ class Histogram(BaseHistogram):
             )
 
     def __setitem__(self, index, value):
-        indexes = _compute_commonindex(self._hist, index, expand=False)
+        indexes = _compute_commonindex(self._hist, index, expand_ellipsis=False)
         self._hist._at_set(value, *indexes)

@@ -24,7 +24,12 @@ py::class_<A> register_accumulator(py::module acc, Args &&... args) {
 
         .def(py::self *= double())
 
-        .def("__repr__", &shift_to_string<A>)
+        .def("__repr__",
+             [](py::object self) {
+                 const A &item = py::cast<const A &>(self);
+                 return py::str("{0}{1}").format(
+                     self.attr("__class__").attr("__name__"), shift_to_string(item));
+             })
 
         .def("__copy__", [](const A &self) { return A(self); })
         .def("__deepcopy__", [](const A &self, py::object) { return A(self); })
