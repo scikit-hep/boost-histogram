@@ -7,9 +7,9 @@
 
 #include <boost/histogram/accumulators/sum.hpp>
 #include <boost/histogram/python/accumulators/mean.hpp>
+#include <boost/histogram/python/accumulators/ostream.hpp>
 #include <boost/histogram/python/accumulators/weighted_mean.hpp>
 #include <boost/histogram/python/accumulators/weighted_sum.hpp>
-#include <boost/histogram/python/accumulators_ostream.hpp>
 #include <boost/histogram/python/kwargs.hpp>
 #include <boost/histogram/python/register_accumulator.hpp>
 #include <pybind11/operators.h>

@@ -11,12 +11,8 @@
 
 #pragma once
 
-#include <boost/assert.hpp>
 #include <boost/core/nvp.hpp>
 #include <boost/histogram/weight.hpp>
-#include <boost/throw_exception.hpp>
-#include <stdexcept>
-#include <type_traits>
 
 namespace accumulators {
 

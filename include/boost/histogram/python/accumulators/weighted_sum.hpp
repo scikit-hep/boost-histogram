@@ -14,7 +14,6 @@
 
 #include <boost/core/nvp.hpp>
 #include <boost/histogram/weight.hpp>
-#include <type_traits>
 
 namespace accumulators {
 

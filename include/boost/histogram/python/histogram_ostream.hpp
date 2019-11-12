@@ -7,7 +7,7 @@
 
 #include <boost/histogram/algorithm/empty.hpp>
 #include <boost/histogram/fwd.hpp>
-#include <boost/histogram/python/accumulators_ostream.hpp>
+#include <boost/histogram/python/accumulators/ostream.hpp>
 #include <boost/histogram/python/axis_ostream.hpp>
 #include <boost/histogram/python/storage.hpp>
 #include <boost/histogram/python/sum.hpp>
