@@ -18,7 +18,6 @@ Python bindings for [Boost::Histogram][] ([source][Boost::Histogram source]), a 
 > Join the [discussion on gitter][gitter-link] or [open an issue](https://github.com/scikit-hep/boost-histogram/issues)!
 >
 > #### Known issues (develop):
-> * Non-simple storages do not support `.view()` or the buffer interface; you can access and set one element at a time.
 > * Setting with an array is not yet supported (`h[...] = np.array(...)`).
 
 
