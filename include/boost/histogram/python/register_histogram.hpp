@@ -172,7 +172,7 @@ register_histogram(py::module &m, const char *name, const char *desc) {
             py::return_value_policy::move)
 
         .def("at",
-             [](const histogram_t &self, py::args &args) {
+             [](const histogram_t &self, py::args &args) -> value_type {
                  auto int_args = py::cast<std::vector<int>>(args);
                  return self.at(int_args);
              })
