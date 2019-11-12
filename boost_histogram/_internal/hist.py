@@ -136,7 +136,7 @@ class BaseHistogram(object):
         return self.__class__.__name__ + repr(self._hist)[9:]
 
     def __array__(self):
-        return np.asarray(self._hist)
+        return self.view()
 
     def __add__(self, other):
         return self.__class__(self._hist + other._hist)
