@@ -39,10 +39,7 @@ T optional_arg(py::kwargs &kwargs, const char *name, T original_value) {
 /// Run this last; it will provide an error if other keyword are still present
 inline void finalize_args(const py::kwargs &kwargs) {
     if(kwargs.size() > 0) {
-        std::stringstream out;
-        for(const auto &item : kwargs) {
-            out << ", " << item.first;
-        }
-        throw py::key_error("Unidentfied keywords found:" + out.str());
+        auto keys = py::str(", ").attr("join")(kwargs.attr("keys")());
+        throw py::key_error(py::str("Unidentified keywords found: {0}").format(keys));
     }
 }
