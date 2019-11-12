@@ -10,23 +10,16 @@ from numpy.testing import assert_array_equal
 )
 def test_setting(storage):
     h = bh.Histogram(bh.axis.Regular(10, 0, 1), storage=storage())
-    h[bh.underflow] = 1
+
     h[0] = 2
     h[1] = 3
-    h[bh.loc(0.55)] = 4
     h[-1] = 5
-    h[bh.overflow] = 6
 
-    assert h[bh.underflow] == 1
     assert h[0] == 2
     assert h[1] == 3
-    assert h[bh.loc(0.55)] == 4
-    assert h[5] == 4
-    assert h[-1] == 5
     assert h[9] == 5
-    assert h[bh.overflow] == 6
 
-    assert_array_equal(h.view(flow=True), [1, 2, 3, 0, 0, 0, 4, 0, 0, 0, 5, 6])
+    assert_array_equal(h.view(), [2, 3, 0, 0, 0, 0, 0, 0, 0, 5])
 
 
 def test_setting_weight():
@@ -46,11 +39,17 @@ def test_setting_weight():
 
     b = np.asarray(h)
     assert b["value"][0] == h[0].value
+    assert b["variance"][0] == h[0].variance
 
     h[0] = bh.accumulators.WeightedSum(value=3, variance=1)
 
+    assert h[0].value == 3
+    assert h[0].variance == 1
+
     assert a[0] == h[0]
+
     assert b["value"][0] == h[0].value
+    assert b["variance"][0] == h[0].variance
 
 
 def test_setting_profile():
@@ -69,12 +68,20 @@ def test_setting_profile():
     assert a[0] == h[0]
 
     b = np.asarray(h)
+
     assert b["value"][0] == h[0].value
+    assert b["count"][0] == h[0].count
+    assert b["sum_of_deltas_squared"][0] == h[0].sum_of_deltas_squared
 
     h[0] = bh.accumulators.Mean(count=6, value=3, variance=2)
+    assert h[0].count == 6
+    assert h[0].value == 3
+    assert h[0].variance == 2
 
     assert a[0] == h[0]
     assert b["value"][0] == h[0].value
+    assert b["count"][0] == h[0].count
+    assert b["sum_of_deltas_squared"][0] == h[0].sum_of_deltas_squared
 
 
 def test_setting_weighted_profile():
@@ -95,9 +102,23 @@ def test_setting_weighted_profile():
     assert a[0] == h[0]
 
     b = np.asarray(h)
+
     assert b["value"][0] == h[0].value
+    assert b["sum_of_weights"][0] == h[0].sum_of_weights
+    assert b["sum_of_weights_squared"][0] == h[0].sum_of_weights_squared
+    assert b["sum_of_weighted_deltas_squared"][0] == h[0].sum_of_weighted_deltas_squared
 
     h[0] = bh.accumulators.WeightedMean(wsum=6, wsum2=12, value=3, variance=2)
 
     assert a[0] == h[0]
+
+    assert h[0].value == 3
+    assert h[0].variance == 2
+    assert h[0].sum_of_weights == 6
+    assert h[0].sum_of_weights_squared == 12
+    assert h[0].sum_of_weighted_deltas_squared == 8
+
     assert b["value"][0] == h[0].value
+    assert b["sum_of_weights"][0] == h[0].sum_of_weights
+    assert b["sum_of_weights_squared"][0] == h[0].sum_of_weights_squared
+    assert b["sum_of_weighted_deltas_squared"][0] == h[0].sum_of_weighted_deltas_squared

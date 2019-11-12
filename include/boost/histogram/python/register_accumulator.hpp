@@ -24,11 +24,13 @@ py::class_<A> register_accumulator(py::module acc, Args &&... args) {
 
         .def(py::self *= double())
 
+        // The c++ name is replaced with the Python name here
         .def("__repr__",
              [](py::object self) {
                  const A &item = py::cast<const A &>(self);
-                 return py::str("{0}{1}").format(
-                     self.attr("__class__").attr("__name__"), shift_to_string(item));
+                 py::str str   = shift_to_string(item);
+                 str           = str.attr("split")("(", 2).attr("__getitem__")(1);
+                 return py::str("{0.__class__.__name__}({1}").format(self, str);
              })
 
         .def("__copy__", [](const A &self) { return A(self); })
