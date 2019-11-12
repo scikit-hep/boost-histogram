@@ -20,7 +20,6 @@ Python bindings for [Boost::Histogram][] ([source][Boost::Histogram source]), a 
 > #### Known issues (develop):
 > * Non-simple storages do not support `.view()` or the buffer interface; you can access and set one element at a time.
 > * Setting with an array is not yet supported (`h[...] = np.array(...)`).
-> * A compiler is required to install on Python 3.8 on Windows with pip (waiting on CI update for wheels) (conda-forge already has Python 3.8 packages).
 
 
 ## Installation
@@ -127,17 +126,17 @@ The easiest way to get boost-histogram is to use a binary wheel. These are the s
 
 | System | Arch | Python versions |
 |---------|-----|------------------|
-| ManyLinux1 (custom GCC 9.2) | 64 & 32-bit | 2.7, 3.5, 3.6, 3.7 |
+| ManyLinux1 (custom GCC 9.2) | 64 & 32-bit | 2.7, 3.5, 3.6, 3.7, 3.8 |
 | ManyLinux2010 | 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8 |
 | macOS 10.9+ | 64-bit | 2.7, 3.6, 3.7, 3.8 |
-| Windows | 64 & 32-bit | 2.7, 3.6, 3.7 |
+| Windows | 64 & 32-bit | 2.7, 3.6, 3.7, 3.8 |
 
 
 * Linux: I'm not supporting 3.4 because I have to build the Numpy wheels to do so.
-* manylinux1: Using a custom docker container with GCC 9.2; should work but can't be called directly other compiled extensions unless they do the same thing (think that's the main caveat). Supporting 32 bits because it's there. Numpy does not build correctly with Python 3.8, GCC 9.2, and manylinux1, so Python 3.8 is not supported; use manylinux2010 instead.
+* manylinux1: Using a custom docker container with GCC 9.2; should work but can't be called directly other compiled extensions unless they do the same thing (think that's the main caveat). Supporting 32 bits because it's there.
 * manylinux2010: Requires pip 10+ and a version of Linux newer than 2010. This is very new technology.
 * MacOS: Uses the dedicated 64 bit 10.9+ Python.org builds. We are not supporting 3.5 because those no longer provide binaries (could add a 32+64 fat 10.6+ that really was 10.9+, but not worth it unless there is a need for it).
-* Windows: PyBind11 requires compilation with a newer copy of Visual Studio than Python 2.7's Visual Studio 2008; you need to have the [Visual Studio 2015 distributable][msvc2015] installed (the dll is included in 2017 and 2019, as well). Wheels are not provided for 3.8, waiting on support from Azure.
+* Windows: PyBind11 requires compilation with a newer copy of Visual Studio than Python 2.7's Visual Studio 2008; you need to have the [Visual Studio 2015 distributable][msvc2015] installed (the dll is included in 2017 and 2019, as well).
 
 [msvc2015]: https://www.microsoft.com/en-us/download/details.aspx?id=48145
 
