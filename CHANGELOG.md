@@ -3,6 +3,7 @@
 #### User changes
 
 * Histogram and Axis classes now follow PEP 8 naming scheme (`histogram`->`Histogram`, `regular`->`Regular`, etc.) [#192][]
+* You can now view a histogram with accumulators, with property access such as `h.view().value` [#194][]
 * Added axes transforms [#192][]
 * You can now sum over a range with endpoints [#185][]
 * You can now access the functional regular axis directly, `regular_sqrt` becomes `regular.sqrt`, etc.. [#183][]
@@ -11,6 +12,10 @@
 * `bh.project` has become `bh.sum` [#185][]
 * Signatures are much nicer in Python 3 [#188][]
 
+
+#### Bug fixes:
+* Unlimited and AtomicInt storages now allow single item access [#194][]
+* `.view()` now no longer makes a copy [#194][]
 
 #### Developer changes
 
