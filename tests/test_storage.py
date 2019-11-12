@@ -38,6 +38,7 @@ def test_setting_weight():
     assert a[0] == h[0]
 
     b = np.asarray(h)
+
     assert b["value"][0] == h[0].value
     assert b["variance"][0] == h[0].variance
 
@@ -50,6 +51,12 @@ def test_setting_weight():
 
     assert b["value"][0] == h[0].value
     assert b["variance"][0] == h[0].variance
+
+    assert b[0]["value"] == a[0]["value"]
+    assert b[0]["variance"] == a[0]["variance"]
+
+    assert b["value"][0] == a["value"][0]
+    assert b["variance"][0] == a["variance"][0]
 
 
 def test_setting_profile():
@@ -79,9 +86,18 @@ def test_setting_profile():
     assert h[0].variance == 2
 
     assert a[0] == h[0]
+
     assert b["value"][0] == h[0].value
     assert b["count"][0] == h[0].count
     assert b["sum_of_deltas_squared"][0] == h[0].sum_of_deltas_squared
+
+    assert b[0]["value"] == a[0]["value"]
+    assert b[0]["count"] == a[0]["count"]
+    assert b[0]["sum_of_deltas_squared"] == a[0]["sum_of_deltas_squared"]
+
+    assert b[0]["value"] == a["value"][0]
+    assert b[0]["count"] == a["count"][0]
+    assert b[0]["sum_of_deltas_squared"] == a["sum_of_deltas_squared"][0]
 
 
 def test_setting_weighted_profile():
@@ -122,3 +138,17 @@ def test_setting_weighted_profile():
     assert b["sum_of_weights"][0] == h[0].sum_of_weights
     assert b["sum_of_weights_squared"][0] == h[0].sum_of_weights_squared
     assert b["sum_of_weighted_deltas_squared"][0] == h[0].sum_of_weighted_deltas_squared
+
+    assert b[0]["value"] == a[0]["value"]
+    assert b[0]["sum_of_weights"] == a[0]["sum_of_weights"]
+    assert b[0]["sum_of_weights_squared"] == a[0]["sum_of_weights_squared"]
+    assert (
+        b[0]["sum_of_weighted_deltas_squared"] == a[0]["sum_of_weighted_deltas_squared"]
+    )
+
+    assert b[0]["value"] == a["value"][0]
+    assert b[0]["sum_of_weights"] == a["sum_of_weights"][0]
+    assert b[0]["sum_of_weights_squared"] == a["sum_of_weights_squared"][0]
+    assert (
+        b[0]["sum_of_weighted_deltas_squared"] == a["sum_of_weighted_deltas_squared"][0]
+    )

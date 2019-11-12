@@ -97,6 +97,30 @@ void register_accumulators(py::module &accumulators) {
                         return weighted_sum(a, b);
                     }))
 
+        .def("__getitem__",
+             [](const weighted_sum &self, py::str key) {
+                 if(key.equal(py::str("value")))
+                     return self.value;
+                 else if(key.equal(py::str("variance")))
+                     return self.variance;
+                 else
+                     throw py::key_error(
+                         py::str("{0} not one of value, variance").format(key));
+             })
+        .def("__setitem__",
+             [](weighted_sum &self, py::str key, double value) {
+                 if(key.equal(py::str("value")))
+                     self.value = value;
+                 else if(key.equal(py::str("variance")))
+                     self.variance = value;
+                 else
+                     throw py::key_error(
+                         py::str("{0} not one of value, variance").format(key));
+             })
+
+        .def("_ipython_key_completions_",
+             [](py::object /* self */) { return py::make_tuple("value", "variance"); })
+
         ;
 
     using sum = bh::accumulators::sum<double>;
@@ -166,6 +190,49 @@ void register_accumulators(py::module &accumulators) {
                     return weighted_mean(a, b, c, d, true);
                 }))
 
+        .def("__getitem__",
+             [](const weighted_mean &self, py::str key) {
+                 if(key.equal(py::str("value")))
+                     return self.value;
+                 else if(key.equal(py::str("sum_of_weights")))
+                     return self.sum_of_weights;
+                 else if(key.equal(py::str("sum_of_weights_squared")))
+                     return self.sum_of_weights_squared;
+                 else if(key.equal(py::str("sum_of_weighted_deltas_squared")))
+                     return self.sum_of_weighted_deltas_squared;
+                 else
+                     throw py::key_error(
+                         py::str(
+                             "{0} not one of value, sum_of_weights, "
+                             "sum_of_weights_squared, sum_of_weighted_deltas_squared")
+                             .format(key));
+             })
+        .def("__setitem__",
+             [](weighted_mean &self, py::str key, double value) {
+                 if(key.equal(py::str("value")))
+                     self.value = value;
+                 else if(key.equal(py::str("sum_of_weights")))
+                     self.sum_of_weights = value;
+                 else if(key.equal(py::str("sum_of_weights_squared")))
+                     self.sum_of_weights_squared = value;
+                 else if(key.equal(py::str("sum_of_weighted_deltas_squared")))
+                     self.sum_of_weighted_deltas_squared = value;
+                 else
+                     throw py::key_error(
+                         py::str(
+                             "{0} not one of value, sum_of_weights, "
+                             "sum_of_weights_squared, sum_of_weighted_deltas_squared")
+                             .format(key));
+             })
+
+        .def("_ipython_key_completions_",
+             [](py::object /* self */) {
+                 return py::make_tuple("value",
+                                       "sum_of_weights",
+                                       "sum_of_weights_squared",
+                                       "sum_of_weighted_deltas_squared");
+             })
+
         ;
 
     using mean = accumulators::mean<double>;
@@ -198,6 +265,38 @@ void register_accumulators(py::module &accumulators) {
             py::vectorize([](const double &a, const double &b, const double &c) {
                 return mean(a, b, c, true);
             }))
+
+        .def("__getitem__",
+             [](const mean &self, py::str key) {
+                 if(key.equal(py::str("count")))
+                     return self.count;
+                 else if(key.equal(py::str("value")))
+                     return self.value;
+                 else if(key.equal(py::str("sum_of_deltas_squared")))
+                     return self.sum_of_deltas_squared;
+                 else
+                     throw py::key_error(
+                         py::str("{0} not one of count, value, sum_of_deltas_squared")
+                             .format(key));
+             })
+        .def("__setitem__",
+             [](mean &self, py::str key, double value) {
+                 if(key.equal(py::str("count")))
+                     self.count = value;
+                 else if(key.equal(py::str("value")))
+                     self.value = value;
+                 else if(key.equal(py::str("sum_of_deltas_squared")))
+                     self.sum_of_deltas_squared = value;
+                 else
+                     throw py::key_error(
+                         py::str("{0} not one of count, value, sum_of_deltas_squared")
+                             .format(key));
+             })
+
+        .def("_ipython_key_completions_",
+             [](py::object /* self */) {
+                 return py::make_tuple("count", "value", "sum_of_deltas_squared");
+             })
 
         ;
 }
