@@ -66,6 +66,9 @@ def test_fill_int_1d():
         h.fill()
     with pytest.raises(ValueError):
         h.fill(1, 2)
+    with pytest.raises(KeyError) as k:
+        h.fill(1, fiddlesticks=2)
+    assert k.value.args[0] == "Unidentified keywords found: fiddlesticks"
 
     h.fill(-3)
     assert h.empty()
