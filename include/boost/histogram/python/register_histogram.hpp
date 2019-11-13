@@ -148,7 +148,14 @@ register_histogram(py::module &m, const char *name, const char *desc) {
 
         .def(
             "view",
-            [](histogram_t &h, bool flow) { return py::array(make_buffer(h, flow)); },
+            [](py::object self, bool flow) {
+                auto &h   = py::cast<histogram_t &>(self);
+                auto info = make_buffer(h, flow);
+                return py::array(
+                    pybind11::dtype(info), info.shape, info.strides, info.ptr, self);
+                // Note that, due to the missing signature py::array(info, self), we
+                // have to write this out fully here. TODO: Make PR to PyBind11
+            },
             "flow"_a = false)
 
         .def(
@@ -165,7 +172,7 @@ register_histogram(py::module &m, const char *name, const char *desc) {
             py::return_value_policy::move)
 
         .def("at",
-             [](const histogram_t &self, py::args &args) {
+             [](const histogram_t &self, py::args &args) -> value_type {
                  auto int_args = py::cast<std::vector<int>>(args);
                  return self.at(int_args);
              })

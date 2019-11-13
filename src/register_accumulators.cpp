@@ -5,11 +5,11 @@
 
 #include <boost/histogram/python/pybind11.hpp>
 
-#include <boost/histogram/accumulators/mean.hpp>
 #include <boost/histogram/accumulators/sum.hpp>
-#include <boost/histogram/accumulators/weighted_mean.hpp>
-#include <boost/histogram/accumulators/weighted_sum.hpp>
-#include <boost/histogram/python/accumulators_ostream.hpp>
+#include <boost/histogram/python/accumulators/mean.hpp>
+#include <boost/histogram/python/accumulators/ostream.hpp>
+#include <boost/histogram/python/accumulators/weighted_mean.hpp>
+#include <boost/histogram/python/accumulators/weighted_sum.hpp>
 #include <boost/histogram/python/kwargs.hpp>
 #include <boost/histogram/python/register_accumulator.hpp>
 #include <pybind11/operators.h>
@@ -52,15 +52,23 @@ decltype(auto) make_mean_call() {
 }
 
 void register_accumulators(py::module &accumulators) {
-    using weighted_sum = bh::accumulators::weighted_sum<double>;
+    // Naming convention:
+    // If a value is publically available in Boost.Histogram accumulators
+    // as a method, it has the same name in the numpy record array.
+    // If it is not available except through a computation, it has
+    // the same name as the private property without the trailing _.
+
+    using weighted_sum = accumulators::weighted_sum<double>;
+
+    PYBIND11_NUMPY_DTYPE(weighted_sum, value, variance);
 
     register_accumulator<weighted_sum>(accumulators, "weighted_sum")
 
         .def(py::init<const double &>(), "value"_a)
         .def(py::init<const double &, const double &>(), "value"_a, "variance"_a)
 
-        .def_property_readonly("value", &weighted_sum::value)
-        .def_property_readonly("variance", &weighted_sum::variance)
+        .def_readonly("value", &weighted_sum::value)
+        .def_readonly("variance", &weighted_sum::variance)
 
         .def(py::self += double())
 
@@ -84,6 +92,34 @@ void register_accumulators(py::module &accumulators) {
             },
             "value"_a,
             "Fill the accumulator with values. Optional variance parameter.")
+
+        .def_static("_make", py::vectorize([](const double &a, const double &b) {
+                        return weighted_sum(a, b);
+                    }))
+
+        .def("__getitem__",
+             [](const weighted_sum &self, py::str key) {
+                 if(key.equal(py::str("value")))
+                     return self.value;
+                 else if(key.equal(py::str("variance")))
+                     return self.variance;
+                 else
+                     throw py::key_error(
+                         py::str("{0} not one of value, variance").format(key));
+             })
+        .def("__setitem__",
+             [](weighted_sum &self, py::str key, double value) {
+                 if(key.equal(py::str("value")))
+                     self.value = value;
+                 else if(key.equal(py::str("variance")))
+                     self.variance = value;
+                 else
+                     throw py::key_error(
+                         py::str("{0} not one of value, variance").format(key));
+             })
+
+        .def("_ipython_key_completions_",
+             [](py::object /* self */) { return py::make_tuple("value", "variance"); })
 
         ;
 
@@ -115,17 +151,26 @@ void register_accumulators(py::module &accumulators) {
 
         ;
 
-    using weighted_mean = bh::accumulators::weighted_mean<double>;
+    using weighted_mean = accumulators::weighted_mean<double>;
+    PYBIND11_NUMPY_DTYPE(weighted_mean,
+                         sum_of_weights,
+                         sum_of_weights_squared,
+                         value,
+                         sum_of_weighted_deltas_squared);
 
     register_accumulator<weighted_mean>(accumulators, "weighted_mean")
         .def(py::init<const double &, const double &, const double &, const double &>(),
-             "wsum"_a,
-             "wsum2"_a,
+             "sum_of_weights"_a,
+             "sum_of_weights_squared"_a,
              "value"_a,
              "variance"_a)
 
-        .def_property_readonly("sum_of_weights", &weighted_mean::sum_of_weights)
-        .def_property_readonly("value", &weighted_mean::value)
+        .def_readonly("sum_of_weights", &weighted_mean::sum_of_weights)
+        .def_readonly("sum_of_weights_squared", &weighted_mean::sum_of_weights_squared)
+        .def_readonly("value", &weighted_mean::value)
+        .def_readonly("sum_of_weighted_deltas_squared",
+                      &weighted_mean::sum_of_weighted_deltas_squared)
+
         .def_property_readonly("variance", &weighted_mean::variance)
 
         .def("__call__",
@@ -138,9 +183,60 @@ void register_accumulators(py::module &accumulators) {
              "value"_a,
              "Fill the accumulator with values. Optional weight parameter.")
 
+        .def_static(
+            "_make",
+            py::vectorize(
+                [](const double &a, const double &b, const double &c, double &d) {
+                    return weighted_mean(a, b, c, d, true);
+                }))
+
+        .def("__getitem__",
+             [](const weighted_mean &self, py::str key) {
+                 if(key.equal(py::str("value")))
+                     return self.value;
+                 else if(key.equal(py::str("sum_of_weights")))
+                     return self.sum_of_weights;
+                 else if(key.equal(py::str("sum_of_weights_squared")))
+                     return self.sum_of_weights_squared;
+                 else if(key.equal(py::str("sum_of_weighted_deltas_squared")))
+                     return self.sum_of_weighted_deltas_squared;
+                 else
+                     throw py::key_error(
+                         py::str(
+                             "{0} not one of value, sum_of_weights, "
+                             "sum_of_weights_squared, sum_of_weighted_deltas_squared")
+                             .format(key));
+             })
+        .def("__setitem__",
+             [](weighted_mean &self, py::str key, double value) {
+                 if(key.equal(py::str("value")))
+                     self.value = value;
+                 else if(key.equal(py::str("sum_of_weights")))
+                     self.sum_of_weights = value;
+                 else if(key.equal(py::str("sum_of_weights_squared")))
+                     self.sum_of_weights_squared = value;
+                 else if(key.equal(py::str("sum_of_weighted_deltas_squared")))
+                     self.sum_of_weighted_deltas_squared = value;
+                 else
+                     throw py::key_error(
+                         py::str(
+                             "{0} not one of value, sum_of_weights, "
+                             "sum_of_weights_squared, sum_of_weighted_deltas_squared")
+                             .format(key));
+             })
+
+        .def("_ipython_key_completions_",
+             [](py::object /* self */) {
+                 return py::make_tuple("value",
+                                       "sum_of_weights",
+                                       "sum_of_weights_squared",
+                                       "sum_of_weighted_deltas_squared");
+             })
+
         ;
 
-    using mean = bh::accumulators::mean<double>;
+    using mean = accumulators::mean<double>;
+    PYBIND11_NUMPY_DTYPE(mean, count, value, sum_of_deltas_squared);
 
     register_accumulator<mean>(accumulators, "mean")
         .def(py::init<const double &, const double &, const double &>(),
@@ -148,8 +244,10 @@ void register_accumulators(py::module &accumulators) {
              "value"_a,
              "variance"_a)
 
-        .def_property_readonly("count", &mean::count)
-        .def_property_readonly("value", &mean::value)
+        .def_readonly("count", &mean::count)
+        .def_readonly("value", &mean::value)
+        .def_readonly("sum_of_deltas_squared", &mean::sum_of_deltas_squared)
+
         .def_property_readonly("variance", &mean::variance)
 
         .def("__call__",
@@ -161,6 +259,44 @@ void register_accumulators(py::module &accumulators) {
              make_mean_fill<mean>(),
              "value"_a,
              "Fill the accumulator with values. Optional weight parameter.")
+
+        .def_static(
+            "_make",
+            py::vectorize([](const double &a, const double &b, const double &c) {
+                return mean(a, b, c, true);
+            }))
+
+        .def("__getitem__",
+             [](const mean &self, py::str key) {
+                 if(key.equal(py::str("count")))
+                     return self.count;
+                 else if(key.equal(py::str("value")))
+                     return self.value;
+                 else if(key.equal(py::str("sum_of_deltas_squared")))
+                     return self.sum_of_deltas_squared;
+                 else
+                     throw py::key_error(
+                         py::str("{0} not one of count, value, sum_of_deltas_squared")
+                             .format(key));
+             })
+        .def("__setitem__",
+             [](mean &self, py::str key, double value) {
+                 if(key.equal(py::str("count")))
+                     self.count = value;
+                 else if(key.equal(py::str("value")))
+                     self.value = value;
+                 else if(key.equal(py::str("sum_of_deltas_squared")))
+                     self.sum_of_deltas_squared = value;
+                 else
+                     throw py::key_error(
+                         py::str("{0} not one of count, value, sum_of_deltas_squared")
+                             .format(key));
+             })
+
+        .def("_ipython_key_completions_",
+             [](py::object /* self */) {
+                 return py::make_tuple("count", "value", "sum_of_deltas_squared");
+             })
 
         ;
 }

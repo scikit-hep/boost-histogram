@@ -7,7 +7,7 @@
 
 #include <boost/histogram/python/pybind11.hpp>
 
-#include <boost/histogram/python/accumulators_ostream.hpp>
+#include <boost/histogram/python/accumulators/ostream.hpp>
 #include <boost/histogram/python/make_pickle.hpp>
 
 #include <pybind11/operators.h>
@@ -24,7 +24,14 @@ py::class_<A> register_accumulator(py::module acc, Args &&... args) {
 
         .def(py::self *= double())
 
-        .def("__repr__", &shift_to_string<A>)
+        // The c++ name is replaced with the Python name here
+        .def("__repr__",
+             [](py::object self) {
+                 const A &item = py::cast<const A &>(self);
+                 py::str str   = shift_to_string(item);
+                 str           = str.attr("split")("(", 2).attr("__getitem__")(1);
+                 return py::str("{0.__class__.__name__}({1}").format(self, str);
+             })
 
         .def("__copy__", [](const A &self) { return A(self); })
         .def("__deepcopy__", [](const A &self, py::object) { return A(self); })

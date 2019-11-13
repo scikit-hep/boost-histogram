@@ -7,16 +7,24 @@
 
 #include <boost/histogram/python/pybind11.hpp>
 
+#include <boost/histogram/python/accumulators/mean.hpp>
+#include <boost/histogram/python/accumulators/weighted_mean.hpp>
+#include <boost/histogram/python/accumulators/weighted_sum.hpp>
+
 #include <boost/histogram/detail/axes.hpp>
 #include <boost/histogram/histogram.hpp>
 #include <boost/histogram/unsafe_access.hpp>
 #include <type_traits>
 
 namespace pybind11 {
+
+/// The descriptor for atomic_* is the same as the descriptor for *, as long this uses
+/// standard layout
 template <class T>
 struct format_descriptor<bh::accumulators::thread_safe<T>> : format_descriptor<T> {
     static_assert(std::is_standard_layout<bh::accumulators::thread_safe<T>>::value, "");
 };
+
 } // namespace pybind11
 
 namespace detail {

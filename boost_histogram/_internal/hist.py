@@ -4,6 +4,7 @@ from .kwargs import KWArgs
 
 from .. import _core
 from .axis import _to_axis, Axis
+from .view import _to_view
 from .axistuple import AxesTuple
 from .sig_tools import inject_signature
 from .storage import Double
@@ -53,13 +54,13 @@ def _expand_ellipsis(indexes, rank):
         raise IndexError("an index can only have a single ellipsis ('...')")
 
 
-def _compute_commonindex(hist, index, expand):
+def _compute_commonindex(hist, index, expand_ellipsis):
     # Normalize -> h[i] == h[i,]
     if not isinstance(index, tuple):
         index = (index,)
 
     # Now a list
-    if expand:
+    if expand_ellipsis:
         indexes = _expand_ellipsis(index, hist.rank())
     else:
         indexes = list(index)
@@ -135,9 +136,7 @@ class BaseHistogram(object):
         return self.__class__.__name__ + repr(self._hist)[9:]
 
     def __array__(self):
-        return np.asarray(self._hist)
-        # TODO: .view does not seem to return an editable view
-        #        so we have to use the buffer interface here
+        return self.view()
 
     def __add__(self, other):
         return self.__class__(self._hist + other._hist)
@@ -296,7 +295,7 @@ class Histogram(BaseHistogram):
         """
         Return a view into the data, optionally with overflow turned on.
         """
-        return self._hist.view(flow)
+        return _to_view(self._hist.view(flow))
 
     def reset(self):
         """
@@ -334,7 +333,7 @@ class Histogram(BaseHistogram):
 
     def __getitem__(self, index):
 
-        indexes = _compute_commonindex(self._hist, index, expand=True)
+        indexes = _compute_commonindex(self._hist, index, expand_ellipsis=True)
 
         # If this is (now) all integers, return the bin contents
         try:
@@ -406,5 +405,5 @@ class Histogram(BaseHistogram):
             )
 
     def __setitem__(self, index, value):
-        indexes = _compute_commonindex(self._hist, index, expand=True)
+        indexes = _compute_commonindex(self._hist, index, expand_ellipsis=False)
         self._hist._at_set(value, *indexes)
