@@ -105,12 +105,18 @@ def test_setting_weighted_profile():
 
     h.fill([0.3, 0.3, 0.4, 1.2, 1.6], sample=[1, 2, 3, 4, 4], weight=[1, 1, 1, 1, 2])
 
-    assert h[0] == bh.accumulators.WeightedMean(wsum=3, wsum2=3, value=2, variance=1)
-    assert h[1] == bh.accumulators.WeightedMean(wsum=3, wsum2=5, value=4, variance=0)
-
-    h[0] = bh.accumulators.WeightedMean(wsum=12, wsum2=15, value=11, variance=10)
     assert h[0] == bh.accumulators.WeightedMean(
-        wsum=12, wsum2=15, value=11, variance=10
+        sum_of_weights=3, sum_of_weights_squared=3, value=2, variance=1
+    )
+    assert h[1] == bh.accumulators.WeightedMean(
+        sum_of_weights=3, sum_of_weights_squared=5, value=4, variance=0
+    )
+
+    h[0] = bh.accumulators.WeightedMean(
+        sum_of_weights=12, sum_of_weights_squared=15, value=11, variance=10
+    )
+    assert h[0] == bh.accumulators.WeightedMean(
+        sum_of_weights=12, sum_of_weights_squared=15, value=11, variance=10
     )
 
     a = h.view()
@@ -124,7 +130,9 @@ def test_setting_weighted_profile():
     assert b["sum_of_weights_squared"][0] == h[0].sum_of_weights_squared
     assert b["sum_of_weighted_deltas_squared"][0] == h[0].sum_of_weighted_deltas_squared
 
-    h[0] = bh.accumulators.WeightedMean(wsum=6, wsum2=12, value=3, variance=2)
+    h[0] = bh.accumulators.WeightedMean(
+        sum_of_weights=6, sum_of_weights_squared=12, value=3, variance=2
+    )
 
     assert a[0] == h[0]
 

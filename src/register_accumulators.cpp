@@ -160,8 +160,8 @@ void register_accumulators(py::module &accumulators) {
 
     register_accumulator<weighted_mean>(accumulators, "weighted_mean")
         .def(py::init<const double &, const double &, const double &, const double &>(),
-             "wsum"_a,
-             "wsum2"_a,
+             "sum_of_weights"_a,
+             "sum_of_weights_squared"_a,
              "value"_a,
              "variance"_a)
 

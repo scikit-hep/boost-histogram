@@ -73,9 +73,9 @@ template <class CharT, class Traits, class W>
 std::basic_ostream<CharT, Traits> &operator<<(std::basic_ostream<CharT, Traits> &os,
                                               const weighted_mean<W> &x) {
     if(os.width() == 0)
-        return os << "weighted_mean(wsum=" << x.sum_of_weights
-                  << ", wsum2=" << x.sum_of_weights_squared << ", value=" << x.value
-                  << ", variance=" << x.variance() << ")";
+        return os << "weighted_mean(sum_of_weights=" << x.sum_of_weights
+                  << ", sum_of_weights_squared=" << x.sum_of_weights_squared
+                  << ", value=" << x.value << ", variance=" << x.variance() << ")";
     return handle_nonzero_width(os, x);
 }
 
