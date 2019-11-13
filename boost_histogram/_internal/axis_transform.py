@@ -4,9 +4,10 @@ del absolute_import, division, print_function
 
 from .._core import axis as ca
 
-from .utils import register
+from .utils import register, set_family, MAIN_FAMILY, set_module
 
 
+@set_module("boost_histogram.axis.transform")
 class AxisTransform(object):
     __slots__ = ()
 
@@ -17,19 +18,25 @@ class AxisTransform(object):
         return self.__class__._type(bins, start, stop, metadata)
 
 
-@register(ca.transform.log)
+@set_family(MAIN_FAMILY)
+@register({ca.transform.log})
+@set_module("boost_histogram.axis.transform")
 class Log(ca.transform.log, AxisTransform):
     __slots__ = ()
     _type = ca.regular_log
 
 
-@register(ca.transform.sqrt)
+@register({ca.transform.sqrt})
+@set_family(MAIN_FAMILY)
+@set_module("boost_histogram.axis.transform")
 class Sqrt(ca.transform.sqrt, AxisTransform):
     __slots__ = ()
     _type = ca.regular_sqrt
 
 
-@register(ca.transform.pow)
+@register({ca.transform.pow})
+@set_family(MAIN_FAMILY)
+@set_module("boost_histogram.axis.transform")
 class Pow(ca.transform.pow, AxisTransform):
     __slots__ = ()
     _type = ca.regular_pow

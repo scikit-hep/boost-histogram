@@ -8,7 +8,7 @@ from .axis import Axis
 from .axistuple import AxesTuple
 from .sig_tools import inject_signature
 from .storage import Double, Storage
-from .utils import cast
+from .utils import cast, register, set_family, MAIN_FAMILY, CPP_FAMILY, set_module
 
 import warnings
 import numpy as np
@@ -53,7 +53,7 @@ def _expand_ellipsis(indexes, rank):
         raise IndexError("an index can only have a single ellipsis ('...')")
 
 
-def _compute_commonindex(hist, index, expand_ellipsis):
+def _compute_commonindex(self, hist, index, expand_ellipsis):
     # Normalize -> h[i] == h[i,]
     if not isinstance(index, tuple):
         index = (index,)
@@ -70,7 +70,7 @@ def _compute_commonindex(hist, index, expand_ellipsis):
     # Allow [bh.loc(...)] to work
     for i in range(len(indexes)):
         if callable(indexes[i]):
-            indexes[i] = indexes[i](cast(hist.axis(i), Axis, cpp=False))
+            indexes[i] = indexes[i](cast(self, hist.axis(i), Axis))
         elif hasattr(indexes[i], "flow"):
             if indexes[i].flow == 1:
                 indexes[i] = hist.axis(i).size
@@ -84,6 +84,9 @@ def _compute_commonindex(hist, index, expand_ellipsis):
     return indexes
 
 
+# We currently do not cast *to* a histogram, but this is consistent
+# and needed to be able to cast *from* a histogram method.
+@register(_histograms)
 class BaseHistogram(object):
     @inject_signature("self, *axes, storage=Double()", locals={"Double": Double})
     def __init__(self, *axes, **kwargs):
@@ -200,17 +203,17 @@ class BaseHistogram(object):
         """
         Get N-th axis.
         """
-        return cast(self._hist.axis(i), Axis, self._cpp_module)
+        return cast(self, self._hist.axis(i), Axis)
 
     @property
     def _storage_type(self):
-        return cast(
-            self._hist._storage_type, Storage, cpp=self._cpp_module, is_class=True
-        )
+        return cast(self, self._hist._storage_type, Storage)
 
 
+# C++ version of histogram
+@set_family(CPP_FAMILY)
+@set_module("boost_histogram.cpp")
 class histogram(BaseHistogram):
-    _cpp_module = True
     axis = BaseHistogram._axis
 
     def rank(self):
@@ -259,9 +262,9 @@ class histogram(BaseHistogram):
         return self.__class__(self._hist.project(*args))
 
 
+@set_family(MAIN_FAMILY)
+@set_module("boost_histogram")
 class Histogram(BaseHistogram):
-    _cpp_module = False
-
     @inject_signature("self, *axes, storage=Double()", locals={"Double": Double})
     def __init__(self, *args, **kwargs):
         super(Histogram, self).__init__(*args, **kwargs)
@@ -339,7 +342,7 @@ class Histogram(BaseHistogram):
 
     def __getitem__(self, index):
 
-        indexes = _compute_commonindex(self._hist, index, expand_ellipsis=True)
+        indexes = _compute_commonindex(self, self._hist, index, expand_ellipsis=True)
 
         # If this is (now) all integers, return the bin contents
         try:
@@ -411,19 +414,22 @@ class Histogram(BaseHistogram):
             )
 
     def __setitem__(self, index, value):
-        indexes = _compute_commonindex(self._hist, index, expand_ellipsis=False)
+        indexes = _compute_commonindex(self, self._hist, index, expand_ellipsis=False)
         self._hist._at_set(value, *indexes)
 
     def reduce(self, *args):
         """
-        Reduce based on one or more reduce_option's. If you are operating on most or all of your axis, consider slicing with [] notation.
+        Reduce based on one or more reduce_option's. If you are operating on most
+        or all of your axis, consider slicing with [] notation.
         """
 
         return self.__class__(self._hist.reduce(*args))
 
     def project(self, *args):
         """
-        Project to a single axis or several axes on a multidiminsional histogram. Provided a list of axis numbers, this will produce the histogram over those axes only. Flow bins are used if available.
+        Project to a single axis or several axes on a multidiminsional histogram.
+        Provided a list of axis numbers, this will produce the histogram over
+        those axes only. Flow bins are used if available.
         """
 
         return self.__class__(self._hist.project(*args))

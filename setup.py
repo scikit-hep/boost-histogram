@@ -57,7 +57,7 @@ SRC_FILES = [
     "src/register_axis.cpp",
     "src/register_histograms.cpp",
     "src/register_storage.cpp",
-    "src/register_tranforms.cpp",
+    "src/register_transforms.cpp",
 ]
 
 INCLUDE_DIRS = [

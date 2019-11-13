@@ -56,7 +56,7 @@ def histogramdd(
                 # Nextafter may affect bin edges slightly
                 r = (np.min(a[n]), np.max(a[n]))
             cpp_ax = _core.axis.regular_numpy(b, r[0], r[1])
-            new_ax = _cast(cpp_ax, _axis.Axis)
+            new_ax = _cast(None, cpp_ax, _axis.Axis)
             axs.append(new_ax)
         else:
             b = np.asarray(b, dtype=np.double)
