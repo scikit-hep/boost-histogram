@@ -17,8 +17,6 @@
 #include <boost/histogram/fwd.hpp>
 #include <iosfwd>
 
-namespace {
-
 template <class CharT, class Traits, class T>
 std::basic_ostream<CharT, Traits> &
 handle_nonzero_width(std::basic_ostream<CharT, Traits> &os, const T &x) {
@@ -39,8 +37,6 @@ handle_nonzero_width(std::basic_ostream<CharT, Traits> &os, const T &x) {
     }
     return os;
 }
-
-} // anonymous namespace
 
 namespace accumulators {
 

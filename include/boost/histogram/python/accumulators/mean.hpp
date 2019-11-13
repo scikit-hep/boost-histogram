@@ -18,7 +18,7 @@ namespace accumulators {
 
 /** Calculates mean and variance of sample.
 
-  Uses Welfords's incremental algorithm to improve the numerical
+  Uses Welford's incremental algorithm to improve the numerical
   stability of mean and variance computation.
 */
 template <class RealType>
