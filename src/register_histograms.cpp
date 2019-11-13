@@ -67,6 +67,33 @@ inline void copy_in<>(bh::histogram<vector_axis_variant, bh::dense_storage<doubl
     }
 }
 
+/// Allow a Python int to implicitly convert to an atomic int in C++
+namespace pybind11 {
+namespace detail {
+template <>
+struct type_caster<storage::atomic_int::value_type> {
+  public:
+    PYBIND11_TYPE_CASTER(storage::atomic_int::value_type, _("atomic_int"));
+
+    bool load(handle src, bool) {
+        PyObject *source = src.ptr();
+        PyObject *tmp    = PyNumber_Long(source);
+        if(!tmp)
+            return false;
+        value.store(PyLong_AsUnsignedLongLong(tmp));
+        Py_DECREF(tmp);
+        return !PyErr_Occurred();
+    }
+
+    static handle cast(storage::atomic_int::value_type src,
+                       return_value_policy /* policy */,
+                       handle /* parent */) {
+        return PyLong_FromUnsignedLongLong(src.load());
+    }
+};
+} // namespace detail
+} // namespace pybind11
+
 void register_histograms(py::module &hist) {
     hist.attr("_axes_limit") = BOOST_HISTOGRAM_DETAIL_AXES_LIMIT;
 
