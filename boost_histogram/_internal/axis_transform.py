@@ -4,7 +4,7 @@ del absolute_import, division, print_function
 
 from .._core import axis as ca
 
-from .utils import register, set_family, MAIN_FAMILY, set_module
+from .utils import register, set_family, CPP_FAMILY, MAIN_FAMILY, set_module
 
 
 @set_module("boost_histogram.axis.transform")
@@ -44,3 +44,24 @@ class Pow(ca.transform.pow, AxisTransform):
     # This one does need to be a normal method
     def _produce(self, bins, start, stop, metadata):
         return self.__class__._type(bins, start, stop, self.power, metadata)
+
+
+### CPP FAMILY ###
+
+
+@set_family(CPP_FAMILY)
+@set_module("boost_histogram.cpp.axis.transform")
+class log(Log):
+    __slots__ = ()
+
+
+@set_family(CPP_FAMILY)
+@set_module("boost_histogram.cpp.axis.transform")
+class sqrt(Sqrt):
+    __slots__ = ()
+
+
+@set_family(CPP_FAMILY)
+@set_module("boost_histogram.cpp.axis.transform")
+class pow(Pow):
+    __slots__ = ()
