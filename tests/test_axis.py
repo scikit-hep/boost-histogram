@@ -660,7 +660,11 @@ class TestCategory(Axis):
         assert repr(ax) == "Category([1, 2, 3], metadata='foo')"
 
         ax = bh.axis.Category("ABC", metadata="foo")
-        assert repr(ax) == "Category(['A', 'B', 'C'], metadata='foo')"
+        # If unicode is the default (Python 3, generally)
+        if type("") == type(u""):
+            assert repr(ax) == "Category(['A', 'B', 'C'], metadata='foo')"
+        else:
+            assert repr(ax) == "Category([u'A', u'B', u'C'], metadata='foo')"
 
     @pytest.mark.parametrize("ref", ([1, 2, 3], "ABC"))
     @pytest.mark.parametrize("growth", (False, True))
