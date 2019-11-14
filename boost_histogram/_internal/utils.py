@@ -25,7 +25,13 @@ def set_module(name):
 
 def set_family(family):
     """
-    Decorator to set the family of a class.
+    Decorator to set the family of a class. When an object
+    is produced from the C++ bindings, it will look through
+    all subclasses of the base class (Axis, Transform, Storage,
+    etc.) to find a match. If possible, it will match the family
+    of the object that is producing it (Histogram, Axis, etc.).
+    If a family is not found, it will return the main family
+    as a fallback.
     """
 
     def add_family(cls):
@@ -41,7 +47,8 @@ def register(cpp_types=None):
     Each class given will be added to a lookup list "_types"
     that cast knows about. It should also part of a "family",
     and any class in a family will cast to the same family.
-    See set_family.
+    See set_family. You do not need to register a class if it
+    inherits from the C++ class.
 
     For example, internally this call:
 
@@ -130,11 +137,12 @@ def cast(self, cpp_object, parent_class):
 
     for canidate_class in _walk_subclasses(parent_class):
         # If a class was registered with this c++ type
-        if (
-            hasattr(canidate_class, "_types")
-            and cpp_class in canidate_class._types
-            and hasattr(canidate_class, "_family")
-        ):
+        if hasattr(canidate_class, "_types"):
+            is_valid_type = cpp_class in canidate_class._types
+        else:
+            is_valid_type = cpp_class in set(_walk_bases(canidate_class))
+
+        if is_valid_type and hasattr(canidate_class, "_family"):
             # Return immediately if the family is right
             if canidate_class._family is family:
                 return _cast_make_object(canidate_class, cpp_object, is_class)
@@ -150,6 +158,13 @@ def cast(self, cpp_object, parent_class):
     raise TypeError(
         "No conversion to {0} from {1} found.".format(parent_class.__name__, cpp_object)
     )
+
+
+def _walk_bases(cls):
+    for base in cls.__bases__:
+        for inner in _walk_bases(base):
+            yield inner
+        yield base
 
 
 def _walk_subclasses(cls):

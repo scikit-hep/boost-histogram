@@ -19,14 +19,12 @@ class AxisTransform(object):
 
 
 @set_family(MAIN_FAMILY)
-@register({ca.transform.log})
 @set_module("boost_histogram.axis.transform")
 class Log(ca.transform.log, AxisTransform):
     __slots__ = ()
     _type = ca.regular_log
 
 
-@register({ca.transform.sqrt})
 @set_family(MAIN_FAMILY)
 @set_module("boost_histogram.axis.transform")
 class Sqrt(ca.transform.sqrt, AxisTransform):
@@ -34,7 +32,6 @@ class Sqrt(ca.transform.sqrt, AxisTransform):
     _type = ca.regular_sqrt
 
 
-@register({ca.transform.pow})
 @set_family(MAIN_FAMILY)
 @set_module("boost_histogram.axis.transform")
 class Pow(ca.transform.pow, AxisTransform):
