@@ -6,7 +6,5 @@ __all__ = ("histogram", "axis", "storage", "accumulators", "algorithm", "__versi
 
 from .._internal.hist import histogram
 
-histogram.__module__ = "boost_histogram.cpp"
-
 from . import axis, storage, accumulators, algorithm
 from ..version import __version__

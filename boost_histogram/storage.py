@@ -25,9 +25,6 @@ from ._internal.storage import (
     WeightedMean,
 )
 
-for cls in (Storage, Int, Double, AtomicInt, Unlimited, Weight, Mean, WeightedMean):
-    cls.__module__ = "boost_histogram.storage"
-
 
 # for lazy folks
 int = Int()
