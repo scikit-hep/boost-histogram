@@ -53,39 +53,8 @@ def _expand_ellipsis(indexes, rank):
         raise IndexError("an index can only have a single ellipsis ('...')")
 
 
-def _compute_commonindex(self, hist, index, expand_ellipsis):
-    # Normalize -> h[i] == h[i,]
-    if not isinstance(index, tuple):
-        index = (index,)
-
-    # Now a list
-    if expand_ellipsis:
-        indexes = _expand_ellipsis(index, hist.rank())
-    else:
-        indexes = list(index)
-
-    if len(indexes) != hist.rank():
-        raise IndexError("Wrong number of indices for histogram")
-
-    # Allow [bh.loc(...)] to work
-    for i in range(len(indexes)):
-        if callable(indexes[i]):
-            indexes[i] = indexes[i](cast(self, hist.axis(i), Axis))
-        elif hasattr(indexes[i], "flow"):
-            if indexes[i].flow == 1:
-                indexes[i] = hist.axis(i).size
-            elif indexes[i].flow == -1:
-                indexes[i] = -1
-        elif isinstance(indexes[i], int):
-            if abs(indexes[i]) >= hist.axis(i).size:
-                raise IndexError("histogram index is out of range")
-            indexes[i] %= hist.axis(i).size
-
-    return indexes
-
-
 # We currently do not cast *to* a histogram, but this is consistent
-# and needed to be able to cast *from* a histogram method.
+# and could be used later.
 @register(_histograms)
 class BaseHistogram(object):
     @inject_signature("self, *axes, storage=Double()", locals={"Double": Double})
@@ -287,6 +256,38 @@ class Histogram(BaseHistogram):
                 ret += " ({0} with flow)".format(outer)
         return ret
 
+    def _compute_commonindex(self, index, expand_ellipsis):
+        # Shorten the computations with direct access to raw object
+        hist = self._hist
+        # Normalize -> h[i] == h[i,]
+        if not isinstance(index, tuple):
+            index = (index,)
+
+        # Now a list
+        if expand_ellipsis:
+            indexes = _expand_ellipsis(index, hist.rank())
+        else:
+            indexes = list(index)
+
+        if len(indexes) != hist.rank():
+            raise IndexError("Wrong number of indices for histogram")
+
+        # Allow [bh.loc(...)] to work
+        for i in range(len(indexes)):
+            if callable(indexes[i]):
+                indexes[i] = indexes[i](cast(self, hist.axis(i), Axis))
+            elif hasattr(indexes[i], "flow"):
+                if indexes[i].flow == 1:
+                    indexes[i] = hist.axis(i).size
+                elif indexes[i].flow == -1:
+                    indexes[i] = -1
+            elif isinstance(indexes[i], int):
+                if abs(indexes[i]) >= hist.axis(i).size:
+                    raise IndexError("histogram index is out of range")
+                indexes[i] %= hist.axis(i).size
+
+        return indexes
+
     def to_numpy(self, flow=False):
         """
         Convert to a Numpy style tuple of return arrays.
@@ -342,7 +343,7 @@ class Histogram(BaseHistogram):
 
     def __getitem__(self, index):
 
-        indexes = _compute_commonindex(self, self._hist, index, expand_ellipsis=True)
+        indexes = self._compute_commonindex(index, expand_ellipsis=True)
 
         # If this is (now) all integers, return the bin contents
         try:
@@ -414,7 +415,7 @@ class Histogram(BaseHistogram):
             )
 
     def __setitem__(self, index, value):
-        indexes = _compute_commonindex(self, self._hist, index, expand_ellipsis=False)
+        indexes = self._compute_commonindex(index, expand_ellipsis=False)
         self._hist._at_set(value, *indexes)
 
     def reduce(self, *args):
