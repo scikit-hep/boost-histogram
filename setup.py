@@ -52,11 +52,12 @@ with (BASE_DIR / "README.md").open("rb") as f:
 
 SRC_FILES = [
     "src/module.cpp",
+    "src/register_accumulators.cpp",
     "src/register_algorithm.cpp",
     "src/register_axis.cpp",
     "src/register_histograms.cpp",
     "src/register_storage.cpp",
-    "src/register_accumulators.cpp",
+    "src/register_transforms.cpp",
 ]
 
 INCLUDE_DIRS = [

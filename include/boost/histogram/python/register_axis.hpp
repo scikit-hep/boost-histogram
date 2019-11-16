@@ -7,11 +7,11 @@
 
 #include <boost/histogram/python/pybind11.hpp>
 
+#include <boost/histogram/axis/ostream.hpp>
 #include <boost/histogram/axis/traits.hpp>
 #include <boost/histogram/detail/iterator_adaptor.hpp>
 #include <boost/histogram/detail/span.hpp>
 #include <boost/histogram/python/axis.hpp>
-#include <boost/histogram/python/axis_ostream.hpp>
 #include <boost/histogram/python/make_pickle.hpp>
 #include <boost/histogram/python/options.hpp>
 
@@ -182,6 +182,7 @@ py::class_<A> register_axis(py::module &m, const char *name, Args &&... args) {
             "size",
             &A::size,
             "Returns the number of bins excluding under- and overflow")
+
         .def_property_readonly(
             "extent",
             &bh::axis::traits::extent<A>,

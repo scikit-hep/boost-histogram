@@ -9,9 +9,11 @@ from .._core import axis as ca
 from .kwargs import KWArgs
 from .sig_tools import inject_signature
 from .axis_transform import AxisTransform
-from .utils import _walk_subclasses
+from .utils import cast, register, set_family, MAIN_FAMILY, CPP_FAMILY, set_module
 
 
+# Contains common methods and properties to all axes
+@set_module("boost_histogram.axis")
 class Axis(object):
     __slots__ = ("_ax",)
 
@@ -38,14 +40,67 @@ class Axis(object):
 
         return self._ax.bin(i)
 
-    def __repr__(self):
-        return repr(self._ax)
-
     def __eq__(self, other):
         return self._ax == other._ax
 
     def __ne__(self, other):
         return self._ax != other._ax
+
+    @property
+    def metadata(self):
+        """
+        Get or set the metadata associated with this axis.
+        """
+        return self._ax.metadata
+
+    @metadata.setter
+    def metadata(self, value):
+        self._ax.metadata = value
+
+    @classmethod
+    def _convert_cpp(cls, cpp_object):
+        nice_ax = cls.__new__(cls)
+        nice_ax._ax = cpp_object
+        return nice_ax
+
+    def __len__(self):
+        return self._ax.size
+
+    def __iter__(self):
+        return self._ax.__iter__()
+
+
+# Mixin for main style classes
+# Contains common methods and properties to all Main module axes
+class MainAxisMixin(object):
+    __slots__ = ()
+
+    def __repr__(self):
+        return "{self.__class__.__name__}({args}{kwargs})".format(
+            self=self, args=self._repr_args(), kwargs=self._repr_kwargs()
+        )
+
+    def _repr_kwargs(self):
+        """
+        Return options for use in repr. Metadata is last,
+        just in case it spans multiple lines.
+        """
+
+        ret = ""
+        if self.options.growth:
+            ret += ", growth=True"
+        elif self.options.circular:
+            ret += ", circular=True"
+        else:
+            if not self.options.underflow:
+                ret += ", underflow=False"
+            if not self.options.overflow:
+                ret += ", overflow=False"
+
+        if self.metadata is not None:
+            ret += ", metadata={0!r}".format(self.metadata)
+
+        return ret
 
     @property
     def options(self):
@@ -58,17 +113,6 @@ class Axis(object):
           .circular  - True if axis wraps around
         """
         return self._ax.options
-
-    @property
-    def metadata(self):
-        """
-        Get or set the metadata associated with this axis.
-        """
-        return self._ax.metadata
-
-    @metadata.setter
-    def metadata(self, value):
-        self._ax.metadata = value
 
     @property
     def size(self):
@@ -84,9 +128,6 @@ class Axis(object):
         """
         return self._ax.extent
 
-    def __len__(self):
-        return self._ax.size
-
     def __getitem__(self, i):
         """
         Access a bin, using normal Python syntax for wraparound.
@@ -96,9 +137,6 @@ class Axis(object):
         if i >= self._ax.size:
             raise IndexError("Out of range access")
         return self.bin(i)
-
-    def __iter__(self):
-        return self._ax.__iter__()
 
     @property
     def edges(self):
@@ -119,9 +157,55 @@ class Axis(object):
         return self._ax.widths
 
 
-class Regular(Axis):
+# Contains all common methods for cpp module axes
+class CppAxisMixin(object):
     __slots__ = ()
-    _CLASSES = {
+
+    def __repr__(self):
+        return repr(self._ax)
+
+    def options(self):
+        """
+        Return the options.  Fields:
+          .underflow - True if axes captures values that are too small
+          .overflow  - True if axes captures values that are too large
+                       (or non-valid for category axes)
+          .growth    - True if axis can grow
+          .circular  - True if axis wraps around
+        """
+        return self._ax.options
+
+    def size(self):
+        """
+        Return number of bins excluding under- and overflow.
+        """
+        return self._ax.size
+
+    def extent(self):
+        """
+        Return number of bins including under- and overflow.
+        """
+        return self._ax.extent
+
+    def edges(self):
+        return self._ax.edges
+
+    def centers(self):
+        """
+        An array of bin centers.
+        """
+        return self._ax.centers
+
+    def widths(self):
+        """
+        An array of bin widths.
+        """
+        return self._ax.widths
+
+
+# Contains all common methods and properties for Regular axes
+@register(
+    {
         ca.regular_uoflow,
         ca.regular_uoflow_growth,
         ca.regular_uflow,
@@ -133,6 +217,9 @@ class Regular(Axis):
         ca.regular_log,
         ca.circular,
     }
+)
+class BaseRegular(Axis):
+    __slots__ = ()
 
     @inject_signature(
         "self, bins, start, stop, *, metadata=None, underflow=True, overflow=True, growth=False, circular=False, transform=None"
@@ -150,7 +237,7 @@ class Regular(Axis):
             The beginning value for the axis
         stop : float
             The ending value for the axis
-        metadata : object
+        metadata : Any
             Any Python object to attach to the axis, like a label.
         underflow : bool = True
             Enable the underflow bin
@@ -176,6 +263,12 @@ class Regular(Axis):
             if options != {"underflow", "overflow"}:
                 raise KeyError("Transform supplied, cannot change other options")
 
+            if (
+                not isinstance(transform, AxisTransform)
+                and AxisTransform in transform.__bases__
+            ):
+                raise TypeError("You must pass an instance, use {}()".format(transform))
+
             self._ax = transform._produce(bins, start, stop, metadata)
 
         elif options == {"growth", "underflow", "overflow"}:
@@ -195,15 +288,55 @@ class Regular(Axis):
             raise KeyError("Unsupported collection of options")
 
 
-class Variable(Axis):
+@set_module("boost_histogram.axis")
+@set_family(MAIN_FAMILY)
+class Regular(BaseRegular, MainAxisMixin):
     __slots__ = ()
-    _CLASSES = {
+
+    def _repr_args(self):
+        "Return inner part of signature for use in repr"
+
+        return "{bins:g}, {start:g}, {stop:g}".format(
+            bins=self.size, start=self.edges[0], stop=self.edges[-1]
+        )
+
+    def _repr_kwargs(self):
+        ret = super(Regular, self)._repr_kwargs()
+
+        if self.transform is not None:
+            ret += ", transform={0}".format(self.transform)
+
+        return ret
+
+    @property
+    def transform(self):
+        if hasattr(self._ax, "transform"):
+            return cast(self, self._ax.transform, AxisTransform)
+        return None
+
+
+@set_module("boost_histogram.cpp.axis")
+@set_family(MAIN_FAMILY)
+class regular(BaseRegular, CppAxisMixin):
+    __slots__ = ()
+
+    def transform(self):
+        if hasattr(self._ax, "transform"):
+            return cast(self, self._ax.transform, AxisTransform)
+        return None
+
+
+@register(
+    {
         ca.variable_none,
         ca.variable_uflow,
         ca.variable_oflow,
         ca.variable_uoflow,
         ca.variable_uoflow_growth,
     }
+)
+class BaseVariable(Axis):
+    __slots__ = ()
 
     @inject_signature(
         "self, edges, *, metadata=None, underflow=True, overflow=True, growth=False"
@@ -245,15 +378,37 @@ class Variable(Axis):
             raise KeyError("Unsupported collection of options")
 
 
-class Integer(Axis):
+@set_family(MAIN_FAMILY)
+@set_module("boost_histogram.axis")
+class Variable(BaseVariable, MainAxisMixin):
     __slots__ = ()
-    _CLASSES = {
+
+    def _repr_args(self):
+        "Return inner part of signature for use in repr"
+
+        if len(self) > 20:
+            return repr(self.edges)
+        else:
+            return "[{}]".format(", ".join(format(v, "g") for v in self.edges))
+
+
+@set_family(CPP_FAMILY)
+@set_module("boost_histogram.cpp.axis")
+class variable(BaseVariable, CppAxisMixin):
+    __slots__ = ()
+
+
+@register(
+    {
         ca.integer_none,
         ca.integer_uflow,
         ca.integer_oflow,
         ca.integer_uoflow,
         ca.integer_growth,
     }
+)
+class BaseInteger(Axis):
+    __slots__ = ()
 
     @inject_signature(
         "self, start, stop, *, metadata=None, underflow=True, overflow=True, growth=False"
@@ -298,14 +453,28 @@ class Integer(Axis):
             raise KeyError("Unsupported collection of options")
 
 
-class Category(Axis):
+@set_family(MAIN_FAMILY)
+@set_module("boost_histogram.axis")
+class Integer(BaseInteger, MainAxisMixin):
     __slots__ = ()
-    _CLASSES = {
-        ca.category_int_growth,
-        ca.category_str_growth,
-        ca.category_int,
-        ca.category_str,
-    }
+
+    def _repr_args(self):
+        "Return inner part of signature for use in repr"
+
+        return "{start:g}, {stop:g}".format(start=self.edges[0], stop=self.edges[-1])
+
+
+@set_family(CPP_FAMILY)
+@set_module("boost_histogram.cpp.axis")
+class integer(BaseInteger, CppAxisMixin):
+    __slots__ = ()
+
+
+@register(
+    {ca.category_int_growth, ca.category_str_growth, ca.category_int, ca.category_str}
+)
+class BaseCategory(Axis):
+    __slots__ = ()
 
     @inject_signature("self, categories, *, metadata=None, growth=False")
     def __init__(self, categories, **kwargs):
@@ -329,7 +498,8 @@ class Category(Axis):
             metadata = k.optional("metadata")
             options = k.options(growth=False)
 
-        if isinstance(categories, str):
+        # We need to make sure we support Python 2 for now :(
+        if isinstance(categories, (type(""), type(u""))):
             categories = list(categories)
 
         if options == {"growth"}:
@@ -346,11 +516,46 @@ class Category(Axis):
             raise KeyError("Unsupported collection of options")
 
 
-def _to_axis(ax):
-    for base in _walk_subclasses(Axis):
-        if ax.__class__ in base._CLASSES:
-            nice_ax = base.__new__(base)
-            nice_ax._ax = ax
-            return nice_ax
+@set_family(MAIN_FAMILY)
+@set_module("boost_histogram.axis")
+class Category(BaseCategory, MainAxisMixin):
+    __slots__ = ()
 
-    raise TypeError("Invalid axes passed in")
+    def _repr_kwargs(self):
+        """
+        Return options for use in repr. Metadata is last,
+        just in case it spans multiple lines.
+
+
+        This is specialized for Category axes to avoid repeating
+        the flow arguments unnecessarily.
+        """
+
+        ret = ""
+        if self.options.growth:
+            ret += ", growth=True"
+        elif self.options.circular:
+            ret += ", circular=True"
+
+        if self.metadata is not None:
+            ret += ", metadata={0!r}".format(self.metadata)
+
+        return ret
+
+    def _repr_args(self):
+        "Return inner part of signature for use in repr"
+
+        return (
+            "["
+            + ", ".join(
+                (repr(c) if isinstance(c, (type(""), type(u""))) else format(c, "g"))
+                for c in self
+            )
+            + "]"
+        )
+
+
+@set_family(CPP_FAMILY)
+@set_module("boost_histogram.cpp.axis")
+class category(BaseCategory, CppAxisMixin):
+    __slots__ = ()

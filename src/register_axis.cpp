@@ -97,14 +97,20 @@ void register_axes(py::module &mod) {
              "bins"_a,
              "start"_a,
              "stop"_a,
-             "metadata"_a = py::none());
+             "metadata"_a = py::none())
+        .def_property_readonly("transform", [](const axis::regular_log &self) {
+            return self.transform();
+        });
 
     register_axis<axis::regular_sqrt>(mod, "regular_sqrt", "Evenly spaced bins in sqrt")
         .def(py::init<unsigned, double, double, metadata_t>(),
              "bins"_a,
              "start"_a,
              "stop"_a,
-             "metadata"_a = py::none());
+             "metadata"_a = py::none())
+        .def_property_readonly("transform", [](const axis::regular_sqrt &self) {
+            return self.transform();
+        });
 
     register_axis<axis::regular_pow>(
         mod, "regular_pow", "Evenly spaced bins in a power")
@@ -120,7 +126,10 @@ void register_axes(py::module &mod) {
              "start"_a,
              "stop"_a,
              "power"_a,
-             "metadata"_a = py::none());
+             "metadata"_a = py::none())
+        .def_property_readonly("transform", [](const axis::regular_pow &self) {
+            return self.transform();
+        });
 
     register_axis_sub_types<axis::variable_none,
                             axis::variable_uflow,

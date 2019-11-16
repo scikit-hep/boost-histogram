@@ -1,10 +1,21 @@
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function
 
-del absolute_import
+del absolute_import, division, print_function
 
-import warnings
+__all__ = (
+    "Storage",
+    "Int",
+    "Double",
+    "AtomicInt",
+    "Unlimited",
+    "Weight",
+    "Mean",
+    "WeightedMean",
+)
+
 
 from ._internal.storage import (
+    Storage,
     Int,
     Double,
     AtomicInt,
@@ -13,6 +24,7 @@ from ._internal.storage import (
     Mean,
     WeightedMean,
 )
+
 
 # for lazy folks
 int = Int()

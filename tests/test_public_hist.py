@@ -295,20 +295,19 @@ def test_add_2d_w(flow):
 
 def test_repr():
     hrepr = """Histogram(
-  regular(3, 0, 1),
-  integer(0, 1),
-  storage=double
-)"""
+  Regular(3, 0, 1),
+  Integer(0, 1),
+  storage=Double())"""
 
     h = bh.Histogram(bh.axis.Regular(3, 0, 1), bh.axis.Integer(0, 1))
     assert repr(h) == hrepr
 
     h.fill([0.3, 0.5], [0, 0])
-    hrepr += " # Sum: 2"
+    hrepr += " # Sum: 2.0"
     assert repr(h) == hrepr
 
     h.fill([0.3, 12], [3, 0])
-    hrepr += " (4 with flow)"
+    hrepr += " (4.0 with flow)"
     assert repr(h) == hrepr
 
 
@@ -391,13 +390,6 @@ def test_project():
 
     with pytest.raises(ValueError):
         h.project(2, 1)
-
-
-def test_shrink_1d_external_reduce():
-    h = bh.Histogram(bh.axis.Regular(20, 1, 5))
-    h.fill(1.1)
-    hs = bh.algorithm.reduce(h, bh.algorithm.shrink(0, 1, 2))
-    assert_array_equal(hs.view(), [1, 0, 0, 0, 0])
 
 
 def test_shrink_1d():
