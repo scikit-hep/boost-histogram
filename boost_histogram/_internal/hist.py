@@ -3,11 +3,12 @@ from __future__ import absolute_import, division, print_function
 from .kwargs import KWArgs
 
 from .. import _core
-from .axis import _to_axis, Axis
 from .view import _to_view
+from .axis import Axis
 from .axistuple import AxesTuple
 from .sig_tools import inject_signature
-from .storage import Double
+from .storage import Double, Storage
+from .utils import cast, register, set_family, MAIN_FAMILY, CPP_FAMILY, set_module
 
 import warnings
 import numpy as np
@@ -29,11 +30,9 @@ def _arg_shortcut(item):
     elif isinstance(item, Axis):
         return item._ax
     else:
-        # TODO: This currently support raw axis object for old tests.
-        # Replace with:
-        # raise TypeError("Only axes supported in histogram constructor")
+        raise TypeError("Only axes supported in histogram constructor")
         # TODO: Currently segfaults if we pass in a non-axis to the C++ code
-        return _to_axis(item)._ax
+        # Using the public interface above, this should never be possible.
 
 
 def _expand_ellipsis(indexes, rank):
@@ -54,37 +53,9 @@ def _expand_ellipsis(indexes, rank):
         raise IndexError("an index can only have a single ellipsis ('...')")
 
 
-def _compute_commonindex(hist, index, expand_ellipsis):
-    # Normalize -> h[i] == h[i,]
-    if not isinstance(index, tuple):
-        index = (index,)
-
-    # Now a list
-    if expand_ellipsis:
-        indexes = _expand_ellipsis(index, hist.rank())
-    else:
-        indexes = list(index)
-
-    if len(indexes) != hist.rank():
-        raise IndexError("Wrong number of indices for histogram")
-
-    # Allow [bh.loc(...)] to work
-    for i in range(len(indexes)):
-        if callable(indexes[i]):
-            indexes[i] = indexes[i](_to_axis(hist.axis(i)))
-        elif hasattr(indexes[i], "flow"):
-            if indexes[i].flow == 1:
-                indexes[i] = hist.axis(i).size
-            elif indexes[i].flow == -1:
-                indexes[i] = -1
-        elif isinstance(indexes[i], int):
-            if abs(indexes[i]) >= hist.axis(i).size:
-                raise IndexError("histogram index is out of range")
-            indexes[i] %= hist.axis(i).size
-
-    return indexes
-
-
+# We currently do not cast *to* a histogram, but this is consistent
+# and could be used later.
+@register(_histograms)
 class BaseHistogram(object):
     @inject_signature("self, *axes, storage=Double()", locals={"Double": Double})
     def __init__(self, *axes, **kwargs):
@@ -99,7 +70,7 @@ class BaseHistogram(object):
         ----------
         *args : Axis
             Provide 1 or more axis instances.
-        storage : Storage = bh.storage.Double
+        storage : Storage = bh.storage.Double()
             Select a storage to use in the histogram
         """
 
@@ -116,6 +87,15 @@ class BaseHistogram(object):
         with KWArgs(kwargs) as k:
             storage = k.optional("storage", Double())
 
+        # Check for missed parenthesis or incorrect types
+        if not isinstance(storage, Storage):
+            if issubclass(storage, Storage):
+                raise KeyError(
+                    "Passing in an initialized storage has been removed. Please add ()."
+                )
+            else:
+                raise KeyError("Only storages allowed in storage argument")
+
         # Allow a tuple to represent a regular axis
         axes = [_arg_shortcut(arg) for arg in axes]
 
@@ -131,9 +111,6 @@ class BaseHistogram(object):
                 return
 
         raise TypeError("Unsupported storage")
-
-    def __repr__(self):
-        return self.__class__.__name__ + repr(self._hist)[9:]
 
     def __array__(self):
         return self.view()
@@ -172,22 +149,6 @@ class BaseHistogram(object):
     def __idiv__(self, other):
         return self.__class__(self._hist.__idiv__(other._hist))
 
-    def reduce(self, *args):
-        """
-        Reduce based on one or more reduce_option. Generally,
-        the [] indexing is easier, but this might be useful in
-        some cases, and is lighter-weight.
-        """
-
-        return self.__class__(self._hist.reduce(*args))
-
-    def project(self, *args):
-        """
-        Project to a single axis or several axes on a multidiminsional histogram. Provided a list of axis numbers, this will produce the histogram over those axes only. Flow bins are used if available.
-        """
-
-        return self.__class__(self._hist.project(*args))
-
     @inject_signature("self, *args, weight=None, sample=None")
     def fill(self, *args, **kwargs):
         """
@@ -211,14 +172,17 @@ class BaseHistogram(object):
         """
         Get N-th axis.
         """
-        return _to_axis(self._hist.axis(i))
+        return cast(self, self._hist.axis(i), Axis)
 
     @property
     def _storage_type(self):
-        return self._hist._storage_type
+        return cast(self, self._hist._storage_type, Storage)
 
 
-class BoostHistogram(BaseHistogram):
+# C++ version of histogram
+@set_family(CPP_FAMILY)
+@set_module("boost_histogram.cpp")
+class histogram(BaseHistogram):
     axis = BaseHistogram._axis
 
     def rank(self):
@@ -239,6 +203,9 @@ class BoostHistogram(BaseHistogram):
         """
         return self._hist.at(*indexes)
 
+    def __repr__(self):
+        return repr(self._hist)
+
     # Call uses fill since it supports strings,
     # runtime argument list, etc.
     @inject_signature("self, *args, weight=None, sample=None")
@@ -248,26 +215,24 @@ class BoostHistogram(BaseHistogram):
         return self
 
     def _reset(self):
-        """
-        Reset bin counters to default values.
-        """
         self._hist.reset()
         return self
 
     def _empty(self, flow=False):
-        """
-        Check to see if the histogram has any non-default values.
-        You can use flow=True to check flow bins too.
-        """
         return self._hist.empty(flow)
 
     def _sum(self, flow=False):
-        """
-        Compute the sum over the histogram bins (optionally including the flow bins).
-        """
         return self._hist.sum(flow)
 
+    def _reduce(self, *args):
+        return self.__class__(self._hist.reduce(*args))
 
+    def _project(self, *args):
+        return self.__class__(self._hist.project(*args))
+
+
+@set_family(MAIN_FAMILY)
+@set_module("boost_histogram")
 class Histogram(BaseHistogram):
     @inject_signature("self, *axes, storage=Double()", locals={"Double": Double})
     def __init__(self, *args, **kwargs):
@@ -276,7 +241,52 @@ class Histogram(BaseHistogram):
         # If this is a property, tab completion in IPython does not work
         self.axes = AxesTuple(self._axis(i) for i in range(self.rank))
 
-    __init__.__doc__ = BaseHistogram.__doc__
+    __init__.__doc__ = BaseHistogram.__init__.__doc__
+
+    def __repr__(self):
+        ret = "{self.__class__.__name__}(\n  ".format(self=self)
+        ret += ",\n  ".join(repr(ax) for ax in self.axes)
+        ret += ",\n  storage={0}".format(self._storage_type())
+        ret += ")"
+        outer = self.sum(flow=True)
+        if outer:
+            inner = self.sum(flow=False)
+            ret += " # Sum: {0}".format(inner)
+            if inner != outer:
+                ret += " ({0} with flow)".format(outer)
+        return ret
+
+    def _compute_commonindex(self, index, expand_ellipsis):
+        # Shorten the computations with direct access to raw object
+        hist = self._hist
+        # Normalize -> h[i] == h[i,]
+        if not isinstance(index, tuple):
+            index = (index,)
+
+        # Now a list
+        if expand_ellipsis:
+            indexes = _expand_ellipsis(index, hist.rank())
+        else:
+            indexes = list(index)
+
+        if len(indexes) != hist.rank():
+            raise IndexError("Wrong number of indices for histogram")
+
+        # Allow [bh.loc(...)] to work
+        for i in range(len(indexes)):
+            if callable(indexes[i]):
+                indexes[i] = indexes[i](cast(self, hist.axis(i), Axis))
+            elif hasattr(indexes[i], "flow"):
+                if indexes[i].flow == 1:
+                    indexes[i] = hist.axis(i).size
+                elif indexes[i].flow == -1:
+                    indexes[i] = -1
+            elif isinstance(indexes[i], int):
+                if abs(indexes[i]) >= hist.axis(i).size:
+                    raise IndexError("histogram index is out of range")
+                indexes[i] %= hist.axis(i).size
+
+        return indexes
 
     def to_numpy(self, flow=False):
         """
@@ -333,7 +343,7 @@ class Histogram(BaseHistogram):
 
     def __getitem__(self, index):
 
-        indexes = _compute_commonindex(self._hist, index, expand_ellipsis=True)
+        indexes = self._compute_commonindex(index, expand_ellipsis=True)
 
         # If this is (now) all integers, return the bin contents
         try:
@@ -405,5 +415,22 @@ class Histogram(BaseHistogram):
             )
 
     def __setitem__(self, index, value):
-        indexes = _compute_commonindex(self._hist, index, expand_ellipsis=False)
+        indexes = self._compute_commonindex(index, expand_ellipsis=False)
         self._hist._at_set(value, *indexes)
+
+    def reduce(self, *args):
+        """
+        Reduce based on one or more reduce_option's. If you are operating on most
+        or all of your axis, consider slicing with [] notation.
+        """
+
+        return self.__class__(self._hist.reduce(*args))
+
+    def project(self, *args):
+        """
+        Project to a single axis or several axes on a multidiminsional histogram.
+        Provided a list of axis numbers, this will produce the histogram over
+        those axes only. Flow bins are used if available.
+        """
+
+        return self.__class__(self._hist.project(*args))
