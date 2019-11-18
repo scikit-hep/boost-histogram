@@ -5,12 +5,6 @@ import boost_histogram as bh
 
 import numpy as np
 from numpy.testing import assert_array_equal
-from io import BytesIO
-
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
 
 
 def test_copy():

@@ -1,11 +1,5 @@
 import pytest
-
-try:
-    # Python 2
-    from cPickle import loads, dumps
-except ImportError:
-    from pickle import loads, dumps
-
+from pickle import loads, dumps
 import copy
 
 import boost_histogram as bh
@@ -175,7 +169,7 @@ def test_pickle_0():
         bh.axis.Integer(0, 20),
         bh.axis.Regular(2, 0.0, 20.0, underflow=False, overflow=False),
         bh.axis.Variable([0.0, 1.0, 2.0]),
-        bh.axis.Regular(4, 0, 2 * np.pi, circular=True),
+        bh.axis.Regular(4, 0, 360, circular=True),
     )
     for i in range(a.axes[0].extent):
         a.fill(i, 0, 0, 0, 0)
@@ -186,10 +180,9 @@ def test_pickle_0():
                 for l in range(a.axes[3].extent):
                     a.fill(i, j, k, l, 0)
                     for m in range(a.axes[4].extent):
-                        a.fill(i, j, k, l, m * 0.5 * np.pi)
+                        a.fill(i, j, k, l, m * 0.5 * 360)
 
-    io = pickle.dumps(a, -1)
-    b = pickle.loads(io)
+    b = loads(dumps(a))
 
     assert id(a) != id(b)
     assert a.rank == b.rank
@@ -222,10 +215,7 @@ def test_pickle_1():
                 for l in range(a.axes[3].extent):
                     a.fill(i, j, k, l, weight=5)
 
-    io = BytesIO()
-    pickle.dump(a, io, protocol=-1)
-    io.seek(0)
-    b = pickle.load(io)
+    b = loads(dumps(a))
 
     assert id(a) != id(b)
     assert a.rank == b.rank
