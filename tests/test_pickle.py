@@ -159,7 +159,7 @@ def test_histogram_metadata(copy_fn, metadata):
 
 @pytest.mark.parametrize("copy_fn", copy_fns)
 def test_numpy_edge(copy_fn):
-    ax1 = bh._core.axis.regular_numpy(10, 0, 1)
+    ax1 = bh._core.axis.regular_numpy(10, 0, 1, None)
     ax2 = copy_fn(ax1)
 
     # stop defaults to 0, so this fails if the copy fails

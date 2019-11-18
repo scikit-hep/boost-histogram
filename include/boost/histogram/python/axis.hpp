@@ -30,7 +30,7 @@ using uogrowth_t = decltype(option::growth | option::underflow | option::overflo
 // How edges, centers, and widths are handled
 //
 // We distinguish between continuous and discrete axes. The integer axis is a borderline
-// case. It has disrete values, but they are consecutive. It is possible although not
+// case. It has discrete values, but they are consecutive. It is possible although not
 // correct to treat it like a continuous axis with bin width of 1. For the sake of
 // computing bin edges and bin center, we will use this ansatz here. PS: This behavior
 // is already implemented in Boost::Histogram when you create an integer axis with a
@@ -243,7 +243,19 @@ py::array_t<double> widths(const A &ax) {
     return result;
 }
 
-// These match the Python names except for a possible underscore
+// Must be specialized for each type (compile warning if not)
+template <class T>
+inline const char *string_name();
+
+// Macro to make the string specializations more readable
+#define BHP_SPECIALIZE_NAME(name)                                                      \
+    template <>                                                                        \
+    inline const char *string_name<name>() {                                           \
+        return #name;                                                                  \
+    }
+
+// These match the Python names
+
 using regular_none
     = bh::axis::regular<double, bh::use_default, metadata_t, option::none_t>;
 using regular_uflow
@@ -254,10 +266,21 @@ using regular_uoflow = bh::axis::regular<double, bh::use_default, metadata_t>;
 using regular_uoflow_growth
     = bh::axis::regular<double, bh::use_default, metadata_t, uogrowth_t>;
 
+BHP_SPECIALIZE_NAME(regular_none)
+BHP_SPECIALIZE_NAME(regular_uflow)
+BHP_SPECIALIZE_NAME(regular_oflow)
+BHP_SPECIALIZE_NAME(regular_uoflow)
+BHP_SPECIALIZE_NAME(regular_uoflow_growth)
+
 using circular     = bh::axis::circular<double, metadata_t>;
 using regular_log  = bh::axis::regular<double, bh::axis::transform::log, metadata_t>;
 using regular_sqrt = bh::axis::regular<double, bh::axis::transform::sqrt, metadata_t>;
 using regular_pow  = bh::axis::regular<double, bh::axis::transform::pow, metadata_t>;
+
+BHP_SPECIALIZE_NAME(circular)
+BHP_SPECIALIZE_NAME(regular_log)
+BHP_SPECIALIZE_NAME(regular_sqrt)
+BHP_SPECIALIZE_NAME(regular_pow)
 
 using variable_none   = bh::axis::variable<double, metadata_t, option::none_t>;
 using variable_uflow  = bh::axis::variable<double, metadata_t, option::underflow_t>;
@@ -265,18 +288,41 @@ using variable_oflow  = bh::axis::variable<double, metadata_t, option::overflow_
 using variable_uoflow = bh::axis::variable<double, metadata_t>;
 using variable_uoflow_growth = bh::axis::variable<double, metadata_t, uogrowth_t>;
 
+BHP_SPECIALIZE_NAME(variable_none)
+BHP_SPECIALIZE_NAME(variable_uflow)
+BHP_SPECIALIZE_NAME(variable_oflow)
+BHP_SPECIALIZE_NAME(variable_uoflow)
+BHP_SPECIALIZE_NAME(variable_uoflow_growth)
+
 using integer_none   = bh::axis::integer<int, metadata_t, option::none_t>;
 using integer_uoflow = bh::axis::integer<int, metadata_t>;
 using integer_uflow  = bh::axis::integer<int, metadata_t, option::underflow_t>;
 using integer_oflow  = bh::axis::integer<int, metadata_t, option::overflow_t>;
 using integer_growth = bh::axis::integer<int, metadata_t, option::growth_t>;
 
+BHP_SPECIALIZE_NAME(integer_none)
+BHP_SPECIALIZE_NAME(integer_uoflow)
+BHP_SPECIALIZE_NAME(integer_uflow)
+BHP_SPECIALIZE_NAME(integer_oflow)
+BHP_SPECIALIZE_NAME(integer_growth)
+
 using category_int        = bh::axis::category<int, metadata_t>;
 using category_int_growth = bh::axis::category<int, metadata_t, option::growth_t>;
+
+BHP_SPECIALIZE_NAME(category_int)
+BHP_SPECIALIZE_NAME(category_int_growth)
 
 using category_str = bh::axis::category<std::string, metadata_t>;
 using category_str_growth
     = bh::axis::category<std::string, metadata_t, option::growth_t>;
+
+BHP_SPECIALIZE_NAME(category_str)
+BHP_SPECIALIZE_NAME(category_str_growth)
+
+// Axis defined elsewhere
+BHP_SPECIALIZE_NAME(regular_numpy)
+
+#undef BHP_SPECIALIZE_NAME
 
 } // namespace axis
 
