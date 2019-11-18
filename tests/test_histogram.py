@@ -645,7 +645,7 @@ def test_numpy_conversion_5():
     assert a1[2, 1] == 5
 
 
-def test_fill_with_numpy_array_0():
+def test_fill_with_sequence_0():
     def ar(*args):
         return np.array(args, dtype=float)
 
@@ -699,7 +699,7 @@ def test_fill_with_numpy_array_0():
     assert a[2] == 3
 
 
-def test_fill_with_numpy_array_1():
+def test_fill_with_sequence_1():
     def ar(*args):
         return np.array(args, dtype=float)
 
