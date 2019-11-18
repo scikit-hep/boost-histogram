@@ -13,35 +13,6 @@ except ImportError:
     import pickle
 
 
-def test_init():
-    bh.Histogram()
-    bh.Histogram(bh.axis.Integer(-1, 1))
-    with pytest.raises(TypeError):
-        bh.Histogram(1)
-    with pytest.raises(TypeError):
-        bh.Histogram("bla")
-    with pytest.raises(TypeError):
-        bh.Histogram([])
-    with pytest.raises(TypeError):
-        bh.Histogram(bh.axis.Regular)
-    with pytest.raises(TypeError):
-        bh.Histogram(bh.axis.Regular())
-    with pytest.raises(TypeError):
-        bh.Histogram([bh.axis.Integer(-1, 1)])
-    with pytest.raises(TypeError):
-        bh.Histogram([bh.axis.Integer(-1, 1), bh.axis.Integer(-1, 1)])
-    with pytest.raises(TypeError):
-        bh.Histogram(bh.axis.Integer(-1, 1), unknown_keyword="nh")
-
-    h = bh.Histogram(bh.axis.Integer(-1, 2))
-    assert h.rank == 1
-    assert h.axes[0] == bh.axis.Integer(-1, 2)
-    assert h.axes[0].extent == 5
-    assert h.axes[0].size == 3
-    assert h != bh.Histogram(bh.axis.Regular(1, -1, 1))
-    assert h != bh.Histogram(bh.axis.Integer(-1, 1, metadata="ia"))
-
-
 def test_copy():
     a = bh.Histogram(bh.axis.Integer(-1, 1))
     import copy
@@ -330,23 +301,6 @@ def test_axis():
     assert h.axes[-2] == axes[-2]
     with pytest.raises(IndexError):
         h.axes[-3]
-
-
-def test_out_of_limit_axis():
-
-    lim = bh._core.hist._axes_limit
-    ax = (
-        bh.axis.Regular(1, -1, 1, underflow=False, overflow=False) for a in range(lim)
-    )
-    # Nothrow
-    bh.Histogram(*ax)
-
-    ax = (
-        bh.axis.Regular(1, -1, 1, underflow=False, overflow=False)
-        for a in range(lim + 1)
-    )
-    with pytest.raises(IndexError):
-        bh.Histogram(*ax)
 
 
 def test_out_of_range():
