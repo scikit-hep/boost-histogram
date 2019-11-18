@@ -93,7 +93,7 @@ def test_int_histogram():
 
 
 def test_str_categories_histogram():
-    hist = bh.Histogram(bh.axis.Category(["a", "b", "c"]), storage=bh.storage.Int())
+    hist = bh.Histogram(bh.axis.StrCategory(["a", "b", "c"]), storage=bh.storage.Int())
 
     vals = ["a", "b", "b", "c"]
     # Can't fill yet
@@ -195,7 +195,7 @@ def test_sums():
 
 
 def test_int_cat_hist():
-    h = bh.Histogram(bh.axis.Category([1, 2, 3]), storage=bh.storage.Int())
+    h = bh.Histogram(bh.axis.IntCategory([1, 2, 3]), storage=bh.storage.Int())
 
     h.fill(1)
     h.fill(2)

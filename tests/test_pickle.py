@@ -64,10 +64,10 @@ axes_creations = (
     (bh.axis.Regular, (4, 2, 4), {"circular": True}),
     (bh.axis.Variable, ([1, 2, 3, 4],), {}),
     (bh.axis.Integer, (1, 4), {}),
-    (bh.axis.Category, ([1, 2, 3],), {}),
-    (bh.axis.Category, ([1, 2, 3],), {"growth": True}),
-    (bh.axis.Category, (["1", "2", "3"],), {}),
-    (bh.axis.Category, (["1", "2", "3"],), {"growth": True}),
+    (bh.axis.IntCategory, ([1, 2, 3],), {}),
+    (bh.axis.IntCategory, ([1, 2, 3],), {"growth": True}),
+    (bh.axis.StrCategory, (["1", "2", "3"],), {}),
+    (bh.axis.StrCategory, (["1", "2", "3"],), {"growth": True}),
 )
 
 
