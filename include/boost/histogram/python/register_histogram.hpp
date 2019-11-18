@@ -32,6 +32,30 @@
 #include <tuple>
 #include <vector>
 
+template <class...>
+struct overload_t;
+
+template <class F>
+struct overload_t<F> : F {
+    overload_t(F &&f)
+        : F(std::forward<F>(f)) {}
+    using F::operator();
+};
+
+template <class F, class... Fs>
+struct overload_t<F, Fs...> : F, overload_t<Fs...> {
+    overload_t(F &&x, Fs &&... xs)
+        : F(std::forward<F>(x))
+        , overload_t<Fs...>(std::forward<Fs>(xs)...) {}
+    using F::operator();
+    using overload_t<Fs...>::operator();
+};
+
+template <class... Fs>
+auto overload(Fs &&... xs) {
+    return overload_t<Fs...>(std::forward<Fs>(xs)...);
+}
+
 namespace detail {
 template <class T, class... Us>
 using is_one_of = boost::mp11::mp_contains<boost::mp11::mp_list<Us...>, T>;
@@ -255,13 +279,11 @@ register_histogram(py::module &m, const char *name, const char *desc) {
                      });
                  }
 
-                 bool has_weight = false;
-                 bv2::variant<array_double_t, double>
-                     weight; // default constructed as empty array
+                 // default constructed as monostate to indicate absence of weight
+                 bv2::variant<bv2::monostate, double, array_double_t> weight;
                  {
                      auto w = optional_arg(kwargs, "weight");
                      if(!w.is_none()) {
-                         has_weight = true;
                          if(detail::is_pyiterable(w))
                              weight = py::cast<array_double_t>(w);
                          else
@@ -273,7 +295,7 @@ register_histogram(py::module &m, const char *name, const char *desc) {
                  bh::detail::static_if<detail::is_one_of<storage_t,
                                                          storage::mean,
                                                          storage::weighted_mean>>(
-                     [&kwargs, &vargs, &weight, &has_weight](auto &h) {
+                     [&kwargs, &vargs, &weight](auto &h) {
                          auto s = required_arg(kwargs, "sample");
                          finalize_args(kwargs);
 
@@ -281,30 +303,26 @@ register_histogram(py::module &m, const char *name, const char *desc) {
                          if(sarray.ndim() != 1)
                              throw std::invalid_argument("Sample array must be 1D");
 
-                         // HD: is it safe to release the gil? sarray is a Python
-                         // object, could this cause trouble?
-                         py::gil_scoped_release lock;
-                         if(has_weight)
-                             bv2::visit(
+                         bv2::visit(
+                             overload(
+                                 [&h, &vargs, &sarray](const bv2::monostate &) {
+                                     h.fill(vargs, bh::sample(sarray));
+                                 },
                                  [&h, &vargs, &sarray](const auto &w) {
                                      h.fill(vargs, bh::sample(sarray), bh::weight(w));
-                                 },
-                                 weight);
-                         else
-                             h.fill(vargs, bh::sample(sarray));
+                                 }),
+                             weight);
                      },
-                     [&kwargs, &vargs, &weight, &has_weight](auto &h) {
+                     [&kwargs, &vargs, &weight](auto &h) {
                          finalize_args(kwargs);
 
-                         py::gil_scoped_release lock;
-                         if(has_weight)
-                             bv2::visit(
-                                 [&h, &vargs](const auto &w) {
-                                     h.fill(vargs, bh::weight(w));
-                                 },
-                                 weight);
-                         else
-                             h.fill(vargs);
+                         bv2::visit(
+                             overload([&h, &vargs](
+                                          const bv2::monostate &) { h.fill(vargs); },
+                                      [&h, &vargs](const auto &w) {
+                                          h.fill(vargs, bh::weight(w));
+                                      }),
+                             weight);
                      },
                      self);
                  return self;
