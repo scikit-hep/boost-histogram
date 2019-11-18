@@ -6,7 +6,14 @@ __all__ = ("Regular", "Variable", "Integer", "Category", "Axis", "options", "tra
 
 from .._internal.axis import Axis, options
 from .._internal.utils import register as _register
-from .._internal.axis import Regular, Variable, Integer, Category
+from .._internal.axis import (
+    Regular,
+    Variable,
+    Integer,
+    Category,
+    IntCategory,
+    StrCategory,
+)
 from . import transform
 
 import warnings as _warnings
@@ -40,13 +47,9 @@ class integer(Integer):
         return super(integer, self).__init__(*args, **kwargs)
 
 
-@_register()
-class category(Category):
-    _CLASSES = set()
-
-    def __init__(self, *args, **kwargs):
-        _warnings.warn("Use Category instead")
-        return super(category, self).__init__(*args, **kwargs)
+def category(*args, **kwargs):
+    _warnings.warn("Use IntCategory or StrCategory instead")
+    return Category(*args, **kwargs)
 
 
 def regular_log(*args, **kwargs):

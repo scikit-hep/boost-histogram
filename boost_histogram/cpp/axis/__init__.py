@@ -6,5 +6,13 @@ __all__ = ("options", "regular", "variable", "integer", "category", "transorm")
 
 from ... import axis as _axis
 
-from ..._internal.axis import options, Axis, regular, variable, integer, category
+from ..._internal.axis import (
+    options,
+    Axis,
+    regular,
+    variable,
+    integer,
+    str_category,
+    int_category,
+)
 from . import transform

@@ -623,19 +623,19 @@ class TestCategory(Axis):
             bh.axis.Category([1, 2, 3], underflow=True)
 
         ax = bh.axis.Category([1, 2, 3])
-        assert isinstance(ax, bh.axis.Category)
+        assert isinstance(ax, bh.axis.IntCategory)
         assert ax.options == bh.axis.options(overflow=True)
 
         ax = bh.axis.Category([1, 2, 3], growth=True)
-        assert isinstance(ax, bh.axis.Category)
+        assert isinstance(ax, bh.axis.IntCategory)
         assert ax.options == bh.axis.options(growth=True)
 
         ax = bh.axis.Category(["1", "2", "3"])
-        assert isinstance(ax, bh.axis.Category)
+        assert isinstance(ax, bh.axis.StrCategory)
         assert ax.options == bh.axis.options(overflow=True)
 
         ax = bh.axis.Category(["1", "2", "3"], growth=True)
-        assert isinstance(ax, bh.axis.Category)
+        assert isinstance(ax, bh.axis.StrCategory)
         assert ax.options == bh.axis.options(growth=True)
 
     def test_equal(self):
@@ -654,17 +654,17 @@ class TestCategory(Axis):
 
     def test_repr(self):
         ax = bh.axis.Category([1, 2, 3])
-        assert repr(ax) == "Category([1, 2, 3])"
+        assert repr(ax) == "IntCategory([1, 2, 3])"
 
         ax = bh.axis.Category([1, 2, 3], metadata="foo")
-        assert repr(ax) == "Category([1, 2, 3], metadata='foo')"
+        assert repr(ax) == "IntCategory([1, 2, 3], metadata='foo')"
 
         ax = bh.axis.Category("ABC", metadata="foo")
         # If unicode is the default (Python 3, generally)
         if type("") == type(u""):
-            assert repr(ax) == "Category(['A', 'B', 'C'], metadata='foo')"
+            assert repr(ax) == "StrCategory(['A', 'B', 'C'], metadata='foo')"
         else:
-            assert repr(ax) == "Category([u'A', u'B', u'C'], metadata='foo')"
+            assert repr(ax) == "StrCategory([u'A', u'B', u'C'], metadata='foo')"
 
     @pytest.mark.parametrize("ref", ([1, 2, 3], "ABC"))
     @pytest.mark.parametrize("growth", (False, True))

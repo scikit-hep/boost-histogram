@@ -7,9 +7,9 @@ import pytest
 
 
 def test_usage_bh():
-    h = bhc.histogram(bhc.axis.regular(10, 0, 1), bhc.axis.category(["one", "two"]))
+    h = bhc.histogram(bhc.axis.regular(10, 0, 1), bhc.axis.str_category(["one", "two"]))
     assert h.axis(0) == bhc.axis.regular(10, 0, 1)
-    assert h.axis(1) == bhc.axis.category(["one", "two"])
+    assert h.axis(1) == bhc.axis.str_category(["one", "two"])
 
     h(0, "one")
 
