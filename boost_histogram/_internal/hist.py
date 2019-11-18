@@ -288,6 +288,20 @@ class Histogram(BaseHistogram):
 
         return indexes
 
+    def axis(self, i):
+        """
+        Deprecated: Use axes[] instead.
+        """
+        warnings.warn("Use axes[] instead of axis()")
+        return self._axis(i)
+
+    def at(self, *args):
+        """
+        Deprecated: Use [] instead.
+        """
+        warnings.warn("Use [] indexing instead.")
+        return self._hist.at(*args)
+
     def to_numpy(self, flow=False):
         """
         Convert to a Numpy style tuple of return arrays.
