@@ -18,7 +18,7 @@ import warnings as _warnings
 @_register()
 class regular(Regular):
     def __init__(self, *args, **kwargs):
-        _warnings.warn("Use Regular instead", DeprecationWarning)
+        _warnings.warn("Use Regular instead")
         return super(regular, self).__init__(*args, **kwargs)
 
 
@@ -27,7 +27,7 @@ class variable(Variable):
     _CLASSES = set()
 
     def __init__(self, *args, **kwargs):
-        _warnings.warn("Use Variable instead", DeprecationWarning)
+        _warnings.warn("Use Variable instead")
         return super(variable, self).__init__(*args, **kwargs)
 
 
@@ -36,7 +36,7 @@ class integer(Integer):
     _CLASSES = set()
 
     def __init__(self, *args, **kwargs):
-        _warnings.warn("Use Integer instead", DeprecationWarning)
+        _warnings.warn("Use Integer instead")
         return super(integer, self).__init__(*args, **kwargs)
 
 
@@ -45,28 +45,25 @@ class category(Category):
     _CLASSES = set()
 
     def __init__(self, *args, **kwargs):
-        _warnings.warn("Use Category instead", DeprecationWarning)
+        _warnings.warn("Use Category instead")
         return super(category, self).__init__(*args, **kwargs)
 
 
 def regular_log(*args, **kwargs):
-    _warnings.warn("Use transform=axis.transform.Log() instead", DeprecationWarning)
+    _warnings.warn("Use transform=axis.transform.Log() instead")
     return Regular(*args, transform=Transform.Log, **kwargs)
 
 
 def regular_sqrt(*args, **kwargs):
-    _warnings.warn("Use transform=axis.transform.Sqrt() instead", DeprecationWarning)
+    _warnings.warn("Use transform=axis.transform.Sqrt() instead")
     return Regular(*args, transform=transform.Sqrt, **kwargs)
 
 
 def regular_pow(bins, start, stop, power, **kwargs):
-    _warnings.warn(
-        "Use transform=axis.transform.Pow({0}) instead".format(power),
-        DeprecationWarning,
-    )
+    _warnings.warn("Use transform=axis.transform.Pow({0}) instead".format(power))
     return Regular(bins, start, stop, transform=transform.Pow(power), **kwargs)
 
 
 def circular(*args, **kwargs):
-    _warnings.warn("Use circular=True instead", DeprecationWarning)
+    _warnings.warn("Use circular=True instead")
     return Regular(*args, circular=True, **kwargs)
