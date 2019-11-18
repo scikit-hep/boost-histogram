@@ -25,7 +25,8 @@ def test_convert_bh():
 
     h = bh.Histogram(h)
 
-    assert not hasattr(h, "axis")
+    # Current warning workaround. Enable when removed:
+    # assert not hasattr(h, "axis")
     assert hasattr(h, "axes")
 
 
