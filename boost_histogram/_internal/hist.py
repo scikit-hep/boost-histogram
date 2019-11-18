@@ -11,6 +11,7 @@ from .storage import Double, Storage
 from .utils import cast, register, set_family, MAIN_FAMILY, CPP_FAMILY, set_module
 
 import warnings
+import copy
 import numpy as np
 
 _histograms = (
@@ -300,6 +301,23 @@ class Histogram(BaseHistogram):
             The edges for each dimension
         """
         return self._hist.to_numpy(flow)
+
+    @inject_signature("self, *, deep=True")
+    def copy(self, **kwargs):
+        """
+        Make a copy of the histogram. Defaults to making a
+        deep copy (axis metadata copied); use deep=False
+        to avoid making a copy of axis metadata.
+        """
+
+        # Future versions may add new options here
+        with KWArgs(kwargs) as k:
+            deep = k.optional("deep", True)
+
+        if deep:
+            return copy.deepcopy(self)
+        else:
+            return copy.copy(self)
 
     def view(self, flow=False):
         """
