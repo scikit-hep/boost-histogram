@@ -54,6 +54,14 @@ def test_copy():
     assert b == c
     assert id(b) != id(c)
 
+    b = a.copy(deep=False)
+    assert a == b
+    assert id(a) != id(b)
+
+    c = a.copy()
+    assert b == c
+    assert id(b) != id(c)
+
 
 def test_fill_int_1d():
 
