@@ -190,6 +190,16 @@ def test_growth():
     assert h[bh.overflow] == 0
 
 
+def test_growing_cats():
+    h = bh.Histogram(
+        bh.axis.IntCategory([], growth=True), bh.axis.StrCategory([], growth=True)
+    )
+
+    h.fill([1, 2, 1, 1], ["hi", "ho", "hi", "ho"])
+
+    assert h.size == 4
+
+
 @pytest.mark.parametrize("flow", [True, False])
 def test_fill_2d(flow):
     h = bh.Histogram(

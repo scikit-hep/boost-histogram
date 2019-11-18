@@ -138,12 +138,14 @@ void register_axes(py::module &mod) {
 
     register_axis_each<axis::category_int, axis::category_int_growth>(mod, [](auto ax) {
         ax.def(py::init<std::vector<int>, metadata_t>(), "categories"_a, "metadata"_a);
+        ax.def(py::init<>());
     });
 
     register_axis_each<axis::category_str, axis::category_str_growth>(mod, [](auto ax) {
         ax.def(py::init<std::vector<std::string>, metadata_t>(),
                "categories"_a,
                "metadata"_a);
+        ax.def(py::init<>());
     });
 
     ;

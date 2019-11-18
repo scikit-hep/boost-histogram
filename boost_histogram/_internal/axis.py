@@ -504,7 +504,11 @@ class BaseStrCategory(Axis):
             categories = list(categories)
 
         if options == {"growth"}:
-            self._ax = ca.category_str_growth(categories, metadata)
+            if len(categories) == 0:
+                self._ax = ca.category_str_growth()
+                self._ax.metadata = metadata
+            else:
+                self._ax = ca.category_str_growth(categories, metadata)
         elif options == set():
             self._ax = ca.category_str(categories, metadata)
         else:
@@ -538,7 +542,11 @@ class BaseIntCategory(Axis):
             options = k.options(growth=False)
 
         if options == {"growth"}:
-            self._ax = ca.category_int_growth(categories, metadata)
+            if len(categories) == 0:
+                self._ax = ca.category_int_growth()
+                self._ax.metadata = metadata
+            else:
+                self._ax = ca.category_int_growth(categories, metadata)
         elif options == set():
             self._ax = ca.category_int(categories, metadata)
         else:
