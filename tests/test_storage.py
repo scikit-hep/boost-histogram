@@ -22,6 +22,24 @@ def test_setting(storage):
     assert_array_equal(h.view(), [2, 3, 0, 0, 0, 0, 0, 0, 0, 5])
 
 
+def test_unlimited_storage_growth():
+    h = bh.Histogram(bh.axis.Integer(-1, 2), storage=bh.storage.Unlimited())
+    h.fill(-1)
+    h.fill(1)
+    h.fill(1)
+    for i in range(255):
+        h.fill(0)
+    h.fill(0)
+    for i in range(1000 - 256):
+        h.fill(0)
+    print(h.view(flow=True))
+    assert h[bh.underflow] == 0
+    assert h[0] == 1
+    assert h[1] == 1000
+    assert h[2] == 2
+    assert h[bh.overflow] == 0
+
+
 def test_setting_weight():
     h = bh.Histogram(bh.axis.Regular(10, 0, 10), storage=bh.storage.Weight())
 

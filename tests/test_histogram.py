@@ -94,8 +94,9 @@ def test_fill_1d(flow):
         h.fill()
     with pytest.raises(ValueError):
         h.fill(1, 2)
-    for x in (-10, -1, -1, 0, 1, 1, 1, 10):
+    for x in (-10, -1, -1):
         h.fill(x)
+    h.fill((0, 1, 1, 1, 10))
 
     assert h.sum() == 6
     assert h.sum(flow=True) == 6 + 2 * flow
@@ -141,24 +142,6 @@ def test_setting(storage):
     assert h[bh.overflow] == 6
 
     assert_array_equal(h.view(flow=True), [1, 2, 3, 0, 0, 0, 4, 0, 0, 0, 5, 6])
-
-
-def test_growth():
-    h = bh.Histogram(bh.axis.Integer(-1, 2))
-    h.fill(-1)
-    h.fill(1)
-    h.fill(1)
-    for i in range(255):
-        h.fill(0)
-    h.fill(0)
-    for i in range(1000 - 256):
-        h.fill(0)
-    print(h.view(flow=True))
-    assert h[bh.underflow] == 0
-    assert h[0] == 1
-    assert h[1] == 1000
-    assert h[2] == 2
-    assert h[bh.overflow] == 0
 
 
 @pytest.mark.parametrize("flow", [True, False])
@@ -373,77 +356,6 @@ def test_shrink_rebin_1d():
     h.fill(1.1)
     hs = h.reduce(bh.algorithm.shrink_and_rebin(0, 1, 3, 2))
     assert_array_equal(hs.view(), [1, 0, 0, 0, 0])
-
-
-# CLASSIC: This used to have metadata too, but that does not compare equal
-def test_pickle_0():
-    a = bh.Histogram(
-        bh.axis.Category([0, 1, 2]),
-        bh.axis.Integer(0, 20),
-        bh.axis.Regular(2, 0.0, 20.0, underflow=False, overflow=False),
-        bh.axis.Variable([0.0, 1.0, 2.0]),
-        bh.axis.Regular(4, 0, 2 * np.pi, circular=True),
-    )
-    for i in range(a.axes[0].extent):
-        a.fill(i, 0, 0, 0, 0)
-        for j in range(a.axes[1].extent):
-            a.fill(i, j, 0, 0, 0)
-            for k in range(a.axes[2].extent):
-                a.fill(i, j, k, 0, 0)
-                for l in range(a.axes[3].extent):
-                    a.fill(i, j, k, l, 0)
-                    for m in range(a.axes[4].extent):
-                        a.fill(i, j, k, l, m * 0.5 * np.pi)
-
-    io = pickle.dumps(a, -1)
-    b = pickle.loads(io)
-
-    assert id(a) != id(b)
-    assert a.rank == b.rank
-    assert a.axes[0] == b.axes[0]
-    assert a.axes[1] == b.axes[1]
-    assert a.axes[2] == b.axes[2]
-    assert a.axes[3] == b.axes[3]
-    assert a.axes[4] == b.axes[4]
-    assert a.sum() == b.sum()
-    assert repr(a) == repr(b)
-    assert str(a) == str(b)
-    assert a == b
-
-
-def test_pickle_1():
-    a = bh.Histogram(
-        bh.axis.Category([0, 1, 2]),
-        bh.axis.Integer(0, 3, metadata="ia"),
-        bh.axis.Regular(4, 0.0, 4.0, underflow=False, overflow=False),
-        bh.axis.Variable([0.0, 1.0, 2.0]),
-    )
-    assert isinstance(a, bh.Histogram)
-
-    for i in range(a.axes[0].extent):
-        a.fill(i, 0, 0, 0, weight=3)
-        for j in range(a.axes[1].extent):
-            a.fill(i, j, 0, 0, weight=10)
-            for k in range(a.axes[2].extent):
-                a.fill(i, j, k, 0, weight=2)
-                for l in range(a.axes[3].extent):
-                    a.fill(i, j, k, l, weight=5)
-
-    io = BytesIO()
-    pickle.dump(a, io, protocol=-1)
-    io.seek(0)
-    b = pickle.load(io)
-
-    assert id(a) != id(b)
-    assert a.rank == b.rank
-    assert a.axes[0] == b.axes[0]
-    assert a.axes[1] == b.axes[1]
-    assert a.axes[2] == b.axes[2]
-    assert a.axes[3] == b.axes[3]
-    assert a.sum() == b.sum()
-    assert repr(a) == repr(b)
-    assert str(a) == str(b)
-    assert a == b
 
 
 # Numpy tests

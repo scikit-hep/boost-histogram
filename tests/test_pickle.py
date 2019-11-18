@@ -166,3 +166,74 @@ def test_numpy_edge(copy_fn):
     assert ax1 == ax2
     assert ax1.index(1) == ax2.index(1)
     assert ax2.index(1) == 9
+
+
+# CLASSIC: This used to have metadata too, but that does not compare equal
+def test_pickle_0():
+    a = bh.Histogram(
+        bh.axis.Category([0, 1, 2]),
+        bh.axis.Integer(0, 20),
+        bh.axis.Regular(2, 0.0, 20.0, underflow=False, overflow=False),
+        bh.axis.Variable([0.0, 1.0, 2.0]),
+        bh.axis.Regular(4, 0, 2 * np.pi, circular=True),
+    )
+    for i in range(a.axes[0].extent):
+        a.fill(i, 0, 0, 0, 0)
+        for j in range(a.axes[1].extent):
+            a.fill(i, j, 0, 0, 0)
+            for k in range(a.axes[2].extent):
+                a.fill(i, j, k, 0, 0)
+                for l in range(a.axes[3].extent):
+                    a.fill(i, j, k, l, 0)
+                    for m in range(a.axes[4].extent):
+                        a.fill(i, j, k, l, m * 0.5 * np.pi)
+
+    io = pickle.dumps(a, -1)
+    b = pickle.loads(io)
+
+    assert id(a) != id(b)
+    assert a.rank == b.rank
+    assert a.axes[0] == b.axes[0]
+    assert a.axes[1] == b.axes[1]
+    assert a.axes[2] == b.axes[2]
+    assert a.axes[3] == b.axes[3]
+    assert a.axes[4] == b.axes[4]
+    assert a.sum() == b.sum()
+    assert repr(a) == repr(b)
+    assert str(a) == str(b)
+    assert a == b
+
+
+def test_pickle_1():
+    a = bh.Histogram(
+        bh.axis.Category([0, 1, 2]),
+        bh.axis.Integer(0, 3, metadata="ia"),
+        bh.axis.Regular(4, 0.0, 4.0, underflow=False, overflow=False),
+        bh.axis.Variable([0.0, 1.0, 2.0]),
+    )
+    assert isinstance(a, bh.Histogram)
+
+    for i in range(a.axes[0].extent):
+        a.fill(i, 0, 0, 0, weight=3)
+        for j in range(a.axes[1].extent):
+            a.fill(i, j, 0, 0, weight=10)
+            for k in range(a.axes[2].extent):
+                a.fill(i, j, k, 0, weight=2)
+                for l in range(a.axes[3].extent):
+                    a.fill(i, j, k, l, weight=5)
+
+    io = BytesIO()
+    pickle.dump(a, io, protocol=-1)
+    io.seek(0)
+    b = pickle.load(io)
+
+    assert id(a) != id(b)
+    assert a.rank == b.rank
+    assert a.axes[0] == b.axes[0]
+    assert a.axes[1] == b.axes[1]
+    assert a.axes[2] == b.axes[2]
+    assert a.axes[3] == b.axes[3]
+    assert a.sum() == b.sum()
+    assert repr(a) == repr(b)
+    assert str(a) == str(b)
+    assert a == b
