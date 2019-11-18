@@ -232,14 +232,14 @@ register_histogram(py::module &m, const char *name, const char *desc) {
                      "supported value types are double, int, std::string; new axis was "
                      "added with different value type");
 
-                 // HD: std::vector<std::string> is for passing strings, this very very
-                 // inefficient but works at least I need to change something in
+                 // HD: std::vector<std::string> is for passing strings, this is very
+                 // inefficient but works at least. I need to change something in
                  // boost::histogram to make passing strings from a numpy array
-                 // efficient
-                 using varg_t = boost::variant2::variant<array_int_t,
-                                                         int,
+                 // efficient.
+                 using varg_t = boost::variant2::variant<double,
                                                          array_double_t,
-                                                         double,
+                                                         int,
+                                                         array_int_t,
                                                          std::vector<std::string>,
                                                          std::string>;
                  auto vargs   = bh::detail::make_stack_buffer<varg_t>(
