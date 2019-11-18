@@ -767,6 +767,7 @@ def test_fill_with_numpy_array_1():
 
 def test_fill_with_numpy_array_2():
     a = bh.Histogram(bh.axis.StrCategory(["A", "B"]))
+    a.fill("A")
     a.fill(("A", "B", "C"))
     a.fill(np.array(("D", "A"), dtype="S5"))
     assert a[0] == 2
