@@ -17,28 +17,28 @@ from .utils import cast, register, set_family, MAIN_FAMILY, CPP_FAMILY, set_modu
 class Axis(object):
     __slots__ = ("_ax",)
 
-    def index(self, x):
+    def index(self, value):
         """
         Return the fractional index(es) given a value (or values) on the axis.
         """
 
-        return self._ax.index(x)
+        return self._ax.index(value)
 
-    def value(self, i):
+    def value(self, index):
         """
         Return the value(s) given an (fractional) index (or indices).
         """
 
-        return self._ax.value(i)
+        return self._ax.value(index)
 
-    def bin(self, i):
+    def bin(self, index):
         """
         Return the edges of the bins as a tuple for a
         continuous axis or the bin value for a
         non-continuous axis, when given an index.
         """
 
-        return self._ax.bin(i)
+        return self._ax.bin(index)
 
     def __eq__(self, other):
         return self._ax == other._ax
