@@ -108,7 +108,7 @@ def cpp_flag(compiler):
 class BuildExt(build_ext):
     """A custom build extension for adding compiler-specific options."""
 
-    c_opts = {"msvc": ["/EHsc", "/bigobj"], "unix": []}
+    c_opts = {"msvc": ["/EHsc", "/bigobj"], "unix": ["-g0"]}
 
     if sys.platform == "darwin":
         c_opts["unix"] += ["-stdlib=libc++", "-mmacosx-version-min=10.9"]
