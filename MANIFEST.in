@@ -6,7 +6,6 @@ graft tests
 graft docs
 
 graft extern/assert/include
-graft extern/callable_traits/include
 graft extern/config/include
 graft extern/core/include
 graft extern/histogram/include

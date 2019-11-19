@@ -63,7 +63,6 @@ SRC_FILES = [
 INCLUDE_DIRS = [
     "include",
     "extern/assert/include",
-    "extern/callable_traits/include",
     "extern/config/include",
     "extern/core/include",
     "extern/histogram/include",
