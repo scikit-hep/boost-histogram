@@ -267,8 +267,14 @@ register_histogram(py::module &m, const char *name, const char *desc) {
                                  // once the issue in boost::histogram is fixed
                                  v = std::vector<std::string>(1,
                                                               py::cast<std::string>(x));
-                             else
+                             else if(py::isinstance<py::array>(x)) {
+                                 if(py::cast<py::array>(x).ndim() != 1)
+                                     throw std::invalid_argument(
+                                         "All arrays must be 1D");
                                  v = py::cast<std::vector<std::string>>(x);
+                             } else {
+                                 v = py::cast<std::vector<std::string>>(x);
+                             }
                          },
                          [](auto t, varg_t &v, const py::handle &x) {
                              using U = typename decltype(t)::type;
