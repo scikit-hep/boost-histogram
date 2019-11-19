@@ -313,6 +313,8 @@ register_histogram(py::module &m, const char *name, const char *desc) {
                          if(sarray.ndim() != 1)
                              throw std::invalid_argument("Sample array must be 1D");
 
+                         // releasing gil here is safe, we don't manipulate refcounts
+                         py::gil_scoped_release lock;
                          bv2::visit(
                              overload(
                                  [&h, &vargs, &sarray](const bv2::monostate &) {
@@ -326,6 +328,8 @@ register_histogram(py::module &m, const char *name, const char *desc) {
                      [&kwargs, &vargs, &weight](auto &h) {
                          finalize_args(kwargs);
 
+                         // releasing gil here is safe, we don't manipulate refcounts
+                         py::gil_scoped_release lock;
                          bv2::visit(
                              overload([&h, &vargs](
                                           const bv2::monostate &) { h.fill(vargs); },
