@@ -64,10 +64,10 @@ axes_creations = (
     (bh.axis.Regular, (4, 2, 4), {"circular": True}),
     (bh.axis.Variable, ([1, 2, 3, 4],), {}),
     (bh.axis.Integer, (1, 4), {}),
-    (bh.axis.Category, ([1, 2, 3],), {}),
-    (bh.axis.Category, ([1, 2, 3],), {"growth": True}),
-    (bh.axis.Category, (["1", "2", "3"],), {}),
-    (bh.axis.Category, (["1", "2", "3"],), {"growth": True}),
+    (bh.axis.IntCategory, ([1, 2, 3],), {}),
+    (bh.axis.IntCategory, ([1, 2, 3],), {"growth": True}),
+    (bh.axis.StrCategory, (["1", "2", "3"],), {}),
+    (bh.axis.StrCategory, (["1", "2", "3"],), {"growth": True}),
 )
 
 
@@ -159,7 +159,7 @@ def test_histogram_metadata(copy_fn, metadata):
 
 @pytest.mark.parametrize("copy_fn", copy_fns)
 def test_numpy_edge(copy_fn):
-    ax1 = bh._core.axis.regular_numpy(10, 0, 1)
+    ax1 = bh._core.axis.regular_numpy(10, 0, 1, None)
     ax2 = copy_fn(ax1)
 
     # stop defaults to 0, so this fails if the copy fails

@@ -35,10 +35,10 @@ ABC = abc.ABCMeta("ABC", (object,), {"__slots__": ()})
         (bh.axis.Integer, (1, 2), "o", {}),
         (bh.axis.Integer, (1, 2), "uo", {}),
         (bh.axis.Integer, (1, 2), "g", {}),
-        (bh.axis.Category, ((1, 2, 3),), "", {}),
-        (bh.axis.Category, ((1, 2, 3),), "g", {}),
-        (bh.axis.Category, (tuple("ABC"),), "", {}),
-        (bh.axis.Category, (tuple("ABC"),), "g", {}),
+        (bh.axis.IntCategory, ((1, 2, 3),), "", {}),
+        (bh.axis.IntCategory, ((1, 2, 3),), "g", {}),
+        (bh.axis.StrCategory, (tuple("ABC"),), "", {}),
+        (bh.axis.StrCategory, (tuple("ABC"),), "g", {}),
     ],
 )
 def test_metadata(axis, args, opt, kwargs):
@@ -604,72 +604,84 @@ class TestInteger:
 class TestCategory(Axis):
     def test_init(self):
         # should not raise
-        bh.axis.Category([1, 2])
-        bh.axis.Category((1, 2), metadata="foo")
-        bh.axis.Category(["A", "B"])
-        bh.axis.Category("AB")
-        bh.axis.Category("AB", metadata="foo")
+        bh.axis.IntCategory([1, 2])
+        bh.axis.IntCategory((1, 2), metadata="foo")
+        bh.axis.StrCategory(["A", "B"])
+        bh.axis.StrCategory("AB")
+        bh.axis.StrCategory("AB", metadata="foo")
 
         with pytest.raises(TypeError):
-            bh.axis.Category([1, 2], "foo")
+            bh.axis.IntCategory(["A", "B"])
         with pytest.raises(TypeError):
-            bh.axis.Category("AB", "foo")
+            bh.axis.StrCategory([1, 2])
 
         with pytest.raises(TypeError):
-            bh.axis.Category()
+            bh.axis.IntCategory([1, 2], "foo")
         with pytest.raises(TypeError):
-            bh.axis.Category([1, "2"])
-        with pytest.raises(TypeError):
-            bh.axis.Category([1, 2, 3], underflow=True)
+            bh.axis.StrCategory("AB", "foo")
 
-        ax = bh.axis.Category([1, 2, 3])
-        assert isinstance(ax, bh.axis.Category)
+        with pytest.raises(TypeError):
+            bh.axis.StrCategory()
+        with pytest.raises(TypeError):
+            bh.axis.IntCategory()
+        with pytest.raises(TypeError):
+            bh.axis.StrCategory([1, "2"])
+        with pytest.raises(TypeError):
+            bh.axis.IntCategory([1, "2"])
+        with pytest.raises(TypeError):
+            bh.axis.IntCategory([1, 2, 3], underflow=True)
+
+        ax = bh.axis.IntCategory([1, 2, 3])
+        assert isinstance(ax, bh.axis.IntCategory)
         assert ax.options == bh.axis.options(overflow=True)
 
-        ax = bh.axis.Category([1, 2, 3], growth=True)
-        assert isinstance(ax, bh.axis.Category)
+        ax = bh.axis.IntCategory([1, 2, 3], growth=True)
+        assert isinstance(ax, bh.axis.IntCategory)
         assert ax.options == bh.axis.options(growth=True)
 
-        ax = bh.axis.Category(["1", "2", "3"])
-        assert isinstance(ax, bh.axis.Category)
+        ax = bh.axis.StrCategory(["1", "2", "3"])
+        assert isinstance(ax, bh.axis.StrCategory)
         assert ax.options == bh.axis.options(overflow=True)
 
-        ax = bh.axis.Category(["1", "2", "3"], growth=True)
-        assert isinstance(ax, bh.axis.Category)
+        ax = bh.axis.StrCategory(["1", "2", "3"], growth=True)
+        assert isinstance(ax, bh.axis.StrCategory)
         assert ax.options == bh.axis.options(growth=True)
 
     def test_equal(self):
-        assert bh.axis.Category([1, 2, 3]) == bh.axis.Category([1, 2, 3])
-        assert bh.axis.Category([1, 2, 3]) != bh.axis.Category([1, 3, 2])
-        assert bh.axis.Category(["A", "B"]) == bh.axis.Category("AB")
-        assert bh.axis.Category(["A", "B"]) != bh.axis.Category("BA")
+        assert bh.axis.IntCategory([1, 2, 3]) == bh.axis.IntCategory([1, 2, 3])
+        assert bh.axis.IntCategory([1, 2, 3]) != bh.axis.IntCategory([1, 3, 2])
+        assert bh.axis.StrCategory(["A", "B"]) == bh.axis.StrCategory("AB")
+        assert bh.axis.StrCategory(["A", "B"]) != bh.axis.StrCategory("BA")
 
     @pytest.mark.parametrize("ref", ([1, 2, 3], "ABC"))
     @pytest.mark.parametrize("growth", (False, True))
     def test_len(self, ref, growth):
-        a = bh.axis.Category(ref, growth=growth)
+        Cat = bh.axis.StrCategory if isinstance(ref[0], str) else bh.axis.IntCategory
+        a = Cat(ref, growth=growth)
         assert len(a) == 3
         assert a.size == 3
         assert a.extent == 3 if growth else 4
 
     def test_repr(self):
-        ax = bh.axis.Category([1, 2, 3])
-        assert repr(ax) == "Category([1, 2, 3])"
+        ax = bh.axis.IntCategory([1, 2, 3])
+        assert repr(ax) == "IntCategory([1, 2, 3])"
 
-        ax = bh.axis.Category([1, 2, 3], metadata="foo")
-        assert repr(ax) == "Category([1, 2, 3], metadata='foo')"
+        ax = bh.axis.IntCategory([1, 2, 3], metadata="foo")
+        assert repr(ax) == "IntCategory([1, 2, 3], metadata='foo')"
 
-        ax = bh.axis.Category("ABC", metadata="foo")
+        ax = bh.axis.StrCategory("ABC", metadata="foo")
         # If unicode is the default (Python 3, generally)
         if type("") == type(u""):
-            assert repr(ax) == "Category(['A', 'B', 'C'], metadata='foo')"
+            assert repr(ax) == "StrCategory(['A', 'B', 'C'], metadata='foo')"
         else:
-            assert repr(ax) == "Category([u'A', u'B', u'C'], metadata='foo')"
+            assert repr(ax) == "StrCategory([u'A', u'B', u'C'], metadata='foo')"
 
     @pytest.mark.parametrize("ref", ([1, 2, 3], "ABC"))
     @pytest.mark.parametrize("growth", (False, True))
     def test_getitem(self, ref, growth):
-        a = bh.axis.Category(ref, growth=growth)
+        Cat = bh.axis.StrCategory if isinstance(ref[0], str) else bh.axis.IntCategory
+
+        a = Cat(ref, growth=growth)
 
         for i in range(3):
             assert a.bin(i) == ref[i]
@@ -681,7 +693,7 @@ class TestCategory(Axis):
 
         with pytest.raises(IndexError):
             a.bin(-1)
-        # Even if bh.axis.Category axis has overflow enabled, we cannot return a bin value for the overflow,
+        # Even if bh.axis.*Category axis has overflow enabled, we cannot return a bin value for the overflow,
         # because it is not clear what that value should be. So we raise an IndexError when this bin is accessed.
         with pytest.raises(IndexError):
             a.bin(3)
@@ -689,13 +701,15 @@ class TestCategory(Axis):
     @pytest.mark.parametrize("ref", ([1, 2, 3], ("A", "B", "C")))
     @pytest.mark.parametrize("growth", (False, True))
     def test_iter(self, ref, growth):
-        a = bh.axis.Category(ref, growth=growth)
+        Cat = bh.axis.StrCategory if isinstance(ref[0], str) else bh.axis.IntCategory
+        a = Cat(ref, growth=growth)
         assert_array_equal(a, ref)
 
     @pytest.mark.parametrize("ref", ([1, 2, 3], ("A", "B", "C")))
     @pytest.mark.parametrize("growth", (False, True))
     def test_index(self, ref, growth):
-        a = bh.axis.Category(ref, growth=growth)
+        Cat = bh.axis.StrCategory if isinstance(ref[0], str) else bh.axis.IntCategory
+        a = Cat(ref, growth=growth)
         for i, r in enumerate(ref):
             assert a.index(r) == i
         assert_array_equal(a.index(ref), [0, 1, 2])
@@ -703,7 +717,8 @@ class TestCategory(Axis):
     @pytest.mark.parametrize("ref", ([1, 2, 3], "ABC"))
     @pytest.mark.parametrize("growth", (False, True))
     def test_edges_centers_widths(self, ref, growth):
-        a = bh.axis.Category(ref, growth=growth)
+        Cat = bh.axis.StrCategory if isinstance(ref[0], str) else bh.axis.IntCategory
+        a = Cat(ref, growth=growth)
         assert_allclose(a.edges, [0, 1, 2, 3])
         assert_allclose(a.centers, [0.5, 1.5, 2.5])
         assert_allclose(a.widths, [1, 1, 1])

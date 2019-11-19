@@ -11,6 +11,8 @@ from .sig_tools import inject_signature
 from .axis_transform import AxisTransform
 from .utils import cast, register, set_family, MAIN_FAMILY, CPP_FAMILY, set_module
 
+import warnings
+
 
 # Contains common methods and properties to all axes
 @set_module("boost_histogram.axis")
@@ -470,24 +472,22 @@ class integer(BaseInteger, CppAxisMixin):
     __slots__ = ()
 
 
-@register(
-    {ca.category_int_growth, ca.category_str_growth, ca.category_int, ca.category_str}
-)
-class BaseCategory(Axis):
+@register({ca.category_str_growth, ca.category_str})
+class BaseStrCategory(Axis):
     __slots__ = ()
 
     @inject_signature("self, categories, *, metadata=None, growth=False")
     def __init__(self, categories, **kwargs):
         """
-        Make a category axis with either ints or strings; items will
+        Make a category axis with strings; items will
         be added to a predefined list of bins or a growing (with growth=True)
         list of bins.
 
 
         Parameters
         ----------
-        categories : Union[Array[int], Array[str]]
-            The bin values, either ints or strings.
+        categories : Iterator[str]
+            The bin values in strings. May be empty if growth is enabled.
         metadata : object
             Any Python object to attach to the axis, like a label.
         growth : bool = False
@@ -499,26 +499,53 @@ class BaseCategory(Axis):
             options = k.options(growth=False)
 
         # We need to make sure we support Python 2 for now :(
+        # henryiii: This shortcut possibly should be removed
         if isinstance(categories, (type(""), type(u""))):
             categories = list(categories)
 
         if options == {"growth"}:
-            try:
-                self._ax = ca.category_int_growth(categories, metadata)
-            except TypeError:
-                self._ax = ca.category_str_growth(categories, metadata)
+            self._ax = ca.category_str_growth(categories, metadata)
         elif options == set():
-            try:
-                self._ax = ca.category_int(categories, metadata)
-            except TypeError:
-                self._ax = ca.category_str(categories, metadata)
+            self._ax = ca.category_str(categories, metadata)
         else:
             raise KeyError("Unsupported collection of options")
 
 
-@set_family(MAIN_FAMILY)
-@set_module("boost_histogram.axis")
-class Category(BaseCategory, MainAxisMixin):
+@register({ca.category_int, ca.category_int_growth})
+class BaseIntCategory(Axis):
+    __slots__ = ()
+
+    @inject_signature("self, categories, *, metadata=None, growth=False")
+    def __init__(self, categories, **kwargs):
+        """
+        Make a category axis with ints; items will
+        be added to a predefined list of bins or a growing (with growth=True)
+        list of bins. An empty list is allowed if growth=True.
+
+
+        Parameters
+        ----------
+        categories : Iteratable[int]
+            The bin values, either ints or strings.
+        metadata : object
+            Any Python object to attach to the axis, like a label.
+        growth : bool = False
+            Allow the axis to grow if a value is encountered out of range.
+            Be careful, the axis will grow as large as needed.
+        """
+        with KWArgs(kwargs) as k:
+            metadata = k.optional("metadata")
+            options = k.options(growth=False)
+
+        if options == {"growth"}:
+            self._ax = ca.category_int_growth(categories, metadata)
+        elif options == set():
+            self._ax = ca.category_int(categories, metadata)
+        else:
+            raise KeyError("Unsupported collection of options")
+
+
+class CategoryMixin(object):
     __slots__ = ()
 
     def _repr_kwargs(self):
@@ -542,20 +569,55 @@ class Category(BaseCategory, MainAxisMixin):
 
         return ret
 
+
+@set_family(MAIN_FAMILY)
+@set_module("boost_histogram.axis")
+class StrCategory(BaseStrCategory, CategoryMixin, MainAxisMixin):
+    __slots__ = ()
+
     def _repr_args(self):
         "Return inner part of signature for use in repr"
 
-        return (
-            "["
-            + ", ".join(
-                (repr(c) if isinstance(c, (type(""), type(u""))) else format(c, "g"))
-                for c in self
-            )
-            + "]"
+        return "[{0}]".format(", ".join(repr(c) for c in self))
+
+
+@set_family(MAIN_FAMILY)
+@set_module("boost_histogram.axis")
+class IntCategory(BaseIntCategory, CategoryMixin, MainAxisMixin):
+    __slots__ = ()
+
+    def _repr_args(self):
+        "Return inner part of signature for use in repr"
+
+        return "[{0}]".format(", ".join(format(c, "g") for c in self))
+
+
+@inject_signature("categories, *, metadata=None, growth=False")
+def Category(categories, **kwargs):
+    """
+    Deprecated: Use IntCategory or StrCategory instead.
+    This shortcut may return eventually.
+    """
+    warnings.warn("Use IntCategory or StrCategory instead of Category")
+
+    if len(categories) < 1:
+        raise TypeError(
+            "Cannot deduce int vs. str, please use IntCategory/StrCategory instead"
         )
+
+    try:
+        return IntCategory(categories, **kwargs)
+    except TypeError:
+        return StrCategory(categories, **kwargs)
 
 
 @set_family(CPP_FAMILY)
 @set_module("boost_histogram.cpp.axis")
-class category(BaseCategory, CppAxisMixin):
+class int_category(BaseIntCategory, CppAxisMixin):
+    __slots__ = ()
+
+
+@set_family(CPP_FAMILY)
+@set_module("boost_histogram.cpp.axis")
+class str_category(BaseStrCategory, CppAxisMixin):
     __slots__ = ()

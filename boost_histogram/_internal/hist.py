@@ -26,7 +26,9 @@ _histograms = (
 
 
 def _arg_shortcut(item):
-    if isinstance(item, tuple):
+    if isinstance(item, tuple) and len(item) == 3:
+        return _core.axis.regular_uoflow(item[0], item[1], item[2], None)
+    elif isinstance(item, tuple) and len(item) == 4:
         return _core.axis.regular_uoflow(*item)
     elif isinstance(item, Axis):
         return item._ax

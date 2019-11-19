@@ -12,18 +12,15 @@
 #include <boost/mp11.hpp>
 #include <vector>
 
-template <class... Ts, class Init, class... Passthrough>
-void register_axis_sub_types(py::module &mod,
-                             std::array<const char *, sizeof...(Ts)> names,
-                             const char *doc,
-                             Init &&init,
-                             Passthrough &&... passthrough) {
+template <class... Ts, class Func>
+void register_axis_each(py::module &mod, Func &&function) {
     using namespace boost::mp11;
     using types = mp_list<Ts...>;
+
     mp_for_each<mp_iota_c<sizeof...(Ts)>>([&](auto I) {
         using T = mp_at_c<types, I>;
-        register_axis<T>(mod, names.at(I), doc)
-            .def(std::forward<Init>(init), std::forward<Passthrough>(passthrough)...);
+        auto ax = register_axis<T>(mod);
+        function(ax);
     });
 }
 
@@ -65,55 +62,47 @@ void register_axes(py::module &mod) {
                     self.underflow(), self.overflow(), self.circular(), self.growth());
         });
 
-    register_axis_sub_types<axis::regular_none,
-                            axis::regular_uflow,
-                            axis::regular_oflow,
-                            axis::regular_uoflow,
-                            axis::regular_uoflow_growth,
-                            axis::regular_numpy>(
-        mod,
-        {{"regular_none",
-          "regular_uflow",
-          "regular_oflow",
-          "regular_uoflow",
-          "regular_uoflow_growth",
-          "regular_numpy"}},
-        "Evenly spaced bins",
+    register_axis_each<axis::regular_none,
+                       axis::regular_uflow,
+                       axis::regular_oflow,
+                       axis::regular_uoflow,
+                       axis::regular_uoflow_growth,
+                       axis::regular_numpy>(mod, [](auto ax) {
+        ax.def(py::init<unsigned, double, double, metadata_t>(),
+               "bins"_a,
+               "start"_a,
+               "stop"_a,
+               "metadata"_a);
+    });
+
+    register_axis<axis::circular>(mod).def(
         py::init<unsigned, double, double, metadata_t>(),
         "bins"_a,
         "start"_a,
         "stop"_a,
-        "metadata"_a = py::none());
+        "metadata"_a);
 
-    register_axis<axis::circular>(mod, "circular", "Evenly spaced bins with wraparound")
+    register_axis<axis::regular_log>(mod)
         .def(py::init<unsigned, double, double, metadata_t>(),
              "bins"_a,
              "start"_a,
              "stop"_a,
-             "metadata"_a = py::none());
-
-    register_axis<axis::regular_log>(mod, "regular_log", "Evenly spaced bins in log10")
-        .def(py::init<unsigned, double, double, metadata_t>(),
-             "bins"_a,
-             "start"_a,
-             "stop"_a,
-             "metadata"_a = py::none())
+             "metadata"_a)
         .def_property_readonly("transform", [](const axis::regular_log &self) {
             return self.transform();
         });
 
-    register_axis<axis::regular_sqrt>(mod, "regular_sqrt", "Evenly spaced bins in sqrt")
+    register_axis<axis::regular_sqrt>(mod)
         .def(py::init<unsigned, double, double, metadata_t>(),
              "bins"_a,
              "start"_a,
              "stop"_a,
-             "metadata"_a = py::none())
+             "metadata"_a)
         .def_property_readonly("transform", [](const axis::regular_sqrt &self) {
             return self.transform();
         });
 
-    register_axis<axis::regular_pow>(
-        mod, "regular_pow", "Evenly spaced bins in a power")
+    register_axis<axis::regular_pow>(mod)
         .def(py::init([](unsigned n,
                          double start,
                          double stop,
@@ -126,56 +115,38 @@ void register_axes(py::module &mod) {
              "start"_a,
              "stop"_a,
              "power"_a,
-             "metadata"_a = py::none())
+             "metadata"_a)
         .def_property_readonly("transform", [](const axis::regular_pow &self) {
             return self.transform();
         });
 
-    register_axis_sub_types<axis::variable_none,
-                            axis::variable_uflow,
-                            axis::variable_oflow,
-                            axis::variable_uoflow,
-                            axis::variable_uoflow_growth>(
-        mod,
-        {{"variable_none",
-          "variable_uflow",
-          "variable_oflow",
-          "variable_uoflow",
-          "variable_uoflow_growth"}},
-        "Unevenly spaced bins",
-        py::init<std::vector<double>, metadata_t>(),
-        "edges"_a,
-        "metadata"_a = py::none());
+    register_axis_each<axis::variable_none,
+                       axis::variable_uflow,
+                       axis::variable_oflow,
+                       axis::variable_uoflow,
+                       axis::variable_uoflow_growth>(mod, [](auto ax) {
+        ax.def(py::init<std::vector<double>, metadata_t>(), "edges"_a, "metadata"_a);
+    });
 
-    register_axis_sub_types<axis::integer_none,
-                            axis::integer_uflow,
-                            axis::integer_oflow,
-                            axis::integer_uoflow,
-                            axis::integer_growth>(mod,
-                                                  {{"integer_none",
-                                                    "integer_uflow",
-                                                    "integer_oflow",
-                                                    "integer_uoflow",
-                                                    "integer_growth"}},
-                                                  "Contiguous integers",
-                                                  py::init<int, int, metadata_t>(),
-                                                  "start"_a,
-                                                  "stop"_a,
-                                                  "metadata"_a = py::none());
+    register_axis_each<axis::integer_none,
+                       axis::integer_uflow,
+                       axis::integer_oflow,
+                       axis::integer_uoflow,
+                       axis::integer_growth>(mod, [](auto ax) {
+        ax.def(py::init<int, int, metadata_t>(), "start"_a, "stop"_a, "metadata"_a);
+    });
 
-    register_axis_sub_types<axis::category_int, axis::category_int_growth>(
-        mod,
-        {{"category_int", "category_int_growth"}},
-        "Axis with discontiguous integer bins",
-        py::init<std::vector<int>, metadata_t>(),
-        "categories"_a,
-        "metadata"_a = py::none());
+    register_axis_each<axis::category_int, axis::category_int_growth>(mod, [](auto ax) {
+        ax.def(py::init<std::vector<int>, metadata_t>(), "categories"_a, "metadata"_a);
+        ax.def(py::init<>());
+    });
 
-    register_axis_sub_types<axis::category_str, axis::category_str_growth>(
-        mod,
-        {{"category_str", "category_str_growth"}},
-        "Axis with text bins",
-        py::init<std::vector<std::string>, metadata_t>(),
-        "categories"_a,
-        "metadata"_a = py::none());
+    register_axis_each<axis::category_str, axis::category_str_growth>(mod, [](auto ax) {
+        ax.def(py::init<std::vector<std::string>, metadata_t>(),
+               "categories"_a,
+               "metadata"_a);
+        ax.def(py::init<>());
+    });
+
+    ;
 }
