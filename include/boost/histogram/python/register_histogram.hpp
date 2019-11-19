@@ -256,10 +256,8 @@ register_histogram(py::module &m, const char *name, const char *desc) {
                                      vargs_it = vargs.begin()](const auto &ax) mutable {
                      using T = bh::axis::traits::value_type<std::decay_t<decltype(ax)>>;
 
-                     overload(
-                         [](bmp::mp_identity<std::string>,
-                            varg_t &v,
-                            const py::handle &x) {
+                     bh::detail::static_if<std::is_same<T, std::string>>(
+                         [](auto, varg_t &v, const py::handle &x) {
                              // specialization for string (HD: this is very inefficient
                              // and will be made more efficient in the future)
                              if(py::isinstance<py::str>(x))
@@ -276,8 +274,8 @@ register_histogram(py::module &m, const char *name, const char *desc) {
                                  v = py::cast<std::vector<std::string>>(x);
                              }
                          },
-                         [](auto t, varg_t &v, const py::handle &x) {
-                             using U = typename decltype(t)::type;
+                         [](auto u, varg_t &v, const py::handle &x) {
+                             using U = typename decltype(u)::type;
                              if(is_pyiterable(x)) {
                                  auto arr = py::cast<c_array_t<U>>(x);
                                  if(arr.ndim() != 1)
@@ -286,7 +284,10 @@ register_histogram(py::module &m, const char *name, const char *desc) {
                                  v = arr;
                              } else
                                  v = py::cast<U>(x);
-                         })(bmp::mp_identity<T>(), *vargs_it++, *args_it++);
+                         },
+                         bmp::mp_identity<T>(),
+                         *vargs_it++,
+                         *args_it++);
                  });
 
                  // default constructed as monostate to indicate absence of weight
