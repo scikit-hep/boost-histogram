@@ -645,7 +645,7 @@ def test_numpy_conversion_5():
     assert a1[2, 1] == 5
 
 
-def test_fill_with_numpy_array_0():
+def test_fill_with_sequence_0():
     def ar(*args):
         return np.array(args, dtype=float)
 
@@ -699,7 +699,7 @@ def test_fill_with_numpy_array_0():
     assert a[2] == 3
 
 
-def test_fill_with_numpy_array_1():
+def test_fill_with_sequence_1():
     def ar(*args):
         return np.array(args, dtype=float)
 
@@ -765,13 +765,20 @@ def test_fill_with_numpy_array_1():
     assert a[2] == 3
 
 
-def test_fill_with_numpy_array_2():
+def test_fill_with_sequence_2():
     a = bh.Histogram(bh.axis.StrCategory(["A", "B"]))
+    a.fill("A")
     a.fill(("A", "B", "C"))
     a.fill(np.array(("D", "A"), dtype="S5"))
-    assert a[0] == 2
+    assert a[0] == 3
     assert a[1] == 1
     assert a[bh.overflow] == 2
+
+    with pytest.raises(ValueError):
+        a.fill(np.array("B"))  # ndim == 0 not allowed
+
+    with pytest.raises(ValueError):
+        a.fill(np.array((("B", "A"), ("C", "A"))))  # ndim == 2 not allowed
 
     b = bh.Histogram(
         bh.axis.Integer(0, 2, underflow=False, overflow=False),
@@ -784,3 +791,9 @@ def test_fill_with_numpy_array_2():
     assert b[1, 1] == 0
     assert b[0, bh.overflow] == 0
     assert b[1, bh.overflow] == 1
+
+
+## this segfaults
+# def test_fill_with_sequence_3():
+#     h = bh.Histogram(bh.axis.StrCategory([], growth=True), bh.axis.Integer(0, 1))
+#     h.fill(["1"], np.arange(2))

@@ -93,7 +93,7 @@ option(BOOST_HISTOGRAM_ERRORS "Make warnings errors (for CI mostly)")
 
 # Adding warnings
 if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang" OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-    target_compile_options(_core PRIVATE -Wall -Wextra -pedantic-errors -Wconversion -Wsign-conversion)
+    target_compile_options(_core PRIVATE -Wall -Wextra -pedantic-errors -Wconversion -Wsign-conversion -Wsign-compare)
     if(BOOST_HISTOGRAM_ERRORS)
         target_compile_options(_core PRIVATE -Werror)
     endif()
@@ -202,6 +202,3 @@ if(BUILD_TESTING)
         add_test(${TEST_NAME} ${PYTHON_EXECUTABLE} -m pytest "${TEST_FILE}")
     endforeach()
 endif()
-
-
-

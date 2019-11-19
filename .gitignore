@@ -50,3 +50,6 @@
 *~
 *.clangd
 compile_commands.json
+
+# Venvs
+/*venv*
