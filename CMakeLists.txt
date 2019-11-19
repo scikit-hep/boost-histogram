@@ -69,7 +69,6 @@ target_include_directories(_core PRIVATE include)
 # These are the Boost header-only libraries required by Boost::Histogram
 target_include_directories(_core SYSTEM PUBLIC
     extern/assert/include
-    extern/callable_traits/include
     extern/config/include
     extern/core/include
     extern/histogram/include
