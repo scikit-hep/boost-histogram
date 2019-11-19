@@ -1,4 +1,6 @@
 import pytest
+import numpy as np
+from numpy.testing import assert_array_equal
 
 try:
     # Python 2
@@ -7,6 +9,7 @@ except ImportError:
     from pickle import loads, dumps
 
 import copy
+import math
 
 import boost_histogram as bh
 
@@ -57,8 +60,8 @@ axes_creations = (
     (bh.axis.Regular, (4, 2, 4), {"underflow": False, "overflow": False}),
     (bh.axis.Regular, (4, 2, 4), {}),
     (bh.axis.Regular, (4, 2, 4), {"growth": True}),
-    (bh.axis.Regular, (4, 2, 4), {"transform": bh.axis.transform.Log()}),
-    (bh.axis.Regular, (4, 2, 4), {"transform": bh.axis.transform.Sqrt()}),
+    (bh.axis.Regular, (4, 2, 4), {"transform": bh.axis.transform.log}),
+    (bh.axis.Regular, (4, 2, 4), {"transform": bh.axis.transform.sqrt}),
     (bh.axis.Regular, (4, 2, 4), {"transform": bh.axis.transform.Pow(0.5)}),
     (bh._core.axis.regular_numpy, (4, 2, 4), {}),
     (bh.axis.Regular, (4, 2, 4), {"circular": True}),
@@ -77,6 +80,7 @@ def test_axes(axis, args, opts, copy_fn):
     orig = axis(*args, metadata=None, **opts)
     new = copy_fn(orig)
     assert new == orig
+    np.testing.assert_array_equal(new.centers, orig.centers)
 
 
 @pytest.mark.parametrize("axis,args,opts", axes_creations)
@@ -87,6 +91,7 @@ def test_metadata_str(axis, args, opts, copy_fn):
     assert new.metadata == orig.metadata
     new.metadata = orig.metadata
     assert new == orig
+    np.testing.assert_array_equal(new.centers, orig.centers)
 
 
 # Special test: Deepcopy should change metadata id, copy should not
@@ -166,3 +171,17 @@ def test_numpy_edge(copy_fn):
     assert ax1 == ax2
     assert ax1.index(1) == ax2.index(1)
     assert ax2.index(1) == 9
+
+
+@pytest.mark.parametrize("mod", (np, math))
+@pytest.mark.parametrize("copy_fn", copy_fns)
+def test_pickle_transforms(mod, copy_fn):
+    ax1 = bh.axis.Regular(
+        100, 1, 100, transform=bh.axis.transform.PythonFunction(mod.log, mod.exp)
+    )
+    ax2 = copy_fn(ax1)
+    ax3 = bh.axis.Regular(100, 1, 100, transform=bh.axis.transform.log)
+
+    assert ax1 == ax2
+    assert_array_equal(ax1.centers, ax2.centers)
+    assert_array_equal(ax2.centers, ax3.centers)
