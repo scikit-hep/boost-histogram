@@ -65,8 +65,8 @@ bool is_pyiterable(const T &t) {
     return py::isinstance<py::buffer>(t) || py::hasattr(t, "__iter__");
 }
 
-template <class T, class VArg, class Arg>
-void set_varg(boost::mp11::mp_identity<T>, VArg &v, const Arg &x) {
+template <class T, class VArg>
+void set_varg(boost::mp11::mp_identity<T>, VArg &v, const py::handle &x) {
     if(is_pyiterable(x)) {
         auto arr
             = py::cast<py::array_t<T, py::array::c_style | py::array::forcecast>>(x);
@@ -79,8 +79,8 @@ void set_varg(boost::mp11::mp_identity<T>, VArg &v, const Arg &x) {
 
 // specialization for string (HD: this is very inefficient and will be made more
 // efficient in the future)
-template <class VArg, class Arg>
-void set_varg(boost::mp11::mp_identity<std::string>, VArg &v, const Arg &x) {
+template <class VArg>
+void set_varg(boost::mp11::mp_identity<std::string>, VArg &v, const py::handle &x) {
     if(py::isinstance<py::str>(x))
         v = py::cast<std::string>(x);
     else
