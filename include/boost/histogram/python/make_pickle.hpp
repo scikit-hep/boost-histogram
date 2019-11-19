@@ -111,6 +111,13 @@ class tuple_oarchive {
     }
 
     // put specializations here that side-step normal serialization
+    tuple_oarchive &operator<<(py::str &m) {
+        return operator<<(static_cast<py::object &>(m));
+    }
+
+    tuple_oarchive &operator<<(const py::str &m) {
+        return operator<<(static_cast<const py::object &>(m));
+    }
 
     tuple_oarchive &operator<<(const metadata_t &m) {
         return operator<<(static_cast<const py::object &>(m));
@@ -210,6 +217,10 @@ class tuple_iarchive {
     }
 
     // put specializations here that side-step normal serialization
+
+    tuple_iarchive &operator>>(py::str &m) {
+        return operator>>(static_cast<py::object &>(m));
+    }
 
     tuple_iarchive &operator>>(metadata_t &m) {
         return operator>>(static_cast<py::object &>(m));

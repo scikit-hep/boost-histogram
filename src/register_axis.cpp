@@ -149,4 +149,21 @@ void register_axes(py::module &mod) {
     });
 
     ;
+    register_axis<axis::regular_trans>(
+        mod, "regular_trans", "Evenly spaced bins in a power")
+        .def(py::init([](unsigned n,
+                         double start,
+                         double stop,
+                         func_transform &trans,
+                         metadata_t metadata) {
+                 return new axis::regular_trans(trans, n, start, stop, metadata);
+             }),
+             "bins"_a,
+             "start"_a,
+             "stop"_a,
+             "tranform"_a,
+             "metadata"_a = py::none())
+        .def_property_readonly("transform", [](const axis::regular_trans &self) {
+            return self.transform();
+        });
 }

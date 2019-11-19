@@ -11,6 +11,9 @@
 #include <boost/histogram/indexed.hpp>
 #include <boost/histogram/python/axis_setup.hpp>
 #include <boost/histogram/python/regular_numpy.hpp>
+#include <boost/histogram/python/transform.hpp>
+
+#include <boost/core/nvp.hpp>
 
 #include <algorithm>
 #include <cmath>
@@ -255,7 +258,6 @@ inline const char *string_name();
     }
 
 // These match the Python names
-
 using regular_none
     = bh::axis::regular<double, bh::use_default, metadata_t, option::none_t>;
 using regular_uflow
@@ -272,15 +274,17 @@ BHP_SPECIALIZE_NAME(regular_oflow)
 BHP_SPECIALIZE_NAME(regular_uoflow)
 BHP_SPECIALIZE_NAME(regular_uoflow_growth)
 
-using circular     = bh::axis::circular<double, metadata_t>;
-using regular_log  = bh::axis::regular<double, bh::axis::transform::log, metadata_t>;
-using regular_sqrt = bh::axis::regular<double, bh::axis::transform::sqrt, metadata_t>;
-using regular_pow  = bh::axis::regular<double, bh::axis::transform::pow, metadata_t>;
+using circular      = bh::axis::circular<double, metadata_t>;
+using regular_log   = bh::axis::regular<double, bh::axis::transform::log, metadata_t>;
+using regular_sqrt  = bh::axis::regular<double, bh::axis::transform::sqrt, metadata_t>;
+using regular_pow   = bh::axis::regular<double, bh::axis::transform::pow, metadata_t>;
+using regular_trans = bh::axis::regular<double, func_transform, metadata_t>;
 
 BHP_SPECIALIZE_NAME(circular)
 BHP_SPECIALIZE_NAME(regular_log)
 BHP_SPECIALIZE_NAME(regular_sqrt)
 BHP_SPECIALIZE_NAME(regular_pow)
+BHP_SPECIALIZE_NAME(regular_trans)
 
 using variable_none   = bh::axis::variable<double, metadata_t, option::none_t>;
 using variable_uflow  = bh::axis::variable<double, metadata_t, option::underflow_t>;
@@ -327,25 +331,26 @@ BHP_SPECIALIZE_NAME(regular_numpy)
 } // namespace axis
 
 // The following list is all types supported
-using axis_variant = bh::axis::variant<axis::regular_none,
+using axis_variant = bh::axis::variant<axis::regular_uoflow,
                                        axis::regular_uflow,
                                        axis::regular_oflow,
-                                       axis::regular_uoflow,
+                                       axis::regular_none,
                                        axis::regular_uoflow_growth,
                                        axis::circular,
                                        axis::regular_log,
                                        axis::regular_pow,
                                        axis::regular_sqrt,
+                                       axis::regular_trans,
                                        axis::regular_numpy,
-                                       axis::variable_none,
+                                       axis::variable_uoflow,
                                        axis::variable_uflow,
                                        axis::variable_oflow,
-                                       axis::variable_uoflow,
+                                       axis::variable_none,
                                        axis::variable_uoflow_growth,
-                                       axis::integer_none,
+                                       axis::integer_uoflow,
                                        axis::integer_uflow,
                                        axis::integer_oflow,
-                                       axis::integer_uoflow,
+                                       axis::integer_none,
                                        axis::integer_growth,
                                        axis::category_int,
                                        axis::category_int_growth,
