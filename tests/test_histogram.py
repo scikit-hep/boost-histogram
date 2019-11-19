@@ -190,6 +190,16 @@ def test_growth():
     assert h[bh.overflow] == 0
 
 
+def test_growing_cats():
+    h = bh.Histogram(
+        bh.axis.IntCategory([], growth=True), bh.axis.StrCategory([], growth=True)
+    )
+
+    h.fill([1, 2, 1, 1], ["hi", "ho", "hi", "ho"])
+
+    assert h.size == 4
+
+
 @pytest.mark.parametrize("flow", [True, False])
 def test_fill_2d(flow):
     h = bh.Histogram(
@@ -424,7 +434,7 @@ def test_shrink_rebin_1d():
 # CLASSIC: This used to have metadata too, but that does not compare equal
 def test_pickle_0():
     a = bh.Histogram(
-        bh.axis.Category([0, 1, 2]),
+        bh.axis.IntCategory([0, 1, 2]),
         bh.axis.Integer(0, 20),
         bh.axis.Regular(2, 0.0, 20.0, underflow=False, overflow=False),
         bh.axis.Variable([0.0, 1.0, 2.0]),
@@ -459,7 +469,7 @@ def test_pickle_0():
 
 def test_pickle_1():
     a = bh.Histogram(
-        bh.axis.Category([0, 1, 2]),
+        bh.axis.IntCategory([0, 1, 2]),
         bh.axis.Integer(0, 3, metadata="ia"),
         bh.axis.Regular(4, 0.0, 4.0, underflow=False, overflow=False),
         bh.axis.Variable([0.0, 1.0, 2.0]),
@@ -756,7 +766,7 @@ def test_fill_with_numpy_array_1():
 
 
 def test_fill_with_numpy_array_2():
-    a = bh.Histogram(bh.axis.Category(["A", "B"]))
+    a = bh.Histogram(bh.axis.StrCategory(["A", "B"]))
     a.fill(("A", "B", "C"))
     a.fill(np.array(("D", "A"), dtype="S5"))
     assert a[0] == 2
@@ -765,7 +775,7 @@ def test_fill_with_numpy_array_2():
 
     b = bh.Histogram(
         bh.axis.Integer(0, 2, underflow=False, overflow=False),
-        bh.axis.Category(["A", "B"]),
+        bh.axis.StrCategory(["A", "B"]),
     )
     b.fill((1, 0, 10), ("C", "B", "A"))
     assert b[0, 0] == 0

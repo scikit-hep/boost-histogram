@@ -157,8 +157,8 @@ void vectorized_index_and_value_methods(
 
 /// Add helpers common to all axis types
 template <class A, class... Args>
-py::class_<A> register_axis(py::module &m, const char *name, Args &&... args) {
-    py::class_<A> ax(m, name, std::forward<Args>(args)...);
+py::class_<A> register_axis(py::module &m, Args &&... args) {
+    py::class_<A> ax(m, axis::string_name<A>(), std::forward<Args>(args)...);
 
     ax.def("__repr__", &shift_to_string<A>)
 
