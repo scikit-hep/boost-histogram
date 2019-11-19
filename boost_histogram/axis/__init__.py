@@ -5,7 +5,7 @@ del absolute_import, division, print_function
 __all__ = ("Regular", "Variable", "Integer", "Category", "Axis", "options", "transform")
 
 from .._internal.axis import Axis, options
-from .._internal.utils import register as _register
+from .._internal.utils import register
 from .._internal.axis import (
     Regular,
     Variable,
@@ -22,14 +22,14 @@ import warnings as _warnings
 
 # Normally, further-down classes will be registered and used,
 # But we don't want these used.
-@_register()
+@register()
 class regular(Regular):
     def __init__(self, *args, **kwargs):
         _warnings.warn("Use Regular instead", FutureWarning)
         return super(regular, self).__init__(*args, **kwargs)
 
 
-@_register()
+@register()
 class variable(Variable):
     _CLASSES = set()
 
@@ -38,7 +38,7 @@ class variable(Variable):
         return super(variable, self).__init__(*args, **kwargs)
 
 
-@_register()
+@register()
 class integer(Integer):
     _CLASSES = set()
 
@@ -72,3 +72,6 @@ def regular_pow(bins, start, stop, power, **kwargs):
 def circular(*args, **kwargs):
     _warnings.warn("Use circular=True instead", FutureWarning)
     return Regular(*args, circular=True, **kwargs)
+
+
+del register

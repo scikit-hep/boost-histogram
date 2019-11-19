@@ -5,9 +5,12 @@
 
 #include <boost/histogram/python/pybind11.hpp>
 
+#include <pybind11/functional.h>
 #include <pybind11/operators.h>
 
 #include <boost/histogram/axis/regular.hpp>
+#include <boost/histogram/python/axis.hpp>
+#include <boost/histogram/python/transform.hpp>
 
 template <class T, class... Args>
 py::class_<T> register_transform(py::module &mod, Args &&... args) {
@@ -18,7 +21,15 @@ py::class_<T> register_transform(py::module &mod, Args &&... args) {
     return transform;
 }
 
+extern "C" {
+double _log_fn(double v) { return std::log(v); }
+double _exp_fn(double v) { return std::exp(v); }
+}
+
 void register_transforms(py::module &mod) {
+    mod.def("_log_fn", &_log_fn);
+    mod.def("_exp_fn", &_exp_fn);
+
     register_transform<bh::axis::transform::id>(mod, "id")
         .def(py::init<>())
         .def("__repr__",
@@ -47,13 +58,33 @@ void register_transforms(py::module &mod) {
         ;
 
     register_transform<bh::axis::transform::pow>(mod, "pow")
-        .def(py::init<double>())
+        .def(py::init<double>(), "power"_a)
         .def_readonly("power", &bh::axis::transform::pow::power)
         .def("__repr__",
              [](py::object self) {
                  double power = py::cast<bh::axis::transform::pow>(self).power;
                  return py::str("{}({:g})")
                      .format(self.attr("__class__").attr("__name__"), power);
+             })
+
+        ;
+
+    register_transform<func_transform>(mod, "func_transform")
+        .def(py::init<py::object, py::object, py::object, py::str>(),
+             "forward"_a,
+             "inverse"_a,
+             "convert"_a,
+             "name"_a)
+        .def("__repr__",
+             [](py::object self) {
+                 auto &s = py::cast<func_transform &>(self);
+                 if(s._name.equal(py::str(""))) {
+                     return py::str("{}({}, {})")
+                         .format(self.attr("__class__").attr("__name__"),
+                                 s._forward_ob,
+                                 s._inverse_ob);
+                 } else
+                     return s._name;
              })
 
         ;

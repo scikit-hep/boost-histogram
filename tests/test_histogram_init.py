@@ -91,7 +91,7 @@ def test_make_any_hist_storage():
 
 def test_issue_axis_bin_swan():
     hist = bh.Histogram(
-        bh.axis.Regular(10, 0, 10, metadata="x", transform=bh.axis.transform.Sqrt()),
+        bh.axis.Regular(10, 0, 10, metadata="x", transform=bh.axis.transform.sqrt),
         bh.axis.Regular(10, 0, 1, metadata="y", circular=True),
     )
 

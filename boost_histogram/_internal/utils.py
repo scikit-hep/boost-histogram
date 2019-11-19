@@ -93,8 +93,15 @@ def _cast_make_object(canidate_class, cpp_object, is_class):
     "Make an object for cast"
     if is_class:
         return canidate_class
+
     elif hasattr(canidate_class, "_convert_cpp"):
         return canidate_class._convert_cpp(cpp_object)
+
+    # Casting down does not work in PyBind11,
+    # see https://github.com/pybind/pybind11/issues/1640
+    # so for now, all non-copy classes must have a
+    # _convert_cpp method.
+
     else:
         return canidate_class(cpp_object)
 
@@ -107,6 +114,8 @@ def cast(self, cpp_object, parent_class):
     an object, this will return a class instead. The parent
     object (self) can be either a registered class or an
     instance of a registered class.
+
+    Instances simply have their class replaced.
 
     If a class does not support direction conversion in
     the constructor, it should have _convert_cpp class
