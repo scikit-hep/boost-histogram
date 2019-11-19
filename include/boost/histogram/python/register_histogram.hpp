@@ -66,7 +66,11 @@ auto overload(Fs &&... xs) {
 }
 
 template <class T>
-using c_array_t = py::array_t<T, py::array::c_style | py::array::forcecast>;
+struct c_array_t : py::array_t<T, py::array::c_style | py::array::forcecast> {
+    using base_t = py::array_t<T, py::array::c_style | py::array::forcecast>;
+    using base_t::base_t;
+    std::size_t size() const { return static_cast<std::size_t>(base_t::size()); }
+};
 
 } // namespace detail
 
