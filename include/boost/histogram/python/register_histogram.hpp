@@ -32,6 +32,15 @@
 #include <tuple>
 #include <vector>
 
+namespace detail {
+template <class T, class... Us>
+using is_one_of = boost::mp11::mp_contains<boost::mp11::mp_list<Us...>, T>;
+
+template <class T>
+bool is_pyiterable(const T &t) {
+    return py::isinstance<py::buffer>(t) || py::hasattr(t, "__iter__");
+}
+
 template <class...>
 struct overload_t;
 
@@ -56,36 +65,9 @@ auto overload(Fs &&... xs) {
     return overload_t<Fs...>(std::forward<Fs>(xs)...);
 }
 
-namespace detail {
-template <class T, class... Us>
-using is_one_of = boost::mp11::mp_contains<boost::mp11::mp_list<Us...>, T>;
-
 template <class T>
-bool is_pyiterable(const T &t) {
-    return py::isinstance<py::buffer>(t) || py::hasattr(t, "__iter__");
-}
+using c_array_t = py::array_t<T, py::array::c_style | py::array::forcecast>;
 
-template <class T, class VArg>
-void set_varg(boost::mp11::mp_identity<T>, VArg &v, const py::handle &x) {
-    if(is_pyiterable(x)) {
-        auto arr
-            = py::cast<py::array_t<T, py::array::c_style | py::array::forcecast>>(x);
-        if(arr.ndim() != 1)
-            throw std::invalid_argument("All arrays must be 1D");
-        v = arr;
-    } else
-        v = py::cast<T>(x);
-}
-
-// specialization for string (HD: this is very inefficient and will be made more
-// efficient in the future)
-template <class VArg>
-void set_varg(boost::mp11::mp_identity<std::string>, VArg &v, const py::handle &x) {
-    if(py::isinstance<py::str>(x))
-        v = py::cast<std::string>(x);
-    else
-        v = py::cast<std::vector<std::string>>(x);
-}
 } // namespace detail
 
 template <class A, class S>
@@ -239,13 +221,13 @@ register_histogram(py::module &m, const char *name, const char *desc) {
 
         .def("fill",
              [](histogram_t &self, py::args args, py::kwargs kwargs) {
-                 using array_int_t
-                     = py::array_t<int, py::array::c_style | py::array::forcecast>;
-                 using array_double_t
-                     = py::array_t<double, py::array::c_style | py::array::forcecast>;
-
                  if(args.size() != self.rank())
                      throw std::invalid_argument("Wrong number of args");
+
+                 using detail::is_pyiterable;
+                 using detail::is_one_of;
+                 using detail::overload;
+                 using detail::c_array_t;
 
                  namespace bmp = boost::mp11;
                  static_assert(
@@ -260,46 +242,67 @@ register_histogram(py::module &m, const char *name, const char *desc) {
                  // inefficient but works at least. I need to change something in
                  // boost::histogram to make passing strings from a numpy array
                  // efficient.
-                 using varg_t = boost::variant2::variant<array_double_t,
+                 using varg_t = boost::variant2::variant<c_array_t<double>,
                                                          double,
-                                                         array_int_t,
+                                                         c_array_t<int>,
                                                          int,
                                                          std::vector<std::string>,
                                                          std::string>;
-                 auto vargs   = bh::detail::make_stack_buffer<varg_t>(
+
+                 auto vargs = bh::detail::make_stack_buffer<varg_t>(
                      bh::unsafe_access::axes(self));
 
-                 {
-                     auto args_it  = args.begin();
-                     auto vargs_it = vargs.begin();
-                     self.for_each_axis([&args_it, &vargs_it](const auto &ax) {
-                         using T = std::decay_t<decltype(ax.value(0))>;
-                         detail::set_varg(
-                             boost::mp11::mp_identity<T>{}, *vargs_it++, *args_it++);
-                     });
-                 }
+                 self.for_each_axis([args_it  = args.begin(),
+                                     vargs_it = vargs.begin()](const auto &ax) mutable {
+                     using T = bh::axis::traits::value_type<std::decay_t<decltype(ax)>>;
+
+                     overload(
+                         [](bmp::mp_identity<std::string>,
+                            varg_t &v,
+                            const py::handle &x) {
+                             // specialization for string (HD: this is very inefficient
+                             // and will be made more efficient in the future)
+                             if(py::isinstance<py::str>(x))
+                                 // hot-fix, should be `v = py::cast<std::string>(x);`
+                                 // once the issue in boost::histogram is fixed
+                                 v = std::vector<std::string>(1,
+                                                              py::cast<std::string>(x));
+                             else
+                                 v = py::cast<std::vector<std::string>>(x);
+                         },
+                         [](auto t, varg_t &v, const py::handle &x) {
+                             using U = typename decltype(t)::type;
+                             if(is_pyiterable(x)) {
+                                 auto arr = py::cast<c_array_t<U>>(x);
+                                 if(arr.ndim() != 1)
+                                     throw std::invalid_argument(
+                                         "All arrays must be 1D");
+                                 v = arr;
+                             } else
+                                 v = py::cast<U>(x);
+                         })(bmp::mp_identity<T>(), *vargs_it++, *args_it++);
+                 });
 
                  // default constructed as monostate to indicate absence of weight
-                 bv2::variant<bv2::monostate, double, array_double_t> weight;
+                 bv2::variant<bv2::monostate, double, c_array_t<double>> weight;
                  {
                      auto w = optional_arg(kwargs, "weight");
                      if(!w.is_none()) {
-                         if(detail::is_pyiterable(w))
-                             weight = py::cast<array_double_t>(w);
+                         if(is_pyiterable(w))
+                             weight = py::cast<c_array_t<double>>(w);
                          else
                              weight = py::cast<double>(w);
                      }
                  }
 
                  using storage_t = typename histogram_t::storage_type;
-                 bh::detail::static_if<detail::is_one_of<storage_t,
-                                                         storage::mean,
-                                                         storage::weighted_mean>>(
+                 bh::detail::static_if<
+                     is_one_of<storage_t, storage::mean, storage::weighted_mean>>(
                      [&kwargs, &vargs, &weight](auto &h) {
                          auto s = required_arg(kwargs, "sample");
                          finalize_args(kwargs);
 
-                         auto sarray = py::cast<array_double_t>(s);
+                         auto sarray = py::cast<c_array_t<double>>(s);
                          if(sarray.ndim() != 1)
                              throw std::invalid_argument("Sample array must be 1D");
 

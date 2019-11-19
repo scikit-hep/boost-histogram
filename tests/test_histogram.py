@@ -770,7 +770,9 @@ def test_fill_with_numpy_array_2():
     a.fill("A")
     a.fill(("A", "B", "C"))
     a.fill(np.array(("D", "A"), dtype="S5"))
-    assert a.view(true) == (3, 1, 2)
+    assert a[0] == 3
+    assert a[1] == 1
+    assert a[bh.overflow] == 2
 
     b = bh.Histogram(
         bh.axis.Integer(0, 2, underflow=False, overflow=False),
