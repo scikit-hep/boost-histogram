@@ -795,5 +795,5 @@ def test_fill_with_sequence_2():
 
 ## this segfaults
 # def test_fill_with_sequence_3():
-#     h = bh.Histogram(bh.axis.StrCategory([], growth=True), bh.axis.Regular(20, 0, 1))
-#     h.fill(['a'], np.arange(2))
+#     h = bh.Histogram(bh.axis.StrCategory([], growth=True), bh.axis.Integer(0, 1))
+#     h.fill(["1"], np.arange(2))
