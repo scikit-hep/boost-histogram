@@ -260,10 +260,10 @@ register_histogram(py::module &m, const char *name, const char *desc) {
                  // inefficient but works at least. I need to change something in
                  // boost::histogram to make passing strings from a numpy array
                  // efficient.
-                 using varg_t = boost::variant2::variant<double,
-                                                         array_double_t,
-                                                         int,
+                 using varg_t = boost::variant2::variant<array_double_t,
+                                                         double,
                                                          array_int_t,
+                                                         int,
                                                          std::vector<std::string>,
                                                          std::string>;
                  auto vargs   = bh::detail::make_stack_buffer<varg_t>(
