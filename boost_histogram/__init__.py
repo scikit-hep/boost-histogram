@@ -48,5 +48,5 @@ class histogram(Histogram):
     def __init__(self, *args, **kwargs):
         import warnings
 
-        warnings.warn("Use Histogram instead of histogram")
+        warnings.warn("Use Histogram instead of histogram", FutureWarning)
         super(histogram, self).__init__(*args, **kwargs)
