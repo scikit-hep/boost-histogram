@@ -25,7 +25,7 @@ import warnings as _warnings
 @_register()
 class regular(Regular):
     def __init__(self, *args, **kwargs):
-        _warnings.warn("Use Regular instead")
+        _warnings.warn("Use Regular instead", FutureWarning)
         return super(regular, self).__init__(*args, **kwargs)
 
 
@@ -34,7 +34,7 @@ class variable(Variable):
     _CLASSES = set()
 
     def __init__(self, *args, **kwargs):
-        _warnings.warn("Use Variable instead")
+        _warnings.warn("Use Variable instead", FutureWarning)
         return super(variable, self).__init__(*args, **kwargs)
 
 
@@ -43,30 +43,32 @@ class integer(Integer):
     _CLASSES = set()
 
     def __init__(self, *args, **kwargs):
-        _warnings.warn("Use Integer instead")
+        _warnings.warn("Use Integer instead", FutureWarning)
         return super(integer, self).__init__(*args, **kwargs)
 
 
 def category(*args, **kwargs):
-    _warnings.warn("Use IntCategory or StrCategory instead")
+    _warnings.warn("Use IntCategory or StrCategory instead", FutureWarning)
     return Category(*args, **kwargs)
 
 
 def regular_log(*args, **kwargs):
-    _warnings.warn("Use transform=axis.transform.Log() instead")
+    _warnings.warn("Use transform=axis.transform.Log() instead", FutureWarning)
     return Regular(*args, transform=Transform.Log, **kwargs)
 
 
 def regular_sqrt(*args, **kwargs):
-    _warnings.warn("Use transform=axis.transform.Sqrt() instead")
+    _warnings.warn("Use transform=axis.transform.Sqrt() instead", FutureWarning)
     return Regular(*args, transform=transform.Sqrt, **kwargs)
 
 
 def regular_pow(bins, start, stop, power, **kwargs):
-    _warnings.warn("Use transform=axis.transform.Pow({0}) instead".format(power))
+    _warnings.warn(
+        "Use transform=axis.transform.Pow({0}) instead".format(power), FutureWarning
+    )
     return Regular(bins, start, stop, transform=transform.Pow(power), **kwargs)
 
 
 def circular(*args, **kwargs):
-    _warnings.warn("Use circular=True instead")
+    _warnings.warn("Use circular=True instead", FutureWarning)
     return Regular(*args, circular=True, **kwargs)

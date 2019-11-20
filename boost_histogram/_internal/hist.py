@@ -295,14 +295,14 @@ class Histogram(BaseHistogram):
         """
         Deprecated: Use axes[] instead.
         """
-        warnings.warn("Use axes[] instead of axis()")
+        warnings.warn("Use axes[] instead of axis()", FutureWarning)
         return self._axis(i)
 
     def at(self, *args):
         """
         Deprecated: Use [] instead.
         """
-        warnings.warn("Use [] indexing instead.")
+        warnings.warn("Use [] indexing instead.", FutureWarning)
         return self._hist.at(*args)
 
     def to_numpy(self, flow=False):

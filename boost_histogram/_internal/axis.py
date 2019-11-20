@@ -598,7 +598,7 @@ def Category(categories, **kwargs):
     Deprecated: Use IntCategory or StrCategory instead.
     This shortcut may return eventually.
     """
-    warnings.warn("Use IntCategory or StrCategory instead of Category")
+    warnings.warn("Use IntCategory or StrCategory instead of Category", FutureWarning)
 
     if len(categories) < 1:
         raise TypeError(
