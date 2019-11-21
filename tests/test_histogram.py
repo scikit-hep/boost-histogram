@@ -369,7 +369,6 @@ def test_out_of_range():
         h[4]
 
 
-# CLASSIC: This used to have variance
 def test_operators():
     h = bh.Histogram(bh.axis.Integer(0, 2))
     h.fill(0)
@@ -386,7 +385,6 @@ def test_operators():
         h + h2
 
 
-# CLASSIC: reduce_to -> project,
 def test_project():
     h = bh.Histogram(bh.axis.Integer(0, 2), bh.axis.Integer(1, 4))
     h.fill(0, 1)
@@ -535,11 +533,11 @@ def test_numpy_conversion_0():
 
 def test_numpy_conversion_1():
     # CLASSIC: was weight array
-    a = bh.Histogram(bh.axis.Integer(0, 3))
+    h = bh.Histogram(bh.axis.Integer(0, 3))
     for i in range(10):
-        a.fill(1, weight=3)
-    c = np.array(a)  # a copy
-    v = np.asarray(a)  # a view
+        h.fill(1, weight=3)
+    c = np.array(h)  # a copy
+    v = np.asarray(h)  # a view
     assert c.dtype == np.double  # CLASSIC: np.float64
     assert_array_equal(c, np.array((0, 30, 0)))
     assert_array_equal(v, c)
@@ -684,8 +682,8 @@ def test_fill_with_sequence_0():
     with pytest.raises(ValueError):
         a.fill([1, 0, 2], [1, 1])
 
-    # This actually broadcasts
-    a.fill([1, 0], [1])
+    # this broadcasts
+    a.fill([1, 0], 1)
 
     with pytest.raises(IndexError):
         a[1]
@@ -742,9 +740,9 @@ def test_fill_with_sequence_1():
     with pytest.raises(ValueError):
         a.fill((1, 2), weight=([1, 1], [2, 2]))
 
-    # CLASSIC: Used to fail
     a = bh.Histogram(bh.axis.Integer(0, 3))
-    a.fill((1, 2), weight=(1,))
+    # this broadcasts
+    a.fill((1, 2), weight=1)
     assert a[1] == 1.0
     assert a[2] == 1.0
 
@@ -793,7 +791,27 @@ def test_fill_with_sequence_2():
     assert b[1, bh.overflow] == 1
 
 
-## this segfaults
-# def test_fill_with_sequence_3():
-#     h = bh.Histogram(bh.axis.StrCategory([], growth=True), bh.axis.Integer(0, 1))
-#     h.fill(["1"], np.arange(2))
+def test_fill_with_sequence_3():
+    h = bh.Histogram(bh.axis.StrCategory([], growth=True))
+    h.fill("A")
+    # should use h.axes[...] once that is fixed
+    assert h._axis(0).size == 1
+    h.fill(["A"])
+    assert h._axis(0).size == 1
+    h.fill(["A", "B"])
+    assert h._axis(0).size == 2
+    assert_array_equal(h.view(True), [3, 1])
+
+
+def test_fill_with_sequence_4():
+    h = bh.Histogram(
+        bh.axis.StrCategory([], growth=True), bh.axis.Integer(0, 0, growth=True)
+    )
+    h.fill("1", np.arange(2))
+    # should use h.axes[...] once that is fixed
+    assert h._axis(0).size == 1
+    assert h._axis(1).size == 2
+    assert_array_equal(h.view(True), [[1, 1]])
+
+    with pytest.raises(ValueError):
+        h.fill(["1"], np.arange(2))  # lengths do not match
