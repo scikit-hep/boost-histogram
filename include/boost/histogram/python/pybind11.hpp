@@ -46,7 +46,7 @@ std::string shift_to_string(const T& x) {
 template <class Obj>
 void unchecked_set_impl(std::true_type, py::tuple& tup, ssize_t i, Obj&& obj) {
     // PyTuple_SetItem steals a reference to 'val'
-    if(PyTuple_SetItem(tup.ptr(), i, obj.release().ptr()) != 0) {
+    if(PyTuple_SetItem(tup.ptr(), i, obj.inc_ref().ptr()) != 0) {
         throw py::error_already_set();
     }
 }
