@@ -265,10 +265,7 @@ register_histogram(py::module &m, const char *name, const char *desc) {
                              // specialization for string (HD: this is very inefficient
                              // and will be made more efficient in the future)
                              if(py::isinstance<py::str>(x))
-                                 // hot-fix, should be `v = py::cast<std::string>(x);`
-                                 // once the issue in boost::histogram is fixed
-                                 v = std::vector<std::string>(1,
-                                                              py::cast<std::string>(x));
+                                 v = py::cast<std::string>(x);
                              else if(py::isinstance<py::array>(x)) {
                                  if(py::cast<py::array>(x).ndim() != 1)
                                      throw std::invalid_argument(
