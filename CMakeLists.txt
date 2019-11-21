@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12...3.15)
+cmake_minimum_required(VERSION 3.10...3.15)
 
 # Grab the version from the python files
 set(VERSION_REGEX [=[__version__[ \t]*=[ \t]*"(.+)"]=])
