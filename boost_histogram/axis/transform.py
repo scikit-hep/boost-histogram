@@ -20,5 +20,5 @@ from .._internal.axis_transform import (
 )
 from .._core.axis import transform as _atc
 
-sqrt = Pow(0.5)
+sqrt = Function("_sqrt_fn", "_sq_fn", convert=_internal_conversion, name="sqrt")
 log = Function("_log_fn", "_exp_fn", convert=_internal_conversion, name="log")
