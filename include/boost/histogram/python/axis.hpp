@@ -29,6 +29,7 @@ namespace option = bh::axis::option;
 
 using ogrowth_t  = decltype(option::growth | option::overflow);
 using uogrowth_t = decltype(option::growth | option::underflow | option::overflow);
+using circular_t = decltype(option::circular | option::overflow);
 
 // How edges, centers, and widths are handled
 //
@@ -267,7 +268,8 @@ using regular_oflow
 using regular_uoflow = bh::axis::regular<double, bh::use_default, metadata_t>;
 using regular_uoflow_growth
     = bh::axis::regular<double, bh::use_default, metadata_t, uogrowth_t>;
-using regular_circular = bh::axis::circular<double, metadata_t>;
+using regular_circular
+    = bh::axis::regular<double, bh::use_default, metadata_t, circular_t>;
 
 BHP_SPECIALIZE_NAME(regular_none)
 BHP_SPECIALIZE_NAME(regular_uflow)
@@ -291,24 +293,28 @@ using variable_uflow  = bh::axis::variable<double, metadata_t, option::underflow
 using variable_oflow  = bh::axis::variable<double, metadata_t, option::overflow_t>;
 using variable_uoflow = bh::axis::variable<double, metadata_t>;
 using variable_uoflow_growth = bh::axis::variable<double, metadata_t, uogrowth_t>;
+using variable_circular      = bh::axis::variable<double, metadata_t, circular_t>;
 
 BHP_SPECIALIZE_NAME(variable_none)
 BHP_SPECIALIZE_NAME(variable_uflow)
 BHP_SPECIALIZE_NAME(variable_oflow)
 BHP_SPECIALIZE_NAME(variable_uoflow)
 BHP_SPECIALIZE_NAME(variable_uoflow_growth)
+BHP_SPECIALIZE_NAME(variable_circular)
 
-using integer_none   = bh::axis::integer<int, metadata_t, option::none_t>;
-using integer_uoflow = bh::axis::integer<int, metadata_t>;
-using integer_uflow  = bh::axis::integer<int, metadata_t, option::underflow_t>;
-using integer_oflow  = bh::axis::integer<int, metadata_t, option::overflow_t>;
-using integer_growth = bh::axis::integer<int, metadata_t, option::growth_t>;
+using integer_none     = bh::axis::integer<int, metadata_t, option::none_t>;
+using integer_uoflow   = bh::axis::integer<int, metadata_t>;
+using integer_uflow    = bh::axis::integer<int, metadata_t, option::underflow_t>;
+using integer_oflow    = bh::axis::integer<int, metadata_t, option::overflow_t>;
+using integer_growth   = bh::axis::integer<int, metadata_t, option::growth_t>;
+using integer_circular = bh::axis::integer<int, metadata_t, option::circular_t>;
 
 BHP_SPECIALIZE_NAME(integer_none)
 BHP_SPECIALIZE_NAME(integer_uoflow)
 BHP_SPECIALIZE_NAME(integer_uflow)
 BHP_SPECIALIZE_NAME(integer_oflow)
 BHP_SPECIALIZE_NAME(integer_growth)
+BHP_SPECIALIZE_NAME(integer_circular)
 
 using category_int        = bh::axis::category<int, metadata_t>;
 using category_int_growth = bh::axis::category<int, metadata_t, option::growth_t>;
@@ -347,11 +353,13 @@ using axis_variant = bh::axis::variant<axis::regular_uoflow,
                                        axis::variable_oflow,
                                        axis::variable_none,
                                        axis::variable_uoflow_growth,
+                                       axis::variable_circular,
                                        axis::integer_uoflow,
                                        axis::integer_uflow,
                                        axis::integer_oflow,
                                        axis::integer_none,
                                        axis::integer_growth,
+                                       axis::integer_circular,
                                        axis::category_int,
                                        axis::category_int_growth,
                                        axis::category_str,
