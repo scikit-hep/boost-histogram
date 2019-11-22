@@ -267,20 +267,20 @@ using regular_oflow
 using regular_uoflow = bh::axis::regular<double, bh::use_default, metadata_t>;
 using regular_uoflow_growth
     = bh::axis::regular<double, bh::use_default, metadata_t, uogrowth_t>;
+using regular_circular = bh::axis::circular<double, metadata_t>;
 
 BHP_SPECIALIZE_NAME(regular_none)
 BHP_SPECIALIZE_NAME(regular_uflow)
 BHP_SPECIALIZE_NAME(regular_oflow)
 BHP_SPECIALIZE_NAME(regular_uoflow)
 BHP_SPECIALIZE_NAME(regular_uoflow_growth)
+BHP_SPECIALIZE_NAME(regular_circular)
 
-using circular      = bh::axis::circular<double, metadata_t>;
 using regular_log   = bh::axis::regular<double, bh::axis::transform::log, metadata_t>;
 using regular_sqrt  = bh::axis::regular<double, bh::axis::transform::sqrt, metadata_t>;
 using regular_pow   = bh::axis::regular<double, bh::axis::transform::pow, metadata_t>;
 using regular_trans = bh::axis::regular<double, func_transform, metadata_t>;
 
-BHP_SPECIALIZE_NAME(circular)
 BHP_SPECIALIZE_NAME(regular_log)
 BHP_SPECIALIZE_NAME(regular_sqrt)
 BHP_SPECIALIZE_NAME(regular_pow)
@@ -336,7 +336,7 @@ using axis_variant = bh::axis::variant<axis::regular_uoflow,
                                        axis::regular_oflow,
                                        axis::regular_none,
                                        axis::regular_uoflow_growth,
-                                       axis::circular,
+                                       axis::regular_circular,
                                        axis::regular_log,
                                        axis::regular_pow,
                                        axis::regular_sqrt,

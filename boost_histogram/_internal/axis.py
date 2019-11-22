@@ -218,7 +218,7 @@ class CppAxisMixin(object):
         ca.regular_pow,
         ca.regular_log,
         ca.regular_trans,
-        ca.circular,
+        ca.regular_circular,
     }
 )
 class BaseRegular(Axis):
@@ -283,7 +283,7 @@ class BaseRegular(Axis):
         elif options == {"overflow"}:
             self._ax = ca.regular_oflow(bins, start, stop, metadata)
         elif options == {"circular", "underflow", "overflow"}:
-            self._ax = ca.circular(bins, start, stop, metadata)
+            self._ax = ca.regular_circular(bins, start, stop, metadata)
 
         elif options == set():
             self._ax = ca.regular_none(bins, start, stop, metadata)
