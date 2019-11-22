@@ -282,7 +282,14 @@ class BaseRegular(Axis):
             self._ax = ca.regular_uflow(bins, start, stop, metadata)
         elif options == {"overflow"}:
             self._ax = ca.regular_oflow(bins, start, stop, metadata)
-        elif options == {"circular", "underflow", "overflow"}:
+        elif options == {
+            "circular",
+            "underflow",
+            "overflow",
+        } or options == {  # growth=True should work
+            "circular",
+            "overflow",
+        }:  # growth=True, underflow=False is also correct
             self._ax = ca.regular_circular(bins, start, stop, metadata)
 
         elif options == set():
@@ -336,6 +343,7 @@ class regular(BaseRegular, CppAxisMixin):
         ca.variable_oflow,
         ca.variable_uoflow,
         ca.variable_uoflow_growth,
+        ca.variable_circular,
     }
 )
 class BaseVariable(Axis):
@@ -359,13 +367,17 @@ class BaseVariable(Axis):
             Enable the underflow bin
         overflow : bool = True
             Enable the overflow bin
+        circular : bool = False
+            Enable wraparound
         growth : bool = False
             Allow the axis to grow if a value is encountered out of range.
             Be careful, the axis will grow as large as needed.
         """
         with KWArgs(kwargs) as k:
             metadata = k.optional("metadata")
-            options = k.options(underflow=True, overflow=True, growth=False)
+            options = k.options(
+                underflow=True, overflow=True, circular=False, growth=False
+            )
 
         if options == {"growth", "underflow", "overflow"}:
             self._ax = ca.variable_uoflow_growth(edges, metadata)
@@ -375,6 +387,15 @@ class BaseVariable(Axis):
             self._ax = ca.variable_uflow(edges, metadata)
         elif options == {"overflow"}:
             self._ax = ca.variable_oflow(edges, metadata)
+        elif options == {
+            "circular",
+            "underflow",
+            "overflow",
+        } or options == {  # growth=True should work
+            "circular",
+            "overflow",
+        }:  # growth=True, underflow=False is also correct
+            self._ax = ca.variable_circular(edges, metadata)
         elif options == set():
             self._ax = ca.variable_none(edges, metadata)
         else:
@@ -408,6 +429,7 @@ class variable(BaseVariable, CppAxisMixin):
         ca.integer_oflow,
         ca.integer_uoflow,
         ca.integer_growth,
+        ca.integer_circular,
     }
 )
 class BaseInteger(Axis):
@@ -432,13 +454,17 @@ class BaseInteger(Axis):
             Enable the underflow bin
         overflow : bool = True
             Enable the overflow bin
+        circular : bool = False
+            Enable wraparound
         growth : bool = False
             Allow the axis to grow if a value is encountered out of range.
             Be careful, the axis will grow as large as needed.
         """
         with KWArgs(kwargs) as k:
             metadata = k.optional("metadata")
-            options = k.options(underflow=True, overflow=True, growth=False)
+            options = k.options(
+                underflow=True, overflow=True, circular=False, growth=False
+            )
 
         # underflow and overflow settings are ignored, integers are always
         # finite and thus cannot end up in a flow bin when growth is on
@@ -450,6 +476,12 @@ class BaseInteger(Axis):
             self._ax = ca.integer_uflow(start, stop, metadata)
         elif options == {"overflow"}:
             self._ax = ca.integer_oflow(start, stop, metadata)
+        elif (
+            "circular" in options and "growth" not in options
+        ):  # growth=True should work
+            self._ax = ca.integer_circular(
+                start, stop, metadata
+            )  # flow bins do no matter
         elif options == set():
             self._ax = ca.integer_none(start, stop, metadata)
         else:

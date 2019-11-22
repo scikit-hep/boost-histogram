@@ -118,7 +118,8 @@ void register_axes(py::module &mod) {
                        axis::variable_uflow,
                        axis::variable_oflow,
                        axis::variable_uoflow,
-                       axis::variable_uoflow_growth>(mod, [](auto ax) {
+                       axis::variable_uoflow_growth,
+                       axis::variable_circular>(mod, [](auto ax) {
         ax.def(py::init<std::vector<double>, metadata_t>(), "edges"_a, "metadata"_a);
     });
 
@@ -126,7 +127,8 @@ void register_axes(py::module &mod) {
                        axis::integer_uflow,
                        axis::integer_oflow,
                        axis::integer_uoflow,
-                       axis::integer_growth>(mod, [](auto ax) {
+                       axis::integer_growth,
+                       axis::integer_circular>(mod, [](auto ax) {
         ax.def(py::init<int, int, metadata_t>(), "start"_a, "stop"_a, "metadata"_a);
     });
 
