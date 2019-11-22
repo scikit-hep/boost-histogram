@@ -2,15 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 del absolute_import, division, print_function
 
-__all__ = (
-    "AxisTransform",
-    "Pow",
-    "Function",
-    "Numbafy",
-    "PythonFunction",
-    "sqrt",
-    "log",
-)
+__all__ = ("AxisTransform", "Pow", "Function", "sqrt", "log")
 
 from .._internal.axis_transform import (
     AxisTransform,

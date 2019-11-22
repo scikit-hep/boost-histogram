@@ -11,7 +11,7 @@ from .kwargs import KWArgs
 
 @set_module("boost_histogram.axis.transform")
 class AxisTransform(object):
-    __slots__ = "_this"
+    __slots__ = ("_this",)
 
     @classmethod
     def _convert_cpp(cls, this):

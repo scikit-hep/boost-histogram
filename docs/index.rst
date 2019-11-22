@@ -21,6 +21,11 @@ Boost-histogram (`source repository <https://github.com/scikit-hep/boost-histogr
    usage/transforms
    usage/comparison
 
+.. toctree::
+    :caption: API Reference:
+
+    api/modules
+
 
 Indices and tables
 ==================

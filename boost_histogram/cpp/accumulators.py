@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function
 
 del absolute_import, division, print_function
 
-__all__ = ("sum", "mean", "weighed_sum", "weighed_mean")
+__all__ = ("sum", "mean", "weighted_sum", "weighted_mean")
 
 from ..accumulators import (
     Sum as sum,
