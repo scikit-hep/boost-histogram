@@ -2,6 +2,15 @@ import pytest
 import numpy as np
 from numpy.testing import assert_array_equal
 
+import ctypes
+
+ftype = ctypes.CFUNCTYPE(ctypes.c_double, ctypes.c_double)
+
+
+def python_convert(x):
+    return ftype(x)
+
+
 try:
     # Python 2
     from cPickle import loads, dumps
@@ -177,7 +186,10 @@ def test_numpy_edge(copy_fn):
 @pytest.mark.parametrize("copy_fn", copy_fns)
 def test_pickle_transforms(mod, copy_fn):
     ax1 = bh.axis.Regular(
-        100, 1, 100, transform=bh.axis.transform.PythonFunction(mod.log, mod.exp)
+        100,
+        1,
+        100,
+        transform=bh.axis.transform.Function(mod.log, mod.exp, convert=python_convert),
     )
     ax2 = copy_fn(ax1)
     ax3 = bh.axis.Regular(100, 1, 100, transform=bh.axis.transform.log)

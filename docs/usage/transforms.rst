@@ -24,19 +24,22 @@ Pure Python
 You can directly cast a python callable to a ctypes pointer, and use that. However, you will call Python *every* time you interact with the
 transformed axis, and this will be 15-90 times slower than a compiled method, like ``bh.axis.transform.log``. In most cases, a Variable axis will be faster.
 
-.. code: python
+.. code-block:: python
 
    import ctypes
    ftype = ctypes.CFUNCTYPE(ctypes.c_double, ctypes.c_double)
 
    # Pure Python (15x slower)
-   bh.axis.Regular(10, 1, 4, transform=bh.axis.transform.Function(ftype(math.log), ftype (math.exp)))
+   bh.axis.Regular(10, 1, 4, transform=bh.axis.transform.Function(ftype(math.log), ftype(math.exp)))
 
    # Pure Python: Numpy (90x slower)
-   bh.axis.Regular(10, 1, 4, transform= bh.axis.transform.Function(ftype(np.log), ftype(np.exp)))
+   bh.axis.Regular(10, 1, 4, transform=bh.axis.transform.Function(ftype(np.log), ftype(np.exp)))
 
 You can create a Variable axis from the edges of this axis; often that will be faster.
 
+You can also use ``transform=ftype`` and just directly provide the functions; this provides nicer
+reprs, but is still not picklable because ftype is a generated and not picklable; see below
+for a way to make this picklable. You can also specify ``name="..."`` to customize the repr explicitly.
 
 Using Numba
 ^^^^^^^^^^^
@@ -44,15 +47,15 @@ Using Numba
 If you have the numba library installed, and your transform is reasonably simple, you can use the ``@numba.cfunc`` decorator to create
 a callable that will run directly through the C interface. This is just as fast as the compiled version provided!
 
-.. code: python
+.. code-block:: python
 
    import numba
 
-   @numba.cfunc(numba.float64(numba.float64,))
+   @numba.cfunc(numba.float64(numba.float64))
    def exp(x):
        return math.exp(x)
 
-   @numba.cfunc(numba.float64(numba.float64,))
+   @numba.cfunc(numba.float64(numba.float64))
    def log(x):
        return math.log(x)
 
@@ -63,7 +66,7 @@ Manual compilation
 
 You can also get a ctypes pointer from the usual place: a library. Let's say you have the following ``mylib.c`` file:
 
-.. code: c
+.. code-block:: c
 
    #include <math.h>
 
@@ -78,13 +81,13 @@ You can also get a ctypes pointer from the usual place: a library. Let's say you
 
 And you compile it with:
 
-.. code: bash
+.. code-block:: bash
 
    gcc mylib.c -shared -o mylib.so
 
 You can now use it like this:
 
-.. code: python
+.. code-block:: python
 
    import ctypes
    ftype = ctypes.CFUNCTYPE(ctypes.c_double, ctypes.c_double)
@@ -113,14 +116,18 @@ Pure Python
 ^^^^^^^^^^^
 
 This is the easiest example; as long as your Python function is picklable, all you need to do is move the
-ctypes call into the convert function:
+ctypes call into the convert function. You need a little wrapper function to make it picklable:
 
-.. code: python
+.. code-block:: python
 
    import ctypes, math
-   ftype = ctypes.CFUNCTYPE(ctypes.c_double, ctypes.c_double)
 
-   bh.axis.Regular(10, 1, 4, transform=bh.axis.transform.Function(math.log, math.exp, convert=ftype))
+   # We need a little wrapper function only because `ftype` is not directly picklable
+   def convert_python(func):
+       ftype = ctypes.CFUNCTYPE(ctypes.c_double, ctypes.c_double)
+       return ftype(func)
+
+   bh.axis.Regular(10, 1, 4, transform=bh.axis.transform.Function(math.log, math.exp, convert=convert_python))
 
 That's it.
 
@@ -131,14 +138,18 @@ The same procedure works for numba decorators. Numpy only supports functions, no
 so if you want to pass those, you'll need to wrap them in a lambda function or add a bit of logic to the convert
 function. Here are your options:
 
-.. code: python
+.. code-block:: python
+
     import numba, math
+
+    def convert_numba(func):
+        return numba.cfunc(numba.double(numba.double))(func)
 
     # Built-ins and ufuncs need to be wrapped (numba can't read a signature)
     # User functions would not need the lambda
     bh.axis.Regular(10, 1, 4,
                     transform=bh.axis.transform.Function(lambda x: math.log(x), lambda x: math.exp(x),
-                                                         convert=numba.cfunc(numba.double(numba.double))))
+                                                         convert=convert_numba))
 
 Note that ``numba.cfunc`` does not work on its own builtins, but requires a user function. Since with the exception
 of the simple example I'm showing here that is already available directly in boost-histogram, you will probably be
@@ -149,7 +160,7 @@ Manual compilation
 
 You can use strings to look up functions in the shared library:
 
-.. code: python
+.. code-block:: python
 
    def lookup(name):
        mylib = ctypes.CDLL("mylib.so")
