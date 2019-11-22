@@ -47,22 +47,6 @@ core = "__init__ forward inverse".split()
 
 @set_family(MAIN_FAMILY)
 @set_module("boost_histogram.axis.transform")
-@register({ca.transform.log})
-class Log(AxisTransform):
-    __slots__ = ()
-    _type = ca.regular_log
-
-
-@set_family(MAIN_FAMILY)
-@set_module("boost_histogram.axis.transform")
-@register({ca.transform.sqrt})
-class Sqrt(AxisTransform):
-    __slots__ = ()
-    _type = ca.regular_sqrt
-
-
-@set_family(MAIN_FAMILY)
-@set_module("boost_histogram.axis.transform")
 @register({ca.transform.pow})
 class Pow(AxisTransform):
     __slots__ = ()
@@ -156,26 +140,4 @@ def _internal_conversion(value):
 
 ### CPP FAMILY ###
 
-
-@set_family(CPP_FAMILY)
-@set_module("boost_histogram.cpp.axis.transform")
-class log(Log):
-    __slots__ = ()
-
-
-@set_family(CPP_FAMILY)
-@set_module("boost_histogram.cpp.axis.transform")
-class sqrt(Sqrt):
-    __slots__ = ()
-
-
-@set_family(CPP_FAMILY)
-@set_module("boost_histogram.cpp.axis.transform")
-class pow(Pow):
-    __slots__ = ()
-
-
-@set_family(CPP_FAMILY)
-@set_module("boost_histogram.cpp.axis.transform")
-class function(Function):
-    __slots__ = ()
+# Not currently included, uses normal family for now.

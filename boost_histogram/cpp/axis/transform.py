@@ -4,4 +4,4 @@ del absolute_import, division, print_function
 
 __all__ = ("log", "sqrt", "pow")
 
-from ..._internal.axis_transform import log, sqrt, pow
+from ...axis.transform import log, sqrt, Pow as pow, Function as function

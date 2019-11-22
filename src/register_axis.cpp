@@ -76,26 +76,6 @@ void register_axes(py::module &mod) {
                "metadata"_a);
     });
 
-    register_axis<axis::regular_log>(mod)
-        .def(py::init<unsigned, double, double, metadata_t>(),
-             "bins"_a,
-             "start"_a,
-             "stop"_a,
-             "metadata"_a)
-        .def_property_readonly("transform", [](const axis::regular_log &self) {
-            return self.transform();
-        });
-
-    register_axis<axis::regular_sqrt>(mod)
-        .def(py::init<unsigned, double, double, metadata_t>(),
-             "bins"_a,
-             "start"_a,
-             "stop"_a,
-             "metadata"_a)
-        .def_property_readonly("transform", [](const axis::regular_sqrt &self) {
-            return self.transform();
-        });
-
     register_axis<axis::regular_pow>(mod)
         .def(py::init([](unsigned n,
                          double start,
@@ -111,6 +91,23 @@ void register_axes(py::module &mod) {
              "power"_a,
              "metadata"_a)
         .def_property_readonly("transform", [](const axis::regular_pow &self) {
+            return self.transform();
+        });
+
+    register_axis<axis::regular_trans>(mod)
+        .def(py::init([](unsigned n,
+                         double start,
+                         double stop,
+                         func_transform &trans,
+                         metadata_t metadata) {
+                 return new axis::regular_trans(trans, n, start, stop, metadata);
+             }),
+             "bins"_a,
+             "start"_a,
+             "stop"_a,
+             "tranform"_a,
+             "metadata"_a = py::none())
+        .def_property_readonly("transform", [](const axis::regular_trans &self) {
             return self.transform();
         });
 
@@ -145,21 +142,4 @@ void register_axes(py::module &mod) {
     });
 
     ;
-    register_axis<axis::regular_trans>(
-        mod, "regular_trans", "Evenly spaced bins in a power")
-        .def(py::init([](unsigned n,
-                         double start,
-                         double stop,
-                         func_transform &trans,
-                         metadata_t metadata) {
-                 return new axis::regular_trans(trans, n, start, stop, metadata);
-             }),
-             "bins"_a,
-             "start"_a,
-             "stop"_a,
-             "tranform"_a,
-             "metadata"_a = py::none())
-        .def_property_readonly("transform", [](const axis::regular_trans &self) {
-            return self.transform();
-        });
 }
