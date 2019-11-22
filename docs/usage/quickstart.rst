@@ -49,21 +49,16 @@ can give arrays, but single values work as well:
 
 .. code:: python
 
-   hist = bh.Histogram((10, 0.0, 1.0))
+   hist = bh.Histogram(bh.axis.Regular(10, 0.0, 1.0))
    hist.fill(0.9)
    hist.fill([0.9, 0.3, 0.4])
 
-You can pass ``threads=N`` to split the histogram into N copies and fill
-one per thread, recombining at the end - this helps you use all your
-cores. ``N=0`` will fill with a number of threads based on your
-available cores.
 
 Accessing the contents
 ----------------------
 
-You can directly give a histogram to anything that expects a Python
-buffer, such as ``np.asarray``. You can also use ``hist.view()`` to get
-a numpy array - currently limited to simple storage types, like int and double.
+You can use ``hist.view()`` to get
+a numpy array (or a RecArray-like wrapper for non-simple storages).
 Most methods like ``.view()`` offer an optional keyword
 argument that you can pass, ``flow=True``, to enable the under and
 overflow bins (disabled by default).

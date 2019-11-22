@@ -8,7 +8,7 @@ import numpy as _np
 
 
 class Locator(object):
-    __slots__ = "offset"
+    __slots__ = ("offset",)
 
     def __init__(self, offset=0):
         if not isinstance(offset, int):
