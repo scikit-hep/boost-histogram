@@ -30,42 +30,42 @@ using weighted_mean = bh::dense_storage<accumulators::weighted_mean<double>>;
 
 // Allow repr to show python name
 template <class S>
-inline const char *name() {
+inline const char* name() {
     return "unknown";
 }
 
 template <>
-inline const char *name<int_>() {
+inline const char* name<int_>() {
     return "int";
 }
 
 template <>
-inline const char *name<atomic_int>() {
+inline const char* name<atomic_int>() {
     return "atomic_int";
 }
 
 template <>
-inline const char *name<double_>() {
+inline const char* name<double_>() {
     return "double";
 }
 
 template <>
-inline const char *name<unlimited>() {
+inline const char* name<unlimited>() {
     return "unlimited";
 }
 
 template <>
-inline const char *name<weight>() {
+inline const char* name<weight>() {
     return "weight";
 }
 
 template <>
-inline const char *name<mean>() {
+inline const char* name<mean>() {
     return "mean";
 }
 
 template <>
-inline const char *name<weighted_mean>() {
+inline const char* name<weighted_mean>() {
     return "weighted_mean";
 }
 

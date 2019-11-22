@@ -60,41 +60,39 @@ template <class U, class... Ts>
 struct is_category<bh::axis::category<U, Ts...>> : std::true_type {};
 
 template <class Continuous, class Discrete, class Integer, class A>
-decltype(auto) select(Continuous &&c, Discrete &&d, Integer &&, const A &ax) {
+decltype(auto) select(Continuous&& c, Discrete&& d, Integer&&, const A& ax) {
     return bh::detail::static_if<bh::axis::traits::is_continuous<A>>(
         std::forward<Continuous>(c), std::forward<Discrete>(d), ax);
 }
 
 template <class Continuous, class Discrete, class Integer, class... Ts>
-decltype(auto) select(Continuous &&,
-                      Discrete &&,
-                      Integer &&i,
-                      const bh::axis::integer<int, Ts...> &ax) {
+decltype(auto)
+select(Continuous&&, Discrete&&, Integer&& i, const bh::axis::integer<int, Ts...>& ax) {
     return std::forward<Integer>(i)(ax);
 }
 
 /// Return bin center for continuous axis and bin value for discrete axis
 template <class A>
-double unchecked_center(const A &ax, bh::axis::index_type i) {
-    return select([i](const auto &ax) { return ax.value(i + 0.5); },
-                  [i](const auto &) { return i + 0.5; },
-                  [i](const auto &ax) { return ax.value(i) + 0.5; },
+double unchecked_center(const A& ax, bh::axis::index_type i) {
+    return select([i](const auto& ax) { return ax.value(i + 0.5); },
+                  [i](const auto&) { return i + 0.5; },
+                  [i](const auto& ax) { return ax.value(i) + 0.5; },
                   ax);
 }
 
 /// Return bin in a native Python representation
 template <class A>
-decltype(auto) unchecked_bin(const A &ax, bh::axis::index_type i) {
+decltype(auto) unchecked_bin(const A& ax, bh::axis::index_type i) {
     return bh::detail::static_if<bh::axis::traits::is_continuous<A>>(
-        [i](const auto &ax) -> decltype(auto) {
+        [i](const auto& ax) -> decltype(auto) {
             return py::make_tuple(ax.value(i), ax.value(i + 1));
         },
-        [i](const auto &ax) -> decltype(auto) { return py::cast(ax.bin(i)); },
+        [i](const auto& ax) -> decltype(auto) { return py::cast(ax.bin(i)); },
         ax);
 }
 
 template <class A>
-py::array bins_impl(const A &ax, bool flow) {
+py::array bins_impl(const A& ax, bool flow) {
     const bh::axis::index_type underflow
         = flow && (bh::axis::traits::options(ax) & option::underflow);
     const bh::axis::index_type overflow
@@ -112,7 +110,7 @@ py::array bins_impl(const A &ax, bool flow) {
 }
 
 template <class... Ts>
-py::array bins_impl(const bh::axis::integer<int, Ts...> &ax, bool flow) {
+py::array bins_impl(const bh::axis::integer<int, Ts...>& ax, bool flow) {
     const bh::axis::index_type underflow
         = flow && (bh::axis::traits::options(ax) & option::underflow);
     const bh::axis::index_type overflow
@@ -127,7 +125,7 @@ py::array bins_impl(const bh::axis::integer<int, Ts...> &ax, bool flow) {
 }
 
 template <class... Ts>
-py::array bins_impl(const bh::axis::category<int, Ts...> &ax, bool flow) {
+py::array bins_impl(const bh::axis::category<int, Ts...>& ax, bool flow) {
     static_assert(!(std::decay_t<decltype(ax)>::options() & option::underflow),
                   "discrete axis never has underflow");
 
@@ -143,7 +141,7 @@ py::array bins_impl(const bh::axis::category<int, Ts...> &ax, bool flow) {
 }
 
 template <class... Ts>
-py::array bins_impl(const bh::axis::category<std::string, Ts...> &ax, bool flow) {
+py::array bins_impl(const bh::axis::category<std::string, Ts...>& ax, bool flow) {
     using namespace pybind11::literals;
 
     static_assert(!(std::decay_t<decltype(ax)>::options() & option::underflow),
@@ -157,8 +155,8 @@ py::array bins_impl(const bh::axis::category<std::string, Ts...> &ax, bool flow)
     py::array result(py::dtype("S" + std::to_string(n + 1)), ax.size() + overflow);
 
     for(auto i = 0; i < ax.size() + overflow; i++) {
-        auto sout     = static_cast<char *>(result.mutable_data(i));
-        const auto &s = ax.value(i);
+        auto sout     = static_cast<char*>(result.mutable_data(i));
+        const auto& s = ax.value(i);
         std::copy(s.begin(), s.end(), sout);
         sout[s.size()] = 0;
     }
@@ -168,15 +166,15 @@ py::array bins_impl(const bh::axis::category<std::string, Ts...> &ax, bool flow)
 
 /// Utility to convert bins of axis to numpy array
 template <class A>
-py::array bins(const A &ax, bool flow = false) {
+py::array bins(const A& ax, bool flow = false) {
     // this indirection is needed by pybind11
     return bins_impl(ax, flow);
 }
 
 /// Convert continuous axis into numpy.histogram compatible edge array
 template <class A>
-py::array_t<double> edges(const A &ax, bool flow = false, bool numpy_upper = false) {
-    auto continuous = [flow, numpy_upper](const auto &ax) {
+py::array_t<double> edges(const A& ax, bool flow = false, bool numpy_upper = false) {
+    auto continuous = [flow, numpy_upper](const auto& ax) {
         using index_type = std::conditional_t<
             bh::axis::traits::is_continuous<std::decay_t<decltype(ax)>>::value,
             bh::axis::real_index_type,
@@ -202,7 +200,7 @@ py::array_t<double> edges(const A &ax, bool flow = false, bool numpy_upper = fal
 
     return select(
         continuous,
-        [flow](const auto &ax) {
+        [flow](const auto& ax) {
             static_assert(!(std::decay_t<decltype(ax)>::options() & option::underflow),
                           "discrete axis never has underflow");
 
@@ -222,7 +220,7 @@ py::array_t<double> edges(const A &ax, bool flow = false, bool numpy_upper = fal
 }
 
 template <class A>
-py::array_t<double> centers(const A &ax) {
+py::array_t<double> centers(const A& ax) {
     py::array_t<double> result(static_cast<std::size_t>(ax.size()));
     for(bh::axis::index_type i = 0; i < ax.size(); ++i)
         result.mutable_data()[i] = unchecked_center(ax, i);
@@ -230,16 +228,16 @@ py::array_t<double> centers(const A &ax) {
 }
 
 template <class A>
-py::array_t<double> widths(const A &ax) {
+py::array_t<double> widths(const A& ax) {
     py::array_t<double> result(static_cast<std::size_t>(ax.size()));
     bh::detail::static_if<bh::axis::traits::is_continuous<A>>(
-        [](py::array_t<double> &result, const auto &ax) {
+        [](py::array_t<double>& result, const auto& ax) {
             std::transform(ax.begin(),
                            ax.end(),
                            result.mutable_data(),
-                           [](const auto &b) { return b.width(); });
+                           [](const auto& b) { return b.width(); });
         },
-        [](py::array_t<double> &result, const auto &ax) {
+        [](py::array_t<double>& result, const auto& ax) {
             std::fill(result.mutable_data(), result.mutable_data() + ax.size(), 1.0);
         },
         result,
@@ -249,12 +247,12 @@ py::array_t<double> widths(const A &ax) {
 
 // Must be specialized for each type (compile warning if not)
 template <class T>
-inline const char *string_name();
+inline const char* string_name();
 
 // Macro to make the string specializations more readable
 #define BHP_SPECIALIZE_NAME(name)                                                      \
     template <>                                                                        \
-    inline const char *string_name<name>() {                                           \
+    inline const char* string_name<name>() {                                           \
         return #name;                                                                  \
     }
 

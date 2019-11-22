@@ -13,7 +13,7 @@
 namespace bh = boost::histogram;
 
 template <class histogram_t>
-decltype(auto) sum_histogram(const histogram_t &self, bool flow) {
+decltype(auto) sum_histogram(const histogram_t& self, bool flow) {
     using T       = typename histogram_t::value_type;
     using AddType = boost::mp11::mp_if<std::is_arithmetic<T>, double, T>;
     using Sum
@@ -24,7 +24,7 @@ decltype(auto) sum_histogram(const histogram_t &self, bool flow) {
         return static_cast<R>(bh::algorithm::sum(self));
     } else {
         Sum sum;
-        for(auto &&x : bh::indexed(self))
+        for(auto&& x : bh::indexed(self))
             sum += (AddType)*x;
         return static_cast<R>(sum);
     }

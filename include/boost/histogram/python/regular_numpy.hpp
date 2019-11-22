@@ -34,9 +34,9 @@ class regular_numpy : public bh::axis::regular<double, bh::use_default, metadata
     }
 
     template <class Archive>
-    void serialize(Archive &ar, unsigned version) {
+    void serialize(Archive& ar, unsigned version) {
         regular::serialize(ar, version);
-        ar &boost::make_nvp("stop", stop_);
+        ar& boost::make_nvp("stop", stop_);
     }
 };
 

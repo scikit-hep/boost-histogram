@@ -18,8 +18,8 @@
 #include <iosfwd>
 
 template <class CharT, class Traits, class T>
-std::basic_ostream<CharT, Traits> &
-handle_nonzero_width(std::basic_ostream<CharT, Traits> &os, const T &x) {
+std::basic_ostream<CharT, Traits>&
+handle_nonzero_width(std::basic_ostream<CharT, Traits>& os, const T& x) {
     const auto w = os.width();
     os.width(0);
     boost::histogram::detail::counting_streambuf<CharT, Traits> cb;
@@ -43,17 +43,17 @@ namespace accumulators {
 // Note that the names are *not* included here, so they can be added in Pybind11.
 
 template <class CharT, class Traits, class W>
-std::basic_ostream<CharT, Traits> &
-operator<<(std::basic_ostream<CharT, Traits> &os,
-           const ::boost::histogram::accumulators::sum<W> &x) {
+std::basic_ostream<CharT, Traits>&
+operator<<(std::basic_ostream<CharT, Traits>& os,
+           const ::boost::histogram::accumulators::sum<W>& x) {
     if(os.width() == 0)
         return os << "sum(" << x.large() << " + " << x.small() << ")";
     return handle_nonzero_width(os, x);
 }
 
 template <class CharT, class Traits, class W>
-std::basic_ostream<CharT, Traits> &operator<<(std::basic_ostream<CharT, Traits> &os,
-                                              const weighted_sum<W> &x) {
+std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& os,
+                                              const weighted_sum<W>& x) {
     if(os.width() == 0)
         return os << "weighted_sum(value=" << x.value << ", variance=" << x.variance
                   << ")";
@@ -61,8 +61,8 @@ std::basic_ostream<CharT, Traits> &operator<<(std::basic_ostream<CharT, Traits> 
 }
 
 template <class CharT, class Traits, class W>
-std::basic_ostream<CharT, Traits> &operator<<(std::basic_ostream<CharT, Traits> &os,
-                                              const mean<W> &x) {
+std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& os,
+                                              const mean<W>& x) {
     if(os.width() == 0)
         return os << "mean(count=" << x.count << ", value=" << x.value
                   << ", variance=" << x.variance() << ")";
@@ -70,8 +70,8 @@ std::basic_ostream<CharT, Traits> &operator<<(std::basic_ostream<CharT, Traits> 
 }
 
 template <class CharT, class Traits, class W>
-std::basic_ostream<CharT, Traits> &operator<<(std::basic_ostream<CharT, Traits> &os,
-                                              const weighted_mean<W> &x) {
+std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& os,
+                                              const weighted_mean<W>& x) {
     if(os.width() == 0)
         return os << "weighted_mean(sum_of_weights=" << x.sum_of_weights
                   << ", sum_of_weights_squared=" << x.sum_of_weights_squared
@@ -80,9 +80,9 @@ std::basic_ostream<CharT, Traits> &operator<<(std::basic_ostream<CharT, Traits> 
 }
 
 template <class CharT, class Traits, class T>
-std::basic_ostream<CharT, Traits> &
-operator<<(std::basic_ostream<CharT, Traits> &os,
-           const ::boost::histogram::accumulators::thread_safe<T> &x) {
+std::basic_ostream<CharT, Traits>&
+operator<<(std::basic_ostream<CharT, Traits>& os,
+           const ::boost::histogram::accumulators::thread_safe<T>& x) {
     os << x.load();
     return os;
 }

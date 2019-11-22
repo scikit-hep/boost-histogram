@@ -7,7 +7,7 @@
 
 #include <boost/histogram/algorithm/reduce.hpp>
 
-void register_algorithms(py::module &algorithm) {
+void register_algorithms(py::module& algorithm) {
     py::class_<bh::algorithm::reduce_option>(algorithm, "_reduce_option")
         .def(py::init<unsigned,
                       bool,
@@ -26,7 +26,7 @@ void register_algorithms(py::module &algorithm) {
              "upper"_a,
              "merge"_a,
              "Constructor for reduce_option; use creation functions instead.")
-        .def("__repr__", [](const bh::algorithm::reduce_option &self) {
+        .def("__repr__", [](const bh::algorithm::reduce_option& self) {
             return py::str("reduce_option(iaxis={}, indices_set={}, begin={}, end={}, "
                            "values_set={}, lower={}, "
                            "upper={}, merge={})")

@@ -17,16 +17,16 @@
 /// The mean fill can be implemented once. (sum fill varies slightly)
 template <class T>
 decltype(auto) make_mean_fill() {
-    return [](T &self, py::object value, py::kwargs kwargs) {
+    return [](T& self, py::object value, py::kwargs kwargs) {
         py::object weight = optional_arg(kwargs, "weight", py::none());
         finalize_args(kwargs);
         if(weight.is_none()) {
-            py::vectorize([](T &self, double val) {
+            py::vectorize([](T& self, double val) {
                 self(val);
                 return false;
             })(self, value);
         } else {
-            py::vectorize([](T &self, double wei, double val) {
+            py::vectorize([](T& self, double wei, double val) {
                 self(bh::weight(wei), val);
                 return false;
             })(self, weight, value);
@@ -38,7 +38,7 @@ decltype(auto) make_mean_fill() {
 /// The mean call can be implemented once. (sum uses +=)
 template <class T>
 decltype(auto) make_mean_call() {
-    return [](T &self, double value, py::kwargs kwargs) {
+    return [](T& self, double value, py::kwargs kwargs) {
         py::object weight = optional_arg(kwargs, "weight", py::none());
         finalize_args(kwargs);
 
@@ -51,7 +51,7 @@ decltype(auto) make_mean_call() {
     };
 }
 
-void register_accumulators(py::module &accumulators) {
+void register_accumulators(py::module& accumulators) {
     // Naming convention:
     // If a value is publically available in Boost.Histogram accumulators
     // as a method, it has the same name in the numpy record array.
@@ -64,8 +64,8 @@ void register_accumulators(py::module &accumulators) {
 
     register_accumulator<weighted_sum>(accumulators, "WeightedSum")
 
-        .def(py::init<const double &>(), "value"_a)
-        .def(py::init<const double &, const double &>(), "value"_a, "variance"_a)
+        .def(py::init<const double&>(), "value"_a)
+        .def(py::init<const double&, const double&>(), "value"_a, "variance"_a)
 
         .def_readonly("value", &weighted_sum::value)
         .def_readonly("variance", &weighted_sum::variance)
@@ -74,16 +74,16 @@ void register_accumulators(py::module &accumulators) {
 
         .def(
             "fill",
-            [](weighted_sum &self, py::object value, py::kwargs kwargs) {
+            [](weighted_sum& self, py::object value, py::kwargs kwargs) {
                 py::object variance = optional_arg(kwargs, "variance", py::none());
                 finalize_args(kwargs);
                 if(variance.is_none()) {
-                    py::vectorize([](weighted_sum &self, double val) {
+                    py::vectorize([](weighted_sum& self, double val) {
                         self += val;
                         return false;
                     })(self, value);
                 } else {
-                    py::vectorize([](weighted_sum &self, double val, double var) {
+                    py::vectorize([](weighted_sum& self, double val, double var) {
                         self += weighted_sum(val, var);
                         return false;
                     })(self, value, variance);
@@ -93,12 +93,12 @@ void register_accumulators(py::module &accumulators) {
             "value"_a,
             "Fill the accumulator with values. Optional variance parameter.")
 
-        .def_static("_make", py::vectorize([](const double &a, const double &b) {
+        .def_static("_make", py::vectorize([](const double& a, const double& b) {
                         return weighted_sum(a, b);
                     }))
 
         .def("__getitem__",
-             [](const weighted_sum &self, py::str key) {
+             [](const weighted_sum& self, py::str key) {
                  if(key.equal(py::str("value")))
                      return self.value;
                  else if(key.equal(py::str("variance")))
@@ -108,7 +108,7 @@ void register_accumulators(py::module &accumulators) {
                          py::str("{0} not one of value, variance").format(key));
              })
         .def("__setitem__",
-             [](weighted_sum &self, py::str key, double value) {
+             [](weighted_sum& self, py::str key, double value) {
                  if(key.equal(py::str("value")))
                      self.value = value;
                  else if(key.equal(py::str("variance")))
@@ -126,17 +126,17 @@ void register_accumulators(py::module &accumulators) {
     using sum = bh::accumulators::sum<double>;
 
     register_accumulator<sum>(accumulators, "Sum")
-        .def(py::init<const double &>(), "value"_a)
+        .def(py::init<const double&>(), "value"_a)
 
         .def_property(
-            "value", &sum::operator double, [](sum &s, double v) { s = v; })
+            "value", &sum::operator double, [](sum& s, double v) { s = v; })
 
         .def(py::self += double())
 
         .def(
             "fill",
-            [](sum &self, py::object value) {
-                py::vectorize([](sum &self, double v) {
+            [](sum& self, py::object value) {
+                py::vectorize([](sum& self, double v) {
                     self += v;
                     return false; // Required in PyBind11 2.4.2,
                                   // requirement may be removed
@@ -159,7 +159,7 @@ void register_accumulators(py::module &accumulators) {
                          sum_of_weighted_deltas_squared);
 
     register_accumulator<weighted_mean>(accumulators, "WeightedMean")
-        .def(py::init<const double &, const double &, const double &, const double &>(),
+        .def(py::init<const double&, const double&, const double&, const double&>(),
              "sum_of_weights"_a,
              "sum_of_weights_squared"_a,
              "value"_a,
@@ -186,12 +186,12 @@ void register_accumulators(py::module &accumulators) {
         .def_static(
             "_make",
             py::vectorize(
-                [](const double &a, const double &b, const double &c, double &d) {
+                [](const double& a, const double& b, const double& c, double& d) {
                     return weighted_mean(a, b, c, d, true);
                 }))
 
         .def("__getitem__",
-             [](const weighted_mean &self, py::str key) {
+             [](const weighted_mean& self, py::str key) {
                  if(key.equal(py::str("value")))
                      return self.value;
                  else if(key.equal(py::str("sum_of_weights")))
@@ -208,7 +208,7 @@ void register_accumulators(py::module &accumulators) {
                              .format(key));
              })
         .def("__setitem__",
-             [](weighted_mean &self, py::str key, double value) {
+             [](weighted_mean& self, py::str key, double value) {
                  if(key.equal(py::str("value")))
                      self.value = value;
                  else if(key.equal(py::str("sum_of_weights")))
@@ -239,7 +239,7 @@ void register_accumulators(py::module &accumulators) {
     PYBIND11_NUMPY_DTYPE(mean, count, value, sum_of_deltas_squared);
 
     register_accumulator<mean>(accumulators, "Mean")
-        .def(py::init<const double &, const double &, const double &>(),
+        .def(py::init<const double&, const double&, const double&>(),
              "count"_a,
              "value"_a,
              "variance"_a)
@@ -262,12 +262,12 @@ void register_accumulators(py::module &accumulators) {
 
         .def_static(
             "_make",
-            py::vectorize([](const double &a, const double &b, const double &c) {
+            py::vectorize([](const double& a, const double& b, const double& c) {
                 return mean(a, b, c, true);
             }))
 
         .def("__getitem__",
-             [](const mean &self, py::str key) {
+             [](const mean& self, py::str key) {
                  if(key.equal(py::str("count")))
                      return self.count;
                  else if(key.equal(py::str("value")))
@@ -280,7 +280,7 @@ void register_accumulators(py::module &accumulators) {
                              .format(key));
              })
         .def("__setitem__",
-             [](mean &self, py::str key, double value) {
+             [](mean& self, py::str key, double value) {
                  if(key.equal(py::str("count")))
                      self.count = value;
                  else if(key.equal(py::str("value")))

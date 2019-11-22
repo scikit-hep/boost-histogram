@@ -9,7 +9,7 @@
 #include <boost/histogram/python/storage.hpp>
 #include <boost/histogram/storage_adaptor.hpp>
 
-void register_storages(py::module &storage) {
+void register_storages(py::module& storage) {
     register_storage<storage::int_>(storage, "int", "Integers in vectors storage type");
 
     register_storage<storage::double_>(

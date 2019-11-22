@@ -27,24 +27,24 @@ namespace bh = boost::histogram;
 
 /// Static if standin: define a method if expression is true
 template <class T, class... Args>
-void def_optionally(T &&module, std::true_type, Args &&... expression) {
+void def_optionally(T&& module, std::true_type, Args&&... expression) {
     module.def(std::forward<Args...>(expression...));
 }
 
 /// Static if standin: Do nothing if compile time expression is false
 template <class T, class... Args>
-void def_optionally(T &&, std::false_type, Args &&...) {}
+void def_optionally(T&&, std::false_type, Args&&...) {}
 
 /// Shift to string
 template <class T>
-std::string shift_to_string(const T &x) {
+std::string shift_to_string(const T& x) {
     std::ostringstream out;
     out << x;
     return out.str();
 }
 
 template <class Obj>
-void unchecked_set_impl(std::true_type, py::tuple &tup, ssize_t i, Obj &&obj) {
+void unchecked_set_impl(std::true_type, py::tuple& tup, ssize_t i, Obj&& obj) {
     // PyTuple_SetItem steals a reference to 'val'
     if(PyTuple_SetItem(tup.ptr(), i, obj.release().ptr()) != 0) {
         throw py::error_already_set();
@@ -52,13 +52,13 @@ void unchecked_set_impl(std::true_type, py::tuple &tup, ssize_t i, Obj &&obj) {
 }
 
 template <class T>
-void unchecked_set_impl(std::false_type, py::tuple &tup, ssize_t i, T &&t) {
+void unchecked_set_impl(std::false_type, py::tuple& tup, ssize_t i, T&& t) {
     unchecked_set_impl(std::true_type{}, tup, i, py::cast(std::forward<T>(t)));
 }
 
 /// Unchecked tuple assign
 template <class T>
-void unchecked_set(py::tuple &tup, unsigned i, T &&t) {
+void unchecked_set(py::tuple& tup, unsigned i, T&& t) {
     unchecked_set_impl(std::is_base_of<py::object, std::decay_t<T>>{},
                        tup,
                        static_cast<ssize_t>(i),
