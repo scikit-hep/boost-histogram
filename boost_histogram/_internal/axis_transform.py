@@ -150,6 +150,10 @@ class Function(AxisTransform):
         return self.__class__._type(bins, start, stop, self._this, metadata)
 
 
+def _internal_conversion(value):
+    return getattr(ca.transform, value)
+
+
 ### CPP FAMILY ###
 
 
