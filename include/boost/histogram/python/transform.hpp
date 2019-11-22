@@ -17,8 +17,8 @@ namespace bh = boost::histogram;
 struct func_transform {
     using raw_t = double(double);
 
-    raw_t *_forward = nullptr;
-    raw_t *_inverse = nullptr;
+    raw_t* _forward = nullptr;
+    raw_t* _inverse = nullptr;
     py::object _forward_ob; // Held for reference counting, repr, and pickling
     py::object _inverse_ob;
     py::object _forward_converted; // Held for reference counting if conversion makes a
@@ -30,7 +30,7 @@ struct func_transform {
     /// Convert an object into a std::function. Can handle ctypes
     /// function pointers and PyBind11 C++ functions, or anything
     /// else with a defined convert function
-    std::tuple<raw_t *, py::object> compute(py::object &input) {
+    std::tuple<raw_t*, py::object> compute(py::object& input) {
         // Run the conversion function on the input (unless conversion is None)
         py::object tmp_src = _convert_ob.is_none() ? input : _convert_ob(input);
 
@@ -53,7 +53,7 @@ struct func_transform {
             // ctypes.cast(in, ctypes.c_void_p).value
             py::object addr_obj = cast(src, c_void_p);
             auto addr           = py::cast<std::uintptr_t>(addr_obj.attr("value"));
-            auto ptr            = reinterpret_cast<raw_t *>(addr);
+            auto ptr            = reinterpret_cast<raw_t*>(addr);
             return std::make_tuple(ptr, src);
         }
 
@@ -69,16 +69,16 @@ struct func_transform {
         if(auto cfunc = func.cpp_function()) {
             auto c = py::reinterpret_borrow<py::capsule>(
                 PyCFunction_GET_SELF(cfunc.ptr()));
-            auto rec = (py::detail::function_record *)c;
+            auto rec = (py::detail::function_record*)c;
 
             if(rec && rec->is_stateless
                && py::detail::same_type(
-                   typeid(raw_t *),
-                   *reinterpret_cast<const std::type_info *>(rec->data[1]))) {
+                   typeid(raw_t*),
+                   *reinterpret_cast<const std::type_info*>(rec->data[1]))) {
                 struct capture {
-                    raw_t *f;
+                    raw_t* f;
                 };
-                return std::make_tuple(((capture *)&rec->data)->f, src);
+                return std::make_tuple(((capture*)&rec->data)->f, src);
             }
 
             // Note that each error is slighly different just to help with debugging
@@ -99,29 +99,29 @@ struct func_transform {
         std::tie(_inverse, _inverse_converted) = compute(i);
     }
 
-    func_transform()                           = default;
-    ~func_transform()                          = default;
-    func_transform(const func_transform &)     = default;
-    func_transform(func_transform &&) noexcept = default;
+    func_transform()                          = default;
+    ~func_transform()                         = default;
+    func_transform(const func_transform&)     = default;
+    func_transform(func_transform&&) noexcept = default;
 
-    func_transform &operator=(const func_transform &) = default;
-    func_transform &operator=(func_transform &&) noexcept = default;
+    func_transform& operator=(const func_transform&) = default;
+    func_transform& operator=(func_transform&&) noexcept = default;
 
     double forward(double x) const { return _forward(x); }
 
     double inverse(double x) const { return _inverse(x); }
 
-    bool operator==(const func_transform &other) const noexcept {
+    bool operator==(const func_transform& other) const noexcept {
         return _forward_ob.equal(other._forward_ob)
                && _inverse_ob.equal(other._inverse_ob);
     }
 
     template <class Archive>
-    void serialize(Archive &ar, unsigned /* version */) {
-        ar &boost::make_nvp("forward", _forward_ob);
-        ar &boost::make_nvp("inverse", _inverse_ob);
-        ar &boost::make_nvp("convert", _convert_ob);
-        ar &boost::make_nvp("name", _name);
+    void serialize(Archive& ar, unsigned /* version */) {
+        ar& boost::make_nvp("forward", _forward_ob);
+        ar& boost::make_nvp("inverse", _inverse_ob);
+        ar& boost::make_nvp("convert", _convert_ob);
+        ar& boost::make_nvp("name", _name);
 
         if(Archive::is_loading::value) {
             std::tie(_forward, _forward_converted) = compute(_forward_ob);
@@ -133,7 +133,7 @@ struct func_transform {
 namespace boost {
 namespace histogram {
 namespace detail {
-inline const char *axis_suffix(const ::func_transform &) { return "_trans"; }
+inline const char* axis_suffix(const ::func_transform&) { return "_trans"; }
 } // namespace detail
 } // namespace histogram
 } // namespace boost

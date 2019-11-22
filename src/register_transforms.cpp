@@ -13,11 +13,11 @@
 #include <boost/histogram/python/transform.hpp>
 
 template <class T, class... Args>
-py::class_<T> register_transform(py::module &mod, Args &&... args) {
+py::class_<T> register_transform(py::module& mod, Args&&... args) {
     py::class_<T> transform(mod, std::forward<Args>(args)...);
     transform.def(py::init<T>());
-    transform.def("forward", [](const T &self, double v) { return self.forward(v); });
-    transform.def("inverse", [](const T &self, double v) { return self.inverse(v); });
+    transform.def("forward", [](const T& self, double v) { return self.forward(v); });
+    transform.def("inverse", [](const T& self, double v) { return self.inverse(v); });
     return transform;
 }
 
@@ -28,7 +28,7 @@ double _sqrt_fn(double v) { return std::sqrt(v); }
 double _sq_fn(double v) { return v * v; }
 }
 
-void register_transforms(py::module &mod) {
+void register_transforms(py::module& mod) {
     mod.def("_log_fn", &_log_fn);
     mod.def("_exp_fn", &_exp_fn);
     mod.def("_sqrt_fn", &_sqrt_fn);
@@ -81,7 +81,7 @@ void register_transforms(py::module &mod) {
              "name"_a)
         .def("__repr__",
              [](py::object self) {
-                 auto &s = py::cast<func_transform &>(self);
+                 auto& s = py::cast<func_transform&>(self);
                  if(s._name.equal(py::str(""))) {
                      return py::str("{}({}, {})")
                          .format(self.attr("__class__").attr("__name__"),

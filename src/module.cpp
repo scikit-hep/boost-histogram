@@ -5,12 +5,12 @@
 
 #include <boost/histogram/python/pybind11.hpp>
 
-void register_algorithms(py::module &);
-void register_storages(py::module &);
-void register_axes(py::module &);
-void register_histograms(py::module &);
-void register_accumulators(py::module &);
-void register_transforms(py::module &);
+void register_algorithms(py::module&);
+void register_storages(py::module&);
+void register_axes(py::module&);
+void register_histograms(py::module&);
+void register_accumulators(py::module&);
+void register_transforms(py::module&);
 
 PYBIND11_MODULE(_core, m) {
     py::module storage = m.def_submodule("storage");
