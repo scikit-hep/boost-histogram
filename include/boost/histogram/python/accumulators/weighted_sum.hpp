@@ -21,19 +21,19 @@ namespace accumulators {
 template <typename RealType>
 struct weighted_sum {
     weighted_sum() = default;
-    explicit weighted_sum(const RealType &value) noexcept
+    explicit weighted_sum(const RealType& value) noexcept
         : value(value)
         , variance(value) {}
-    weighted_sum(const RealType &value, const RealType &variance) noexcept
+    weighted_sum(const RealType& value, const RealType& variance) noexcept
         : value(value)
         , variance(variance) {}
 
     /// Increment by one.
-    weighted_sum &operator++() { return operator+=(1); }
+    weighted_sum& operator++() { return operator+=(1); }
 
     /// Increment by value.
     template <typename T>
-    weighted_sum &operator+=(const T &val) {
+    weighted_sum& operator+=(const T& val) {
         value += val;
         variance += val * val;
         return *this;
@@ -41,30 +41,30 @@ struct weighted_sum {
 
     /// Added another weighted sum.
     template <typename T>
-    weighted_sum &operator+=(const weighted_sum<T> &rhs) {
+    weighted_sum& operator+=(const weighted_sum<T>& rhs) {
         value += static_cast<RealType>(rhs.value);
         variance += static_cast<RealType>(rhs.variance);
         return *this;
     }
 
     /// Scale by value.
-    weighted_sum &operator*=(const RealType &x) {
+    weighted_sum& operator*=(const RealType& x) {
         value *= x;
         variance *= x * x;
         return *this;
     }
 
-    bool operator==(const RealType &rhs) const noexcept {
+    bool operator==(const RealType& rhs) const noexcept {
         return value == rhs && variance == rhs;
     }
 
     template <typename T>
-    bool operator==(const weighted_sum<T> &rhs) const noexcept {
+    bool operator==(const weighted_sum<T>& rhs) const noexcept {
         return value == rhs.value && variance == rhs.variance;
     }
 
     template <typename T>
-    bool operator!=(const T &rhs) const noexcept {
+    bool operator!=(const T& rhs) const noexcept {
         return !operator==(rhs);
     }
 
@@ -75,9 +75,9 @@ struct weighted_sum {
     }
 
     template <class Archive>
-    void serialize(Archive &ar, unsigned /* version */) {
-        ar &boost::make_nvp("value", value);
-        ar &boost::make_nvp("variance", variance);
+    void serialize(Archive& ar, unsigned /* version */) {
+        ar& boost::make_nvp("value", value);
+        ar& boost::make_nvp("variance", variance);
     }
 
     RealType value    = RealType();

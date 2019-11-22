@@ -37,7 +37,7 @@ template <class T, class... Us>
 using is_one_of = boost::mp11::mp_contains<boost::mp11::mp_list<Us...>, T>;
 
 template <class T>
-bool is_pyiterable(const T &t) {
+bool is_pyiterable(const T& t) {
     return py::isinstance<py::buffer>(t) || py::hasattr(t, "__iter__");
 }
 
@@ -46,14 +46,14 @@ struct overload_t;
 
 template <class F>
 struct overload_t<F> : F {
-    overload_t(F &&f)
+    overload_t(F&& f)
         : F(std::forward<F>(f)) {}
     using F::operator();
 };
 
 template <class F, class... Fs>
 struct overload_t<F, Fs...> : F, overload_t<Fs...> {
-    overload_t(F &&x, Fs &&... xs)
+    overload_t(F&& x, Fs&&... xs)
         : F(std::forward<F>(x))
         , overload_t<Fs...>(std::forward<Fs>(xs)...) {}
     using F::operator();
@@ -61,7 +61,7 @@ struct overload_t<F, Fs...> : F, overload_t<Fs...> {
 };
 
 template <class... Fs>
-auto overload(Fs &&... xs) {
+auto overload(Fs&&... xs) {
     return overload_t<Fs...>(std::forward<Fs>(xs)...);
 }
 
@@ -76,16 +76,16 @@ struct c_array_t : py::array_t<T, py::array::c_style | py::array::forcecast> {
 
 template <class A, class S>
 py::class_<bh::histogram<A, S>>
-register_histogram(py::module &m, const char *name, const char *desc) {
+register_histogram(py::module& m, const char* name, const char* desc) {
     using histogram_t = bh::histogram<A, S>;
     using value_type  = typename histogram_t::value_type;
     namespace bv2     = boost::variant2;
 
     py::class_<histogram_t> hist(m, name, desc, py::buffer_protocol());
 
-    hist.def(py::init<const A &, S>(), "axes"_a, "storage"_a = S())
+    hist.def(py::init<const A&, S>(), "axes"_a, "storage"_a = S())
 
-        .def_buffer([](bh::histogram<A, S> &h) -> py::buffer_info {
+        .def_buffer([](bh::histogram<A, S>& h) -> py::buffer_info {
             return make_buffer(h, false);
         })
 
@@ -93,10 +93,10 @@ register_histogram(py::module &m, const char *name, const char *desc) {
         .def("size", &histogram_t::size)
         .def("reset", &histogram_t::reset)
 
-        .def("__copy__", [](const histogram_t &self) { return histogram_t(self); })
+        .def("__copy__", [](const histogram_t& self) { return histogram_t(self); })
         .def("__deepcopy__",
-             [](const histogram_t &self, py::object memo) {
-                 histogram_t *a  = new histogram_t(self);
+             [](const histogram_t& self, py::object memo) {
+                 histogram_t* a  = new histogram_t(self);
                  py::module copy = py::module::import("copy");
                  for(unsigned i = 0; i < a->rank(); i++) {
                      bh::unsafe_access::axis(*a, i).metadata()
@@ -139,14 +139,14 @@ register_histogram(py::module &m, const char *name, const char *desc) {
 
     hist.def(
             "to_numpy",
-            [](histogram_t &h, bool flow) {
+            [](histogram_t& h, bool flow) {
                 py::tuple tup(1 + h.rank());
 
                 // Add the histogram buffer as the first argument
                 unchecked_set(tup, 0, py::array(make_buffer(h, flow)));
 
                 // Add the axis edges
-                h.for_each_axis([&tup, flow, i = 0u](const auto &ax) mutable {
+                h.for_each_axis([&tup, flow, i = 0u](const auto& ax) mutable {
                     unchecked_set(tup, ++i, axis::edges(ax, flow, true));
                 });
 
@@ -155,12 +155,12 @@ register_histogram(py::module &m, const char *name, const char *desc) {
             "flow"_a = false)
 
         .def("_copy_in",
-             [](histogram_t &h, py::array_t<double> input) { copy_in(h, input); })
+             [](histogram_t& h, py::array_t<double> input) { copy_in(h, input); })
 
         .def(
             "view",
             [](py::object self, bool flow) {
-                auto &h   = py::cast<histogram_t &>(self);
+                auto& h   = py::cast<histogram_t&>(self);
                 auto info = make_buffer(h, flow);
                 return py::array(
                     pybind11::dtype(info), info.shape, info.strides, info.ptr, self);
@@ -171,7 +171,7 @@ register_histogram(py::module &m, const char *name, const char *desc) {
 
         .def(
             "axis",
-            [](const histogram_t &self, int i) {
+            [](const histogram_t& self, int i) {
                 unsigned ii = i < 0 ? self.rank() - (unsigned)std::abs(i) : (unsigned)i;
                 if(ii < self.rank())
                     return self.axis(ii);
@@ -183,13 +183,13 @@ register_histogram(py::module &m, const char *name, const char *desc) {
             py::return_value_policy::move)
 
         .def("at",
-             [](const histogram_t &self, py::args &args) -> value_type {
+             [](const histogram_t& self, py::args& args) -> value_type {
                  auto int_args = py::cast<std::vector<int>>(args);
                  return self.at(int_args);
              })
 
         .def("_at_set",
-             [](histogram_t &self, const value_type &input, py::args &args) {
+             [](histogram_t& self, const value_type& input, py::args& args) {
                  auto int_args     = py::cast<std::vector<int>>(args);
                  self.at(int_args) = input;
              })
@@ -198,33 +198,33 @@ register_histogram(py::module &m, const char *name, const char *desc) {
 
         .def(
             "sum",
-            [](const histogram_t &self, bool flow) {
+            [](const histogram_t& self, bool flow) {
                 return sum_histogram(self, flow);
             },
             "flow"_a = false)
 
         .def(
             "empty",
-            [](const histogram_t &self, bool flow) {
+            [](const histogram_t& self, bool flow) {
                 return bh::algorithm::empty(
                     self, flow ? bh::coverage::all : bh::coverage::inner);
             },
             "flow"_a = false)
 
         .def("reduce",
-             [](const histogram_t &self, py::args args) {
+             [](const histogram_t& self, py::args args) {
                  return bh::algorithm::reduce(
                      self, py::cast<std::vector<bh::algorithm::reduce_option>>(args));
              })
 
         .def("project",
-             [](const histogram_t &self, py::args values) {
+             [](const histogram_t& self, py::args values) {
                  return bh::algorithm::project(self,
                                                py::cast<std::vector<unsigned>>(values));
              })
 
         .def("fill",
-             [](histogram_t &self, py::args args, py::kwargs kwargs) {
+             [](histogram_t& self, py::args args, py::kwargs kwargs) {
                  if(args.size() != self.rank())
                      throw std::invalid_argument("Wrong number of args");
 
@@ -257,11 +257,11 @@ register_histogram(py::module &m, const char *name, const char *desc) {
                      bh::unsafe_access::axes(self));
 
                  self.for_each_axis([args_it  = args.begin(),
-                                     vargs_it = vargs.begin()](const auto &ax) mutable {
+                                     vargs_it = vargs.begin()](const auto& ax) mutable {
                      using T = bh::axis::traits::value_type<std::decay_t<decltype(ax)>>;
 
                      bh::detail::static_if<std::is_same<T, std::string>>(
-                         [](auto, varg_t &v, const py::handle &x) {
+                         [](auto, varg_t& v, const py::handle& x) {
                              // specialization for string (HD: this is very inefficient
                              // and will be made more efficient in the future)
                              if(py::isinstance<py::str>(x))
@@ -275,7 +275,7 @@ register_histogram(py::module &m, const char *name, const char *desc) {
                                  v = py::cast<std::vector<std::string>>(x);
                              }
                          },
-                         [](auto u, varg_t &v, const py::handle &x) {
+                         [](auto u, varg_t& v, const py::handle& x) {
                              using U = typename decltype(u)::type;
                              if(is_pyiterable(x)) {
                                  auto arr = py::cast<c_array_t<U>>(x);
@@ -306,7 +306,7 @@ register_histogram(py::module &m, const char *name, const char *desc) {
                  using storage_t = typename histogram_t::storage_type;
                  bh::detail::static_if<
                      is_one_of<storage_t, storage::mean, storage::weighted_mean>>(
-                     [&kwargs, &vargs, &weight](auto &h) {
+                     [&kwargs, &vargs, &weight](auto& h) {
                          auto s = required_arg(kwargs, "sample");
                          finalize_args(kwargs);
 
@@ -318,25 +318,25 @@ register_histogram(py::module &m, const char *name, const char *desc) {
                          py::gil_scoped_release lock;
                          bv2::visit(
                              overload(
-                                 [&h, &vargs, &sarray](const bv2::monostate &) {
+                                 [&h, &vargs, &sarray](const bv2::monostate&) {
                                      h.fill(vargs, bh::sample(sarray));
                                  },
-                                 [&h, &vargs, &sarray](const auto &w) {
+                                 [&h, &vargs, &sarray](const auto& w) {
                                      h.fill(vargs, bh::sample(sarray), bh::weight(w));
                                  }),
                              weight);
                      },
-                     [&kwargs, &vargs, &weight](auto &h) {
+                     [&kwargs, &vargs, &weight](auto& h) {
                          finalize_args(kwargs);
 
                          // releasing gil here is safe, we don't manipulate refcounts
                          py::gil_scoped_release lock;
                          bv2::visit(
-                             overload([&h, &vargs](
-                                          const bv2::monostate &) { h.fill(vargs); },
-                                      [&h, &vargs](const auto &w) {
-                                          h.fill(vargs, bh::weight(w));
-                                      }),
+                             overload(
+                                 [&h, &vargs](const bv2::monostate&) { h.fill(vargs); },
+                                 [&h, &vargs](const auto& w) {
+                                     h.fill(vargs, bh::weight(w));
+                                 }),
                              weight);
                      },
                      self);
@@ -344,11 +344,11 @@ register_histogram(py::module &m, const char *name, const char *desc) {
              })
 
         .def("_reset_row",
-             [](histogram_t &self, unsigned ax, int row) {
+             [](histogram_t& self, unsigned ax, int row) {
                  // Reset just a single row. Used by indexing as a workaround
                  // to remove the flow bins when missing crop
 
-                 for(auto &&ind : bh::indexed(self, bh::coverage::all)) {
+                 for(auto&& ind : bh::indexed(self, bh::coverage::all)) {
                      if(ind.index(ax) == row) {
                          *ind = typename histogram_t::value_type();
                      }

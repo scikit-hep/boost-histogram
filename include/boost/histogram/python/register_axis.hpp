@@ -30,7 +30,7 @@
 using namespace std::literals;
 
 template <class A>
-void vectorized_index_and_value_methods(py::class_<A> &axis) {
+void vectorized_index_and_value_methods(py::class_<A>& axis) {
     axis.def("index",
              py::vectorize(&A::index),
              "Index for value (or values) on the axis",
@@ -40,11 +40,11 @@ void vectorized_index_and_value_methods(py::class_<A> &axis) {
 
 template <class... Ts>
 void vectorized_index_and_value_methods(
-    py::class_<bh::axis::category<std::string, Ts...>> &axis) {
+    py::class_<bh::axis::category<std::string, Ts...>>& axis) {
     using axis_t = bh::axis::category<std::string, Ts...>;
     axis.def(
             "index",
-            [](axis_t &self, py::object arg) -> py::object {
+            [](axis_t& self, py::object arg) -> py::object {
                 if(py::isinstance<py::str>(arg))
                     return py::cast(self.index(py::cast<std::string>(arg)));
 
@@ -65,7 +65,7 @@ void vectorized_index_and_value_methods(
 
                 switch(values.dtype().kind()) {
                 case 'S': {
-                    auto pvalues           = static_cast<const char *>(values.data());
+                    auto pvalues           = static_cast<const char*>(values.data());
                     const auto pvalues_end = pvalues + itemsize * values.size();
                     auto pindices          = indices.mutable_data();
                     for(; pvalues != pvalues_end; pvalues += itemsize) {
@@ -81,7 +81,7 @@ void vectorized_index_and_value_methods(
                         throw std::invalid_argument(
                             "itemsize for unicode array is not multiple of 4");
                     const auto nmax        = itemsize / 4;
-                    auto pvalues           = static_cast<const char *>(values.data());
+                    auto pvalues           = static_cast<const char*>(values.data());
                     const auto pvalues_end = pvalues + itemsize * values.size();
                     auto pindices          = indices.mutable_data();
                     for(; pvalues != pvalues_end; pvalues += itemsize) {
@@ -114,7 +114,7 @@ void vectorized_index_and_value_methods(
             "x"_a)
         .def(
             "value",
-            [](axis_t &self, py::array_t<int> indices) {
+            [](axis_t& self, py::array_t<int> indices) {
                 const ssize_t itemsize
                     = (static_cast<ssize_t>(max_string_length(self)) + 1) * 4;
                 // to-do: return object array, since strings are highly redundant
@@ -132,7 +132,7 @@ void vectorized_index_and_value_methods(
                         "itemsize of unicode array is not multiple of 4");
                 auto pindices           = indices.data();
                 const auto pindices_end = pindices + indices.size();
-                auto pvalues            = static_cast<char *>(values.mutable_data());
+                auto pvalues            = static_cast<char*>(values.mutable_data());
                 for(; pindices != pindices_end; ++pindices, pvalues += itemsize) {
                     auto ps = pvalues;
                     for(auto ch : self.value(*pindices)) {
@@ -157,7 +157,7 @@ void vectorized_index_and_value_methods(
 
 /// Add helpers common to all axis types
 template <class A, class... Args>
-py::class_<A> register_axis(py::module &m, Args &&... args) {
+py::class_<A> register_axis(py::module& m, Args&&... args) {
     py::class_<A> ax(m, axis::string_name<A>(), std::forward<Args>(args)...);
 
     ax.def("__repr__", &shift_to_string<A>)
@@ -167,15 +167,15 @@ py::class_<A> register_axis(py::module &m, Args &&... args) {
 
         .def_property_readonly(
             "options",
-            [](const A &self) {
+            [](const A& self) {
                 return options{static_cast<unsigned>(self.options())};
             },
             "Return the options associated to the axis")
 
         .def_property(
             "metadata",
-            [](const A &self) { return self.metadata(); },
-            [](A &self, const metadata_t &label) { self.metadata() = label; },
+            [](const A& self) { return self.metadata(); },
+            [](A& self, const metadata_t& label) { self.metadata() = label; },
             "Set the axis label")
 
         .def_property_readonly(
@@ -188,10 +188,10 @@ py::class_<A> register_axis(py::module &m, Args &&... args) {
             &bh::axis::traits::extent<A>,
             "Returns the number of bins including under- and overflow")
 
-        .def("__copy__", [](const A &self) { return A(self); })
+        .def("__copy__", [](const A& self) { return A(self); })
         .def("__deepcopy__",
-             [](const A &self, py::object memo) {
-                 A *a            = new A(self);
+             [](const A& self, py::object memo) {
+                 A* a            = new A(self);
                  py::module copy = py::module::import("copy");
                  a->metadata()   = copy.attr("deepcopy")(a->metadata(), memo);
                  return a;
@@ -199,7 +199,7 @@ py::class_<A> register_axis(py::module &m, Args &&... args) {
 
         .def(
             "bin",
-            [](const A &ax, int i) {
+            [](const A& ax, int i) {
                 const bh::axis::index_type begin
                     = bh::axis::traits::static_options<A>::test(
                           bh::axis::option::underflow)
@@ -220,11 +220,11 @@ py::class_<A> register_axis(py::module &m, Args &&... args) {
 
         .def(
             "__iter__",
-            [](const A &ax) {
+            [](const A& ax) {
                 struct iterator
                     : bh::detail::iterator_adaptor<iterator, int, py::object> {
-                    const A &axis_;
-                    iterator(const A &axis, int idx)
+                    const A& axis_;
+                    iterator(const A& axis, int idx)
                         : iterator::iterator_adaptor_(idx)
                         , axis_(axis) {}
 
@@ -240,7 +240,7 @@ py::class_<A> register_axis(py::module &m, Args &&... args) {
 
         .def_property_readonly(
             "edges",
-            [](const A &ax) { return axis::edges(ax, false); },
+            [](const A& ax) { return axis::edges(ax, false); },
             "Return bin edges")
         .def_property_readonly("centers", &axis::centers<A>, "Return bin centers")
         .def_property_readonly("widths", &axis::widths<A>, "Return bin widths");

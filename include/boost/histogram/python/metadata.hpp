@@ -9,7 +9,7 @@
 
 #include <pybind11/pytypes.h>
 
-inline bool PyObject_Check(void *value) { return value != nullptr; }
+inline bool PyObject_Check(void* value) { return value != nullptr; }
 
 struct metadata_t : py::object {
     PYBIND11_OBJECT(metadata_t, object, PyObject_Check);
@@ -18,8 +18,8 @@ struct metadata_t : py::object {
     metadata_t()
         : object(Py_None, borrowed_t{}) {}
 
-    bool operator==(const metadata_t &other) const { return py::object::equal(other); }
-    bool operator!=(const metadata_t &other) const {
+    bool operator==(const metadata_t& other) const { return py::object::equal(other); }
+    bool operator!=(const metadata_t& other) const {
         return py::object::not_equal(other);
     }
 };

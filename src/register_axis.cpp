@@ -13,7 +13,7 @@
 #include <vector>
 
 template <class... Ts, class Func>
-void register_axis_each(py::module &mod, Func &&function) {
+void register_axis_each(py::module& mod, Func&& function) {
     using namespace boost::mp11;
     using types = mp_list<Ts...>;
 
@@ -31,7 +31,7 @@ void validate_axis_options(bool underflow, bool overflow, bool growth) {
     }
 }
 
-void register_axes(py::module &mod) {
+void register_axes(py::module& mod) {
     py::class_<options>(mod, "options")
         .def(py::init<bool, bool, bool, bool>(),
              "underflow"_a = false,
@@ -40,23 +40,23 @@ void register_axes(py::module &mod) {
              "growth"_a    = false)
         .def(py::self == py::self)
         .def(py::self != py::self)
-        .def(py::pickle([](const options &op) { return py::make_tuple(op.option); },
+        .def(py::pickle([](const options& op) { return py::make_tuple(op.option); },
                         [](py::tuple t) {
                             if(t.size() != 1)
                                 throw std::runtime_error("Invalid state");
                             return options{py::cast<unsigned>(t[0])};
                         }))
 
-        .def("__copy__", [](const options &self) { return options(self); })
+        .def("__copy__", [](const options& self) { return options(self); })
         .def("__deepcopy__",
-             [](const options &self, py::object) { return options{self}; })
+             [](const options& self, py::object) { return options{self}; })
 
         .def_property_readonly("underflow", &options::underflow)
         .def_property_readonly("overflow", &options::overflow)
         .def_property_readonly("circular", &options::circular)
         .def_property_readonly("growth", &options::growth)
 
-        .def("__repr__", [](const options &self) {
+        .def("__repr__", [](const options& self) {
             return py::str("options(underflow={}, overflow={}, circular={}, growth={})")
                 .format(
                     self.underflow(), self.overflow(), self.circular(), self.growth());
@@ -90,7 +90,7 @@ void register_axes(py::module &mod) {
              "stop"_a,
              "power"_a,
              "metadata"_a)
-        .def_property_readonly("transform", [](const axis::regular_pow &self) {
+        .def_property_readonly("transform", [](const axis::regular_pow& self) {
             return self.transform();
         });
 
@@ -98,7 +98,7 @@ void register_axes(py::module &mod) {
         .def(py::init([](unsigned n,
                          double start,
                          double stop,
-                         func_transform &trans,
+                         func_transform& trans,
                          metadata_t metadata) {
                  return new axis::regular_trans(trans, n, start, stop, metadata);
              }),
@@ -107,7 +107,7 @@ void register_axes(py::module &mod) {
              "stop"_a,
              "tranform"_a,
              "metadata"_a = py::none())
-        .def_property_readonly("transform", [](const axis::regular_trans &self) {
+        .def_property_readonly("transform", [](const axis::regular_trans& self) {
             return self.transform();
         });
 

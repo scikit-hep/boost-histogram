@@ -24,9 +24,9 @@ struct type_caster<bh::axis::variant<Ts...>>
 } // namespace pybind11
 
 template <class Iterable>
-std::string::size_type max_string_length(const Iterable &c) {
+std::string::size_type max_string_length(const Iterable& c) {
     std::string::size_type n = 0;
-    for(auto &&s : c)
+    for(auto&& s : c)
         n = std::max(n, s.size());
     return n;
 }

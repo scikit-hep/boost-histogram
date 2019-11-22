@@ -12,8 +12,8 @@
 #include <boost/histogram/storage_adaptor.hpp>
 
 template <>
-inline void copy_in<>(bh::histogram<vector_axis_variant, bh::dense_storage<double>> &h,
-                      const py::array_t<double> &input) {
+inline void copy_in<>(bh::histogram<vector_axis_variant, bh::dense_storage<double>>& h,
+                      const py::array_t<double>& input) {
     // Works on simple datatypes only
     // TODO: Add other types
     if(h.rank() != input.ndim())
@@ -32,7 +32,7 @@ inline void copy_in<>(bh::histogram<vector_axis_variant, bh::dense_storage<doubl
     std::vector<py::ssize_t> indexes;
     indexes.resize(h.rank());
 
-    for(auto &&ind : bh::indexed(h, bh::coverage::all)) {
+    for(auto&& ind : bh::indexed(h, bh::coverage::all)) {
         bool skip = false;
 
         for(unsigned r = 0; r < h.rank(); r++) {
@@ -76,8 +76,8 @@ struct type_caster<storage::atomic_int::value_type> {
     PYBIND11_TYPE_CASTER(storage::atomic_int::value_type, _("atomic_int"));
 
     bool load(handle src, bool) {
-        PyObject *source = src.ptr();
-        PyObject *tmp    = PyNumber_Long(source);
+        PyObject* source = src.ptr();
+        PyObject* tmp    = PyNumber_Long(source);
         if(!tmp)
             return false;
         value.store(PyLong_AsUnsignedLongLong(tmp));
@@ -94,7 +94,7 @@ struct type_caster<storage::atomic_int::value_type> {
 } // namespace detail
 } // namespace pybind11
 
-void register_histograms(py::module &hist) {
+void register_histograms(py::module& hist) {
     hist.attr("_axes_limit") = BOOST_HISTOGRAM_DETAIL_AXES_LIMIT;
 
     register_histogram<vector_axis_variant, storage::int_>(
