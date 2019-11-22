@@ -67,6 +67,7 @@ void register_axes(py::module &mod) {
                        axis::regular_oflow,
                        axis::regular_uoflow,
                        axis::regular_uoflow_growth,
+                       axis::regular_circular,
                        axis::regular_numpy>(mod, [](auto ax) {
         ax.def(py::init<unsigned, double, double, metadata_t>(),
                "bins"_a,
@@ -74,13 +75,6 @@ void register_axes(py::module &mod) {
                "stop"_a,
                "metadata"_a);
     });
-
-    register_axis<axis::circular>(mod).def(
-        py::init<unsigned, double, double, metadata_t>(),
-        "bins"_a,
-        "start"_a,
-        "stop"_a,
-        "metadata"_a);
 
     register_axis<axis::regular_log>(mod)
         .def(py::init<unsigned, double, double, metadata_t>(),
