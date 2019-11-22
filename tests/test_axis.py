@@ -194,13 +194,15 @@ class TestRegular(Axis):
         ax = bh.axis.Regular(4, 1.1, 2.2, metadata="ra", overflow=False)
         assert repr(ax) == "Regular(4, 1.1, 2.2, overflow=False, metadata='ra')"
 
+        ax = bh.axis.Regular(4, 1.1, 2.2, metadata="ra", circular=True)
+        assert repr(ax) == "Regular(4, 1.1, 2.2, circular=True, metadata='ra')"
+
         ax = bh.axis.Regular(4, 1.1, 2.2, transform=bh.axis.transform.log)
         assert repr(ax) == "Regular(4, 1.1, 2.2, transform=log)"
         # TODO: Add caching so that an extracted functional transform actually works
 
         ax = bh.axis.Regular(3, 1.1, 2.2, transform=bh.axis.transform.sqrt)
-        assert repr(ax) == "Regular(3, 1.1, 2.2, transform=pow(0.5))"
-        # TODO: Fix reprs
+        assert repr(ax) == "Regular(3, 1.1, 2.2, transform=sqrt)"
 
         ax = bh.axis.Regular(4, 1.1, 2.2, transform=bh.axis.transform.Pow(0.5))
         assert repr(ax) == "Regular(4, 1.1, 2.2, transform=pow(0.5))"
@@ -260,6 +262,26 @@ class TestRegular(Axis):
         assert a.index(1.999) == 0
         assert a.index(2.000) == 0
         assert a.index(20) == -1
+
+    def test_sqrt_transform(self):
+        a = bh.axis.Regular(10, 0, 10, transform=bh.axis.transform.sqrt)
+        # Edges: 0. ,  0.1,  0.4,  0.9,  1.6,  2.5,  3.6,  4.9,  6.4,  8.1, 10.
+
+        assert a.index(-100) == 10  # Always in overflow bin
+        assert a.index(-1) == 10  # When transform is invalid
+        assert a.index(0) == 0
+        assert a.index(0.15) == 1
+        assert a.index(0.5) == 2
+        assert a.index(1) == 3
+        assert a.index(1.7) == 4
+        assert a.index(9) == 9
+        assert a.index(11) == 10
+        assert a.index(1000) == 10
+
+        assert a.bin(0)[0] == approx(0)
+        assert a.bin(1)[0] == approx(0.1)
+        assert a.bin(1)[1] == approx(0.4)
+        assert a.bin(2)[0] == approx(0.4)
 
     def test_log_transform(self):
         a = bh.axis.Regular(2, 1e0, 1e2, transform=bh.axis.transform.log)

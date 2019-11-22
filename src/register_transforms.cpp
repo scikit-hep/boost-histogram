@@ -24,11 +24,15 @@ py::class_<T> register_transform(py::module &mod, Args &&... args) {
 extern "C" {
 double _log_fn(double v) { return std::log(v); }
 double _exp_fn(double v) { return std::exp(v); }
+double _sqrt_fn(double v) { return std::sqrt(v); }
+double _sq_fn(double v) { return v * v; }
 }
 
 void register_transforms(py::module &mod) {
     mod.def("_log_fn", &_log_fn);
     mod.def("_exp_fn", &_exp_fn);
+    mod.def("_sqrt_fn", &_sqrt_fn);
+    mod.def("_sq_fn", &_sq_fn);
 
     register_transform<bh::axis::transform::id>(mod, "id")
         .def(py::init<>())
