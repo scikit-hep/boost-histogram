@@ -53,13 +53,13 @@ def category(*args, **kwargs):
 
 
 def regular_log(*args, **kwargs):
-    _warnings.warn("Use transform=axis.transform.Log() instead", FutureWarning)
-    return Regular(*args, transform=Transform.Log, **kwargs)
+    _warnings.warn("Use transform=axis.transform.log instead", FutureWarning)
+    return Regular(*args, transform=transform.log, **kwargs)
 
 
 def regular_sqrt(*args, **kwargs):
-    _warnings.warn("Use transform=axis.transform.Sqrt() instead", FutureWarning)
-    return Regular(*args, transform=transform.Sqrt, **kwargs)
+    _warnings.warn("Use transform=axis.transform.sqrt instead", FutureWarning)
+    return Regular(*args, transform=transform.sqrt, **kwargs)
 
 
 def regular_pow(bins, start, stop, power, **kwargs):

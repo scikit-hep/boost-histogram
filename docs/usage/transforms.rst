@@ -1,3 +1,5 @@
+.. _usage-transforms:
+
 Using Transforms
 ================
 
@@ -14,7 +16,8 @@ There is also a flexible ``bh.axis.transform.Function``, which allows you to spe
 
 
 Simple custom transforms
-========================
+------------------------
+
 
 The ``Function`` transform takes two ctypes ``double(double)`` function pointers, a forward transform and a inverse transform. An object that provides a ctypes function pointer through a ``.ctypes`` attribute is supported, as well. As an example, let's look at how one would recreate the ``log`` transform using several different methods:
 
@@ -104,7 +107,7 @@ Note that you do actually have to cast it to the correct function type; just set
 ``argtypes`` and ``restype`` does not work.
 
 Picklable custom transforms
-===========================
+---------------------------
 
 The above examples to not support pickling, since ctypes pointers (or pointers in general)
 are not picklable. However, the ``Function`` transform supports a ``convert=`` keyword

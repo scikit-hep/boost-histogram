@@ -214,9 +214,7 @@ class CppAxisMixin(object):
         ca.regular_oflow,
         ca.regular_none,
         ca.regular_numpy,
-        ca.regular_sqrt,
         ca.regular_pow,
-        ca.regular_log,
         ca.regular_trans,
         ca.regular_circular,
     }

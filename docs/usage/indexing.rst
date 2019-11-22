@@ -128,9 +128,6 @@ Basic implementation (WIP):
            return None, numpy.add.reduce(counts, axis=axis)
 
 
-   class end:
-       ?
-
    def underflow(axis):
        return -1
    def overflow(axis):
