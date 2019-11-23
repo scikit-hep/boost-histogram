@@ -29,18 +29,6 @@ using ogrowth_t  = decltype(option::growth | option::overflow);
 using uogrowth_t = decltype(option::growth | option::underflow | option::overflow);
 using circular_t = decltype(option::circular | option::overflow);
 
-template <class Continuous, class Discrete, class Integer, class A>
-decltype(auto) select(Continuous&& c, Discrete&& d, Integer&&, const A& ax) {
-    return bh::detail::static_if<bh::axis::traits::is_continuous<A>>(
-        std::forward<Continuous>(c), std::forward<Discrete>(d), ax);
-}
-
-template <class Continuous, class Discrete, class Integer, class... Ts>
-decltype(auto)
-select(Continuous&&, Discrete&&, Integer&& i, const bh::axis::integer<int, Ts...>& ax) {
-    return std::forward<Integer>(i)(ax);
-}
-
 // Must be specialized for each type (compile warning if not)
 template <class T>
 inline const char* string_name();
@@ -160,6 +148,18 @@ constexpr bool is_category(const bh::axis::category<Ts...>&) {
 template <class Opts>
 constexpr bool is_category(const category_str_t<Opts>&) {
     return true;
+}
+
+template <class Continuous, class Discrete, class Integer, class A>
+decltype(auto) select(Continuous&& c, Discrete&& d, Integer&&, const A& ax) {
+    return bh::detail::static_if<bh::axis::traits::is_continuous<A>>(
+        std::forward<Continuous>(c), std::forward<Discrete>(d), ax);
+}
+
+template <class Continuous, class Discrete, class Integer, class... Ts>
+decltype(auto)
+select(Continuous&&, Discrete&&, Integer&& i, const bh::axis::integer<int, Ts...>& ax) {
+    return std::forward<Integer>(i)(ax);
 }
 
 /// Return bin center for continuous axis and bin value for discrete axis
