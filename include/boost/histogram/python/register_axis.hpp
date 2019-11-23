@@ -48,7 +48,7 @@ auto vectorize(int (bh::axis::category<std::string, metadata_t, Options>::*pinde
         py::array_t<int> indices(values.size());
 
         auto ip = indices.mutable_data();
-        for(auto&& v : values) {
+        for(auto v : values) {
             if(!py::isinstance<py::str>(v))
                 throw std::invalid_argument("input is not a string");
             *ip++ = index(self, py::cast<std::string>(v));
