@@ -171,16 +171,25 @@ register_histogram(py::module& m, const char* name, const char* desc) {
 
         .def(
             "axis",
-            [](const histogram_t& self, int i) {
+            [](const histogram_t& self, int i) -> py::object {
                 unsigned ii = i < 0 ? self.rank() - (unsigned)std::abs(i) : (unsigned)i;
-                if(ii < self.rank())
-                    return self.axis(ii);
+
+                if(ii < self.rank()) {
+                    const axis_variant& var = bh::unsafe_access::axis(self, ii);
+                    return bh::axis::visit(
+                        [](auto&& item) -> py::object {
+                            return py::cast(item, py::return_value_policy::reference);
+                        },
+                        var);
+
+                }
+
                 else
                     throw std::out_of_range(
                         "The axis value must be less than the rank");
             },
             "i"_a,
-            py::return_value_policy::move)
+            py::keep_alive<0, 1>())
 
         .def("at",
              [](const histogram_t& self, py::args& args) -> value_type {
