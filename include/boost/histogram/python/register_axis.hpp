@@ -32,7 +32,7 @@
 template <class Options>
 auto vectorize(int (bh::axis::category<std::string, metadata_t, Options>::*pindex)(
     const std::string&) const) {
-    return [pindex](const bh::axis::category<std::string, metadata_t, Options>& self,
+    return [pindex](const axis::category_str_t<Options>& self,
                     py::object arg) -> py::object {
         auto index = std::mem_fn(pindex);
         if(py::isinstance<py::str>(arg))
