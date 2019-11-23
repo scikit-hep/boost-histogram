@@ -75,21 +75,18 @@ auto vectorize(Result (bh::axis::category<U, metadata_t, Options>::*pvalue)(int)
                 return i < self.size() ? py::cast(value(self, i)) : py::none();
             }
 
-            if(py::isinstance<py::array>(arg)) {
-                auto arr = py::cast<py::array>(arg);
-                if(arr.ndim() != 1)
-                    throw std::invalid_argument("only ndim == 1 supported");
-            }
+            auto indices = py::cast<py::array_t<int>>(arg);
+            if(indices.ndim() != 1)
+                throw std::invalid_argument("only ndim == 1 supported");
 
-            auto indices = py::cast<py::sequence>(arg);
-            py::tuple values(indices.size());
+            const auto n = static_cast<std::size_t>(indices.size());
+            py::tuple values(n);
 
-            unsigned k = 0;
-            for(auto&& ipy : indices) {
-                const auto i = py::cast<int>(ipy);
-                unchecked_set(values,
-                              k++,
-                              i < self.size() ? py::cast(value(self, i)) : py::none());
+            auto pi = indices.data();
+            for(std::size_t k = 0; k < n; ++k) {
+                const auto i = pi[k];
+                unchecked_set(
+                    values, k, i < self.size() ? py::cast(value(self, i)) : py::none());
             }
 
             return std::move(values);
