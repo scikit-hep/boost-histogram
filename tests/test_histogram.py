@@ -644,12 +644,15 @@ def test_numpy_conversion_5():
 
 
 def test_fill_with_sequence_0():
-    def ar(*args, dtype=float):
-        return np.array(args, dtype=dtype)
+    def fa(*args):
+        return np.array(args, dtype=float)
+
+    def ia(*args):
+        return np.array(args, dtype=int)
 
     a = bh.Histogram(bh.axis.Integer(0, 2))
     a.fill(np.array(1))  # 0-dim arrays work
-    a.fill(ar(-1, 0, 1, 2, dtype=int))
+    a.fill(ia(-1, 0, 1, 2))
     a.fill((2, 1, 0, -1))
     assert_array_equal(a.view(True), [2, 2, 3, 2])
 
@@ -666,14 +669,14 @@ def test_fill_with_sequence_0():
         a[1, 2]
 
     b = bh.Histogram(bh.axis.Regular(3, 0, 3))
-    b.fill(ar(0, 0, 1, 2, dtype=float))
-    b.fill(ar(1, 0, 2, 2, dtype=int))
+    b.fill(fa(0, 0, 1, 2))
+    b.fill(ia(1, 0, 2, 2))
     assert_array_equal(b.view(True), [0, 3, 2, 3, 0])
 
     c = bh.Histogram(
         bh.axis.Integer(0, 2, underflow=False, overflow=False), bh.axis.Regular(2, 0, 2)
     )
-    c.fill(ar(-1, 0, 1), ar(-1.0, 1.5, 0.5))
+    c.fill(ia(-1, 0, 1), fa(-1.0, 1.5, 0.5))
     assert_array_equal(c.view(True), [[0, 0, 1, 0], [0, 1, 0, 0]])
     # we don't support: assert a[[1, 1]].value, 0
 
@@ -697,12 +700,12 @@ def test_fill_with_sequence_0():
 
 
 def test_fill_with_sequence_1():
-    def ar(*args):
+    def fa(*args):
         return np.array(args, dtype=float)
 
     a = bh.Histogram(bh.axis.Integer(0, 3), storage=bh.storage.Weight())
-    v = ar(-1, 0, 1, 2, 3, 4)
-    w = ar(2, 3, 4, 5, 6, 7)  # noqa
+    v = fa(-1, 0, 1, 2, 3, 4)
+    w = fa(2, 3, 4, 5, 6, 7)  # noqa
     a.fill(v, weight=w)
     a.fill((0, 1), weight=(2, 3))
 
