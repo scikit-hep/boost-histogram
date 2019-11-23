@@ -9,7 +9,6 @@
 * Added axes transforms [#192][]
 * `Function(forward, inverse)` transform added, allowing ultra-fast C function pointer transforms [#231][]
 * You can now sum over a range with endpoints [#185][]
-* `h.axis()` and `h.at()` are now completely removed unless you use the cpp version of histogram. [#183][]
 * `h.axes` now has the functions from axis as well. [#183][]
 * `bh.project` has become `bh.sum` [#185][]
 * Added `hist.copy()` [#218][]
@@ -39,6 +38,7 @@
 [#185]: https://github.com/scikit-hep/boost-histogram/pull/185
 [#188]: https://github.com/scikit-hep/boost-histogram/pull/188
 [#192]: https://github.com/scikit-hep/boost-histogram/pull/192
+[#194]: https://github.com/scikit-hep/boost-histogram/pull/194
 [#200]: https://github.com/scikit-hep/boost-histogram/pull/200
 [#218]: https://github.com/scikit-hep/boost-histogram/pull/218
 [#221]: https://github.com/scikit-hep/boost-histogram/pull/221
