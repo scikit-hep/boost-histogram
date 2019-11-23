@@ -93,22 +93,14 @@ auto vectorize(Result (bh::axis::category<U, metadata_t, Options>::*pvalue)(int)
         };
 }
 
-template <class A>
-void vectorized_index_and_value_methods(py::class_<A>& axis) {
-    // find our vectorize and pybind11::vectorize
-    using ::vectorize;
-    using py::vectorize;
-    axis.def("index",
-             vectorize(&A::index),
-             "Index for value (or values) on the axis",
-             "x"_a)
-        .def("value", vectorize(&A::value), "Value at index (or indices)", "i"_a);
-}
-
 /// Add helpers common to all axis types
 template <class A, class... Args>
 py::class_<A> register_axis(py::module& m, Args&&... args) {
     py::class_<A> ax(m, axis::string_name<A>(), std::forward<Args>(args)...);
+
+    // find our vectorize and pybind11::vectorize
+    using ::vectorize;
+    using py::vectorize;
 
     ax.def("__repr__", &shift_to_string<A>)
 
@@ -192,11 +184,15 @@ py::class_<A> register_axis(py::module& m, Args&&... args) {
             [](const A& ax) { return axis::edges(ax, false); },
             "Return bin edges")
         .def_property_readonly("centers", &axis::centers<A>, "Return bin centers")
-        .def_property_readonly("widths", &axis::widths<A>, "Return bin widths");
+        .def_property_readonly("widths", &axis::widths<A>, "Return bin widths")
 
-    vectorized_index_and_value_methods(ax);
+        .def("index",
+             vectorize(&A::index),
+             "Index for value (or values) on the axis",
+             "x"_a)
+        .def("value", vectorize(&A::value), "Value at index (or indices)", "i"_a)
 
-    ax.def(make_pickle<A>());
+        .def(make_pickle<A>());
 
     return ax;
 }
