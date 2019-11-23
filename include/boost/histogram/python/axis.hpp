@@ -12,8 +12,6 @@
 #include <boost/histogram/python/regular_numpy.hpp>
 #include <boost/histogram/python/transform.hpp>
 
-#include <boost/core/nvp.hpp>
-
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -55,7 +53,6 @@ inline const char* string_name();
     }
 
 // These match the Python names
-
 using regular_none
     = bh::axis::regular<double, bh::use_default, metadata_t, option::none_t>;
 using regular_uflow
@@ -65,46 +62,49 @@ using regular_oflow
 using regular_uoflow = bh::axis::regular<double, bh::use_default, metadata_t>;
 using regular_uoflow_growth
     = bh::axis::regular<double, bh::use_default, metadata_t, uogrowth_t>;
+using regular_circular
+    = bh::axis::regular<double, bh::use_default, metadata_t, circular_t>;
 
 BHP_SPECIALIZE_NAME(regular_none)
 BHP_SPECIALIZE_NAME(regular_uflow)
 BHP_SPECIALIZE_NAME(regular_oflow)
 BHP_SPECIALIZE_NAME(regular_uoflow)
 BHP_SPECIALIZE_NAME(regular_uoflow_growth)
+BHP_SPECIALIZE_NAME(regular_circular)
 
-using circular     = bh::axis::circular<double, metadata_t>;
-using regular_log  = bh::axis::regular<double, bh::axis::transform::log, metadata_t>;
-using regular_sqrt = bh::axis::regular<double, bh::axis::transform::sqrt, metadata_t>;
-using regular_pow  = bh::axis::regular<double, bh::axis::transform::pow, metadata_t>;
+using regular_pow   = bh::axis::regular<double, bh::axis::transform::pow, metadata_t>;
+using regular_trans = bh::axis::regular<double, func_transform, metadata_t>;
 
-BHP_SPECIALIZE_NAME(circular)
-BHP_SPECIALIZE_NAME(regular_log)
-BHP_SPECIALIZE_NAME(regular_sqrt)
 BHP_SPECIALIZE_NAME(regular_pow)
+BHP_SPECIALIZE_NAME(regular_trans)
 
 using variable_none   = bh::axis::variable<double, metadata_t, option::none_t>;
 using variable_uflow  = bh::axis::variable<double, metadata_t, option::underflow_t>;
 using variable_oflow  = bh::axis::variable<double, metadata_t, option::overflow_t>;
 using variable_uoflow = bh::axis::variable<double, metadata_t>;
 using variable_uoflow_growth = bh::axis::variable<double, metadata_t, uogrowth_t>;
+using variable_circular      = bh::axis::variable<double, metadata_t, circular_t>;
 
 BHP_SPECIALIZE_NAME(variable_none)
 BHP_SPECIALIZE_NAME(variable_uflow)
 BHP_SPECIALIZE_NAME(variable_oflow)
 BHP_SPECIALIZE_NAME(variable_uoflow)
 BHP_SPECIALIZE_NAME(variable_uoflow_growth)
+BHP_SPECIALIZE_NAME(variable_circular)
 
-using integer_none   = bh::axis::integer<int, metadata_t, option::none_t>;
-using integer_uoflow = bh::axis::integer<int, metadata_t>;
-using integer_uflow  = bh::axis::integer<int, metadata_t, option::underflow_t>;
-using integer_oflow  = bh::axis::integer<int, metadata_t, option::overflow_t>;
-using integer_growth = bh::axis::integer<int, metadata_t, option::growth_t>;
+using integer_none     = bh::axis::integer<int, metadata_t, option::none_t>;
+using integer_uoflow   = bh::axis::integer<int, metadata_t>;
+using integer_uflow    = bh::axis::integer<int, metadata_t, option::underflow_t>;
+using integer_oflow    = bh::axis::integer<int, metadata_t, option::overflow_t>;
+using integer_growth   = bh::axis::integer<int, metadata_t, option::growth_t>;
+using integer_circular = bh::axis::integer<int, metadata_t, option::circular_t>;
 
 BHP_SPECIALIZE_NAME(integer_none)
 BHP_SPECIALIZE_NAME(integer_uoflow)
 BHP_SPECIALIZE_NAME(integer_uflow)
 BHP_SPECIALIZE_NAME(integer_oflow)
 BHP_SPECIALIZE_NAME(integer_growth)
+BHP_SPECIALIZE_NAME(integer_circular)
 
 using category_int        = bh::axis::category<int, metadata_t>;
 using category_int_growth = bh::axis::category<int, metadata_t, option::growth_t>;
@@ -130,19 +130,6 @@ BHP_SPECIALIZE_NAME(category_str_growth)
 BHP_SPECIALIZE_NAME(regular_numpy)
 
 #undef BHP_SPECIALIZE_NAME
-
-template <class T, class Opts>
-struct category_derived_impl {
-    using type = bh::axis::category<T, metadata_t, Opts>;
-};
-
-template <class Opts>
-struct category_derived_impl<std::string, Opts> {
-    using type = category_str_t<Opts>;
-};
-
-template <class T, class Opts>
-using category_derived = typename category_derived_impl<T, Opts>::type;
 
 // How edges, centers, and widths are handled
 //

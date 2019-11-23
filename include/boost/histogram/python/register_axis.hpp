@@ -62,33 +62,38 @@ auto vectorize(int (bh::axis::category<std::string, metadata_t, Options>::*pinde
 template <class Result, class U, class Options>
 auto vectorize(Result (bh::axis::category<U, metadata_t, Options>::*pvalue)(int)
                    const) {
-    return [pvalue](const axis::category_derived<U, Options>& self,
-                    py::object arg) -> py::object {
-        auto value = std::mem_fn(pvalue);
+    return
+        [pvalue](
+            const std::conditional_t<std::is_same<U, std::string>::value,
+                                     axis::category_str_t<Options>,
+                                     bh::axis::category<U, metadata_t, Options>>& self,
+            py::object arg) -> py::object {
+            auto value = std::mem_fn(pvalue);
 
-        if(py::isinstance<py::int_>(arg)) {
-            auto i = py::cast<int>(arg);
-            return i < self.size() ? py::cast(value(self, i)) : py::none();
-        }
+            if(py::isinstance<py::int_>(arg)) {
+                auto i = py::cast<int>(arg);
+                return i < self.size() ? py::cast(value(self, i)) : py::none();
+            }
 
-        if(py::isinstance<py::array>(arg)) {
-            auto arr = py::cast<py::array>(arg);
-            if(arr.ndim() != 1)
-                throw std::invalid_argument("only ndim == 1 supported");
-        }
+            if(py::isinstance<py::array>(arg)) {
+                auto arr = py::cast<py::array>(arg);
+                if(arr.ndim() != 1)
+                    throw std::invalid_argument("only ndim == 1 supported");
+            }
 
-        auto indices = py::cast<py::sequence>(arg);
-        py::tuple values(indices.size());
+            auto indices = py::cast<py::sequence>(arg);
+            py::tuple values(indices.size());
 
-        unsigned k = 0;
-        for(auto&& ipy : indices) {
-            const auto i = py::cast<int>(ipy);
-            unchecked_set(
-                values, k++, i < self.size() ? py::cast(value(self, i)) : py::none());
-        }
+            unsigned k = 0;
+            for(auto&& ipy : indices) {
+                const auto i = py::cast<int>(ipy);
+                unchecked_set(values,
+                              k++,
+                              i < self.size() ? py::cast(value(self, i)) : py::none());
+            }
 
-        return std::move(values);
-    };
+            return std::move(values);
+        };
 }
 
 template <class A>
