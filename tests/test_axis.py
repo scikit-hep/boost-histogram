@@ -94,6 +94,10 @@ class Axis(ABC):
     def test_index(self):
         pass
 
+    # @abc.abstractmethod
+    # def test_value(self):
+    #     pass
+    #
     @abc.abstractmethod
     def test_edges_centers_widths(self):
         pass
@@ -719,10 +723,12 @@ class TestCategory(Axis):
 
         with pytest.raises(IndexError):
             a.bin(-1)
-        # Even if bh.axis.*Category axis has overflow enabled, we cannot return a bin value for the overflow,
-        # because it is not clear what that value should be. So we raise an IndexError when this bin is accessed.
-        with pytest.raises(IndexError):
-            a.bin(3)
+
+        if growth:
+            with pytest.raises(IndexError):
+                a.bin(3)
+        else:
+            assert a.bin(3) == None
 
     @pytest.mark.parametrize("ref", ([1, 2, 3], ("A", "B", "C")))
     @pytest.mark.parametrize("growth", (False, True))
@@ -731,14 +737,25 @@ class TestCategory(Axis):
         a = Cat(ref, growth=growth)
         assert_array_equal(a, ref)
 
-    @pytest.mark.parametrize("ref", ([1, 2, 3], ("A", "B", "C")))
+    @pytest.mark.parametrize("ref", ([1, 2, 3, 4], ("A", "B", "C", "D")))
     @pytest.mark.parametrize("growth", (False, True))
     def test_index(self, ref, growth):
         Cat = bh.axis.StrCategory if isinstance(ref[0], str) else bh.axis.IntCategory
-        a = Cat(ref, growth=growth)
+        a = Cat(ref[:-1], growth=growth)
         for i, r in enumerate(ref):
             assert a.index(r) == i
-        assert_array_equal(a.index(ref), [0, 1, 2])
+        assert_array_equal(a.index(ref), [0, 1, 2, 3])
+
+    @pytest.mark.parametrize("ref", ([1, 2, 3], ("A", "B", "C")))
+    @pytest.mark.parametrize("growth", (False, True))
+    def test_value(self, ref, growth):
+        Cat = bh.axis.StrCategory if isinstance(ref[0], str) else bh.axis.IntCategory
+        a = Cat(ref, growth=growth)
+        for i, r in enumerate(ref):
+            assert a.value(i) == r
+        assert_array_equal(a.value(range(3)), ref)
+        assert a.value(3) == None
+        assert_array_equal(a.value((0, 3)), [ref[0], None])
 
     @pytest.mark.parametrize("ref", ([1, 2, 3], "ABC"))
     @pytest.mark.parametrize("growth", (False, True))

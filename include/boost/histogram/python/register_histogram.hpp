@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include <boost/histogram/python/kwargs.hpp>
 #include <boost/histogram/python/pybind11.hpp>
 
 #include <boost/histogram/algorithm/empty.hpp>
@@ -16,12 +15,11 @@
 #include <boost/histogram/ostream.hpp>
 #include <boost/histogram/python/accumulators/ostream.hpp>
 #include <boost/histogram/python/axis.hpp>
+#include <boost/histogram/python/fill.hpp>
 #include <boost/histogram/python/histogram.hpp>
-#include <boost/histogram/python/kwargs.hpp>
 #include <boost/histogram/python/make_pickle.hpp>
 #include <boost/histogram/python/storage.hpp>
 #include <boost/histogram/python/sum.hpp>
-#include <boost/histogram/python/variant.hpp>
 #include <boost/histogram/unsafe_access.hpp>
 #include <boost/mp11.hpp>
 #include <future>
@@ -32,62 +30,17 @@
 #include <tuple>
 #include <vector>
 
-namespace detail {
-template <class T, class... Us>
-using is_one_of = boost::mp11::mp_contains<boost::mp11::mp_list<Us...>, T>;
-
-template <class T>
-bool is_pyiterable(const T& t) {
-    return py::isinstance<py::buffer>(t) || py::hasattr(t, "__iter__");
-}
-
-template <class...>
-struct overload_t;
-
-template <class F>
-struct overload_t<F> : F {
-    overload_t(F&& f)
-        : F(std::forward<F>(f)) {}
-    using F::operator();
-};
-
-template <class F, class... Fs>
-struct overload_t<F, Fs...> : F, overload_t<Fs...> {
-    overload_t(F&& x, Fs&&... xs)
-        : F(std::forward<F>(x))
-        , overload_t<Fs...>(std::forward<Fs>(xs)...) {}
-    using F::operator();
-    using overload_t<Fs...>::operator();
-};
-
-template <class... Fs>
-auto overload(Fs&&... xs) {
-    return overload_t<Fs...>(std::forward<Fs>(xs)...);
-}
-
-template <class T>
-struct c_array_t : py::array_t<T, py::array::c_style | py::array::forcecast> {
-    using base_t = py::array_t<T, py::array::c_style | py::array::forcecast>;
-    using base_t::base_t;
-    std::size_t size() const { return static_cast<std::size_t>(base_t::size()); }
-};
-
-} // namespace detail
-
-template <class A, class S>
-py::class_<bh::histogram<A, S>>
-register_histogram(py::module& m, const char* name, const char* desc) {
-    using histogram_t = bh::histogram<A, S>;
+template <class S>
+auto register_histogram(py::module& m, const char* name, const char* desc) {
+    using histogram_t = bh::histogram<vector_axis_variant, S>;
     using value_type  = typename histogram_t::value_type;
-    namespace bv2     = boost::variant2;
 
     py::class_<histogram_t> hist(m, name, desc, py::buffer_protocol());
 
-    hist.def(py::init<const A&, S>(), "axes"_a, "storage"_a = S())
+    hist.def(py::init<const vector_axis_variant&, S>(), "axes"_a, "storage"_a = S())
 
-        .def_buffer([](bh::histogram<A, S>& h) -> py::buffer_info {
-            return make_buffer(h, false);
-        })
+        .def_buffer(
+            [](histogram_t& h) -> py::buffer_info { return make_buffer(h, false); })
 
         .def("rank", &histogram_t::rank)
         .def("size", &histogram_t::size)
@@ -236,125 +189,7 @@ register_histogram(py::module& m, const char* name, const char* desc) {
                                                py::cast<std::vector<unsigned>>(values));
              })
 
-        .def("fill",
-             [](histogram_t& self, py::args args, py::kwargs kwargs) {
-                 if(args.size() != self.rank())
-                     throw std::invalid_argument("Wrong number of args");
-
-                 using detail::is_pyiterable;
-                 using detail::is_one_of;
-                 using detail::overload;
-                 using detail::c_array_t;
-
-                 namespace bmp = boost::mp11;
-                 static_assert(
-                     bmp::mp_empty<bmp::mp_set_difference<
-                         bmp::mp_unique<bmp::mp_transform<bh::axis::traits::value_type,
-                                                          axis_variant>>,
-                         bmp::mp_list<double, int, std::string>>>::value,
-                     "supported value types are double, int, std::string; new axis was "
-                     "added with different value type");
-
-                 // HD: std::vector<std::string> is for passing strings, this is very
-                 // inefficient but works at least. I need to change something in
-                 // boost::histogram to make passing strings from a numpy array
-                 // efficient.
-                 using varg_t = boost::variant2::variant<c_array_t<double>,
-                                                         double,
-                                                         c_array_t<int>,
-                                                         int,
-                                                         std::vector<std::string>,
-                                                         std::string>;
-
-                 auto vargs = bh::detail::make_stack_buffer<varg_t>(
-                     bh::unsafe_access::axes(self));
-
-                 self.for_each_axis([args_it  = args.begin(),
-                                     vargs_it = vargs.begin()](const auto& ax) mutable {
-                     using T = bh::axis::traits::value_type<std::decay_t<decltype(ax)>>;
-
-                     bh::detail::static_if<std::is_same<T, std::string>>(
-                         [](auto, varg_t& v, const py::handle& x) {
-                             // specialization for string (HD: this is very inefficient
-                             // and will be made more efficient in the future)
-                             if(py::isinstance<py::str>(x))
-                                 v = py::cast<std::string>(x);
-                             else if(py::isinstance<py::array>(x)) {
-                                 if(py::cast<py::array>(x).ndim() != 1)
-                                     throw std::invalid_argument(
-                                         "All arrays must be 1D");
-                                 v = py::cast<std::vector<std::string>>(x);
-                             } else {
-                                 v = py::cast<std::vector<std::string>>(x);
-                             }
-                         },
-                         [](auto u, varg_t& v, const py::handle& x) {
-                             using U = typename decltype(u)::type;
-                             if(is_pyiterable(x)) {
-                                 auto arr = py::cast<c_array_t<U>>(x);
-                                 if(arr.ndim() != 1)
-                                     throw std::invalid_argument(
-                                         "All arrays must be 1D");
-                                 v = arr;
-                             } else
-                                 v = py::cast<U>(x);
-                         },
-                         bmp::mp_identity<T>(),
-                         *vargs_it++,
-                         *args_it++);
-                 });
-
-                 // default constructed as monostate to indicate absence of weight
-                 bv2::variant<bv2::monostate, double, c_array_t<double>> weight;
-                 {
-                     auto w = optional_arg(kwargs, "weight");
-                     if(!w.is_none()) {
-                         if(is_pyiterable(w))
-                             weight = py::cast<c_array_t<double>>(w);
-                         else
-                             weight = py::cast<double>(w);
-                     }
-                 }
-
-                 using storage_t = typename histogram_t::storage_type;
-                 bh::detail::static_if<
-                     is_one_of<storage_t, storage::mean, storage::weighted_mean>>(
-                     [&kwargs, &vargs, &weight](auto& h) {
-                         auto s = required_arg(kwargs, "sample");
-                         finalize_args(kwargs);
-
-                         auto sarray = py::cast<c_array_t<double>>(s);
-                         if(sarray.ndim() != 1)
-                             throw std::invalid_argument("Sample array must be 1D");
-
-                         // releasing gil here is safe, we don't manipulate refcounts
-                         py::gil_scoped_release lock;
-                         bv2::visit(
-                             overload(
-                                 [&h, &vargs, &sarray](const bv2::monostate&) {
-                                     h.fill(vargs, bh::sample(sarray));
-                                 },
-                                 [&h, &vargs, &sarray](const auto& w) {
-                                     h.fill(vargs, bh::sample(sarray), bh::weight(w));
-                                 }),
-                             weight);
-                     },
-                     [&kwargs, &vargs, &weight](auto& h) {
-                         finalize_args(kwargs);
-
-                         // releasing gil here is safe, we don't manipulate refcounts
-                         py::gil_scoped_release lock;
-                         bv2::visit(
-                             overload(
-                                 [&h, &vargs](const bv2::monostate&) { h.fill(vargs); },
-                                 [&h, &vargs](const auto& w) {
-                                     h.fill(vargs, bh::weight(w));
-                                 }),
-                             weight);
-                     },
-                     self);
-                 return self;
-             })
+        .def("fill", &fill<histogram_t>)
 
         .def("_reset_row",
              [](histogram_t& self, unsigned ax, int row) {

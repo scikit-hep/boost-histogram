@@ -70,3 +70,28 @@ inline const char* name<weighted_mean>() {
 }
 
 } // namespace storage
+
+namespace pybind11 {
+namespace detail {
+/// Allow a Python int to implicitly convert to an atomic int in C++
+template <>
+struct type_caster<storage::atomic_int::value_type> {
+    PYBIND11_TYPE_CASTER(storage::atomic_int::value_type, _("atomic_int"));
+
+    bool load(handle src, bool) {
+        auto ptr = PyNumber_Long(src.ptr());
+        if(!ptr)
+            return false;
+        value.store(PyLong_AsUnsignedLongLong(ptr));
+        Py_DECREF(ptr);
+        return !PyErr_Occurred();
+    }
+
+    static handle cast(storage::atomic_int::value_type src,
+                       return_value_policy /* policy */,
+                       handle /* parent */) {
+        return PyLong_FromUnsignedLongLong(src.load());
+    }
+};
+} // namespace detail
+} // namespace pybind11

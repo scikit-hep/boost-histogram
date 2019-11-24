@@ -645,15 +645,17 @@ def test_numpy_conversion_5():
 
 
 def test_fill_with_sequence_0():
-    def ar(*args):
+    def fa(*args):
         return np.array(args, dtype=float)
 
-    a = bh.Histogram(bh.axis.Integer(0, 3, underflow=False, overflow=False))
-    a.fill(ar(-1, 0, 1, 2, 1))
-    a.fill((4, -1, 0, 1, 2))
-    assert a[0] == 2
-    assert a[1] == 3
-    assert a[2] == 2
+    def ia(*args):
+        return np.array(args, dtype=int)
+
+    a = bh.Histogram(bh.axis.Integer(0, 2))
+    a.fill(np.array(1))  # 0-dim arrays work
+    a.fill(ia(-1, 0, 1, 2))
+    a.fill((2, 1, 0, -1))
+    assert_array_equal(a.view(True), [2, 2, 3, 2])
 
     with pytest.raises(ValueError):
         a.fill(np.empty((2, 2)))
@@ -667,44 +669,44 @@ def test_fill_with_sequence_0():
     with pytest.raises(IndexError):
         a[1, 2]
 
-    a = bh.Histogram(
-        bh.axis.Integer(0, 2, underflow=False, overflow=False),
-        bh.axis.Regular(2, 0, 2, underflow=False, overflow=False),
+    b = bh.Histogram(bh.axis.Regular(3, 0, 3))
+    b.fill(fa(0, 0, 1, 2))
+    b.fill(ia(1, 0, 2, 2))
+    assert_array_equal(b.view(True), [0, 3, 2, 3, 0])
+
+    c = bh.Histogram(
+        bh.axis.Integer(0, 2, underflow=False, overflow=False), bh.axis.Regular(2, 0, 2)
     )
-    a.fill(ar(-1, 0, 1), ar(-1.0, 1.0, 0.1))
-    assert a[0, 0] == 0
-    assert a[0, 1] == 1
-    assert a[1, 0] == 1
-    assert a[1, 1] == 0
+    c.fill(ia(-1, 0, 1), fa(-1.0, 1.5, 0.5))
+    assert_array_equal(c.view(True), [[0, 0, 1, 0], [0, 1, 0, 0]])
     # we don't support: assert a[[1, 1]].value, 0
 
     with pytest.raises(ValueError):
-        a.fill(1)
+        c.fill(1)
     with pytest.raises(ValueError):
-        a.fill([1, 0, 2], [1, 1])
+        c.fill([1, 0, 2], [1, 1])
 
     # this broadcasts
-    a.fill([1, 0], 1)
+    c.fill([1, 0], -1)
+    assert_array_equal(c.view(True), [[1, 0, 1, 0], [1, 1, 0, 0]])
+    c.fill([1, 0], 0)
+    assert_array_equal(c.view(True), [[1, 1, 1, 0], [1, 2, 0, 0]])
+    c.fill(0, [-1, 0.5, 1.5, 2.5])
+    assert_array_equal(c.view(True), [[2, 2, 2, 1], [1, 2, 0, 0]])
 
     with pytest.raises(IndexError):
-        a[1]
+        c[1]
     with pytest.raises(IndexError):
-        a[1, 2, 3]
-
-    a = bh.Histogram(bh.axis.Integer(0, 3, underflow=False, overflow=False))
-    a.fill(ar(0, 0, 1, 2, 1, 0, 2, 2))
-    assert a[0] == 3
-    assert a[1] == 2
-    assert a[2] == 3
+        c[1, 2, 3]
 
 
 def test_fill_with_sequence_1():
-    def ar(*args):
+    def fa(*args):
         return np.array(args, dtype=float)
 
     a = bh.Histogram(bh.axis.Integer(0, 3), storage=bh.storage.Weight())
-    v = ar(-1, 0, 1, 2, 3, 4)
-    w = ar(2, 3, 4, 5, 6, 7)  # noqa
+    v = fa(-1, 0, 1, 2, 3, 4)
+    w = fa(2, 3, 4, 5, 6, 7)  # noqa
     a.fill(v, weight=w)
     a.fill((0, 1), weight=(2, 3))
 
@@ -767,14 +769,10 @@ def test_fill_with_sequence_1():
 def test_fill_with_sequence_2():
     a = bh.Histogram(bh.axis.StrCategory(["A", "B"]))
     a.fill("A")
+    a.fill(np.array("B"))  # 0-dim array is also accepted
     a.fill(("A", "B", "C"))
-    a.fill(np.array(("D", "A"), dtype="S5"))
-    assert a[0] == 3
-    assert a[1] == 1
-    assert a[bh.overflow] == 2
-
-    with pytest.raises(ValueError):
-        a.fill(np.array("B"))  # ndim == 0 not allowed
+    a.fill(np.array(("D", "B", "A"), dtype="S5"))
+    assert_array_equal(a.view(True), [3, 3, 2])
 
     with pytest.raises(ValueError):
         a.fill(np.array((("B", "A"), ("C", "A"))))  # ndim == 2 not allowed
@@ -784,12 +782,7 @@ def test_fill_with_sequence_2():
         bh.axis.StrCategory(["A", "B"]),
     )
     b.fill((1, 0, 10), ("C", "B", "A"))
-    assert b[0, 0] == 0
-    assert b[1, 0] == 0
-    assert b[0, 1] == 1
-    assert b[1, 1] == 0
-    assert b[0, bh.overflow] == 0
-    assert b[1, bh.overflow] == 1
+    assert_array_equal(b.view(True), [[0, 1, 0], [0, 0, 1]])
 
 
 def test_fill_with_sequence_3():
