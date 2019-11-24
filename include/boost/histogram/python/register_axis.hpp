@@ -179,6 +179,9 @@ py::class_<A> register_axis(py::module& m, Args&&... args) {
             },
             py::keep_alive<0, 1>())
 
+        // This is a property because we hide the flow bins consistently here.
+        // Users should use histogram.to_numpy(True) to get a consistent representation
+        // of edges and the cell matrix, where we can guarantee that both are in sync.
         .def_property_readonly(
             "edges",
             [](const A& ax) { return axis::edges(ax, false); },
