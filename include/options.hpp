@@ -5,11 +5,9 @@
 
 #pragma once
 
-#include <boost/histogram/python/pybind11.hpp>
+#include "pybind11.hpp"
 
 #include <boost/histogram/axis/option.hpp>
-
-using namespace std::literals;
 
 struct options {
     unsigned option;

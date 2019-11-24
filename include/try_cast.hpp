@@ -5,10 +5,12 @@
 
 #pragma once
 
-#include <boost/histogram/python/pybind11.hpp>
+#include "pybind11.hpp"
 
 #include <boost/mp11/algorithm.hpp>
 #include <boost/mp11/list.hpp>
+
+#include <utility>
 
 // end of recursion
 template <class R, class Unary>

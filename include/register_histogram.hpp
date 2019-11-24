@@ -5,7 +5,15 @@
 
 #pragma once
 
-#include <boost/histogram/python/pybind11.hpp>
+#include "pybind11.hpp"
+
+#include "accumulators/ostream.hpp"
+#include "axis.hpp"
+#include "fill.hpp"
+#include "histogram.hpp"
+#include "make_pickle.hpp"
+#include "storage.hpp"
+#include "sum.hpp"
 
 #include <boost/histogram/algorithm/empty.hpp>
 #include <boost/histogram/algorithm/project.hpp>
@@ -13,17 +21,10 @@
 #include <boost/histogram/algorithm/sum.hpp>
 #include <boost/histogram/histogram.hpp>
 #include <boost/histogram/ostream.hpp>
-#include <boost/histogram/python/accumulators/ostream.hpp>
-#include <boost/histogram/python/axis.hpp>
-#include <boost/histogram/python/fill.hpp>
-#include <boost/histogram/python/histogram.hpp>
-#include <boost/histogram/python/make_pickle.hpp>
-#include <boost/histogram/python/storage.hpp>
-#include <boost/histogram/python/sum.hpp>
 #include <boost/histogram/unsafe_access.hpp>
 #include <boost/mp11.hpp>
+
 #include <future>
-#include <pybind11/operators.h>
 #include <sstream>
 #include <string>
 #include <thread>

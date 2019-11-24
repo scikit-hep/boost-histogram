@@ -3,14 +3,14 @@
 // Distributed under the 3-Clause BSD License.  See accompanying
 // file LICENSE or https://github.com/scikit-hep/boost-histogram for details.
 
-#include <boost/histogram/python/pybind11.hpp>
+#include "pybind11.hpp"
 
 #include <pybind11/functional.h>
 #include <pybind11/operators.h>
 
+#include "axis.hpp"
+#include "transform.hpp"
 #include <boost/histogram/axis/regular.hpp>
-#include <boost/histogram/python/axis.hpp>
-#include <boost/histogram/python/transform.hpp>
 
 template <class T, class... Args>
 py::class_<T> register_transform(py::module& mod, Args&&... args) {

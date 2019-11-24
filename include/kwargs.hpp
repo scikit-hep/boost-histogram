@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <boost/histogram/python/pybind11.hpp>
+#include "pybind11.hpp"
 
 /// Get and remove a value from a keyword argument dict
 template <class T = py::object>

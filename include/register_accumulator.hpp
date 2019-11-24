@@ -5,12 +5,11 @@
 
 #pragma once
 
-#include <boost/histogram/python/pybind11.hpp>
+#include "pybind11.hpp"
 
-#include <boost/histogram/python/accumulators/ostream.hpp>
-#include <boost/histogram/python/make_pickle.hpp>
+#include "accumulators/ostream.hpp"
+#include "make_pickle.hpp"
 
-#include <pybind11/operators.h>
 #include <utility>
 
 template <class A, class... Args>

@@ -8,11 +8,11 @@
 
 #pragma once
 
-#include <boost/histogram/accumulators/sum.hpp>
-#include <boost/histogram/python/accumulators/mean.hpp>
-#include <boost/histogram/python/accumulators/weighted_mean.hpp>
-#include <boost/histogram/python/accumulators/weighted_sum.hpp>
+#include "accumulators/mean.hpp"
+#include "accumulators/weighted_mean.hpp"
+#include "accumulators/weighted_sum.hpp"
 
+#include <boost/histogram/accumulators/sum.hpp>
 #include <boost/histogram/detail/counting_streambuf.hpp>
 #include <boost/histogram/fwd.hpp>
 #include <iosfwd>

@@ -6,15 +6,17 @@
 
 #pragma once
 
-#include <boost/histogram/python/pybind11.hpp>
+#include "pybind11.hpp"
 
-#include <algorithm>
+#include "metadata.hpp"
+
 #include <boost/assert.hpp>
 #include <boost/core/nvp.hpp>
 #include <boost/histogram/detail/array_wrapper.hpp>
-#include <boost/histogram/python/metadata.hpp>
 #include <boost/mp11/function.hpp> // mp_or
 #include <boost/mp11/utility.hpp>  // mp_valid
+
+#include <algorithm>
 #include <cstddef>
 #include <string>
 #include <type_traits>

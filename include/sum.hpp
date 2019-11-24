@@ -8,6 +8,7 @@
 #include <boost/histogram/algorithm/sum.hpp>
 #include <boost/histogram/indexed.hpp>
 #include <boost/mp11.hpp>
+
 #include <type_traits>
 
 namespace bh = boost::histogram;

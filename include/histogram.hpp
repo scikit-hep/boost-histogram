@@ -5,16 +5,15 @@
 
 #pragma once
 
-#include <boost/histogram/python/pybind11.hpp>
+#include "pybind11.hpp"
 
-#include <boost/histogram/python/accumulators/mean.hpp>
-#include <boost/histogram/python/accumulators/weighted_mean.hpp>
-#include <boost/histogram/python/accumulators/weighted_sum.hpp>
+#include "accumulators/mean.hpp"
+#include "accumulators/weighted_mean.hpp"
+#include "accumulators/weighted_sum.hpp"
 
 #include <boost/histogram/detail/axes.hpp>
 #include <boost/histogram/histogram.hpp>
 #include <boost/histogram/unsafe_access.hpp>
-#include <type_traits>
 
 namespace pybind11 {
 

@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <boost/histogram/python/pybind11.hpp>
+#include "pybind11.hpp"
 
 #include <pybind11/pytypes.h>
 
