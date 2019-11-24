@@ -58,7 +58,7 @@ void unchecked_set_impl(std::false_type, py::tuple& tup, ssize_t i, T&& t) {
 
 /// Unchecked tuple assign
 template <class T>
-void unchecked_set(py::tuple& tup, unsigned i, T&& t) {
+void unchecked_set(py::tuple& tup, std::size_t i, T&& t) {
     unchecked_set_impl(std::is_base_of<py::object, std::decay_t<T>>{},
                        tup,
                        static_cast<ssize_t>(i),

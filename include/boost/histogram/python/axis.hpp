@@ -9,11 +9,8 @@
 
 #include <boost/histogram/axis.hpp>
 #include <boost/histogram/indexed.hpp>
-#include <boost/histogram/python/axis_setup.hpp>
 #include <boost/histogram/python/regular_numpy.hpp>
 #include <boost/histogram/python/transform.hpp>
-
-#include <boost/core/nvp.hpp>
 
 #include <algorithm>
 #include <cmath>
@@ -21,6 +18,7 @@
 #include <string>
 #include <tuple>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 namespace axis {
@@ -30,6 +28,96 @@ namespace option = bh::axis::option;
 using ogrowth_t  = decltype(option::growth | option::overflow);
 using uogrowth_t = decltype(option::growth | option::underflow | option::overflow);
 using circular_t = decltype(option::circular | option::overflow);
+
+// Must be specialized for each type (compile warning if not)
+template <class T>
+inline const char* string_name();
+
+// Macro to make the string specializations more readable
+#define BHP_SPECIALIZE_NAME(name)                                                      \
+    template <>                                                                        \
+    inline const char* string_name<name>() {                                           \
+        return #name;                                                                  \
+    }
+
+// These match the Python names
+using regular_none
+    = bh::axis::regular<double, bh::use_default, metadata_t, option::none_t>;
+using regular_uflow
+    = bh::axis::regular<double, bh::use_default, metadata_t, option::underflow_t>;
+using regular_oflow
+    = bh::axis::regular<double, bh::use_default, metadata_t, option::overflow_t>;
+using regular_uoflow = bh::axis::regular<double, bh::use_default, metadata_t>;
+using regular_uoflow_growth
+    = bh::axis::regular<double, bh::use_default, metadata_t, uogrowth_t>;
+using regular_circular
+    = bh::axis::regular<double, bh::use_default, metadata_t, circular_t>;
+
+BHP_SPECIALIZE_NAME(regular_none)
+BHP_SPECIALIZE_NAME(regular_uflow)
+BHP_SPECIALIZE_NAME(regular_oflow)
+BHP_SPECIALIZE_NAME(regular_uoflow)
+BHP_SPECIALIZE_NAME(regular_uoflow_growth)
+BHP_SPECIALIZE_NAME(regular_circular)
+
+using regular_pow   = bh::axis::regular<double, bh::axis::transform::pow, metadata_t>;
+using regular_trans = bh::axis::regular<double, func_transform, metadata_t>;
+
+BHP_SPECIALIZE_NAME(regular_pow)
+BHP_SPECIALIZE_NAME(regular_trans)
+
+using variable_none   = bh::axis::variable<double, metadata_t, option::none_t>;
+using variable_uflow  = bh::axis::variable<double, metadata_t, option::underflow_t>;
+using variable_oflow  = bh::axis::variable<double, metadata_t, option::overflow_t>;
+using variable_uoflow = bh::axis::variable<double, metadata_t>;
+using variable_uoflow_growth = bh::axis::variable<double, metadata_t, uogrowth_t>;
+using variable_circular      = bh::axis::variable<double, metadata_t, circular_t>;
+
+BHP_SPECIALIZE_NAME(variable_none)
+BHP_SPECIALIZE_NAME(variable_uflow)
+BHP_SPECIALIZE_NAME(variable_oflow)
+BHP_SPECIALIZE_NAME(variable_uoflow)
+BHP_SPECIALIZE_NAME(variable_uoflow_growth)
+BHP_SPECIALIZE_NAME(variable_circular)
+
+using integer_none     = bh::axis::integer<int, metadata_t, option::none_t>;
+using integer_uoflow   = bh::axis::integer<int, metadata_t>;
+using integer_uflow    = bh::axis::integer<int, metadata_t, option::underflow_t>;
+using integer_oflow    = bh::axis::integer<int, metadata_t, option::overflow_t>;
+using integer_growth   = bh::axis::integer<int, metadata_t, option::growth_t>;
+using integer_circular = bh::axis::integer<int, metadata_t, option::circular_t>;
+
+BHP_SPECIALIZE_NAME(integer_none)
+BHP_SPECIALIZE_NAME(integer_uoflow)
+BHP_SPECIALIZE_NAME(integer_uflow)
+BHP_SPECIALIZE_NAME(integer_oflow)
+BHP_SPECIALIZE_NAME(integer_growth)
+BHP_SPECIALIZE_NAME(integer_circular)
+
+using category_int        = bh::axis::category<int, metadata_t>;
+using category_int_growth = bh::axis::category<int, metadata_t, option::growth_t>;
+
+BHP_SPECIALIZE_NAME(category_int)
+BHP_SPECIALIZE_NAME(category_int_growth)
+
+template <class Options>
+struct category_str_t : bh::axis::category<std::string, metadata_t, Options> {
+    using base_t = bh::axis::category<std::string, metadata_t, Options>;
+    using base_t::base_t;
+
+    // TODO: implement index and update for string_view when we update to C++17
+};
+
+using category_str        = category_str_t<option::overflow_t>;
+using category_str_growth = category_str_t<option::growth_t>;
+
+BHP_SPECIALIZE_NAME(category_str)
+BHP_SPECIALIZE_NAME(category_str_growth)
+
+// Axis defined elsewhere
+BHP_SPECIALIZE_NAME(regular_numpy)
+
+#undef BHP_SPECIALIZE_NAME
 
 // How edges, centers, and widths are handled
 //
@@ -48,16 +136,19 @@ using circular_t = decltype(option::circular | option::overflow);
 // category axis is plotted.
 
 template <class A>
-struct is_integer : std::false_type {};
+constexpr bool is_category(const A&) {
+    return false;
+}
 
 template <class... Ts>
-struct is_integer<bh::axis::integer<int, Ts...>> : std::true_type {};
+constexpr bool is_category(const bh::axis::category<Ts...>&) {
+    return true;
+}
 
-template <class A>
-struct is_category : std::false_type {};
-
-template <class U, class... Ts>
-struct is_category<bh::axis::category<U, Ts...>> : std::true_type {};
+template <class Opts>
+constexpr bool is_category(const category_str_t<Opts>&) {
+    return true;
+}
 
 template <class Continuous, class Discrete, class Integer, class A>
 decltype(auto) select(Continuous&& c, Discrete&& d, Integer&&, const A& ax) {
@@ -87,88 +178,11 @@ decltype(auto) unchecked_bin(const A& ax, bh::axis::index_type i) {
         [i](const auto& ax) -> decltype(auto) {
             return py::make_tuple(ax.value(i), ax.value(i + 1));
         },
-        [i](const auto& ax) -> decltype(auto) { return py::cast(ax.bin(i)); },
+        [i](const auto& ax) -> decltype(auto) {
+            return (!is_category(ax) || i < ax.size()) ? py::cast(ax.bin(i))
+                                                       : py::none();
+        },
         ax);
-}
-
-template <class A>
-py::array bins_impl(const A& ax, bool flow) {
-    const bh::axis::index_type underflow
-        = flow && (bh::axis::traits::options(ax) & option::underflow);
-    const bh::axis::index_type overflow
-        = flow && (bh::axis::traits::options(ax) & option::overflow);
-
-    py::array_t<double> result(
-        {static_cast<std::size_t>(ax.size() + underflow + overflow), std::size_t(2)});
-
-    for(auto i = -underflow; i < ax.size() + overflow; ++i) {
-        result.mutable_at(static_cast<std::size_t>(i + underflow), 0) = ax.value(i);
-        result.mutable_at(static_cast<std::size_t>(i + underflow), 1) = ax.value(i + 1);
-    }
-
-    return std::move(result);
-}
-
-template <class... Ts>
-py::array bins_impl(const bh::axis::integer<int, Ts...>& ax, bool flow) {
-    const bh::axis::index_type underflow
-        = flow && (bh::axis::traits::options(ax) & option::underflow);
-    const bh::axis::index_type overflow
-        = flow && (bh::axis::traits::options(ax) & option::overflow);
-
-    py::array_t<int> result(static_cast<std::size_t>(ax.size() + underflow + overflow));
-
-    for(auto i = -underflow; i < ax.size() + overflow; ++i)
-        result.mutable_at(static_cast<std::size_t>(i)) = ax.value(i);
-
-    return std::move(result);
-}
-
-template <class... Ts>
-py::array bins_impl(const bh::axis::category<int, Ts...>& ax, bool flow) {
-    static_assert(!(std::decay_t<decltype(ax)>::options() & option::underflow),
-                  "discrete axis never has underflow");
-
-    const bh::axis::index_type overflow
-        = flow && (bh::axis::traits::options(ax) & option::overflow);
-
-    py::array_t<int> result(static_cast<std::size_t>(ax.size() + overflow));
-
-    for(auto i = 0; i < ax.size() + overflow; ++i)
-        result.mutable_at(static_cast<std::size_t>(i)) = ax.value(i);
-
-    return std::move(result);
-}
-
-template <class... Ts>
-py::array bins_impl(const bh::axis::category<std::string, Ts...>& ax, bool flow) {
-    using namespace pybind11::literals;
-
-    static_assert(!(std::decay_t<decltype(ax)>::options() & option::underflow),
-                  "discrete axis never has underflow");
-
-    const bh::axis::index_type overflow
-        = flow && (bh::axis::traits::options(ax) & option::overflow);
-
-    const auto n = max_string_length(ax);
-    // TODO: this should return unicode
-    py::array result(py::dtype("S" + std::to_string(n + 1)), ax.size() + overflow);
-
-    for(auto i = 0; i < ax.size() + overflow; i++) {
-        auto sout     = static_cast<char*>(result.mutable_data(i));
-        const auto& s = ax.value(i);
-        std::copy(s.begin(), s.end(), sout);
-        sout[s.size()] = 0;
-    }
-
-    return result;
-}
-
-/// Utility to convert bins of axis to numpy array
-template <class A>
-py::array bins(const A& ax, bool flow = false) {
-    // this indirection is needed by pybind11
-    return bins_impl(ax, flow);
 }
 
 /// Convert continuous axis into numpy.histogram compatible edge array
@@ -245,89 +259,6 @@ py::array_t<double> widths(const A& ax) {
     return result;
 }
 
-// Must be specialized for each type (compile warning if not)
-template <class T>
-inline const char* string_name();
-
-// Macro to make the string specializations more readable
-#define BHP_SPECIALIZE_NAME(name)                                                      \
-    template <>                                                                        \
-    inline const char* string_name<name>() {                                           \
-        return #name;                                                                  \
-    }
-
-// These match the Python names
-using regular_none
-    = bh::axis::regular<double, bh::use_default, metadata_t, option::none_t>;
-using regular_uflow
-    = bh::axis::regular<double, bh::use_default, metadata_t, option::underflow_t>;
-using regular_oflow
-    = bh::axis::regular<double, bh::use_default, metadata_t, option::overflow_t>;
-using regular_uoflow = bh::axis::regular<double, bh::use_default, metadata_t>;
-using regular_uoflow_growth
-    = bh::axis::regular<double, bh::use_default, metadata_t, uogrowth_t>;
-using regular_circular
-    = bh::axis::regular<double, bh::use_default, metadata_t, circular_t>;
-
-BHP_SPECIALIZE_NAME(regular_none)
-BHP_SPECIALIZE_NAME(regular_uflow)
-BHP_SPECIALIZE_NAME(regular_oflow)
-BHP_SPECIALIZE_NAME(regular_uoflow)
-BHP_SPECIALIZE_NAME(regular_uoflow_growth)
-BHP_SPECIALIZE_NAME(regular_circular)
-
-using regular_pow   = bh::axis::regular<double, bh::axis::transform::pow, metadata_t>;
-using regular_trans = bh::axis::regular<double, func_transform, metadata_t>;
-
-BHP_SPECIALIZE_NAME(regular_pow)
-BHP_SPECIALIZE_NAME(regular_trans)
-
-using variable_none   = bh::axis::variable<double, metadata_t, option::none_t>;
-using variable_uflow  = bh::axis::variable<double, metadata_t, option::underflow_t>;
-using variable_oflow  = bh::axis::variable<double, metadata_t, option::overflow_t>;
-using variable_uoflow = bh::axis::variable<double, metadata_t>;
-using variable_uoflow_growth = bh::axis::variable<double, metadata_t, uogrowth_t>;
-using variable_circular      = bh::axis::variable<double, metadata_t, circular_t>;
-
-BHP_SPECIALIZE_NAME(variable_none)
-BHP_SPECIALIZE_NAME(variable_uflow)
-BHP_SPECIALIZE_NAME(variable_oflow)
-BHP_SPECIALIZE_NAME(variable_uoflow)
-BHP_SPECIALIZE_NAME(variable_uoflow_growth)
-BHP_SPECIALIZE_NAME(variable_circular)
-
-using integer_none     = bh::axis::integer<int, metadata_t, option::none_t>;
-using integer_uoflow   = bh::axis::integer<int, metadata_t>;
-using integer_uflow    = bh::axis::integer<int, metadata_t, option::underflow_t>;
-using integer_oflow    = bh::axis::integer<int, metadata_t, option::overflow_t>;
-using integer_growth   = bh::axis::integer<int, metadata_t, option::growth_t>;
-using integer_circular = bh::axis::integer<int, metadata_t, option::circular_t>;
-
-BHP_SPECIALIZE_NAME(integer_none)
-BHP_SPECIALIZE_NAME(integer_uoflow)
-BHP_SPECIALIZE_NAME(integer_uflow)
-BHP_SPECIALIZE_NAME(integer_oflow)
-BHP_SPECIALIZE_NAME(integer_growth)
-BHP_SPECIALIZE_NAME(integer_circular)
-
-using category_int        = bh::axis::category<int, metadata_t>;
-using category_int_growth = bh::axis::category<int, metadata_t, option::growth_t>;
-
-BHP_SPECIALIZE_NAME(category_int)
-BHP_SPECIALIZE_NAME(category_int_growth)
-
-using category_str = bh::axis::category<std::string, metadata_t>;
-using category_str_growth
-    = bh::axis::category<std::string, metadata_t, option::growth_t>;
-
-BHP_SPECIALIZE_NAME(category_str)
-BHP_SPECIALIZE_NAME(category_str_growth)
-
-// Axis defined elsewhere
-BHP_SPECIALIZE_NAME(regular_numpy)
-
-#undef BHP_SPECIALIZE_NAME
-
 } // namespace axis
 
 // The following list is all types supported
@@ -359,3 +290,13 @@ using axis_variant = bh::axis::variant<axis::regular_uoflow,
 
 // This saves a little typing
 using vector_axis_variant = std::vector<axis_variant>;
+
+namespace pybind11 {
+namespace detail {
+
+/// Register axis_variant as a variant for PyBind11
+template <>
+struct type_caster<axis_variant> : variant_caster<axis_variant> {};
+
+} // namespace detail
+} // namespace pybind11

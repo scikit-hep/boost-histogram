@@ -9,7 +9,7 @@
 
 #include <boost/core/nvp.hpp>
 #include <boost/histogram/axis/regular.hpp>
-#include <boost/histogram/python/axis_setup.hpp>
+#include <boost/histogram/python/metadata.hpp>
 
 namespace bh = boost::histogram;
 

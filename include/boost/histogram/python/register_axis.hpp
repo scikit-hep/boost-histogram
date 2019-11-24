@@ -16,6 +16,7 @@
 #include <boost/histogram/python/options.hpp>
 
 #include <algorithm>
+#include <functional>
 #include <iostream>
 #include <pybind11/eval.h>
 #include <pybind11/numpy.h>
@@ -27,138 +28,79 @@
 #include <utility>
 #include <vector>
 
-using namespace std::literals;
+// we overload vectorize index for category axis
+template <class Options>
+auto vectorize(int (bh::axis::category<std::string, metadata_t, Options>::*pindex)(
+    const std::string&) const) {
+    return [pindex](const axis::category_str_t<Options>& self,
+                    py::object arg) -> py::object {
+        auto index = std::mem_fn(pindex);
+        if(py::isinstance<py::str>(arg))
+            return py::cast(index(self, py::cast<std::string>(arg)));
 
-template <class A>
-void vectorized_index_and_value_methods(py::class_<A>& axis) {
-    axis.def("index",
-             py::vectorize(&A::index),
-             "Index for value (or values) on the axis",
-             "x"_a)
-        .def("value", py::vectorize(&A::value), "Value at index (or indices)", "i"_a);
+        if(py::isinstance<py::array>(arg)) {
+            auto arr = py::cast<py::array>(arg);
+            if(arr.ndim() != 1)
+                throw std::invalid_argument("only ndim == 1 supported");
+        }
+
+        auto values = py::cast<py::sequence>(arg);
+        py::array_t<int> indices(values.size());
+
+        auto ip = indices.mutable_data();
+        for(auto v : values) {
+            if(!py::isinstance<py::str>(v))
+                throw std::invalid_argument("input is not a string");
+            *ip++ = index(self, py::cast<std::string>(v));
+        }
+
+        return std::move(indices);
+    };
 }
 
-template <class... Ts>
-void vectorized_index_and_value_methods(
-    py::class_<bh::axis::category<std::string, Ts...>>& axis) {
-    using axis_t = bh::axis::category<std::string, Ts...>;
-    axis.def(
-            "index",
-            [](axis_t& self, py::object arg) -> py::object {
-                if(py::isinstance<py::str>(arg))
-                    return py::cast(self.index(py::cast<std::string>(arg)));
+// we overload vectorize value for category axis
+template <class Result, class U, class Options>
+auto vectorize(Result (bh::axis::category<U, metadata_t, Options>::*pvalue)(int)
+                   const) {
+    return
+        [pvalue](
+            const std::conditional_t<std::is_same<U, std::string>::value,
+                                     axis::category_str_t<Options>,
+                                     bh::axis::category<U, metadata_t, Options>>& self,
+            py::object arg) -> py::object {
+            auto value = std::mem_fn(pvalue);
 
-                auto values = py::cast<py::array>(arg);
+            if(py::isinstance<py::int_>(arg)) {
+                auto i = py::cast<int>(arg);
+                return i < self.size() ? py::cast(value(self, i)) : py::none();
+            }
 
-                std::vector<ssize_t> strides;
-                strides.reserve(static_cast<std::size_t>(values.ndim()));
-                for(unsigned i = 0; i < values.ndim(); ++i)
-                    strides.push_back(values.strides()[i] / values.dtype().itemsize()
-                                      * static_cast<ssize_t>(sizeof(int)));
+            auto indices = py::cast<py::array_t<int>>(arg);
+            if(indices.ndim() != 1)
+                throw std::invalid_argument("only ndim == 1 supported");
 
-                py::array_t<int> indices(
-                    bh::detail::span<const ssize_t>(values.shape(),
-                                                    values.shape() + values.ndim()),
-                    strides);
+            const auto n = static_cast<std::size_t>(indices.size());
+            py::tuple values(n);
 
-                const auto itemsize = values.itemsize();
+            auto pi = indices.data();
+            for(std::size_t k = 0; k < n; ++k) {
+                const auto i = pi[k];
+                unchecked_set(
+                    values, k, i < self.size() ? py::cast(value(self, i)) : py::none());
+            }
 
-                switch(values.dtype().kind()) {
-                case 'S': {
-                    auto pvalues           = static_cast<const char*>(values.data());
-                    const auto pvalues_end = pvalues + itemsize * values.size();
-                    auto pindices          = indices.mutable_data();
-                    for(; pvalues != pvalues_end; pvalues += itemsize) {
-                        auto pend = pvalues;
-                        for(unsigned i = 0; i < itemsize && *pend; ++pend, ++i)
-                            ;
-                        *pindices++ = self.index(std::string(pvalues, pend));
-                    }
-                } break;
-                case 'U': {
-                    // numpy seems to use utf-32 encoding
-                    if(itemsize % 4 != 0)
-                        throw std::invalid_argument(
-                            "itemsize for unicode array is not multiple of 4");
-                    const auto nmax        = itemsize / 4;
-                    auto pvalues           = static_cast<const char*>(values.data());
-                    const auto pvalues_end = pvalues + itemsize * values.size();
-                    auto pindices          = indices.mutable_data();
-                    for(; pvalues != pvalues_end; pvalues += itemsize) {
-                        auto pend  = pvalues;
-                        unsigned n = 0;
-                        while(n < nmax && *pend) {
-                            if(*pend >= 128)
-                                throw std::invalid_argument(
-                                    "only ASCII subset of unicode is allowed");
-                            ++n;
-                            pend += 4;
-                        }
-                        std::string s;
-                        s.reserve(n);
-                        for(auto p = pvalues; p != pend; p += 4)
-                            s.push_back(*p);
-                        *pindices++ = self.index(s);
-                    }
-                } break;
-                case 'O':
-                    throw std::runtime_error("not implemented yet");
-                default:
-                    throw std::invalid_argument(
-                        "argument must be string or sequence of strings");
-                }
-
-                return std::move(indices);
-            },
-            "Index for value (or values) on the axis",
-            "x"_a)
-        .def(
-            "value",
-            [](axis_t& self, py::array_t<int> indices) {
-                const ssize_t itemsize
-                    = (static_cast<ssize_t>(max_string_length(self)) + 1) * 4;
-                // to-do: return object array, since strings are highly redundant
-                std::vector<ssize_t> strides;
-                strides.reserve(static_cast<std::size_t>(indices.ndim()));
-                for(unsigned i = 0; i < indices.ndim(); ++i)
-                    strides.push_back(indices.strides()[i]
-                                      / static_cast<ssize_t>(sizeof(int)) * itemsize);
-                py::array values(py::dtype("U" + std::to_string(itemsize / 4)),
-                                 bh::detail::span<const ssize_t>(
-                                     indices.shape(), indices.shape() + indices.ndim()),
-                                 strides);
-                if(values.dtype().itemsize() != itemsize)
-                    throw std::invalid_argument(
-                        "itemsize of unicode array is not multiple of 4");
-                auto pindices           = indices.data();
-                const auto pindices_end = pindices + indices.size();
-                auto pvalues            = static_cast<char*>(values.mutable_data());
-                for(; pindices != pindices_end; ++pindices, pvalues += itemsize) {
-                    auto ps = pvalues;
-                    for(auto ch : self.value(*pindices)) {
-                        if(ch >= 128)
-                            throw std::invalid_argument(
-                                "only ASCII subset of unicode is allowed");
-                        *ps++ = ch;
-                        *ps++ = 0;
-                        *ps++ = 0;
-                        *ps++ = 0;
-                    }
-                    *ps++ = 0;
-                    *ps++ = 0;
-                    *ps++ = 0;
-                    *ps++ = 0;
-                }
-                return values;
-            },
-            "Value at index (or indices)",
-            "i"_a);
+            return std::move(values);
+        };
 }
 
 /// Add helpers common to all axis types
 template <class A, class... Args>
 py::class_<A> register_axis(py::module& m, Args&&... args) {
     py::class_<A> ax(m, axis::string_name<A>(), std::forward<Args>(args)...);
+
+    // find our vectorize and pybind11::vectorize
+    using ::vectorize;
+    using py::vectorize;
 
     ax.def("__repr__", &shift_to_string<A>)
 
@@ -206,9 +148,8 @@ py::class_<A> register_axis(py::module& m, Args&&... args) {
                           ? -1
                           : 0;
                 const bh::axis::index_type end
-                    = (!axis::is_category<A>::value
-                       && bh::axis::traits::static_options<A>::test(
-                           bh::axis::option::overflow))
+                    = bh::axis::traits::static_options<A>::test(
+                          bh::axis::option::overflow)
                           ? ax.size() + 1
                           : ax.size();
                 if(begin <= i && i < end)
@@ -238,16 +179,23 @@ py::class_<A> register_axis(py::module& m, Args&&... args) {
             },
             py::keep_alive<0, 1>())
 
+        // This is a property because we hide the flow bins consistently here.
+        // Users should use histogram.to_numpy(True) to get a consistent representation
+        // of edges and the cell matrix, where we can guarantee that both are in sync.
         .def_property_readonly(
             "edges",
             [](const A& ax) { return axis::edges(ax, false); },
             "Return bin edges")
         .def_property_readonly("centers", &axis::centers<A>, "Return bin centers")
-        .def_property_readonly("widths", &axis::widths<A>, "Return bin widths");
+        .def_property_readonly("widths", &axis::widths<A>, "Return bin widths")
 
-    vectorized_index_and_value_methods(ax);
+        .def("index",
+             vectorize(&A::index),
+             "Index for value (or values) on the axis",
+             "x"_a)
+        .def("value", vectorize(&A::value), "Value at index (or indices)", "i"_a)
 
-    ax.def(make_pickle<A>());
+        .def(make_pickle<A>());
 
     return ax;
 }
