@@ -175,9 +175,13 @@ register_histogram(py::module& m, const char* name, const char* desc) {
                 unsigned ii = i < 0 ? self.rank() - (unsigned)std::abs(i) : (unsigned)i;
 
                 if(ii < self.rank()) {
-                    const axis_variant& var = bh::unsafe_access::axis(self, ii);
+                    const axis_variant& var = self.axis(ii);
                     return bh::axis::visit(
                         [](auto&& item) -> py::object {
+                            // Here we return a new, no-copy py::object that
+                            // is not yet tied to the histogram. py::keep_alive
+                            // is needed to make sure the histogram is alive as long
+                            // as the axes references are.
                             return py::cast(item, py::return_value_policy::reference);
                         },
                         var);
