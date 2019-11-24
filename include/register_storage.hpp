@@ -5,13 +5,10 @@
 
 #pragma once
 
-#include <boost/histogram/python/pybind11.hpp>
+#include "pybind11.hpp"
 
-#include <boost/histogram/python/make_pickle.hpp>
-#include <boost/histogram/python/storage.hpp>
-
-#include <pybind11/operators.h>
-#include <type_traits>
+#include "make_pickle.hpp"
+#include "storage.hpp"
 
 /// Add helpers common to all storage types
 template <class A>

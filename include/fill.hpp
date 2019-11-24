@@ -5,16 +5,18 @@
 
 #pragma once
 
-#include <boost/histogram/python/pybind11.hpp>
+#include "pybind11.hpp"
+
+#include "axis.hpp"
+#include "kwargs.hpp"
+#include "overload.hpp"
 
 #include <boost/histogram/detail/accumulator_traits.hpp>
 #include <boost/histogram/detail/axes.hpp>
 #include <boost/histogram/histogram.hpp>
-#include <boost/histogram/python/axis.hpp>
-#include <boost/histogram/python/kwargs.hpp>
-#include <boost/histogram/python/overload.hpp>
 #include <boost/mp11.hpp>
 #include <boost/variant2/variant.hpp>
+
 #include <stdexcept>
 #include <type_traits>
 #include <vector>

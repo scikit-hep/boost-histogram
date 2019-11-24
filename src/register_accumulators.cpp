@@ -3,15 +3,15 @@
 // Distributed under the 3-Clause BSD License.  See accompanying
 // file LICENSE or https://github.com/scikit-hep/boost-histogram for details.
 
-#include <boost/histogram/python/pybind11.hpp>
+#include "pybind11.hpp"
 
+#include "accumulators/mean.hpp"
+#include "accumulators/ostream.hpp"
+#include "accumulators/weighted_mean.hpp"
+#include "accumulators/weighted_sum.hpp"
+#include "kwargs.hpp"
+#include "register_accumulator.hpp"
 #include <boost/histogram/accumulators/sum.hpp>
-#include <boost/histogram/python/accumulators/mean.hpp>
-#include <boost/histogram/python/accumulators/ostream.hpp>
-#include <boost/histogram/python/accumulators/weighted_mean.hpp>
-#include <boost/histogram/python/accumulators/weighted_sum.hpp>
-#include <boost/histogram/python/kwargs.hpp>
-#include <boost/histogram/python/register_accumulator.hpp>
 #include <pybind11/operators.h>
 
 /// The mean fill can be implemented once. (sum fill varies slightly)

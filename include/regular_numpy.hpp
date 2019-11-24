@@ -5,11 +5,10 @@
 
 #pragma once
 
-#include <boost/histogram/python/pybind11.hpp>
+#include "metadata.hpp"
 
 #include <boost/core/nvp.hpp>
 #include <boost/histogram/axis/regular.hpp>
-#include <boost/histogram/python/metadata.hpp>
 
 namespace bh = boost::histogram;
 
@@ -27,9 +26,9 @@ class regular_numpy : public bh::axis::regular<double, bh::use_default, metadata
 
     regular_numpy()
         : regular()
-        , stop_(0){};
+        , stop_(0) {}
 
-    boost::histogram::axis::index_type index(value_type v) const {
+    bh::axis::index_type index(value_type v) const {
         return v <= stop_ ? std::min(regular::index(v), size() - 1) : regular::index(v);
     }
 

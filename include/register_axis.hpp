@@ -5,22 +5,23 @@
 
 #pragma once
 
-#include <boost/histogram/python/pybind11.hpp>
+#include "pybind11.hpp"
+
+#include "axis.hpp"
+#include "make_pickle.hpp"
+#include "options.hpp"
 
 #include <boost/histogram/axis/ostream.hpp>
 #include <boost/histogram/axis/traits.hpp>
 #include <boost/histogram/detail/iterator_adaptor.hpp>
 #include <boost/histogram/detail/span.hpp>
-#include <boost/histogram/python/axis.hpp>
-#include <boost/histogram/python/make_pickle.hpp>
-#include <boost/histogram/python/options.hpp>
+
+#include <pybind11/eval.h>
+#include <pybind11/numpy.h>
 
 #include <algorithm>
 #include <functional>
 #include <iostream>
-#include <pybind11/eval.h>
-#include <pybind11/numpy.h>
-#include <pybind11/operators.h>
 #include <sstream>
 #include <stdexcept>
 #include <string>
