@@ -6,6 +6,7 @@ import boost_histogram as bh
 import numpy as np
 from numpy.testing import assert_array_equal
 from io import BytesIO
+import sys
 
 try:
     import cPickle as pickle
@@ -815,3 +816,50 @@ def test_fill_with_sequence_4():
 
     with pytest.raises(ValueError):
         h.fill(["1"], np.arange(2))  # lengths do not match
+
+
+def test_axes_reference():
+    h = bh.Histogram(
+        bh.axis.Regular(10, 0, 1),
+        bh.axis.Regular(20, 2, 4, metadata=12),
+        bh.axis.StrCategory([], growth=True),
+    )
+
+    h.axes[0].metadata = "set1"
+    h.axes[1].metadata = None
+
+    h_copy = h[...]
+
+    assert h_copy.axes[0].metadata == "set1"
+    assert h_copy.axes[1].metadata is None
+
+    assert h_copy.axes[2].size == 0
+
+    h_copy.fill([0.3], [3.2], ["check"])
+
+    assert h_copy.axes[2].size == 1
+
+
+def test_axes_lifetime():
+    h = bh.Histogram(bh.axis.Regular(10, 0, 1, metadata=2))
+
+    ax = h.axes[0]
+
+    # 2 is the minimum refcount, so the *python* object should be deleted
+    # after the del; hopefully the C++ object lives through the axis instance.
+    assert sys.getrefcount(h) == 2
+
+    del h
+
+    assert ax.metadata == 2
+    ax.metadata = 3
+    assert ax.metadata == 3
+
+
+def test_copy_axes():
+    h = bh.Histogram(bh.axis.Regular(10, 0, 1))
+
+    h2 = h.copy()
+
+    h.axes[0].metadata = 1
+    assert h2.axes[0].metadata is None
