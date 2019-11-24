@@ -745,6 +745,7 @@ class TestCategory(Axis):
         for i, r in enumerate(ref):
             assert a.index(r) == i
         assert_array_equal(a.index(ref), [0, 1, 2, 3])
+        assert_array_equal(a.index(np.reshape(ref, (2, 2))), [[0, 1], [2, 3]])
 
     @pytest.mark.parametrize("ref", ([1, 2, 3], ("A", "B", "C")))
     @pytest.mark.parametrize("growth", (False, True))
@@ -756,6 +757,12 @@ class TestCategory(Axis):
         assert_array_equal(a.value(range(3)), ref)
         assert a.value(3) == None
         assert_array_equal(a.value((0, 3)), [ref[0], None])
+        assert_array_equal(
+            a.value(np.array((0, 1, 2, 3))), [ref[0], ref[1], ref[2], None]
+        )
+        # may be added in the future
+        with pytest.raises(ValueError):
+            a.value([[2], [2]])
 
     @pytest.mark.parametrize("ref", ([1, 2, 3], "ABC"))
     @pytest.mark.parametrize("growth", (False, True))
