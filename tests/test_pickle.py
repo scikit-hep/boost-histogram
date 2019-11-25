@@ -199,3 +199,38 @@ def test_pickle_transforms(mod, copy_fn):
     assert ax1 == ax2
     assert_array_equal(ax1.centers, ax2.centers)
     assert_array_equal(ax2.centers, ax3.centers)
+
+
+@pytest.mark.parametrize("copy_fn", copy_fns)
+def test_hist_axes_reference(copy_fn):
+    h = bh.Histogram(bh.axis.Regular(10, 0, 1, metadata=1))
+    h.axes[0].metadata = 2
+
+    # Note: copy does not copy the metadata, but we are *replacing*
+    # the metadata here, so it should be distinct even after a shallow copy.
+    h2 = copy_fn(h)
+
+    assert h2._hist is not h._hist
+    assert h2.axes[0] is not h.axes[0]
+
+    assert h2.axes[0].metadata == 2
+
+    h.axes[0].metadata = 3
+    assert h2._axis(0).metadata == 2
+    assert h2.axes[0].metadata == 2
+
+
+@pytest.mark.parametrize("copy_fn", copy_fns)
+def test_axis_wrapped(copy_fn):
+    ax = bh.axis.Regular(10, 0, 2)
+    ax2 = copy_fn(ax)
+
+    assert ax._ax is not ax2._ax
+
+
+@pytest.mark.parametrize("copy_fn", copy_fns)
+def test_trans_wrapped(copy_fn):
+    tr = bh.axis.transform.Pow(2)
+    tr2 = copy_fn(tr)
+
+    assert tr._this is not tr2._this

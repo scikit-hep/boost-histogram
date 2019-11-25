@@ -83,7 +83,7 @@ class BaseHistogram(object):
             return
 
         if not kwargs and len(axes) == 1 and isinstance(axes[0], BaseHistogram):
-            self._hist = axes[0]._hist.__copy__()  # Replace with copy?
+            self._hist = copy.copy(axes[0]._hist)
             return
 
         # Keyword only trick (change when Python2 is dropped)
@@ -151,6 +151,11 @@ class BaseHistogram(object):
 
     def __idiv__(self, other):
         return self.__class__(self._hist.__idiv__(other._hist))
+
+    def __copy__(self):
+        other = self.__class__.__new__(self.__class__)
+        other._hist = copy.copy(self._hist)
+        return other
 
     @inject_signature("self, *args, weight=None, sample=None")
     def fill(self, *args, **kwargs):
@@ -245,6 +250,17 @@ class Histogram(BaseHistogram):
         self.axes = AxesTuple(self._axis(i) for i in range(self.rank))
 
     __init__.__doc__ = BaseHistogram.__init__.__doc__
+
+    def __copy__(self):
+        other = super(Histogram, self).__copy__()
+        other.axes = AxesTuple(other._axis(i) for i in range(other.rank))
+        return other
+
+    def __deepcopy__(self, memo):
+        other = self.__class__.__new__(self.__class__)
+        other._hist = copy.deepcopy(self._hist, memo)
+        other.axes = AxesTuple(other._axis(i) for i in range(other.rank))
+        return other
 
     def __repr__(self):
         ret = "{self.__class__.__name__}(\n  ".format(self=self)
