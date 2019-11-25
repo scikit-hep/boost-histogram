@@ -137,3 +137,24 @@ inline const char* axis_suffix(const ::func_transform&) { return "_trans"; }
 } // namespace detail
 } // namespace histogram
 } // namespace boost
+
+/// Simple deep copy for any class *without* a python component
+template <class T>
+T deep_copy(const T& input, py::object) {
+    return T(input);
+}
+
+/// Specialization for the case where Python components are present
+/// (Function transform in this case)
+template <>
+inline func_transform deep_copy<func_transform>(const func_transform& input,
+                                                py::object memo) {
+    py::module copy = py::module::import("copy");
+
+    py::object forward = copy.attr("deepcopy")(input._forward_ob, memo);
+    py::object inverse = copy.attr("deepcopy")(input._inverse_ob, memo);
+    py::object convert = copy.attr("deepcopy")(input._convert_ob, memo);
+    py::str name       = copy.attr("deepcopy")(input._name, memo);
+
+    return func_transform(forward, inverse, convert, name);
+}
