@@ -99,6 +99,13 @@ class BaseHistogram(object):
             else:
                 raise KeyError("Only storages allowed in storage argument")
 
+        # Temporary warning mechanism
+        if hasattr(storage, "_warning"):
+            msg = "Please replace storage.{0} with storage.{1}()".format(
+                storage._warning, storage.__class__.__name__
+            )
+            warnings.warn(msg, FutureWarning)
+
         # Allow a tuple to represent a regular axis
         axes = [_arg_shortcut(arg) for arg in axes]
 
