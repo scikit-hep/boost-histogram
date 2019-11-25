@@ -16,10 +16,18 @@
 template <class T, class... Args>
 py::class_<T> register_transform(py::module& mod, Args&&... args) {
     py::class_<T> transform(mod, std::forward<Args>(args)...);
-    transform.def(py::init<T>());
-    transform.def("forward", [](const T& self, double v) { return self.forward(v); });
-    transform.def("inverse", [](const T& self, double v) { return self.inverse(v); });
-    transform.def(make_pickle<T>());
+
+    transform
+
+        .def(py::init<T>())
+        .def("forward", [](const T& self, double v) { return self.forward(v); })
+        .def("inverse", [](const T& self, double v) { return self.inverse(v); })
+        .def(make_pickle<T>())
+        .def("__copy__", [](const T& self) { return T(self); })
+        .def("__deepcopy__", &deep_copy<T>)
+
+        ;
+
     return transform;
 }
 
