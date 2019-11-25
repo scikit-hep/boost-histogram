@@ -8,10 +8,17 @@ from .utils import register, set_family, CPP_FAMILY, MAIN_FAMILY, set_module
 from .sig_tools import inject_signature
 from .kwargs import KWArgs
 
+import copy
+
 
 @set_module("boost_histogram.axis.transform")
 class AxisTransform(object):
     __slots__ = ("_this",)
+
+    def __copy__(self):
+        other = self.__class__.__new__(self.__class__)
+        other._this = copy.copy(self._this)
+        return other
 
     @classmethod
     def _convert_cpp(cls, this):

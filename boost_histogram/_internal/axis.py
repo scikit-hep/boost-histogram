@@ -12,12 +12,18 @@ from .axis_transform import AxisTransform
 from .utils import cast, register, set_family, MAIN_FAMILY, CPP_FAMILY, set_module
 
 import warnings
+import copy
 
 
 # Contains common methods and properties to all axes
 @set_module("boost_histogram.axis")
 class Axis(object):
     __slots__ = ("_ax",)
+
+    def __copy__(self):
+        other = self.__class__.__new__(self.__class__)
+        other._ax = copy.copy(self._ax)
+        return other
 
     def index(self, value):
         """

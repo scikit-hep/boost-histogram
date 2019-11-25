@@ -9,6 +9,7 @@
 #include <pybind11/operators.h>
 
 #include "axis.hpp"
+#include "make_pickle.hpp"
 #include "transform.hpp"
 #include <boost/histogram/axis/regular.hpp>
 
@@ -18,6 +19,7 @@ py::class_<T> register_transform(py::module& mod, Args&&... args) {
     transform.def(py::init<T>());
     transform.def("forward", [](const T& self, double v) { return self.forward(v); });
     transform.def("inverse", [](const T& self, double v) { return self.inverse(v); });
+    transform.def(make_pickle<T>());
     return transform;
 }
 
