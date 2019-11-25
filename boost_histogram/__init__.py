@@ -25,9 +25,8 @@ __all__ = (
 try:
     from . import _core
 except ImportError as err:
-    err.msg += (
-        "\nDid you forget to compile? Use CMake or Setuptools to build, see the readme"
-    )
+    if "_core" in err.msg and "boost_histogram" in err.msg:
+        err.msg += "\nDid you forget to compile? Use CMake or Setuptools to build, see the readme"
     raise err
 
 

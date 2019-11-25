@@ -51,6 +51,21 @@ decltype(auto) make_mean_call() {
     };
 }
 
+template <class T>
+decltype(auto) make_buffer() {
+    return [](T& self) -> py::buffer_info {
+        return py::buffer_info(
+            &self,                              // Pointer to buffer
+            sizeof(T),                          // Size of one scalar
+            py::format_descriptor<T>::format(), // Format registered with
+                                                // PYBIND11_NUMPY_DTYPE
+            0,                                  // Number of dimensions
+            {},                                 // Buffer dimensions
+            {}                                  // Stride
+        );
+    };
+}
+
 void register_accumulators(py::module& accumulators) {
     // Naming convention:
     // If a value is publically available in Boost.Histogram accumulators
@@ -62,7 +77,10 @@ void register_accumulators(py::module& accumulators) {
 
     PYBIND11_NUMPY_DTYPE(weighted_sum, value, variance);
 
-    register_accumulator<weighted_sum>(accumulators, "WeightedSum")
+    register_accumulator<weighted_sum>(
+        accumulators, "WeightedSum", py::buffer_protocol())
+
+        .def_buffer(make_buffer<weighted_sum>())
 
         .def(py::init<const double&>(), "value"_a)
         .def(py::init<const double&, const double&>(), "value"_a, "variance"_a)
@@ -158,7 +176,11 @@ void register_accumulators(py::module& accumulators) {
                          value,
                          sum_of_weighted_deltas_squared);
 
-    register_accumulator<weighted_mean>(accumulators, "WeightedMean")
+    register_accumulator<weighted_mean>(
+        accumulators, "WeightedMean", py::buffer_protocol())
+
+        .def_buffer(make_buffer<weighted_mean>())
+
         .def(py::init<const double&, const double&, const double&, const double&>(),
              "sum_of_weights"_a,
              "sum_of_weights_squared"_a,
@@ -238,7 +260,9 @@ void register_accumulators(py::module& accumulators) {
     using mean = accumulators::mean<double>;
     PYBIND11_NUMPY_DTYPE(mean, count, value, sum_of_deltas_squared);
 
-    register_accumulator<mean>(accumulators, "Mean")
+    register_accumulator<mean>(accumulators, "Mean", py::buffer_protocol())
+        .def_buffer(make_buffer<mean>())
+
         .def(py::init<const double&, const double&, const double&>(),
              "count"_a,
              "value"_a,

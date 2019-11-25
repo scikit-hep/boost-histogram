@@ -472,8 +472,86 @@ class Histogram(BaseHistogram):
             )
 
     def __setitem__(self, index, value):
-        indexes = self._compute_commonindex(index, expand_ellipsis=False)
-        self._hist._at_set(value, *indexes)
+        """
+        There are several supported possibilities:
+
+            h[slice] = array # same size
+
+        If an array is given to a compatible slice, it is set.
+
+            h[a:] = array # One larger
+
+        If an array is given that does not match, if it does match the
+        with-overflow size, it fills that.
+
+        PLANNED (not yet supported):
+
+            h[a:] = h2
+
+        If another histogram is given, that must either match with or without
+        overflow, where the overflow bins must be overflow bins (that is,
+        you cannot set a histogram's flow bins from another histogram that
+        is 2 larger). Bin edges must be a close match, as well. If you don't
+        want this level of type safety, just use ``h[...] = h2.view()``.
+        """
+        indexes = self._compute_commonindex(index, expand_ellipsis=True)
+
+        if isinstance(value, BaseHistogram):
+            raise TypeError("Not supported yet")
+
+        value = np.asarray(value)
+        view = self.view(flow=True)
+
+        # Disallow mismatched data types
+        if len(value.dtype) != len(view.dtype):
+            raise ValueError("Mismatched data types; matching types required")
+
+        # Numpy does not broadcast partial slices, but we would need
+        # to allow it (because we do allow broadcasting up dimensions)
+        # Instead, we simply require matching dimensions.
+        if value.ndim > 0 and value.ndim != len(indexes):
+            raise ValueError(
+                "Setting a histogram with an array must have a matching number of dimensions"
+            )
+
+        for n in range(len(indexes)):
+            request = indexes[n]
+            has_underflow = self.axes[n].options.underflow
+            has_overflow = self.axes[n].options.overflow
+
+            if isinstance(request, slice):
+                # Only consider underflow/overflow if the endpoints are not given
+                use_underflow = has_underflow and request.start is None
+                use_overflow = has_overflow and request.stop is None
+
+                # Make the limits explicit since we may need to shift them
+                start = 0 if request.start is None else request.start
+                stop = len(self.axes[n]) if request.stop is None else request.stop
+                request_len = stop - start
+
+                # If there are not enough dimensions, then treat it like broadcasting
+                if value.ndim == 0 or value.shape[n] == 1:
+                    start = 0 + has_overflow
+                    stop = len(self.axes[n]) + has_underflow
+                elif request_len == value.shape[n]:
+                    start += has_underflow
+                    stop += has_underflow
+                elif request_len + use_underflow + use_overflow == value.shape[n]:
+                    start += has_underflow and not use_underflow
+                    stop += has_underflow + (has_overflow and use_overflow)
+                else:
+                    msg = "Mismatched shapes in dimension {0}".format(n)
+                    msg += ", {0} != {1}".format(value.shape[n], request_len)
+                    if use_underflow or use_overflow:
+                        msg += " or {0}".format(
+                            request_len + use_underflow + use_overflow
+                        )
+                    raise ValueError(msg)
+                indexes[n] = slice(start, stop, request.step)
+            else:
+                indexes[n] = request + has_underflow
+
+        view[tuple(indexes)] = value
 
     def reduce(self, *args):
         """
