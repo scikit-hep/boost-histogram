@@ -108,9 +108,6 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
             },
             "flow"_a = false)
 
-        .def("_copy_in",
-             [](histogram_t& h, py::array_t<double> input) { copy_in(h, input); })
-
         .def(
             "view",
             [](py::object self, bool flow) {

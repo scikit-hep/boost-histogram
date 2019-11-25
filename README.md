@@ -18,8 +18,6 @@ Python bindings for [Boost::Histogram][] ([source][Boost::Histogram source]), a 
 > Please feel free to try out boost-histogram and give feedback.
 > Join the [discussion on gitter][gitter-link] or [open an issue](https://github.com/scikit-hep/boost-histogram/issues)!
 >
-> #### Known issues (develop):
-> * Setting with an array is not yet supported (`h[...] = np.array(...)`).
 
 
 ## Installation
