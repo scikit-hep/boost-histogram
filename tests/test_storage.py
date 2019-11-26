@@ -6,7 +6,7 @@ from numpy.testing import assert_array_equal
 
 @pytest.mark.parametrize(
     "storage",
-    [bh.storage.Int, bh.storage.Double, bh.storage.AtomicInt, bh.storage.Unlimited],
+    [bh.storage.Int64, bh.storage.Double, bh.storage.AtomicInt64, bh.storage.Unlimited],
 )
 def test_setting(storage):
     h = bh.Histogram(bh.axis.Regular(10, 0, 1), storage=storage())

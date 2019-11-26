@@ -84,7 +84,7 @@ def histogram(
 
     # numpy 1d histogram returns integers in some cases
     if "bh_storage" not in kwargs and not (weights or normed or density):
-        kwargs["bh_storage"] = _storage.Int()
+        kwargs["bh_storage"] = _storage.Int64()
 
     if isinstance(bins, str):
         if tuple(int(x) for x in np.__version__.split(".")[:2]) < (1, 13):

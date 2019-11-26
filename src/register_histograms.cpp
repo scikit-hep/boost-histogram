@@ -14,9 +14,9 @@
 void register_histograms(py::module& hist) {
     hist.attr("_axes_limit") = BOOST_HISTOGRAM_DETAIL_AXES_LIMIT;
 
-    register_histogram<storage::int_>(
+    register_histogram<storage::int64>(
         hist,
-        "any_int",
+        "any_int64",
         "N-dimensional histogram for unlimited size data with any axis types.");
 
     register_histogram<storage::unlimited>(
@@ -30,9 +30,9 @@ void register_histograms(py::module& hist) {
         "N-dimensional histogram for real-valued data with weights with any axis "
         "types.");
 
-    register_histogram<storage::atomic_int>(
+    register_histogram<storage::atomic_int64>(
         hist,
-        "any_atomic_int",
+        "any_atomic_int64",
         "N-dimensional histogram for threadsafe integer data with any axis types.");
 
     register_histogram<storage::weight>(

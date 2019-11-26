@@ -26,7 +26,7 @@ def test_threads(benchmark, method):
 @pytest.mark.parametrize("threads", [1, 2, 4, 7])
 def test_threaded_builtin(threads):
     axes = [bh.axis.Regular(1000, 0, 1)]
-    hist_atomic1 = bh.Histogram(*axes, storage=bh.storage.AtomicInt())
+    hist_atomic1 = bh.Histogram(*axes, storage=bh.storage.AtomicInt64())
 
     vals = np.random.rand(10000)
 

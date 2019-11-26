@@ -15,7 +15,7 @@ def test_subclass():
         pass
 
     @bh.utils.set_family(NEW_FAMILY)
-    class MyIntStorage(bh.storage.Int):
+    class MyIntStorage(bh.storage.Int64):
         pass
 
     @bh.utils.set_family(NEW_FAMILY)
