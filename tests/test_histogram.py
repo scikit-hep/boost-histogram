@@ -771,8 +771,10 @@ def test_fill_with_sequence_2():
     a.fill("A")
     a.fill(np.array("B"))  # 0-dim array is also accepted
     a.fill(("A", "B", "C"))
+    assert_array_equal(a.view(True), [2, 2, 1])
     a.fill(np.array(("D", "B", "A"), dtype="S5"))
-    assert_array_equal(a.view(True), [3, 3, 2])
+    a.fill(np.array(("D", "B", "A"), dtype="U1"))
+    assert_array_equal(a.view(True), [4, 4, 3])
 
     with pytest.raises(ValueError):
         a.fill(np.array((("B", "A"), ("C", "A"))))  # ndim == 2 not allowed
@@ -788,12 +790,11 @@ def test_fill_with_sequence_2():
 def test_fill_with_sequence_3():
     h = bh.Histogram(bh.axis.StrCategory([], growth=True))
     h.fill("A")
-    # should use h.axes[...] once that is fixed
-    assert h._axis(0).size == 1
+    assert h.axes[0].size == 1
     h.fill(["A"])
-    assert h._axis(0).size == 1
+    assert h.axes[0].size == 1
     h.fill(["A", "B"])
-    assert h._axis(0).size == 2
+    assert h.axes[0].size == 2
     assert_array_equal(h.view(True), [3, 1])
 
 
@@ -802,9 +803,8 @@ def test_fill_with_sequence_4():
         bh.axis.StrCategory([], growth=True), bh.axis.Integer(0, 0, growth=True)
     )
     h.fill("1", np.arange(2))
-    # should use h.axes[...] once that is fixed
-    assert h._axis(0).size == 1
-    assert h._axis(1).size == 2
+    assert h.axes[0].size == 1
+    assert h.axes[1].size == 2
     assert_array_equal(h.view(True), [[1, 1]])
 
     with pytest.raises(ValueError):
