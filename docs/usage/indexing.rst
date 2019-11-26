@@ -1,3 +1,5 @@
+.. _usage-indexing:
+
 Indexing
 ========
 
@@ -44,9 +46,8 @@ Setting
    h[loc(b)] = v    # Returns the bin containing the value
    h[underflow] = v # Underflow and overflow can be accessed with special tags
 
-   # Not yet supported!
-   h[...] = np.ndarray(...) # Setting with an array or histogram sets the contents if the sizes match
-                            # Overflow can optionally be included
+   h[...] = array(...) # Setting with an array or histogram sets the contents if the sizes match
+                       # Overflow can optionally be included if endpoints are left out
 
 All of this generalizes to multiple dimensions. ``loc(v)`` could return
 categorical bins, but slicing on categories would (currently) not be

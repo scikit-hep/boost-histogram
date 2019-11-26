@@ -1,3 +1,5 @@
+.. _usage-comparison:
+
 Comparison with Boost.Histogram
 ===============================
 
