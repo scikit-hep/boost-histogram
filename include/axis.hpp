@@ -101,16 +101,9 @@ using category_int_growth = bh::axis::category<int, metadata_t, option::growth_t
 BHP_SPECIALIZE_NAME(category_int)
 BHP_SPECIALIZE_NAME(category_int_growth)
 
-template <class Options>
-struct category_str_t : bh::axis::category<std::string, metadata_t, Options> {
-    using base_t = bh::axis::category<std::string, metadata_t, Options>;
-    using base_t::base_t;
-
-    // TODO: implement index and update for string_view when we update to C++17
-};
-
-using category_str        = category_str_t<option::overflow_t>;
-using category_str_growth = category_str_t<option::growth_t>;
+using category_str = bh::axis::category<std::string, metadata_t, option::overflow_t>;
+using category_str_growth
+    = bh::axis::category<std::string, metadata_t, option::growth_t>;
 
 BHP_SPECIALIZE_NAME(category_str)
 BHP_SPECIALIZE_NAME(category_str_growth)
@@ -143,11 +136,6 @@ constexpr bool is_category(const A&) {
 
 template <class... Ts>
 constexpr bool is_category(const bh::axis::category<Ts...>&) {
-    return true;
-}
-
-template <class Opts>
-constexpr bool is_category(const category_str_t<Opts>&) {
     return true;
 }
 

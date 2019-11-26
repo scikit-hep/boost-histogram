@@ -7,7 +7,9 @@
 
 #include "pybind11.hpp"
 
+#include "array_like.hpp"
 #include "axis.hpp"
+#include "fill.hpp"
 #include "make_pickle.hpp"
 #include "options.hpp"
 
@@ -33,65 +35,55 @@
 template <class Options>
 auto vectorize(int (bh::axis::category<std::string, metadata_t, Options>::*pindex)(
     const std::string&) const) {
-    return [pindex](const axis::category_str_t<Options>& self,
+    return [pindex](const bh::axis::category<std::string, metadata_t, Options>& self,
                     py::object arg) -> py::object {
         auto index = std::mem_fn(pindex);
-        if(py::isinstance<py::str>(arg))
-            return py::cast(index(self, py::cast<std::string>(arg)));
 
-        if(py::isinstance<py::array>(arg)) {
-            auto arr = py::cast<py::array>(arg);
-            if(arr.ndim() != 1)
-                throw std::invalid_argument("only ndim == 1 supported");
-        }
+        if(detail::is_value<std::string>(arg))
+            return py::cast(index(self, detail::special_cast<std::string>(arg)));
 
-        auto values = py::cast<py::sequence>(arg);
-        py::array_t<int> indices(values.size());
+        auto indices = array_like<int>(arg);
+        auto values  = detail::special_cast<detail::c_array_t<std::string>>(arg);
 
         auto ip = indices.mutable_data();
-        for(auto v : values) {
-            if(!py::isinstance<py::str>(v))
-                throw std::invalid_argument("input is not a string");
-            *ip++ = index(self, py::cast<std::string>(v));
-        }
+        auto vp = values.data();
+        for(std::size_t i = 0, n = values.size(); i < n; ++i)
+            ip[i] = index(self, vp[i]);
 
         return std::move(indices);
     };
 }
 
 // we overload vectorize value for category axis
-template <class Result, class U, class Options>
-auto vectorize(Result (bh::axis::category<U, metadata_t, Options>::*pvalue)(int)
-                   const) {
-    return
-        [pvalue](
-            const std::conditional_t<std::is_same<U, std::string>::value,
-                                     axis::category_str_t<Options>,
-                                     bh::axis::category<U, metadata_t, Options>>& self,
-            py::object arg) -> py::object {
-            auto value = std::mem_fn(pvalue);
+template <class R, class U, class Options>
+auto vectorize(R (bh::axis::category<U, metadata_t, Options>::*pvalue)(int) const) {
+    return [pvalue](const bh::axis::category<U, metadata_t, Options>& self,
+                    py::object arg) -> py::object {
+        auto value = std::mem_fn(pvalue);
 
-            if(py::isinstance<py::int_>(arg)) {
-                auto i = py::cast<int>(arg);
-                return i < self.size() ? py::cast(value(self, i)) : py::none();
-            }
+        if(detail::is_value<int>(arg)) {
+            auto i = py::cast<int>(arg);
+            return i < self.size() ? py::cast(value(self, i)) : py::none();
+        }
 
-            auto indices = py::cast<py::array_t<int>>(arg);
-            if(indices.ndim() != 1)
-                throw std::invalid_argument("only ndim == 1 supported");
+        auto indices = py::cast<py::array_t<int>>(arg);
 
-            const auto n = static_cast<std::size_t>(indices.size());
-            py::tuple values(n);
+        // this limitation could be removed if we find a way to make object arrays
+        if(indices.ndim() != 1)
+            throw std::invalid_argument("only ndim == 1 supported");
 
-            auto pi = indices.data();
-            for(std::size_t k = 0; k < n; ++k) {
-                const auto i = pi[k];
-                unchecked_set(
-                    values, k, i < self.size() ? py::cast(value(self, i)) : py::none());
-            }
+        const auto n = static_cast<std::size_t>(indices.size());
+        py::tuple values(n);
 
-            return std::move(values);
-        };
+        auto pi = indices.data();
+        for(std::size_t k = 0; k < n; ++k) {
+            const auto i = pi[k];
+            unchecked_set(
+                values, k, i < self.size() ? py::cast(value(self, i)) : py::none());
+        }
+
+        return std::move(values);
+    };
 }
 
 /// Add helpers common to all axis types
