@@ -16,8 +16,8 @@ import numpy as np
 
 _histograms = (
     _core.hist.any_double,
-    _core.hist.any_int,
-    _core.hist.any_atomic_int,
+    _core.hist.any_int64,
+    _core.hist.any_atomic_int64,
     _core.hist.any_unlimited,
     _core.hist.any_weight,
     _core.hist.any_mean,

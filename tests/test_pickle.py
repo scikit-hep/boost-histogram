@@ -37,9 +37,9 @@ accumulators = (
 )
 
 storages = (
-    bh.storage.AtomicInt,
+    bh.storage.AtomicInt64,
     bh.storage.Double,
-    bh.storage.Int,
+    bh.storage.Int64,
     bh.storage.Mean,
     bh.storage.Unlimited,
     bh.storage.Weight,
