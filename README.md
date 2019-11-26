@@ -66,6 +66,7 @@ counts = hist.view()
         * `transform=bh.axis.transform.Log`: Log spacing
         * `transform=bh.axis.transform.Sqrt`: Square root spacing
         * `transform=bh.axis.transform.Pow(v)`: Power spacing
+        * See also the flexible [Function transform](https://boost-histogram.readthedocs.io/en/latest/usage/transforms.html)
     * `bh.axis.Integer(start, stop, underflow=True, overflow=True, growth=False)`: Special high-speed version of `regular` for evenly spaced bins of width 1
     * `bh.axis.Variable([start, edge1, edge2, ..., stop], underflow=True, overflow=True)`: Uneven bin spacing
     * `bh.axis.Category([...], growth=False)`: Integer or string categories
@@ -83,12 +84,12 @@ counts = hist.view()
 
 * Many storage types
     * `bh.storage.Double()`: Doubles for weighted values (default)
-    * `bh.storage.Int()`: 64 bit unsigned integers
+    * `bh.storage.Int64()`: 64-bit unsigned integers
     * `bh.storage.Unlimited()`: Starts small, but can go up to unlimited precision ints or doubles.
-    * `bh.storage.AtomicInt()`: Threadsafe filling, experimental. Does not support growing axis in threads. (`.view` not yet supported`)
-    * `bh.storage.Weight()`: Stores a weight and sum of weights squared. (`.view` not yet supported)
-    * `bh.storage.Mean()`: Accepts a sample and computes the mean of the samples (profile). (`.view` not yet supported)
-    * `bh.storage.WeightedMean()`: Accepts a sample and a weight. It computes the weighted mean of the samples. (`.view` not yet supported)
+    * `bh.storage.AtomicInt64()`: Threadsafe filling, experimental. Does not support growing axis in threads.
+    * `bh.storage.Weight()`: Stores a weight and sum of weights squared.
+    * `bh.storage.Mean()`: Accepts a sample and computes the mean of the samples (profile).
+    * `bh.storage.WeightedMean()`: Accepts a sample and a weight. It computes the weighted mean of the samples.
 * Accumulators
     * `bh.accumulator.Sum`: High accuracy sum (Neumaier) - used by the sum method when summing a numerical histogram
     * `bh.accumulator.WeightedSum`: Tracks a weighted sum and variance
@@ -120,7 +121,13 @@ counts = hist.view()
 
 #### Binaries available:
 
-The easiest way to get boost-histogram is to use a binary wheel. These are the supported platforms for which wheels are produced:
+The easiest way to get boost-histogram is to use a binary wheel, which happens when you run:
+
+```bash
+python -m pip install boost-histogram
+```
+
+These are the supported platforms for which wheels are produced:
 
 | System | Arch | Python versions |
 |---------|-----|------------------|
@@ -145,6 +152,10 @@ If you are on a Linux system that is not part of the "many" in manylinux, such a
 
 The boost-histogram package is available on Conda-Forge, as well. All supported versions are available with the exception of Windows + Python 2.7, which cannot build due to the age of the compiler. Please use Pip if you *really* need Python 2.7 on Windows. You will also need the VS 2015 distributable, as described above.
 
+```
+conda install -c conda-forge boost-histogram
+```
+
 #### Source builds
 
 For a source build, for example from an "sdist" package, the only requirements are a C++14 compatible compiler. The compiler requirements are dictated by Boost.Histogram's C++ requirements: gcc >= 5.5, clang >= 3.8, msvc >= 14.1.
@@ -166,8 +177,11 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for details on how to set up a developm
 
 ## Talks and other documentation/tutorial sources
 
+The [official documentation is here](https://boost-histogram.readthedocs.io/en/latest/index.html), and includes a [quickstart](https://boost-histogram.readthedocs.io/en/latest/usage/quickstart.html).
+
 * [2019-4-15 IRIS-HEP Topical meeting](https://indico.cern.ch/event/803122/)
 * [2019-10-17 PyHEP Histogram session](https://indico.cern.ch/event/833895/contributions/3577833/) - [repo with talks and workbook](https://github.com/henryiii/pres-bhandhist)
+* [2019-11-7 CHEP](https://indico.cern.ch/event/773049/contributions/3473265/)
 
 ---
 

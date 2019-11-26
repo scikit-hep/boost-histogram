@@ -1,13 +1,20 @@
 ### IN DEVELOPMENT
 
+This version fills out most of the remaining features missing from the 0.5.x
+series. The API has changed considerably, providing a more consistent
+experience in Python. The classic API still works in this release, but issues a
+warning and will be removed from the next release.
+
 #### User changes
 
-* Histogram and Axis classes now follow PEP 8 naming scheme (`histogram`->`Histogram`, `regular`->`Regular`, etc.) [#192][]
+* Histogram and Axis classes now follow PEP 8 naming scheme (`histogram`->`Histogram`, `regular`->`Regular`, `int`->`Int64` etc.) [#192][], [#255][]
 * You can now view a histogram with accumulators, with property access such as `h.view().value` [#194][]
 * Circular variable and integer axes added [#231][]
-* Split Category into StrCategory and IntCategory, now allows empty categories when `growth=True` [#221][]
+* Split Category into `StrCategory` and `IntCategory`, now allows empty categories when `growth=True` [#221][]
+* `StrCategory` fills are safer and faster [#239][], [#244][]
 * Added axes transforms [#192][]
 * `Function(forward, inverse)` transform added, allowing ultra-fast C function pointer transforms [#231][]
+* You can now set histogram contents directly [#250][]
 * You can now sum over a range with endpoints [#185][]
 * `h.axes` now has the functions from axis as well. [#183][]
 * `bh.project` has become `bh.sum` [#185][]
@@ -15,11 +22,11 @@
 * Signatures are much nicer in Python 3 [#188][]
 * Reprs are better, various properties like `__module__` are now set correctly [#200][]
 
-
 #### Bug fixes:
 * Unlimited and AtomicInt storages now allow single item access [#194][]
 * `.view()` now no longer makes a copy [#194][]
 * Fixes related to string category axis fills [#233][], [#230][]
+* Axes are no longer copies, support setting metadata [#238][], [#246][]
 
 #### Developer changes
 
@@ -31,7 +38,6 @@
 * Indexing tags now use full UHI instead of workarounds [#185][]
 * Removed log and sqrt special axes types[#231][]
 * Family and registration added, new casting system [#200][]
-
 
 
 [#183]: https://github.com/scikit-hep/boost-histogram/pull/183
@@ -46,6 +52,12 @@
 [#230]: https://github.com/scikit-hep/boost-histogram/pull/230
 [#231]: https://github.com/scikit-hep/boost-histogram/pull/231
 [#233]: https://github.com/scikit-hep/boost-histogram/pull/233
+[#238]: https://github.com/scikit-hep/boost-histogram/pull/238
+[#239]: https://github.com/scikit-hep/boost-histogram/pull/239
+[#244]: https://github.com/scikit-hep/boost-histogram/pull/244
+[#246]: https://github.com/scikit-hep/boost-histogram/pull/246
+[#250]: https://github.com/scikit-hep/boost-histogram/pull/250
+[#255]: https://github.com/scikit-hep/boost-histogram/pull/255
 
 
 ### Version 0.5.2
