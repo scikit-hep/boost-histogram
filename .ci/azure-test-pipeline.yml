@@ -9,22 +9,6 @@ variables:
 
 jobs:
 
-- job: Formatting
-  pool:
-    vmImage: 'ubuntu-16.04'
-  steps:
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: '3.7'
-        architecture: 'x64'
-    - script: python -m pip install pre-commit
-      displayName: Install pre-commit
-    - script: pre-commit run --all
-      displayName: Run pre-commit
-    - script: git diff --exit-code
-      displayName: Display format changes
-      condition: always()
-
 - job: LinuxSDist
   pool:
     vmImage: 'ubuntu-16.04'
