@@ -23,7 +23,7 @@ def thread_fill(axes, threads, vals):
 
 
 def atomic_fill(axes, threads, vals):
-    hist = bh.Histogram(*axes, storage=bh.storage.AtomicInt())
+    hist = bh.Histogram(*axes, storage=bh.storage.AtomicInt64())
     with ThreadPoolExecutor(threads) as pool:
         sz = len(vals) // threads
         pool.map(hist.fill, [vals[i * sz : (i + 1) * sz] for i in range(threads)])

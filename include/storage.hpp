@@ -21,8 +21,8 @@
 namespace storage {
 
 // Names match Python names
-using int_          = bh::dense_storage<uint64_t>;
-using atomic_int    = bh::dense_storage<bh::accumulators::thread_safe<uint64_t>>;
+using int64         = bh::dense_storage<uint64_t>;
+using atomic_int64  = bh::dense_storage<bh::accumulators::thread_safe<uint64_t>>;
 using double_       = bh::dense_storage<double>;
 using unlimited     = bh::unlimited_storage<>;
 using weight        = bh::dense_storage<accumulators::weighted_sum<double>>;
@@ -36,13 +36,13 @@ inline const char* name() {
 }
 
 template <>
-inline const char* name<int_>() {
-    return "int";
+inline const char* name<int64>() {
+    return "int64";
 }
 
 template <>
-inline const char* name<atomic_int>() {
-    return "atomic_int";
+inline const char* name<atomic_int64>() {
+    return "atomic_int64";
 }
 
 template <>
@@ -76,8 +76,8 @@ namespace pybind11 {
 namespace detail {
 /// Allow a Python int to implicitly convert to an atomic int in C++
 template <>
-struct type_caster<storage::atomic_int::value_type> {
-    PYBIND11_TYPE_CASTER(storage::atomic_int::value_type, _("atomic_int"));
+struct type_caster<storage::atomic_int64::value_type> {
+    PYBIND11_TYPE_CASTER(storage::atomic_int64::value_type, _("atomic_int64"));
 
     bool load(handle src, bool) {
         auto ptr = PyNumber_Long(src.ptr());
@@ -88,7 +88,7 @@ struct type_caster<storage::atomic_int::value_type> {
         return !PyErr_Occurred();
     }
 
-    static handle cast(storage::atomic_int::value_type src,
+    static handle cast(storage::atomic_int64::value_type src,
                        return_value_policy /* policy */,
                        handle /* parent */) {
         return PyLong_FromUnsignedLongLong(src.load());

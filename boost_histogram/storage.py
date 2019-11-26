@@ -4,9 +4,9 @@ del absolute_import, division, print_function
 
 __all__ = (
     "Storage",
-    "Int",
+    "Int64",
     "Double",
-    "AtomicInt",
+    "AtomicInt64",
     "Unlimited",
     "Weight",
     "Mean",
@@ -16,9 +16,9 @@ __all__ = (
 
 from ._internal.storage import (
     Storage,
-    Int,
+    Int64,
     Double,
-    AtomicInt,
+    AtomicInt64,
     Unlimited,
     Weight,
     Mean,
@@ -30,7 +30,7 @@ from ._internal.utils import register as _register
 # Warnings to be removed after 0.6
 
 
-int = Int()
+int = Int64()
 int._warning = "int"
 
 double = Double()
@@ -39,7 +39,7 @@ double._warning = "double"
 unlimited = Unlimited()
 unlimited._warning = "unlimited"
 
-atomic_int = AtomicInt()
+atomic_int = AtomicInt64()
 atomic_int._warning = "atomic_int"
 
 weight = Weight()

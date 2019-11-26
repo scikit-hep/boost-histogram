@@ -16,7 +16,7 @@ class Storage(object):
 
 @set_family(MAIN_FAMILY)
 @set_module("boost_histogram.storage")
-class Int(store.int, Storage):
+class Int64(store.int64, Storage):
     pass
 
 
@@ -28,7 +28,7 @@ class Double(store.double, Storage):
 
 @set_family(MAIN_FAMILY)
 @set_module("boost_histogram.storage")
-class AtomicInt(store.atomic_int, Storage):
+class AtomicInt64(store.atomic_int64, Storage):
     pass
 
 
@@ -61,7 +61,7 @@ class WeightedMean(store.weighted_mean, Storage):
 
 @set_family(CPP_FAMILY)
 @set_module("boost_histogram.cpp.storage")
-class int(Int):
+class int64(Int64):
     pass
 
 
@@ -73,7 +73,7 @@ class double(Double):
 
 @set_family(CPP_FAMILY)
 @set_module("boost_histogram.cpp.storage")
-class atomic_int(AtomicInt):
+class atomic_int64(AtomicInt64):
     pass
 
 

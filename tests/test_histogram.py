@@ -150,7 +150,7 @@ def test_fill_1d(flow):
 
 @pytest.mark.parametrize(
     "storage",
-    [bh.storage.Int, bh.storage.Double, bh.storage.Unlimited, bh.storage.AtomicInt],
+    [bh.storage.Int64, bh.storage.Double, bh.storage.Unlimited, bh.storage.AtomicInt64],
 )
 def test_setting(storage):
     h = bh.Histogram(bh.axis.Regular(10, 0, 1), storage=storage())
