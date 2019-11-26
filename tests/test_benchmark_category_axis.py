@@ -11,7 +11,7 @@ def test_IntCategory(benchmark, growth, dtype):
     values = np.random.choice(np.arange(5), size=[100000])
     h = bh.Histogram(
         bh.axis.IntCategory([] if growth else np.arange(4), growth=growth),
-        storage=bh.storage.double,
+        storage=bh.storage.Double(),
     )
 
     def run(h, data):
@@ -28,7 +28,7 @@ def test_StrCategory(benchmark, growth, dtype):
     values = np.random.choice(["A", "B", "C", "D", "E"], size=[100000])
     h = bh.Histogram(
         bh.axis.StrCategory([] if growth else ["A", "B", "C", "D"], growth=growth),
-        storage=bh.storage.double,
+        storage=bh.storage.Double(),
     )
 
     def run(h, data):
