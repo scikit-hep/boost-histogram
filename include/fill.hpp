@@ -10,10 +10,13 @@
 #include "axis.hpp"
 #include "kwargs.hpp"
 #include "overload.hpp"
+#include "vector_string_caster.hpp"
 
 #include <boost/histogram/detail/accumulator_traits.hpp>
 #include <boost/histogram/detail/axes.hpp>
-#include <boost/histogram/histogram.hpp>
+#include <boost/histogram/sample.hpp>
+#include <boost/histogram/unsafe_access.hpp>
+#include <boost/histogram/weight.hpp>
 #include <boost/mp11.hpp>
 #include <boost/variant2/variant.hpp>
 
@@ -41,6 +44,7 @@ struct c_array_t : py::array_t<T, py::array::c_style | py::array::forcecast> {
     std::size_t size() const { return static_cast<std::size_t>(base_t::size()); }
 };
 
+// not actually a numpy array
 template <>
 struct c_array_t<std::string> : std::vector<std::string> {
     using base_t = std::vector<std::string>;
@@ -58,7 +62,7 @@ struct c_array_t<std::string> : std::vector<std::string> {
 
 // for int, double
 template <class T>
-bool is_value(const py::handle& h) {
+bool is_value(py::handle h) {
     if(py::isinstance<py::array>(h) && py::cast<py::array>(h).ndim() > 0)
         return false;
     return PyNumber_Check(h.ptr());
@@ -66,7 +70,7 @@ bool is_value(const py::handle& h) {
 
 // for std::string
 template <>
-bool is_value<std::string>(const py::handle& h) {
+inline bool is_value<std::string>(py::handle h) {
     return py::isinstance<py::str>(h)
            || (py::isinstance<py::array>(h) && py::cast<py::array>(h).ndim() == 0);
 }
@@ -78,7 +82,7 @@ decltype(auto) special_cast(py::handle x) {
 
 // allow conversion of dim 0 arrays
 template <>
-decltype(auto) special_cast<std::string>(py::handle x) {
+inline decltype(auto) special_cast<std::string>(py::handle x) {
     if(py::isinstance<py::array>(x))
         return py::cast<std::string>(py::cast<py::str>(x));
     return py::cast<std::string>(x);
@@ -86,7 +90,7 @@ decltype(auto) special_cast<std::string>(py::handle x) {
 
 // easier than specializing type_caster for c_array_t<std::string>
 template <>
-decltype(auto) special_cast<c_array_t<std::string>>(py::handle x) {
+inline decltype(auto) special_cast<c_array_t<std::string>>(py::handle x) {
     using B = typename c_array_t<std::string>::base_t;
     return py::cast<B>(x);
 }
