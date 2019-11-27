@@ -21,6 +21,27 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Adding folders to keep the structure a bit nicer in IDE's
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+# Make time/memory taken to compile/link available as a setting
+#
+# Useful settings:
+# Linux:
+#   "time"
+#   "time -v"
+#   "time -f '%U user %S system %E elapsed %P CPU %M KB'"
+# macOS:
+#   "time -l"
+# macOS with brew install gnu-time:
+#   "gtime -f '%U user %S system %E elapsed %P CPU %M KB'"
+#
+set(BH_RULE_LAUNCH_COMPILE "" CACHE STRING [=[Use a command, like "time" to wrap the compile]=])
+if(NOT BH_RULE_LAUNCH_COMPILE STREQUAL "")
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${BH_RULE_LAUNCH_COMPILE}")
+endif()
+set(BH_RULE_LAUNCH_LINK "" CACHE STRING [=[Use a command, like "time" to wrap the link]=])
+if(NOT BH_RULE_LAUNCH_LINK STREQUAL "")
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK "${BH_RULE_LAUNCH_LINK}")
+endif()
+
 # This is a standard recipe for setting a default build type
 set(default_build_type "Debug")
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
