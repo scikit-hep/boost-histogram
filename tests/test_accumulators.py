@@ -8,6 +8,8 @@ import numpy as np
 def test_weighted_sum():
     a = bh.accumulators.WeightedSum(1.5, 2.5)
 
+    assert a == bh.accumulators.WeightedSum(1.5, 2.5)
+
     assert a.value == 1.5
     assert a.variance == 2.5
 

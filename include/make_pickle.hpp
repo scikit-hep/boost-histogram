@@ -4,6 +4,42 @@
 // (See accompanying file LICENSE_1_0.txt
 // or copy at http://www.boost.org/LICENSE_1_0.txt)
 
+// Design notes: This uses the Boost.Serialization mechanism without actually using the
+// Boost.Serialization library. The Boost mechanism is an algorithm to recursively break
+// down complex objects into primitives for saving and doing the reverse for loading.
+// When we save, we are building a tuple of Python primitives with this mechanism and
+// when we load, we are doing the reserve. Large buffers of primitive types are best
+// stored by converting them to numpy arrays. This way, we can ride piggy-back on
+// numpy's pickle code for fast loading and saving.
+
+// The Boost approach stores very little meta-data, only a version number. It relies on
+// the fact that the internal structure of the C++ classes is not changed. When you
+// actually change this internal structure, you must also increment this version
+// number and add code to the affected serialize method to load the previous version and
+// the new version.
+//
+// It is very important that there are specializations here for all storages
+// with non-trivial accumulators. A histogram can have very very many cells and
+// the generic serializer converts each cell individually into Python objects
+// which is extremely time consuming. The storages should be specialized in the
+// corresponding header, by providing a specialization of the save and load functions
+//
+// template <class Archive>
+// void save(Archive& ar, const MyClass& c, unsigned version);
+//
+// template <class Archive>
+// void load(Archive& ar, const MyClass& c, unsigned version);
+//
+// or for classes with template arguments, something like
+//
+// template <class Archive, class T0, class T1>
+// void save(Archive& ar, const MyClass<T0, T1>& c, unsigned version);
+//
+// template <class Archive, class T0, class T1>
+// void load(Archive& ar, MyClass<T0, T1>& c, unsigned version);
+//
+// in the global namespace. It should not be necessary to touch the code here.
+
 #pragma once
 
 #include "pybind11.hpp"
@@ -54,10 +90,33 @@ using is_serialization_primitive =
     typename boost::mp11::mp_or<std::is_arithmetic<T>, is_string<T>>::type;
 
 template <class Archive, class T>
+void save(Archive& ar, const T& t, unsigned version) {
+    // default implementation calls serialize method
+    const_cast<T&>(t).serialize(ar, version);
+}
+
+template <class Archive, class T>
+void load(Archive& ar, T& t, unsigned version) {
+    // default implementation calls serialize method
+    static_assert(std::is_const<T>::value == false, "T must be non-const");
+    t.serialize(ar, version);
+}
+
+template <class Archive, class T>
+void split_serialize(std::true_type, Archive& ar, T& t, unsigned version) {
+    load(ar, t, version);
+}
+
+template <class Archive, class T>
+void split_serialize(std::false_type, Archive& ar, const T& t, unsigned version) {
+    save(ar, t, version);
+}
+
+template <class Archive, class T>
 void serialize(Archive& ar, T& t, unsigned version) {
     // default implementation calls serialize method
-    static_assert(std::is_const<T>::value == false, "");
-    t.serialize(ar, version);
+    static_assert(std::is_const<T>::value == false, "T must be non-const");
+    split_serialize(typename Archive::is_loading{}, ar, t, version);
 }
 
 // builds a tuple of Python primitives from C++ primitives
@@ -102,20 +161,24 @@ class tuple_oarchive {
         return *this;
     }
 
-    tuple_oarchive& operator<<(py::object&& obj) {
-        return operator<<(static_cast<const py::object&>(obj));
-    }
-
     tuple_oarchive& operator<<(const py::object& obj) {
         // maybe use growth factor 1.6 and shrink tuple to final size in destructor?
         tup_ = tup_ + py::make_tuple(obj);
         return *this;
     }
 
-    // put specializations here that side-step normal serialization
-    tuple_oarchive& operator<<(py::str& m) {
-        return operator<<(static_cast<py::object&>(m));
+    tuple_oarchive& operator<<(py::object& obj) {
+        return operator<<(static_cast<const py::object&>(obj));
     }
+
+    tuple_oarchive& operator<<(py::object&& obj) {
+        return operator<<(static_cast<const py::object&>(obj));
+    }
+
+    // put specializations here that side-step normal serialization
+    // tuple_oarchive& operator<<(py::str& m) {
+    //     return operator<<(static_cast<py::object&>(m));
+    // }
 
     tuple_oarchive& operator<<(const py::str& m) {
         return operator<<(static_cast<const py::object&>(m));
@@ -123,6 +186,11 @@ class tuple_oarchive {
 
     tuple_oarchive& operator<<(const metadata_t& m) {
         return operator<<(static_cast<const py::object&>(m));
+    }
+
+    template <class T>
+    tuple_oarchive& operator<<(const py::array_t<T>& a) {
+        return operator<<(static_cast<const py::object&>(a));
     }
 
     template <class T>
@@ -229,12 +297,16 @@ class tuple_iarchive {
     }
 
     template <class T>
+    tuple_iarchive& operator>>(py::array_t<T>& a) {
+        return operator>>(static_cast<py::object&>(a));
+    }
+
+    template <class T>
     std::enable_if_t<std::is_arithmetic<T>::value == true, tuple_iarchive&>
     operator>>(std::vector<T>& v) {
         // fast version for vector of arithmetic types
-        py::object obj;
-        this->operator>>(obj);
-        auto a = py::cast<py::array_t<T>>(obj);
+        py::array_t<T> a;
+        this->operator>>(a);
         v.resize(static_cast<std::size_t>(a.size()));
         // sadly we cannot move the memory from the numpy array into the vector
         std::copy(a.data(), a.data() + a.size(), v.begin());

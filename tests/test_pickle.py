@@ -22,28 +22,20 @@ import math
 
 import boost_histogram as bh
 
+
+def pickle_roundtrip_protocol_2(x):
+    return loads(dumps(x, 2))
+
+
+def pickle_roundtrip_protocol_highest(x):
+    return loads(dumps(x, -1))
+
+
 copy_fns = (
-    lambda x: loads(dumps(x, 2)),
-    lambda x: loads(dumps(x, -1)),
+    pickle_roundtrip_protocol_2,
+    pickle_roundtrip_protocol_highest,
     copy.copy,
     copy.deepcopy,
-)
-
-accumulators = (
-    (bh.accumulators.Sum, (12,)),
-    (bh.accumulators.WeightedSum, (1.5, 2.5)),
-    (bh.accumulators.Mean, (5, 1.5, 2.5)),
-    (bh.accumulators.WeightedMean, (1.5, 2.5, 3.5, 4.5)),
-)
-
-storages = (
-    bh.storage.AtomicInt64,
-    bh.storage.Double,
-    bh.storage.Int64,
-    bh.storage.Mean,
-    bh.storage.Unlimited,
-    bh.storage.Weight,
-    bh.storage.WeightedMean,
 )
 
 
@@ -57,7 +49,15 @@ def test_options(copy_fn, opts):
     assert new == orig
 
 
-@pytest.mark.parametrize("accum,args", accumulators)
+@pytest.mark.parametrize(
+    "accum,args",
+    (
+        (bh.accumulators.Sum, (12,)),
+        (bh.accumulators.WeightedSum, (1.5, 2.5)),
+        (bh.accumulators.Mean, (5, 1.5, 2.5)),
+        (bh.accumulators.WeightedMean, (1.5, 2.5, 3.5, 4.5)),
+    ),
+)
 @pytest.mark.parametrize("copy_fn", copy_fns)
 def test_accumulators(accum, args, copy_fn):
     orig = accum(*args)
@@ -140,12 +140,29 @@ def test_metadata_any(axis, args, opts, copy_fn):
 
 
 @pytest.mark.parametrize("copy_fn", copy_fns)
-@pytest.mark.parametrize("storage", storages)
-def test_storage_int(copy_fn, storage):
-    storage = storage()
+@pytest.mark.parametrize(
+    "storage, fill_kwargs",
+    (
+        (bh.storage.AtomicInt64, {}),
+        (bh.storage.Int64, {}),
+        (bh.storage.Unlimited, {}),
+        (bh.storage.Unlimited, {"weight": np.arange(1, 205)}),
+        (bh.storage.Double, {"weight": np.arange(1, 205)}),
+        (bh.storage.Weight, {"weight": np.arange(1, 205)}),
+        (bh.storage.Mean, {"sample": np.arange(1, 205)}),
+        (
+            bh.storage.WeightedMean,
+            {"weight": np.arange(1, 205), "sample": np.arange(1, 205)},
+        ),
+    ),
+)
+def test_storage(copy_fn, storage, fill_kwargs):
+    hist = bh.Histogram(bh.axis.Integer(0, 100), storage=storage())
+    hist.fill(np.arange(204) % 102 - 1, **fill_kwargs)
 
-    new = copy_fn(storage)
-    assert storage == new
+    new = copy_fn(hist)
+    assert_array_equal(hist.view(True), new.view(True))
+    assert new == hist
 
 
 @pytest.mark.parametrize("copy_fn", copy_fns)
