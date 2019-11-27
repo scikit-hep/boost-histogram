@@ -26,9 +26,12 @@ _histograms = (
 
 
 def _arg_shortcut(item):
+    msg = "Developer shortcut: will be removed in a future version"
     if isinstance(item, tuple) and len(item) == 3:
+        warnings.warn(msg, FutureWarning)
         return _core.axis.regular_uoflow(item[0], item[1], item[2], None)
     elif isinstance(item, tuple) and len(item) == 4:
+        warnings.warn(msg, FutureWarning)
         return _core.axis.regular_uoflow(*item)
     elif isinstance(item, Axis):
         return item._ax
