@@ -21,14 +21,14 @@ def histogramdd(
     np = _np  # Hidden to keep module clean
 
     with _KWArgs(kwargs) as k:
-        boost = k.optional("bh", False)
-        storage = k.optional("bh_storage", _storage.Double())
+        bh_object = k.optional("bh_object", False)
+        bh_storage = k.optional("bh_storage", _storage.Double())
 
     if normed is not None:
         raise KeyError(
             "normed=True is not recommended for use in Numpy, and is not supported in boost-histogram; use density=True instead"
         )
-    if density and boost:
+    if density and bh_object:
         raise KeyError(
             "boost-histogram does not support the density keyword when returning a boost-histogram object"
         )
@@ -64,16 +64,16 @@ def histogramdd(
             axs.append(_axis.Variable(b))
 
     if weights is None:
-        hist = _hist.Histogram(*axs, storage=storage).fill(*a)
+        hist = _hist.Histogram(*axs, storage=bh_storage).fill(*a)
     else:
-        hist = _hist.Histogram(*axis, storage=storage).fill(*a, weight=weights)
+        hist = _hist.Histogram(*axis, storage=bh_storage).fill(*a, weight=weights)
 
     if density:
         areas = np.prod(hist.axes.widths, axis=0)
         density = hist.view() / hist.sum() / areas
         return (density,) + hist.to_numpy()[1:]
 
-    return hist if boost else hist.to_numpy()
+    return hist if bh_object else hist.to_numpy()
 
 
 def histogram2d(
@@ -109,7 +109,7 @@ for f, n in zip(
     H = """\
     Return a boost-histogram object using the same arguments as numpy's {}.
     This does not support the deprecated normed=True argument. Two extra
-    arguments are added: bh=True will enable object based output, and
+    arguments are added: bh_object=True will enable object based output, and
     bh_storage=... lets you set the storage used.
     """
 
