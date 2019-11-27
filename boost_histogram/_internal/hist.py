@@ -330,18 +330,25 @@ class Histogram(BaseHistogram):
                 ret += " ({0} with flow)".format(outer)
         return ret
 
-    def _compute_commonindex(self, index, expand_ellipsis):
+    def _compute_commonindex(self, index):
+        """
+        Takes indices and returns two iterables; one is a tuple or dict of the
+        original, Ellipsis expanded index, and the other returns index,
+        operation value pairs.
+        """
         # Shorten the computations with direct access to raw object
         hist = self._hist
+
+        # Support dict access
+        if isinstance(index, dict):
+            return index, index.items()
+
         # Normalize -> h[i] == h[i,]
-        if not isinstance(index, tuple):
+        elif not isinstance(index, tuple):
             index = (index,)
 
         # Now a list
-        if expand_ellipsis:
-            indexes = _expand_ellipsis(index, hist.rank())
-        else:
-            indexes = list(index)
+        indexes = _expand_ellipsis(index, hist.rank())
 
         if len(indexes) != hist.rank():
             raise IndexError("Wrong number of indices for histogram")
@@ -360,7 +367,7 @@ class Histogram(BaseHistogram):
                     raise IndexError("histogram index is out of range")
                 indexes[i] %= hist.axis(i).size
 
-        return indexes
+        return indexes, enumerate(indexes)
 
     def axis(self, i):
         """
@@ -455,13 +462,14 @@ class Histogram(BaseHistogram):
 
     def __getitem__(self, index):
 
-        indexes = self._compute_commonindex(index, expand_ellipsis=True)
+        indexes, iterator = self._compute_commonindex(index)
 
         # If this is (now) all integers, return the bin contents
-        try:
-            return self._hist.at(*indexes)
-        except RuntimeError:
-            pass
+        if not isinstance(indexes, dict):
+            try:
+                return self._hist.at(*indexes)
+            except RuntimeError:
+                pass
 
         integrations = set()
         slices = []
@@ -469,7 +477,7 @@ class Histogram(BaseHistogram):
         zeroes_stop = []
 
         # Compute needed slices and projections
-        for i, ind in enumerate(indexes):
+        for i, ind in iterator:
             if not isinstance(ind, slice):
                 raise IndexError(
                     "Invalid arguments as an index, use all integers "
@@ -549,7 +557,7 @@ class Histogram(BaseHistogram):
         is 2 larger). Bin edges must be a close match, as well. If you don't
         want this level of type safety, just use ``h[...] = h2.view()``.
         """
-        indexes = self._compute_commonindex(index, expand_ellipsis=True)
+        indexes, iterator = self._compute_commonindex(index)
 
         if isinstance(value, BaseHistogram):
             raise TypeError("Not supported yet")
@@ -569,8 +577,7 @@ class Histogram(BaseHistogram):
                 "Setting a histogram with an array must have a matching number of dimensions"
             )
 
-        for n in range(len(indexes)):
-            request = indexes[n]
+        for n, request in iterator:
             has_underflow = self.axes[n].options.underflow
             has_overflow = self.axes[n].options.overflow
 
@@ -607,59 +614,6 @@ class Histogram(BaseHistogram):
                 indexes[n] = request + has_underflow
 
         view[tuple(indexes)] = value
-
-    def reduce(self, axis_dict):
-        """
-        Reduce based on a dictionary that maps axis numbers with actions.
-        Valid actions are:
-
-        * One number: A rebin
-        * A tuple of two numbers: a slice. Supports UHI locators (such as bh.loc)
-        * A tuple of three numbers: A slice with a rebin.
-
-        If multiple axes are given, these operations will be fused at the C++ level for performance.
-
-        Examples
-        --------
-
-            h.reduce({0: 2})                # rebin axis 0 by two
-            h.reduce({1: (0, bh.loc(3.5))}) # slice axis 1 from 0 to the data coordinate 3.5
-            h.reduce({7: (0, 2, 4)})        # slice and rebin axis 7
-
-        """
-
-        actions = []
-        for key, value in axis_dict.items():
-            try:
-                values = tuple(value)
-            except TypeError:
-                values = (value,)
-
-            if len(values) == 1:  # rebin only
-                action = _core.algorithm.rebin(key, value)  # Single tuple not supported
-
-            elif len(values) == 2:  # Slice only
-                upper, lower = values
-                if callable(upper):
-                    upper = upper(self.axes[key])
-                if callable(lower):
-                    lower = lower(self.axes[key])
-                action = _core.algorithm.slice(upper, lower)
-
-            elif len(value) == 3:  # Slice and rebin
-                upper, lower, rebin = values
-                if callable(upper):
-                    upper = upper(self.axes[key])
-                if callable(lower):
-                    lower = lower(self.axes[key])
-                action = _core.algorithm.slice_and_rebin(upper, lower, rebin)
-
-            else:
-                raise ValueError("Only 1, 2, or 3 values accepted for each axis")
-
-            actions.append(action)
-
-        return self._reduce(*actions)
 
     def project(self, *args):
         """

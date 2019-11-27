@@ -441,21 +441,21 @@ def test_project():
 def test_shrink_1d():
     h = bh.Histogram(bh.axis.Regular(20, 1, 5))
     h.fill(1.1)
-    hs = h.reduce({0: (bh.loc(1), bh.loc(2))})
+    hs = h[{0: slice(bh.loc(1), bh.loc(2))}]
     assert_array_equal(hs.view(), [1, 0, 0, 0, 0])
 
 
 def test_rebin_1d():
     h = bh.Histogram(bh.axis.Regular(20, 1, 5))
     h.fill(1.1)
-    hs = h.reduce({0: 4})
+    hs = h[{0: slice(None, None, bh.rebin(4))}]
     assert_array_equal(hs.view(), [1, 0, 0, 0, 0])
 
 
 def test_shrink_rebin_1d():
     h = bh.Histogram(bh.axis.Regular(20, 0, 4))
     h.fill(1.1)
-    hs = h.reduce({0: (bh.loc(1), bh.loc(3), 2)})
+    hs = h[{0: slice(bh.loc(1), bh.loc(3), bh.rebin(2))}]
     assert_array_equal(hs.view(), [1, 0, 0, 0, 0])
 
 
