@@ -11,12 +11,13 @@
 #include "accumulators/weighted_mean.hpp"
 #include "accumulators/weighted_sum.hpp"
 
-#include <boost/histogram/accumulators/sum.hpp>
 #include <boost/histogram/accumulators/thread_safe.hpp>
 #include <boost/histogram/storage_adaptor.hpp>
 #include <boost/histogram/unlimited_storage.hpp>
 
+#include <algorithm>
 #include <cstdint>
+#include <type_traits>
 
 namespace storage {
 
@@ -71,6 +72,106 @@ inline const char* name<weighted_mean>() {
 }
 
 } // namespace storage
+
+// It is very important that storages with accumulators have specialized serialization.
+// No specializations needed for dense_storage<ArithmeticType> or unlimited_storage.
+
+template <class Archive>
+void save(Archive& ar, const storage::atomic_int64& s, unsigned /* version */) {
+    // We cannot view the memory as a numpy array, because the internal layout of
+    // std::atomic is undefined. So no reinterpret_casts are allowed.
+    py::array_t<std::int64_t> a(s.size());
+    std::copy(s.begin(), s.end(), a.mutable_data());
+    ar << a;
+}
+
+template <class Archive>
+void load(Archive& ar, storage::atomic_int64& s, unsigned /* version */) {
+    // data is stored as flat numpy array
+    py::array_t<std::int64_t> a;
+    ar >> a;
+    s.resize(static_cast<std::size_t>(a.size()));
+    // sadly we cannot move the memory from the numpy array into the vector
+    std::copy(a.data(), a.data() + a.size(), s.data());
+}
+
+template <class Archive>
+void save(Archive& ar,
+          const bh::dense_storage<accumulators::weighted_sum<double>>& s,
+          unsigned /* version */) {
+    using T = accumulators::weighted_sum<double>;
+    static_assert(std::is_standard_layout<T>::value
+                      && std::is_trivially_copyable<T>::value
+                      && sizeof(T) == 2 * sizeof(double),
+                  "weighted_sum cannot be fast serialized");
+    // view storage buffer as flat numpy array
+    py::array_t<double> a(s.size() * 2, reinterpret_cast<const double*>(s.data()));
+    ar << a;
+}
+
+template <class Archive>
+void load(Archive& ar,
+          bh::dense_storage<accumulators::weighted_sum<double>>& s,
+          unsigned /* version */) {
+    // data is stored as flat numpy array
+    py::array_t<double> a;
+    ar >> a;
+    s.resize(static_cast<std::size_t>(a.size() / 2));
+    // sadly we cannot move the memory from the numpy array into the vector
+    std::copy(a.data(), a.data() + a.size(), reinterpret_cast<double*>(s.data()));
+}
+
+template <class Archive>
+void save(Archive& ar,
+          const bh::dense_storage<accumulators::mean<double>>& s,
+          unsigned /* version */) {
+    using T = accumulators::mean<double>;
+    static_assert(std::is_standard_layout<T>::value
+                      && std::is_trivially_copyable<T>::value
+                      && sizeof(T) == 3 * sizeof(double),
+                  "mean cannot be fast serialized");
+    // view storage buffer as flat numpy array
+    py::array_t<double> a(s.size() * 3, reinterpret_cast<const double*>(s.data()));
+    ar << a;
+}
+
+template <class Archive>
+void load(Archive& ar,
+          bh::dense_storage<accumulators::mean<double>>& s,
+          unsigned /* version */) {
+    // data is stored as flat numpy array
+    py::array_t<double> a;
+    ar >> a;
+    s.resize(static_cast<std::size_t>(a.size() / 3));
+    // sadly we cannot move the memory from the numpy array into the vector
+    std::copy(a.data(), a.data() + a.size(), reinterpret_cast<double*>(s.data()));
+}
+
+template <class Archive>
+void save(Archive& ar,
+          const bh::dense_storage<accumulators::weighted_mean<double>>& s,
+          unsigned /* version */) {
+    using T = accumulators::weighted_mean<double>;
+    static_assert(std::is_standard_layout<T>::value
+                      && std::is_trivially_copyable<T>::value
+                      && sizeof(T) == 4 * sizeof(double),
+                  "weighted_mean cannot be fast serialized");
+    // view storage buffer as flat numpy array
+    py::array_t<double> a(s.size() * 4, reinterpret_cast<const double*>(s.data()));
+    ar << a;
+}
+
+template <class Archive>
+void load(Archive& ar,
+          bh::dense_storage<accumulators::weighted_mean<double>>& s,
+          unsigned /* version */) {
+    // data is stored as flat numpy array
+    py::array_t<double> a;
+    ar >> a;
+    s.resize(static_cast<std::size_t>(a.size() / 4));
+    // sadly we cannot move the memory from the numpy array into the vector
+    std::copy(a.data(), a.data() + a.size(), reinterpret_cast<double*>(s.data()));
+}
 
 namespace pybind11 {
 namespace detail {
