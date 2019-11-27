@@ -126,7 +126,7 @@ class BaseHistogram(object):
         raise TypeError("Unsupported storage")
 
     def __array__(self):
-        return self.view()
+        return _to_view(self._hist.view(False))
 
     def __add__(self, other):
         return self.__class__(self._hist + other._hist)
@@ -608,7 +608,7 @@ class Histogram(BaseHistogram):
 
         view[tuple(indexes)] = value
 
-        # def reduce(self, axis_dict):
+    def reduce(self, axis_dict):
         """
         Reduce based on a dictionary that maps axis numbers with actions.
         Valid actions are:
@@ -628,7 +628,38 @@ class Histogram(BaseHistogram):
 
         """
 
-        # return self.__class__(self._hist.reduce(*args))
+        actions = []
+        for key, value in axis_dict.items():
+            try:
+                values = tuple(value)
+            except TypeError:
+                values = (value,)
+
+            if len(values) == 1:  # rebin only
+                action = _core.algorithm.rebin(key, value)  # Single tuple not supported
+
+            elif len(values) == 2:  # Slice only
+                upper, lower = values
+                if callable(upper):
+                    upper = upper(self.axes[key])
+                if callable(lower):
+                    lower = lower(self.axes[key])
+                action = _core.algorithm.slice(upper, lower)
+
+            elif len(value) == 3:  # Slice and rebin
+                upper, lower, rebin = values
+                if callable(upper):
+                    upper = upper(self.axes[key])
+                if callable(lower):
+                    lower = lower(self.axes[key])
+                action = _core.algorithm.slice_and_rebin(upper, lower, rebin)
+
+            else:
+                raise ValueError("Only 1, 2, or 3 values accepted for each axis")
+
+            actions.append(action)
+
+        return self._reduce(*actions)
 
     def project(self, *args):
         """
