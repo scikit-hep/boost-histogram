@@ -18,11 +18,11 @@
 // number and add code to the affected serialize method to load the previous version and
 // the new version.
 //
-// It is very important that there are specializations here for all storages
-// with non-trivial accumulators. A histogram can have very very many cells and
-// the generic serializer converts each cell individually into Python objects
-// which is extremely time consuming. The storages should be specialized in the
-// corresponding header, by providing a specialization of the save and load functions
+// It is very important that there are specializations for all storages with non-trivial
+// accumulators. A histogram can have very very many cells and the generic serializer
+// converts each cell individually into Python objects which is extremely time
+// consuming. The storages should be specialized in the corresponding header file that
+// includes the storages, by providing a specialization of the save and load functions
 //
 // template <class Archive>
 // void save(Archive& ar, const MyClass& c, unsigned version);
@@ -329,9 +329,8 @@ class tuple_iarchive {
     std::enable_if_t<std::is_arithmetic<T>::value == true, tuple_iarchive&>
     operator>>(bh::detail::array_wrapper<T>& w) {
         // fast version
-        py::object obj;
-        this->operator>>(obj);
-        auto a = py::cast<py::array_t<T>>(obj);
+        py::array_t<T> a;
+        this->operator>>(a);
         // buffer wrapped by array_wrapper must already have correct size
         BOOST_ASSERT(static_cast<std::size_t>(a.size()) == w.size);
         // sadly we cannot move the memory from the numpy array into the vector

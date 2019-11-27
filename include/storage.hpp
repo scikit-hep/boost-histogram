@@ -11,12 +11,13 @@
 #include "accumulators/weighted_mean.hpp"
 #include "accumulators/weighted_sum.hpp"
 
-#include <boost/histogram/accumulators/sum.hpp>
 #include <boost/histogram/accumulators/thread_safe.hpp>
 #include <boost/histogram/storage_adaptor.hpp>
 #include <boost/histogram/unlimited_storage.hpp>
 
+#include <algorithm>
 #include <cstdint>
+#include <type_traits>
 
 namespace storage {
 
@@ -74,6 +75,25 @@ inline const char* name<weighted_mean>() {
 
 // It is very important that storages with accumulators have specialized serialization.
 // No specializations needed for dense_storage<ArithmeticType> or unlimited_storage.
+
+template <class Archive>
+void save(Archive& ar, const storage::atomic_int64& s, unsigned /* version */) {
+    // We cannot view the memory as a numpy array, because the internal layout of
+    // std::atomic is undefined. So no reinterpret_casts are allowed.
+    py::array_t<std::int64_t> a(s.size());
+    std::copy(s.begin(), s.end(), a.mutable_data());
+    ar << a;
+}
+
+template <class Archive>
+void load(Archive& ar, storage::atomic_int64& s, unsigned /* version */) {
+    // data is stored as flat numpy array
+    py::array_t<std::int64_t> a;
+    ar >> a;
+    s.resize(static_cast<std::size_t>(a.size()));
+    // sadly we cannot move the memory from the numpy array into the vector
+    std::copy(a.data(), a.data() + a.size(), s.data());
+}
 
 template <class Archive>
 void save(Archive& ar,
