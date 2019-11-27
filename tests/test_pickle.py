@@ -22,28 +22,20 @@ import math
 
 import boost_histogram as bh
 
+
+def pickle_roundtrip_protocol_2(x):
+    return loads(dumps(x, 2))
+
+
+def pickle_roundtrip_protocol_highest(x):
+    return loads(dumps(x, -1))
+
+
 copy_fns = (
-    lambda x: loads(dumps(x, 2)),
-    lambda x: loads(dumps(x, -1)),
+    pickle_roundtrip_protocol_2,
+    pickle_roundtrip_protocol_highest,
     copy.copy,
     copy.deepcopy,
-)
-
-accumulators = (
-    (bh.accumulators.Sum, (12,)),
-    (bh.accumulators.WeightedSum, (1.5, 2.5)),
-    (bh.accumulators.Mean, (5, 1.5, 2.5)),
-    (bh.accumulators.WeightedMean, (1.5, 2.5, 3.5, 4.5)),
-)
-
-storages = (
-    bh.storage.AtomicInt64,
-    bh.storage.Double,
-    bh.storage.Int64,
-    bh.storage.Mean,
-    bh.storage.Unlimited,
-    bh.storage.Weight,
-    bh.storage.WeightedMean,
 )
 
 
@@ -57,7 +49,15 @@ def test_options(copy_fn, opts):
     assert new == orig
 
 
-@pytest.mark.parametrize("accum,args", accumulators)
+@pytest.mark.parametrize(
+    "accum,args",
+    (
+        (bh.accumulators.Sum, (12,)),
+        (bh.accumulators.WeightedSum, (1.5, 2.5)),
+        (bh.accumulators.Mean, (5, 1.5, 2.5)),
+        (bh.accumulators.WeightedMean, (1.5, 2.5, 3.5, 4.5)),
+    ),
+)
 @pytest.mark.parametrize("copy_fn", copy_fns)
 def test_accumulators(accum, args, copy_fn):
     orig = accum(*args)
@@ -140,12 +140,35 @@ def test_metadata_any(axis, args, opts, copy_fn):
 
 
 @pytest.mark.parametrize("copy_fn", copy_fns)
-@pytest.mark.parametrize("storage", storages)
-def test_storage_int(copy_fn, storage):
-    storage = storage()
+@pytest.mark.parametrize(
+    "storage, extra",
+    (
+        (bh.storage.AtomicInt64, {}),
+        (bh.storage.Int64, {}),
+        (bh.storage.Unlimited, {}),
+        (bh.storage.Unlimited, {"weight"}),
+        (bh.storage.Double, {"weight"}),
+        (bh.storage.Weight, {"weight"}),
+        (bh.storage.Mean, {"sample"}),
+        (bh.storage.WeightedMean, {"weight", "sample"}),
+    ),
+)
+def test_storage(copy_fn, storage, extra):
+    n = 10000  # make large enough so that slow pickling becomes noticable
+    hist = bh.Histogram(bh.axis.Integer(0, n), storage=storage())
+    x = np.arange(2 * (n + 2)) % (n + 2) - 1
+    if extra == {}:
+        hist.fill(x)
+    elif extra == {"weight"}:
+        hist.fill(x, weight=np.arange(2 * n + 4) + 1)
+    elif extra == {"sample"}:
+        hist.fill(x, sample=np.arange(2 * n + 4) + 1)
+    else:
+        hist.fill(x, weight=np.arange(2 * n + 4) + 1, sample=np.arange(2 * n + 4) + 1)
 
-    new = copy_fn(storage)
-    assert storage == new
+    new = copy_fn(hist)
+    assert_array_equal(hist.view(True), new.view(True))
+    assert new == hist
 
 
 @pytest.mark.parametrize("copy_fn", copy_fns)
