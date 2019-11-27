@@ -139,6 +139,7 @@ def test_metadata_any(axis, args, opts, copy_fn):
     assert new == orig
 
 
+@pytest.mark.benchmark(group="histogram-pickling")
 @pytest.mark.parametrize("copy_fn", copy_fns)
 @pytest.mark.parametrize(
     "storage, extra",
@@ -153,8 +154,8 @@ def test_metadata_any(axis, args, opts, copy_fn):
         (bh.storage.WeightedMean, {"weight", "sample"}),
     ),
 )
-def test_storage(copy_fn, storage, extra):
-    n = 10000  # make large enough so that slow pickling becomes noticable
+def test_storage(benchmark, copy_fn, storage, extra):
+    n = 10000  # Make large enough so that slow pickling becomes noticable
     hist = bh.Histogram(bh.axis.Integer(0, n), storage=storage())
     x = np.arange(2 * (n + 2)) % (n + 2) - 1
     if extra == {}:
@@ -166,7 +167,7 @@ def test_storage(copy_fn, storage, extra):
     else:
         hist.fill(x, weight=np.arange(2 * n + 4) + 1, sample=np.arange(2 * n + 4) + 1)
 
-    new = copy_fn(hist)
+    new = benchmark(copy_fn, hist)
     assert_array_equal(hist.view(True), new.view(True))
     assert new == hist
 
