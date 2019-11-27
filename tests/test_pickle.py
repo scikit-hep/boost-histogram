@@ -141,24 +141,30 @@ def test_metadata_any(axis, args, opts, copy_fn):
 
 @pytest.mark.parametrize("copy_fn", copy_fns)
 @pytest.mark.parametrize(
-    "storage, fill_kwargs",
+    "storage, extra",
     (
         (bh.storage.AtomicInt64, {}),
         (bh.storage.Int64, {}),
         (bh.storage.Unlimited, {}),
-        (bh.storage.Unlimited, {"weight": np.arange(1, 205)}),
-        (bh.storage.Double, {"weight": np.arange(1, 205)}),
-        (bh.storage.Weight, {"weight": np.arange(1, 205)}),
-        (bh.storage.Mean, {"sample": np.arange(1, 205)}),
-        (
-            bh.storage.WeightedMean,
-            {"weight": np.arange(1, 205), "sample": np.arange(1, 205)},
-        ),
+        (bh.storage.Unlimited, {"weight"}),
+        (bh.storage.Double, {"weight"}),
+        (bh.storage.Weight, {"weight"}),
+        (bh.storage.Mean, {"sample"}),
+        (bh.storage.WeightedMean, {"weight", "sample"}),
     ),
 )
-def test_storage(copy_fn, storage, fill_kwargs):
-    hist = bh.Histogram(bh.axis.Integer(0, 100), storage=storage())
-    hist.fill(np.arange(204) % 102 - 1, **fill_kwargs)
+def test_storage(copy_fn, storage, extra):
+    n = 10000  # make large enough so that slow pickling becomes noticable
+    hist = bh.Histogram(bh.axis.Integer(0, n), storage=storage())
+    x = np.arange(2 * (n + 2)) % (n + 2) - 1
+    if extra == {}:
+        hist.fill(x)
+    elif extra == {"weight"}:
+        hist.fill(x, weight=np.arange(2 * n + 4) + 1)
+    elif extra == {"sample"}:
+        hist.fill(x, sample=np.arange(2 * n + 4) + 1)
+    else:
+        hist.fill(x, weight=np.arange(2 * n + 4) + 1, sample=np.arange(2 * n + 4) + 1)
 
     new = copy_fn(hist)
     assert_array_equal(hist.view(True), new.view(True))
