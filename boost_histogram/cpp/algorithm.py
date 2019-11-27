@@ -16,7 +16,13 @@ __all__ = (
     "project",
 )
 
-from ..algorithm import shrink_and_rebin, slice_and_rebin, rebin, shrink, slice
+from .._core.algorithm import shrink_and_rebin, slice_and_rebin, rebin, shrink, slice
+
+shrink_and_rebin.__module__ = "boost_histogram.cpp"
+slice_and_rebin.__module__ = "boost_histogram.cpp"
+rebin.__module__ = "boost_histogram.cpp"
+shrink.__module__ = "boost_histogram.cpp"
+slice.__module__ = "boost_histogram.cpp"
 
 
 def sum(histogram, flow=False):

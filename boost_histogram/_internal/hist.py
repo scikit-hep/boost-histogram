@@ -223,6 +223,9 @@ class BaseHistogram(object):
     def _storage_type(self):
         return cast(self, self._hist._storage_type, Storage)
 
+    def _reduce(self, *args):
+        return self.__class__(self._hist.reduce(*args))
+
 
 # C++ version of histogram
 @set_family(CPP_FAMILY)
@@ -265,9 +268,6 @@ class histogram(BaseHistogram):
 
     def _sum(self, flow=False):
         return self._hist.sum(flow)
-
-    def _reduce(self, *args):
-        return self.__class__(self._hist.reduce(*args))
 
     def _project(self, *args):
         return self.__class__(self._hist.project(*args))
@@ -506,7 +506,7 @@ class Histogram(BaseHistogram):
 
                 slices.append(_core.algorithm.slice_and_rebin(i, begin, end, merge))
 
-        reduced = self.reduce(*slices)
+        reduced = self._reduce(*slices)
         if not integrations:
             return self.__class__(reduced)
         else:
@@ -608,13 +608,27 @@ class Histogram(BaseHistogram):
 
         view[tuple(indexes)] = value
 
-    def reduce(self, *args):
+        # def reduce(self, axis_dict):
         """
-        Reduce based on one or more reduce_option's. If you are operating on most
-        or all of your axis, consider slicing with [] notation.
+        Reduce based on a dictionary that maps axis numbers with actions.
+        Valid actions are:
+
+        * One number: A rebin
+        * A tuple of two numbers: a slice. Supports UHI locators (such as bh.loc)
+        * A tuple of three numbers: A slice with a rebin.
+
+        If multiple axes are given, these operations will be fused at the C++ level for performance.
+
+        Examples
+        --------
+
+            h.reduce({0: 2})                # rebin axis 0 by two
+            h.reduce({1: (0, bh.loc(3.5))}) # slice axis 1 from 0 to the data coordinate 3.5
+            h.reduce({7: (0, 2, 4)})        # slice and rebin axis 7
+
         """
 
-        return self.__class__(self._hist.reduce(*args))
+        # return self.__class__(self._hist.reduce(*args))
 
     def project(self, *args):
         """
