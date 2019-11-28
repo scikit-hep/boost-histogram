@@ -340,7 +340,7 @@ class Histogram(BaseHistogram):
         hist = self._hist
 
         # Support dict access
-        if isinstance(index, dict):
+        if hasattr(index, "items"):
             return index, index.items()
 
         # Normalize -> h[i] == h[i,]
@@ -465,7 +465,8 @@ class Histogram(BaseHistogram):
         indexes, iterator = self._compute_commonindex(index)
 
         # If this is (now) all integers, return the bin contents
-        if not isinstance(indexes, dict):
+        # But don't try *dict!
+        if not hasattr(indexes, "items"):
             try:
                 return self._hist.at(*indexes)
             except RuntimeError:
