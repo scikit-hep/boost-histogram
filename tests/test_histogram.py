@@ -856,3 +856,19 @@ def test_copy_axes():
 
     h.axes[0].metadata = 1
     assert h2.axes[0].metadata is None
+
+
+def test_shape():
+    h = bh.Histogram(
+        bh.axis.Regular(7, 0, 1),
+        bh.axis.Regular(13, 0, 1),
+        bh.axis.Regular(17, 0, 1),
+        bh.axis.Regular(24, 0, 1),
+    )
+
+    assert h.shape == (7, 13, 17, 24)
+
+
+def test_empty_shape():
+    h = bh.Histogram()
+    assert h.shape == ()
