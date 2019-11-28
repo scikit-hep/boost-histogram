@@ -330,6 +330,18 @@ def test_repr():
     assert repr(h) == hrepr
 
 
+def test_1d_repr():
+    hrepr = """Histogram(Regular(4, 1, 2), storage=Double())"""
+    h = bh.Histogram(bh.axis.Regular(4, 1, 2))
+    assert repr(h) == hrepr
+
+
+def test_empty_repr():
+    hrepr = """Histogram(storage=Double())"""
+    h = bh.Histogram()
+    assert repr(h) == hrepr
+
+
 def test_axis():
     axes = (bh.axis.Regular(10, 0, 1), bh.axis.Integer(0, 1))
     h = bh.Histogram(*axes)
