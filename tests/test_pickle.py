@@ -155,7 +155,7 @@ def test_metadata_any(axis, args, opts, copy_fn):
     ),
 )
 def test_storage(benchmark, copy_fn, storage, extra):
-    n = 10000  # Make large enough so that slow pickling becomes noticable
+    n = 1000
     hist = bh.Histogram(bh.axis.Integer(0, n), storage=storage())
     x = np.arange(2 * (n + 2)) % (n + 2) - 1
     if extra == {}:
