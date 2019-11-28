@@ -59,7 +59,7 @@ def test_histogram1d(a, opt):
 @pytest.mark.parametrize("opt", opts)
 def test_histogram1d_object(a, opt):
     bh_opt = copy.deepcopy(opt)
-    bh_opt["bh_object"] = True
+    bh_opt["cls"] = bh.Histogram
 
     v = np.array(a)
 
@@ -104,7 +104,7 @@ def test_histogram2d_object():
     y = np.array([0.4, 0.5, 0.22, 0.65, 0.32, 0.01, 0.23, 1.98])
 
     h1, e1x, e1y = np.histogram2d(x, y)
-    bh_h2 = bh.numpy.histogram2d(x, y, bh_object=True)
+    bh_h2 = bh.numpy.histogram2d(x, y, cls=bh.Histogram)
     h2, e2x, e2y = bh_h2.to_numpy()
 
     np.testing.assert_array_almost_equal(e1x, e2x)
@@ -112,4 +112,4 @@ def test_histogram2d_object():
     np.testing.assert_array_equal(h1, h2)
 
     with pytest.raises(KeyError):
-        bh_h2 = bh.numpy.histogram2d(x, y, density=True, bh_object=True)
+        bh_h2 = bh.numpy.histogram2d(x, y, density=True, cls=bh.Histogram)
