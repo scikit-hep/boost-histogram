@@ -25,11 +25,13 @@ def histogramdd(
         if bh_warning is not None:
             import warnings
 
-            warnings.warn("bh= has been replaced by bh_cls=", FutureWarning)
+            warnings.warn(
+                "bh=True has been replaced by histogram=bh.Histogram", FutureWarning
+            )
             bh_warning = bh.Histogram
         else:
             bh_warning = None
-        bh_cls = k.optional("cls", bh_warning)
+        bh_cls = k.optional("histogram", bh_warning)
         cls = _hist.Histogram if bh_cls is None else bh_cls
         bh_storage = k.optional("storage", _storage.Double())
 
@@ -115,8 +117,8 @@ for f, n in zip(
     H = """\
     Return a boost-histogram object using the same arguments as numpy's {}.
     This does not support the deprecated normed=True argument. Two extra
-    arguments are added: cls=bh.Histogram will enable object based output, and
-    storage=bh.storage.* lets you set the storage used.
+    arguments are added: histogram=bh.Histogram will enable object based
+    output, and storage=bh.storage.* lets you set the storage used.
     """
 
     f.__doc__ = H.format(n.__name__) + n.__doc__
