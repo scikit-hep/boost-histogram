@@ -30,14 +30,12 @@ def test_convert_bh():
     assert hasattr(h, "axes")
 
 
-def test_reprs():
+def test_str():
     # Mixing bh/bhc is fine; histogram correctly always returns matching axis,
     # axis returns matching transform, etc.
     h = bhc.histogram(bh.axis.Regular(4, 0, 4))
-    assert (
-        repr(h)
-        == """\
-histogram(regular(4, 0, 4, metadata="None", options=underflow | overflow))
+    assert repr(str(h)) == repr(
+        """histogram(regular(4, 0, 4, metadata="None", options=underflow | overflow))
               +--------------------------------------------------------------+
 [-inf,   0) 0 |                                                              |
 [   0,   1) 0 |                                                              |
@@ -45,13 +43,17 @@ histogram(regular(4, 0, 4, metadata="None", options=underflow | overflow))
 [   2,   3) 0 |                                                              |
 [   3,   4) 0 |                                                              |
 [   4, inf) 0 |                                                              |
-              +--------------------------------------------------------------+
-"""
+              +--------------------------------------------------------------+"""
     )
 
+
+def test_repr():
+    h = bhc.histogram(bh.axis.Regular(4, 0, 4))
     assert (
-        repr(h.axis(0))
-        == 'regular(4, 0, 4, metadata="None", options=underflow | overflow)'
+        repr(h)
+        == """histogram(
+  regular(4, 0, 4, metadata="None", options=underflow | overflow),
+  storage=double())"""
     )
 
 

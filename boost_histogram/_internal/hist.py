@@ -183,6 +183,26 @@ class BaseHistogram(object):
         self._hist.fill(*args, **kwargs)
         return self
 
+    def __repr__(self):
+        ret = "{self.__class__.__name__}(\n  ".format(self=self)
+        ret += ",\n  ".join(repr(self._axis(i)) for i in range(self._hist.rank()))
+        ret += ",\n  storage={0}".format(self._storage_type())
+        ret += ")"
+        outer = self._hist.sum(flow=True)
+        if outer:
+            inner = self._hist.sum(flow=False)
+            ret += " # Sum: {0}".format(inner)
+            if inner != outer:
+                ret += " ({0} with flow)".format(outer)
+        return ret
+
+    def __str__(self):
+        """
+        A rendering of the histogram is made using ASCII or unicode characters (whatever is supported by the terminal). What exactly is displayed is still experimental. Do not rely on any particular rendering.
+        """
+        # TODO check the terminal width and adjust the presentation
+        return str(self._hist).strip()
+
     def _axis(self, i):
         """
         Get N-th axis.
@@ -217,12 +237,6 @@ class histogram(BaseHistogram):
         Select a contents given indices. -1 is the underflow bin, N is the overflow bin.
         """
         return self._hist.at(*indexes)
-
-    def __repr__(self):
-        return repr(self._hist)
-
-    def __str__(self):
-        return str(self._hist)
 
     # Call uses fill since it supports strings,
     # runtime argument list, etc.
@@ -293,13 +307,6 @@ class Histogram(BaseHistogram):
             if inner != outer:
                 ret += " ({0} with flow)".format(outer)
         return ret
-
-    def __str__(self):
-        """
-        A rendering of the histogram is made using ASCII or unicode characters (whatever is supported by the terminal). What exactly is displayed is still experimental. Do not rely on any particular rendering.
-        """
-        # TODO check the terminal width and adjust the presentation
-        return str(self._hist)
 
     def _compute_commonindex(self, index, expand_ellipsis):
         # Shorten the computations with direct access to raw object

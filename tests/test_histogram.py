@@ -330,6 +330,34 @@ def test_repr():
     assert repr(h) == hrepr
 
 
+def test_str():
+    h1 = bh.Histogram(bh.axis.Regular(3, 0, 1))
+    h1.view(True)[...] = [0, 1, 3, 2, 1]
+    print(h1)
+    assert repr(str(h1)) == repr(
+        """histogram(regular(3, 0, 1, metadata="None", options=underflow | overflow))
+                   +---------------------------------------------------------+
+[  -inf,      0) 0 |                                                         |
+[     0, 0.3333) 1 |===================                                      |
+[0.3333, 0.6667) 3 |======================================================== |
+[0.6667,      1) 2 |=====================================                    |
+[     1,    inf) 1 |===================                                      |
+                   +---------------------------------------------------------+"""
+    )
+
+    h2 = bh.Histogram(bh.axis.Regular(3, 0, 1), bh.axis.Integer(0, 1))
+    print(h2)
+    assert repr(str(h2)) == repr(
+        """histogram(
+  regular(3, 0, 1, metadata="None", options=underflow | overflow)
+  integer(0, 1, metadata="None", options=underflow | overflow)
+  (-1 -1): 0 ( 0 -1): 0 ( 1 -1): 0 ( 2 -1): 0 ( 3 -1): 0
+  (-1  0): 0 ( 0  0): 0 ( 1  0): 0 ( 2  0): 0 ( 3  0): 0
+  (-1  1): 0 ( 0  1): 0 ( 1  1): 0 ( 2  1): 0 ( 3  1): 0
+)"""
+    )
+
+
 def test_axis():
     axes = (bh.axis.Regular(10, 0, 1), bh.axis.Integer(0, 1))
     h = bh.Histogram(*axes)
