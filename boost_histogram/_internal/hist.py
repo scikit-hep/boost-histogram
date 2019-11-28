@@ -296,17 +296,9 @@ class Histogram(BaseHistogram):
 
     def __str__(self):
         """
-        This calls show().
-        """
-        return self.show()
-
-    def show(self):
-        """
-        Prints the histogram on the current terminal.
-        
         A rendering of the histogram is made using ASCII or unicode characters (whatever is supported by the terminal). What exactly is displayed is still experimental. Do not rely on any particular rendering.
         """
-        # TODO check the terminal width and just the presentation
+        # TODO check the terminal width and adjust the presentation
         return str(self._hist)
 
     def _compute_commonindex(self, index, expand_ellipsis):
