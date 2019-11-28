@@ -269,6 +269,15 @@ class Histogram(BaseHistogram):
         other.axes = AxesTuple(other._axis(i) for i in range(other.rank))
         return other
 
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        del state["axes"]  # Don't save the cashe
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        self.axes = AxesTuple(self._axis(i) for i in range(self.rank))
+
     def __repr__(self):
         ret = "{self.__class__.__name__}(\n  ".format(self=self)
         ret += ",\n  ".join(repr(ax) for ax in self.axes)
