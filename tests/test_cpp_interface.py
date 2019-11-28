@@ -35,8 +35,7 @@ def test_str():
     # axis returns matching transform, etc.
     h = bhc.histogram(bh.axis.Regular(4, 0, 4))
     assert repr(str(h)) == repr(
-        """histogram(regular(4, 0, 4, metadata="None", options=underflow | overflow))
-              +--------------------------------------------------------------+
+        """              +--------------------------------------------------------------+
 [-inf,   0) 0 |                                                              |
 [   0,   1) 0 |                                                              |
 [   1,   2) 0 |                                                              |

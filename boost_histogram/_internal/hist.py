@@ -201,7 +201,14 @@ class BaseHistogram(object):
         A rendering of the histogram is made using ASCII or unicode characters (whatever is supported by the terminal). What exactly is displayed is still experimental. Do not rely on any particular rendering.
         """
         # TODO check the terminal width and adjust the presentation
-        return str(self._hist).strip()
+        # only use for 1D, fall back to repr for ND
+        if self._hist.rank() == 1:
+            s = str(self._hist)
+            # get rid of first line and last character
+            s = s[s.index("\n") + 1 : -1]
+        else:
+            s = repr(self)
+        return s
 
     def _axis(self, i):
         """
