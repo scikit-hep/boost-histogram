@@ -221,6 +221,9 @@ class histogram(BaseHistogram):
     def __repr__(self):
         return repr(self._hist)
 
+    def __str__(self):
+        return str(self._hist)
+
     # Call uses fill since it supports strings,
     # runtime argument list, etc.
     @inject_signature("self, *args, weight=None, sample=None")
@@ -290,6 +293,21 @@ class Histogram(BaseHistogram):
             if inner != outer:
                 ret += " ({0} with flow)".format(outer)
         return ret
+
+    def __str__(self):
+        """
+        This calls show().
+        """
+        return self.show()
+
+    def show(self):
+        """
+        Prints the histogram on the current terminal.
+        
+        A rendering of the histogram is made using ASCII or unicode characters (whatever is supported by the terminal). What exactly is displayed is still experimental. Do not rely on any particular rendering.
+        """
+        # TODO check the terminal width and just the presentation
+        return str(self._hist)
 
     def _compute_commonindex(self, index, expand_ellipsis):
         # Shorten the computations with direct access to raw object
