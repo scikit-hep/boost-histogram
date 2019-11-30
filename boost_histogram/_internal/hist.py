@@ -303,9 +303,21 @@ class Histogram(BaseHistogram):
         self.axes = AxesTuple(self._axis(i) for i in range(self.rank))
 
     def __repr__(self):
-        ret = "{self.__class__.__name__}(\n  ".format(self=self)
-        ret += ",\n  ".join(repr(ax) for ax in self.axes)
-        ret += ",\n  storage={0}".format(self._storage_type())
+        newline = "\n  "
+        sep = "," if len(self.axes) > 0 else ""
+        ret = "{self.__class__.__name__}({newline}".format(
+            self=self, newline=newline if len(self.axes) > 1 else ""
+        )
+        ret += ",{newline}".format(newline=newline).join(repr(ax) for ax in self.axes)
+        ret += "{comma}{newline}storage={storage}".format(
+            storage=self._storage_type(),
+            newline=newline
+            if len(self.axes) > 1
+            else " "
+            if len(self.axes) > 0
+            else "",
+            comma="," if len(self.axes) > 0 else "",
+        )
         ret += ")"
         outer = self.sum(flow=True)
         if outer:
