@@ -26,9 +26,12 @@ _histograms = (
 
 
 def _arg_shortcut(item):
+    msg = "Developer shortcut: will be removed in a future version"
     if isinstance(item, tuple) and len(item) == 3:
+        warnings.warn(msg, FutureWarning)
         return _core.axis.regular_uoflow(item[0], item[1], item[2], None)
     elif isinstance(item, tuple) and len(item) == 4:
+        warnings.warn(msg, FutureWarning)
         return _core.axis.regular_uoflow(*item)
     elif isinstance(item, Axis):
         return item._ax
@@ -123,7 +126,7 @@ class BaseHistogram(object):
         raise TypeError("Unsupported storage")
 
     def __array__(self):
-        return self.view()
+        return _to_view(self._hist.view(False))
 
     def __add__(self, other):
         return self.__class__(self._hist + other._hist)
@@ -220,6 +223,9 @@ class BaseHistogram(object):
     def _storage_type(self):
         return cast(self, self._hist._storage_type, Storage)
 
+    def _reduce(self, *args):
+        return self.__class__(self._hist.reduce(*args))
+
 
 # C++ version of histogram
 @set_family(CPP_FAMILY)
@@ -262,9 +268,6 @@ class histogram(BaseHistogram):
 
     def _sum(self, flow=False):
         return self._hist.sum(flow)
-
-    def _reduce(self, *args):
-        return self.__class__(self._hist.reduce(*args))
 
     def _project(self, *args):
         return self.__class__(self._hist.project(*args))
@@ -327,18 +330,25 @@ class Histogram(BaseHistogram):
                 ret += " ({0} with flow)".format(outer)
         return ret
 
-    def _compute_commonindex(self, index, expand_ellipsis):
+    def _compute_commonindex(self, index):
+        """
+        Takes indices and returns two iterables; one is a tuple or dict of the
+        original, Ellipsis expanded index, and the other returns index,
+        operation value pairs.
+        """
         # Shorten the computations with direct access to raw object
         hist = self._hist
+
+        # Support dict access
+        if hasattr(index, "items"):
+            return index, index.items()
+
         # Normalize -> h[i] == h[i,]
-        if not isinstance(index, tuple):
+        elif not isinstance(index, tuple):
             index = (index,)
 
         # Now a list
-        if expand_ellipsis:
-            indexes = _expand_ellipsis(index, hist.rank())
-        else:
-            indexes = list(index)
+        indexes = _expand_ellipsis(index, hist.rank())
 
         if len(indexes) != hist.rank():
             raise IndexError("Wrong number of indices for histogram")
@@ -357,7 +367,7 @@ class Histogram(BaseHistogram):
                     raise IndexError("histogram index is out of range")
                 indexes[i] %= hist.axis(i).size
 
-        return indexes
+        return indexes, enumerate(indexes)
 
     def axis(self, i):
         """
@@ -452,13 +462,15 @@ class Histogram(BaseHistogram):
 
     def __getitem__(self, index):
 
-        indexes = self._compute_commonindex(index, expand_ellipsis=True)
+        indexes, iterator = self._compute_commonindex(index)
 
         # If this is (now) all integers, return the bin contents
-        try:
-            return self._hist.at(*indexes)
-        except RuntimeError:
-            pass
+        # But don't try *dict!
+        if not hasattr(indexes, "items"):
+            try:
+                return self._hist.at(*indexes)
+            except RuntimeError:
+                pass
 
         integrations = set()
         slices = []
@@ -466,7 +478,7 @@ class Histogram(BaseHistogram):
         zeroes_stop = []
 
         # Compute needed slices and projections
-        for i, ind in enumerate(indexes):
+        for i, ind in iterator:
             if not isinstance(ind, slice):
                 raise IndexError(
                     "Invalid arguments as an index, use all integers "
@@ -503,7 +515,7 @@ class Histogram(BaseHistogram):
 
                 slices.append(_core.algorithm.slice_and_rebin(i, begin, end, merge))
 
-        reduced = self.reduce(*slices)
+        reduced = self._reduce(*slices)
         if not integrations:
             return self.__class__(reduced)
         else:
@@ -546,7 +558,7 @@ class Histogram(BaseHistogram):
         is 2 larger). Bin edges must be a close match, as well. If you don't
         want this level of type safety, just use ``h[...] = h2.view()``.
         """
-        indexes = self._compute_commonindex(index, expand_ellipsis=True)
+        indexes, iterator = self._compute_commonindex(index)
 
         if isinstance(value, BaseHistogram):
             raise TypeError("Not supported yet")
@@ -566,8 +578,7 @@ class Histogram(BaseHistogram):
                 "Setting a histogram with an array must have a matching number of dimensions"
             )
 
-        for n in range(len(indexes)):
-            request = indexes[n]
+        for n, request in iterator:
             has_underflow = self.axes[n].options.underflow
             has_overflow = self.axes[n].options.overflow
 
@@ -604,14 +615,6 @@ class Histogram(BaseHistogram):
                 indexes[n] = request + has_underflow
 
         view[tuple(indexes)] = value
-
-    def reduce(self, *args):
-        """
-        Reduce based on one or more reduce_option's. If you are operating on most
-        or all of your axis, consider slicing with [] notation.
-        """
-
-        return self.__class__(self._hist.reduce(*args))
 
     def project(self, *args):
         """

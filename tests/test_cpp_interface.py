@@ -4,6 +4,7 @@
 import boost_histogram as bh
 import boost_histogram.cpp as bhc
 import pytest
+from numpy.testing import assert_array_equal
 
 
 def test_usage_bh():
@@ -74,3 +75,24 @@ def test_transform_repr():
     assert repr(
         type(ax.transform())
     ), "<class 'boost_histogram.cpp.axis.transform.pow'>"
+
+
+def test_shrink_1d():
+    h = bhc.histogram(bhc.axis.regular(20, 1, 5))
+    h.fill(1.1)
+    hs = bhc.algorithm.reduce(h, bhc.algorithm.shrink(0, 1, 2))
+    assert_array_equal(hs, [1, 0, 0, 0, 0])
+
+
+def test_rebin_1d():
+    h = bhc.histogram(bhc.axis.regular(20, 1, 5))
+    h.fill(1.1)
+    hs = bhc.algorithm.reduce(h, bhc.algorithm.rebin(0, 4))
+    assert_array_equal(hs, [1, 0, 0, 0, 0])
+
+
+def test_shrink_rebin_1d():
+    h = bhc.histogram(bhc.axis.regular(20, 0, 4))
+    h.fill(1.1)
+    hs = bhc.algorithm.reduce(h, bhc.algorithm.shrink_and_rebin(0, 1, 3, 2))
+    assert_array_equal(hs, [1, 0, 0, 0, 0])

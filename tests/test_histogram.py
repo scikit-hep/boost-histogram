@@ -13,6 +13,8 @@ try:
 except ImportError:
     import pickle
 
+from collections import OrderedDict
+
 
 def test_init():
     bh.Histogram()
@@ -441,22 +443,42 @@ def test_project():
 def test_shrink_1d():
     h = bh.Histogram(bh.axis.Regular(20, 1, 5))
     h.fill(1.1)
-    hs = h.reduce(bh.algorithm.shrink(0, 1, 2))
+    hs = h[{0: slice(bh.loc(1), bh.loc(2))}]
+    assert_array_equal(hs.view(), [1, 0, 0, 0, 0])
+
+    d = OrderedDict({0: slice(bh.loc(1), bh.loc(2))})
+    hs = h[d]
     assert_array_equal(hs.view(), [1, 0, 0, 0, 0])
 
 
 def test_rebin_1d():
     h = bh.Histogram(bh.axis.Regular(20, 1, 5))
     h.fill(1.1)
-    hs = h.reduce(bh.algorithm.rebin(0, 4))
+    hs = h[{0: slice(None, None, bh.rebin(4))}]
     assert_array_equal(hs.view(), [1, 0, 0, 0, 0])
 
 
 def test_shrink_rebin_1d():
     h = bh.Histogram(bh.axis.Regular(20, 0, 4))
     h.fill(1.1)
-    hs = h.reduce(bh.algorithm.shrink_and_rebin(0, 1, 3, 2))
+    hs = h[{0: slice(bh.loc(1), bh.loc(3), bh.rebin(2))}]
     assert_array_equal(hs.view(), [1, 0, 0, 0, 0])
+
+
+def test_rebin_nd():
+    h = bh.Histogram(
+        bh.axis.Regular(20, 1, 3), bh.axis.Regular(30, 1, 3), bh.axis.Regular(40, 1, 3)
+    )
+
+    s = bh.tag.Slicer()
+
+    assert h[{0: s[:: bh.rebin(2)]}].axes.size == (10, 30, 40)
+    assert h[{1: s[:: bh.rebin(2)]}].axes.size == (20, 15, 40)
+    assert h[{2: s[:: bh.rebin(2)]}].axes.size == (20, 30, 20)
+
+    assert h[{0: s[:: bh.rebin(2)], 2: s[:: bh.rebin(2)]}].axes.size == (10, 30, 20)
+
+    assert h[{1: s[:: bh.sum]}].axes.size == (20, 40)
 
 
 # CLASSIC: This used to have metadata too, but that does not compare equal

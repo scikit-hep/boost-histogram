@@ -16,6 +16,7 @@ def test_make_regular_1D(opt, extent):
     assert hist.axes[0].bin(1) == (3, 4)
 
 
+@pytest.mark.filterwarnings("ignore")
 def test_shortcuts():
     hist = bh.Histogram((1, 2, 3), (10, 0, 1))
     assert hist.rank == 2
@@ -24,6 +25,7 @@ def test_shortcuts():
         assert not isinstance(hist.axes[i], bh.axis.Variable)
 
 
+@pytest.mark.filterwarnings("ignore")
 def test_shortcuts_with_metadata():
     bh.Histogram((1, 2, 3, "this"))
     bh.Histogram((1, 2, 3, 4))
