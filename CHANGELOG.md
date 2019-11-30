@@ -1,4 +1,4 @@
-### Version 0.6
+## Version 0.6
 
 This version fills out most of the remaining features missing from the 0.5.x
 series.  You can now use all the storages without the original caveats; even
@@ -67,6 +67,7 @@ transition existing 0.5.x code to the new API.
 [#246]: https://github.com/scikit-hep/boost-histogram/pull/246
 [#250]: https://github.com/scikit-hep/boost-histogram/pull/250
 [#255]: https://github.com/scikit-hep/boost-histogram/pull/255
+[#256]: https://github.com/scikit-hep/boost-histogram/pull/256
 [#258]: https://github.com/scikit-hep/boost-histogram/pull/258
 [#259]: https://github.com/scikit-hep/boost-histogram/pull/259
 [#264]: https://github.com/scikit-hep/boost-histogram/pull/264
