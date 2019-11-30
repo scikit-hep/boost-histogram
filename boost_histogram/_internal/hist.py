@@ -431,6 +431,13 @@ class Histogram(BaseHistogram):
         """
         return self._hist.size()
 
+    @property
+    def shape(self):
+        """
+        Tuple of axis sizes (not including underflow/overflow).
+        """
+        return self.axes.size
+
     def __getitem__(self, index):
 
         indexes = self._compute_commonindex(index, expand_ellipsis=True)
