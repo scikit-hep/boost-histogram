@@ -3,12 +3,14 @@
 Indexing
 ========
 
-This is the design document for Unified Histogram Indexing (UHI).  Much of the original plan is now implemented in boost-histogram.
-Other histogramming libraries can implement support for this as well, and the "tag" functors, like ``sum`` and ``loc`` can be
-used between libraries.
+This is the design document for Unified Histogram Indexing (UHI).  Much of the
+original plan is now implemented in boost-histogram.  Other histogramming
+libraries can implement support for this as well, and the "tag" functors, like
+``sum`` and ``loc`` can be used between libraries.
 
-The following examples assume you have imported ``loc``, ``sum``, ``rebin``, ``end``, ``underflow``, and ``overflow`` from boost-histogram or any other
-library that implements UHI.
+The following examples assume you have imported ``loc``, ``sum``, ``rebin``,
+``underflow``, and ``overflow`` from boost-histogram or any other library that
+implements UHI.
 
 Access:
 ^^^^^^^
@@ -31,9 +33,9 @@ Slicing:
    h2 = h[loc(v):]       # Slices can be in data coordinates, too
    h2 = h[::rebin(2)]    # Modification operations (rebin)
    h2 = h[a:b:rebin(2)]  # Modifications can combine with slices
-   h2 = h[::sum]     # Projection operations # (name may change)
-   h2 = h[a:b:sum]   # Adding endpoints to projection operations
-   h2 = h[0:end:sum] #   removes under or overflow from the calculation
+   h2 = h[::sum]         # Projection operations # (name may change)
+   h2 = h[a:b:sum]       # Adding endpoints to projection operations
+   h2 = h[0:len:sum]     #   removes under or overflow from the calculation
    h2 = h[a:b, ...]      # Ellipsis work just like normal numpy
 
 Setting
@@ -48,6 +50,7 @@ Setting
 
    h[...] = array(...) # Setting with an array or histogram sets the contents if the sizes match
                        # Overflow can optionally be included if endpoints are left out
+                       # The number of dimensions for non-scalars should match (broadcasting works normally otherwise)
 
 All of this generalizes to multiple dimensions. ``loc(v)`` could return
 categorical bins, but slicing on categories would (currently) not be
@@ -59,8 +62,32 @@ will case the relevant flow bin to be excluded (not currently supported).
 
 ``loc``, ``project``, and ``rebin`` all live inside the histogramming
 package (like boost-histogram), but are completely general and can be created by a
-user using an explicit API (below). ``end``, ``underflow`` and ``overflow`` also
+user using an explicit API (below). ``underflow`` and ``overflow`` also
 follow a general API.
+
+One drawback of the syntax listed above is that it is hard to select an action
+to run on an axis or a few axes out of many. For this use case, you can pass a
+dictionary to the index, and that has the syntax ``{axis:action}``. The actions
+are slices, and follow the rules listed above. This looks like:
+
+.. code:: python
+
+    h[{0: slice(None, None, bh.rebin(2))}] # rebin axis 0 by two
+    h[{1: slice(0, bh.loc(3.5))}]          # slice axis 1 from 0 to the data coordinate 3.5
+    h[{7: slice(0, 2, bh.rebin(4))}]       # slice and rebin axis 7
+
+
+If you don't like manually building slices, you can use the `Slicer()` utility to recover the original slicing syntax inside the dict:
+
+.. code:: python
+
+    s = bh.tag.Slicer()
+
+    h[{0: s[::bh.rebin(2)]}]   # rebin axis 0 by two
+    h[{1: s[0:bh.loc(3.5)]}]   # slice axis 1 from 0 to the data coordinate 3.5
+    h[{7: s[0:2:bh.rebin(4)]}] # slice and rebin axis 7
+
+
 
 Invalid syntax:
 ^^^^^^^^^^^^^^^

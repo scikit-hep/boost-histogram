@@ -150,7 +150,7 @@ If you are on a Linux system that is not part of the "many" in manylinux, such a
 
 #### Conda-Forge
 
-The boost-histogram package is available on Conda-Forge, as well. All supported versions are available with the exception of Windows + Python 2.7, which cannot build due to the age of the compiler. Please use Pip if you *really* need Python 2.7 on Windows. You will also need the VS 2015 distributable, as described above.
+The boost-histogram package is available on Conda-Forge, as well. All supported versions are available with the exception of Windows + Python 2.7, which cannot built due to the age of the compiler. Please use Pip if you *really* need Python 2.7 on Windows. You will also need the VS 2015 distributable, as described above.
 
 ```
 conda install -c conda-forge boost-histogram
@@ -162,7 +162,7 @@ For a source build, for example from an "sdist" package, the only requirements a
 
 If you are using Python 2.7 on Windows, you will need to use a recent version of Visual studio and force distutils to use it, or just upgrade to Python 3.6 or newer. Check the PyBind11 documentation for [more help](https://pybind11.readthedocs.io/en/stable/faq.html#working-with-ancient-visual-studio-2009-builds-on-windows). On some Linux systems, you may need to use a newer compiler than the one your distribution ships with.
 
-Having Numpy before building is recommended (enables multithreaded builds). Boost 1.71 is not required or needed (this only depends on included header-only dependencies).This library is under active development; you can install directly from GitHub if you would like.
+Having Numpy before building is recommended (enables multithreaded builds). Boost is not required or needed (this only depends on included header-only dependencies).This library is under active development; you can install directly from GitHub if you would like.
 
 ```bash
 python -m pip install git+https://github.com/scikit-hep/boost-histogram.git@develop

@@ -60,6 +60,13 @@ void register_algorithms(py::module& algorithm) {
                   "interval is removed.\n"
                   ":param merge: how many adjacent bins to merge into one.");
 
+    algorithm.def(
+        "shrink_and_rebin",
+        py::overload_cast<double, double, unsigned>(&bh::algorithm::shrink_and_rebin),
+        "lower"_a,
+        "upper"_a,
+        "merge"_a);
+
     algorithm.def("slice_and_rebin",
                   py::overload_cast<unsigned,
                                     bh::axis::index_type,
@@ -80,14 +87,30 @@ void register_algorithms(py::module& algorithm) {
                   ":param end: one past the last index that should be kept.\n"
                   ":param merge: how many adjacent bins to merge into one.");
 
+    algorithm.def(
+        "slice_and_rebin",
+        py::overload_cast<bh::axis::index_type, bh::axis::index_type, unsigned>(
+            &bh::algorithm::slice_and_rebin),
+        "begin"_a,
+        "end"_a,
+        "merge"_a);
+
     algorithm.def("rebin",
                   py::overload_cast<unsigned, unsigned>(&bh::algorithm::rebin),
                   "iaxis"_a,
                   "merge"_a);
 
+    algorithm.def(
+        "rebin", py::overload_cast<unsigned>(&bh::algorithm::rebin), "merge"_a);
+
     algorithm.def("shrink",
                   py::overload_cast<unsigned, double, double>(&bh::algorithm::shrink),
                   "iaxis"_a,
+                  "lower"_a,
+                  "upper"_a);
+
+    algorithm.def("shrink",
+                  py::overload_cast<double, double>(&bh::algorithm::shrink),
                   "lower"_a,
                   "upper"_a);
 
@@ -98,4 +121,10 @@ void register_algorithms(py::module& algorithm) {
         "iaxis"_a,
         "begin"_a,
         "end"_a);
+
+    algorithm.def("slice",
+                  py::overload_cast<bh::axis::index_type, bh::axis::index_type>(
+                      &bh::algorithm::slice),
+                  "begin"_a,
+                  "end"_a);
 }

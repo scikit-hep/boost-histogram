@@ -2,9 +2,24 @@ from __future__ import absolute_import, division, print_function
 
 del absolute_import, division, print_function
 
-__all__ = ("Locator", "at", "loc", "overflow", "underflow", "rebin", "sum")
+__all__ = ("Slicer", "Locator", "at", "loc", "overflow", "underflow", "rebin", "sum")
 
 import numpy as _np
+
+
+class Slicer(object):
+    """
+    This is a simple class to make slicing inside dictionaries simpler.
+    This is how it should be used:
+
+        s = bh.tag.Slicer()
+
+        h[{0: s[::bh.rebin(2)]}]   # rebin axis 0 by two
+
+    """
+
+    def __getitem__(self, item):
+        return item
 
 
 class Locator(object):

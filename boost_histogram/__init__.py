@@ -10,7 +10,6 @@ __all__ = (
     "axis",
     "storage",
     "accumulators",
-    "algorithm",
     "utils",
     "numpy",
     "loc",
@@ -31,7 +30,7 @@ except ImportError as err:
 
 
 from ._internal.hist import Histogram
-from . import axis, storage, accumulators, algorithm, utils, numpy
+from . import axis, storage, accumulators, utils, numpy
 from .tag import loc, rebin, sum, underflow, overflow
 
 from .version import __version__
