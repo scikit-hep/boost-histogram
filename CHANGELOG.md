@@ -1,9 +1,15 @@
-### IN DEVELOPMENT
+### Version 0.6
 
 This version fills out most of the remaining features missing from the 0.5.x
-series. The API has changed considerably, providing a more consistent
-experience in Python. The classic API still works in this release, but issues a
-warning and will be removed from the next release.
+series.  You can now use all the storages without the original caveats; even
+the accumulators can be accessed array-at-a-time without copy, pickled quickly,
+and set array-at-a-time, as well.
+
+The API has changed considerably, providing a more consistent experience in
+Python. Most of the classic API still works in this release, but will issue a
+warning and will be removed from the next release. Please use this release to
+transition existing 0.5.x code to the new API.
+
 
 #### User changes
 
@@ -18,7 +24,9 @@ warning and will be removed from the next release.
 * You can now sum over a range with endpoints [#185][]
 * `h.axes` now has the functions from axis as well. [#183][]
 * `bh.project` has become `bh.sum` [#185][]
-* Added `hist.copy()` [#218][]
+* `.reduce(...)` and the reducers in `bh.algorithm` have been removed in favor of dictionary based UHI slicing [#259][]
+* `bh.numpy` module interface updates, `histogram=bh.Histogram` replaces cryptic `bh=True`, and `density=True` is now supported in Numpy mode [#256][]
+* Added `hist.copy()` [#218][] and `hist.shape` [#264][]
 * Signatures are much nicer in Python 3 [#188][]
 * Reprs are better, various properties like `__module__` are now set correctly [#200][]
 
@@ -27,6 +35,7 @@ warning and will be removed from the next release.
 * `.view()` now no longer makes a copy [#194][]
 * Fixes related to string category axis fills [#233][], [#230][]
 * Axes are no longer copies, support setting metadata [#238][], [#246][]
+* Pickling accumulator storages is now comparable in performance simple storages [#258][]
 
 #### Developer changes
 
@@ -58,6 +67,9 @@ warning and will be removed from the next release.
 [#246]: https://github.com/scikit-hep/boost-histogram/pull/246
 [#250]: https://github.com/scikit-hep/boost-histogram/pull/250
 [#255]: https://github.com/scikit-hep/boost-histogram/pull/255
+[#258]: https://github.com/scikit-hep/boost-histogram/pull/258
+[#259]: https://github.com/scikit-hep/boost-histogram/pull/259
+[#264]: https://github.com/scikit-hep/boost-histogram/pull/264
 
 
 ### Version 0.5.2

@@ -470,11 +470,7 @@ def test_rebin_nd():
         bh.axis.Regular(20, 1, 3), bh.axis.Regular(30, 1, 3), bh.axis.Regular(40, 1, 3)
     )
 
-    class Slicer:
-        def __getitem__(self, item):
-            return item
-
-    s = Slicer()
+    s = bh.tag.Slicer()
 
     assert h[{0: s[:: bh.rebin(2)]}].axes.size == (10, 30, 40)
     assert h[{1: s[:: bh.rebin(2)]}].axes.size == (20, 15, 40)

@@ -50,6 +50,7 @@ Setting
 
    h[...] = array(...) # Setting with an array or histogram sets the contents if the sizes match
                        # Overflow can optionally be included if endpoints are left out
+                       # The number of dimensions for non-scalars should match (broadcasting works normally otherwise)
 
 All of this generalizes to multiple dimensions. ``loc(v)`` could return
 categorical bins, but slicing on categories would (currently) not be
@@ -76,14 +77,11 @@ are slices, and follow the rules listed above. This looks like:
     h[{7: slice(0, 2, bh.rebin(4))}]       # slice and rebin axis 7
 
 
-If you don't like manually building slices, you can use the following trick:
+If you don't like manually building slices, you can use the `Slicer()` utility to recover the original slicing syntax inside the dict:
 
 .. code:: python
 
-    class Slicer:
-        def __getitem__(self, item):
-            return item
-    s = Slicer()
+    s = bh.tag.Slicer()
 
     h[{0: s[::bh.rebin(2)]}]   # rebin axis 0 by two
     h[{1: s[0:bh.loc(3.5)]}]   # slice axis 1 from 0 to the data coordinate 3.5
