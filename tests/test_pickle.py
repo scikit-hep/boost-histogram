@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from numpy.testing import assert_array_equal
+from numpy.testing import assert_array_equal, assert_almost_equal
 
 import ctypes
 
@@ -222,7 +222,7 @@ def test_pickle_transforms(mod, copy_fn):
 
     assert ax1 == ax2
     assert_array_equal(ax1.centers, ax2.centers)
-    assert_array_equal(ax2.centers, ax3.centers)
+    assert_almost_equal(ax2.centers, ax3.centers, decimal=10)
 
 
 @pytest.mark.parametrize("copy_fn", copy_fns)
