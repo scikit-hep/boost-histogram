@@ -106,3 +106,24 @@ for f in *
     cd ..
 end
 ```
+
+</details>
+
+<details><summary>Making a new release (click to expand)</summary>
+
+- Finish merging open PRs that will go into VERSION
+- Add most recent changes to the Changelog
+    - Replace "in development" header with VERSION
+- Bump version
+    - Change in `boost_histogram/version.py`
+    - Change banner in README to VERSION
+- Sync master with develop through a PR
+- Make sure the full wheel build runs on master without issues (will happen in previous step)
+- Make the GitHub release in the GitHub UI. Copy the changelog entries and links for that version; this has to be done as part of the release and tag procedure for archival tools (Zenodo) to pick them up correctly. Titles should be roughly consistent. I like to give a little descriptive title after the version, though this was a massive release that touched almost every area.
+    - Version tag should be `"v" + major + "." + minor + "." + patch`.
+- This should trigger an Azure wheel build. Note the name of the build (should be the date plus a number)
+- In the Azure web interface, go to release pipelines and click create release. Make sure the build it is pulling artifacts from matches the correct build (should always choose latest, which *should* be correct) See https://iscinumpy.gitlab.io/post/azure-devops-releases/ for details about Azure releases.
+- Conda-forge will automatically make a PR to update a few hours later.
+
+
+</details>
