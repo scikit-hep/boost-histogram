@@ -58,6 +58,9 @@ def test_setting_weight():
     assert b["value"][0] == a["value"][0]
     assert b["variance"][0] == a["variance"][0]
 
+    assert_array_equal(a.view().value, b.view()["value"])
+    assert_array_equal(a.view().variance, b.view()["variance"])
+
 
 def test_setting_profile():
     h = bh.Histogram(bh.axis.Regular(10, 0, 10), storage=bh.storage.Mean())
@@ -98,6 +101,12 @@ def test_setting_profile():
     assert b[0]["value"] == a["value"][0]
     assert b[0]["count"] == a["count"][0]
     assert b[0]["sum_of_deltas_squared"] == a["sum_of_deltas_squared"][0]
+
+    assert_array_equal(a.view().value, b.view()["value"])
+    assert_array_equal(a.view().count, b.view()["count"])
+    assert_array_equal(
+        a.view().sum_of_deltas_squared, b.view()["sum_of_deltas_squared"]
+    )
 
 
 def test_setting_weighted_profile():
@@ -159,4 +168,14 @@ def test_setting_weighted_profile():
     assert b[0]["sum_of_weights_squared"] == a["sum_of_weights_squared"][0]
     assert (
         b[0]["sum_of_weighted_deltas_squared"] == a["sum_of_weighted_deltas_squared"][0]
+    )
+
+    assert_array_equal(a.view().value, b.view()["value"])
+    assert_array_equal(a.view().sum_of_weights, b.view()["sum_of_weights"])
+    assert_array_equal(
+        a.view().sum_of_weights_squared, b.view()["sum_of_weights_squared"]
+    )
+    assert_array_equal(
+        a.view().sum_of_weighted_deltas_squared,
+        b.view()["sum_of_weighted_deltas_squared"],
     )
