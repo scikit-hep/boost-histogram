@@ -36,6 +36,16 @@ class View(np.ndarray):
         )
 
 
+def make_getitem_property(name):
+    def fget(self):
+        return self[name]
+
+    def fset(self, value):
+        self[name] = value
+
+    return property(fget, fset)
+
+
 def fields(*names):
     """
     This decorator adds the name to the _FIELDS
@@ -60,15 +70,9 @@ def fields(*names):
         fields = []
         for name in names:
             fields.append(name)
-
-            def fget(self):
-                return self[name]
-
-            def fset(self, value):
-                self[name] = value
-
-            setattr(cls, name, property(fget, fset))
+            setattr(cls, name, make_getitem_property(name))
             cls._FIELDS = tuple(fields)
+
         return cls
 
     return injector
