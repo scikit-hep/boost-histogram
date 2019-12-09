@@ -489,12 +489,18 @@ class Histogram(BaseHistogram):
         zeroes_start = []
         zeroes_stop = []
 
+        # We could use python's sum here, but for now, a private sum is used
+        class ext_sum:
+            projection = True
+
         # Compute needed slices and projections
         for i, ind in iterator:
-            if not isinstance(ind, slice):
+            if hasattr(ind, "__index__"):
+                ind = slice(ind.__index__(), ind.__index__() + 1, ext_sum())
+
+            elif not isinstance(ind, slice):
                 raise IndexError(
-                    "Invalid arguments as an index, use all integers "
-                    "or all slices, and do not mix"
+                    "Must be a slice, an integer, or follow the locator protocol."
                 )
             if ind != slice(None):
                 merge = 1
@@ -585,11 +591,15 @@ class Histogram(BaseHistogram):
         # Numpy does not broadcast partial slices, but we would need
         # to allow it (because we do allow broadcasting up dimensions)
         # Instead, we simply require matching dimensions.
-        if value.ndim > 0 and value.ndim != len(indexes):
+        if value.ndim > 0 and value.ndim != sum(isinstance(i, slice) for i in indexes):
             raise ValueError(
-                "Setting a histogram with an array must have a matching number of dimensions"
+                "Setting a {0}D histogram with a {1}D array must have a matching number of dimensions".format(
+                    len(indexes), value.ndim
+                )
             )
 
+        # Here, value_n does not increment with n if this is not a slice
+        value_n = 0
         for n, request in iterator:
             has_underflow = self.axes[n].options.underflow
             has_overflow = self.axes[n].options.overflow
@@ -604,16 +614,26 @@ class Histogram(BaseHistogram):
                 stop = len(self.axes[n]) if request.stop is None else request.stop
                 request_len = stop - start
 
-                # If there are not enough dimensions, then treat it like broadcasting
-                if value.ndim == 0 or value.shape[n] == 1:
+                # If set to a scalar, then treat it like broadcasting without flow bins
+                if value.ndim == 0:
                     start = 0 + has_overflow
                     stop = len(self.axes[n]) + has_underflow
-                elif request_len == value.shape[n]:
+
+                # Normal setting
+                elif request_len == value.shape[value_n]:
                     start += has_underflow
                     stop += has_underflow
-                elif request_len + use_underflow + use_overflow == value.shape[n]:
+
+                # Expanded setting
+                elif request_len + use_underflow + use_overflow == value.shape[value_n]:
                     start += has_underflow and not use_underflow
                     stop += has_underflow + (has_overflow and use_overflow)
+
+                # Single element broadcasting
+                elif value.shape[value_n] == 1:
+                    start += has_underflow
+                    stop += has_underflow
+
                 else:
                     msg = "Mismatched shapes in dimension {0}".format(n)
                     msg += ", {0} != {1}".format(value.shape[n], request_len)
@@ -623,6 +643,7 @@ class Histogram(BaseHistogram):
                         )
                     raise ValueError(msg)
                 indexes[n] = slice(start, stop, request.step)
+                value_n += 1
             else:
                 indexes[n] = request + has_underflow
 

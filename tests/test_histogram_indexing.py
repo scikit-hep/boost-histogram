@@ -1,5 +1,6 @@
 import boost_histogram as bh
 import numpy as np
+from numpy.testing import assert_array_equal
 
 import pytest
 
@@ -137,6 +138,48 @@ def test_slicing_projection():
 
     h3 = h2[:, 5 : 7 : bh.sum]
     assert h3[1] == 6
+
+    # Select one bin
+    assert h1[2, :: bh.sum, :: bh.sum] == 12 * 12
+
+    # Select one bin
+    assert h1[2, 7, :: bh.sum] == 12
+
+
+def test_mix_value_with_slice():
+    h = bh.Histogram(
+        bh.axis.Regular(10, 0, 10), bh.axis.Regular(10, 0, 10), bh.axis.Integer(0, 2)
+    )
+
+    vals = np.arange(100).reshape(10, 10, 1)
+    h[:, :, 1:2] = vals
+
+    print(h.view()[:3, :3, :])
+
+    assert h[0, 1, True] == 1
+    assert h[1, 0, True] == 10
+    assert h[1, 1, True] == 11
+    assert h[3, 4, False] == 0
+
+    assert_array_equal(h[:, :, True].view(), vals[:, :, 0])
+    assert_array_equal(h[:, :, False].view(), 0)
+
+
+def test_mix_value_with_slice_2():
+    h = bh.Histogram(
+        bh.axis.Regular(10, 0, 10), bh.axis.Regular(10, 0, 10), bh.axis.Integer(0, 2)
+    )
+
+    vals = np.arange(100).reshape(10, 10)
+    h[:, :, True] = vals
+
+    assert h[0, 1, True] == 1
+    assert h[1, 0, True] == 10
+    assert h[1, 1, True] == 11
+    assert h[3, 4, False] == 0
+
+    assert_array_equal(h[:, :, True].view(), vals)
+    assert_array_equal(h[:, :, False].view(), 0)
 
 
 def test_repr():
