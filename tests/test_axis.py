@@ -225,6 +225,9 @@ class TestRegular(Axis):
         assert a.bin(-1)[0] == -np.inf
         assert a.bin(2)[1] == np.inf
 
+        assert_allclose(a[bh.underflow], a.bin(-1))
+        assert_allclose(a[bh.overflow], a.bin(2))
+
         with pytest.raises(IndexError):
             a.bin(-2)
         with pytest.raises(IndexError):
@@ -377,6 +380,11 @@ class TestCircular(Axis):
         with pytest.raises(IndexError):
             a[2]
 
+        with pytest.raises(IndexError):
+            a[bh.underflow]
+
+        assert_allclose(a[bh.overflow], a.bin(2))
+
         assert a.bin(2)[0] == approx(1 + 2 * np.pi)
         assert a.bin(2)[1] == approx(1 + 3 * np.pi)
 
@@ -482,6 +490,9 @@ class TestVariable(Axis):
         assert a[-1] == a[1]
         with pytest.raises(IndexError):
             a[2]
+
+        assert_allclose(a[bh.underflow], a.bin(-1))
+        assert_allclose(a[bh.overflow], a.bin(2))
 
         assert a.bin(-1)[0] == -np.inf
         assert a.bin(-1)[1] == ref[0]
@@ -607,6 +618,9 @@ class TestInteger:
             assert a[i] == r
         assert a.bin(-1) == -2
         assert a.bin(4) == 3
+
+        assert_allclose(a[bh.underflow], a.bin(-1))
+        assert_allclose(a[bh.overflow], a.bin(4))
 
     def test_iter(self):
         a = bh.axis.Integer(-1, 3)

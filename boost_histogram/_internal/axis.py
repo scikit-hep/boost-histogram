@@ -140,10 +140,16 @@ class MainAxisMixin(object):
         """
         Access a bin, using normal Python syntax for wraparound.
         """
-        if i < 0:
-            i += self._ax.size
-        if i >= self._ax.size:
-            raise IndexError("Out of range access")
+        # UHI support
+        if callable(i):
+            i = i(self)
+        else:
+            if i < 0:
+                i += self._ax.size
+            if i >= self._ax.size:
+                raise IndexError(
+                    "Out of range access, {0} is more than {1}".format(i, self._ax.size)
+                )
         return self.bin(i)
 
     @property
