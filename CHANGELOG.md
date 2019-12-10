@@ -1,4 +1,23 @@
+### Version 0.6.1
+
+#### User changes
+
+* Slices and single values can be mixed in indexing [#279][]
+
+#### Bug fixes
+
+* Properties on accumulator views now resolve correctly [#273][]
+* Division of a histogram by a number is supported again [#278][]
+* Setting a histogram with length one slice fixed [#279][]
+
+[#273]: https://github.com/scikit-hep/boost-histogram/pull/273
+[#278]: https://github.com/scikit-hep/boost-histogram/pull/278
+[#279]: https://github.com/scikit-hep/boost-histogram/pull/279
+
+
+
 ## Version 0.6
+
 
 This version fills out most of the remaining features missing from the 0.5.x
 series.  You can now use all the storages without the original caveats; even

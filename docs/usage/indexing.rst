@@ -36,6 +36,7 @@ Slicing:
    h2 = h[::sum]         # Projection operations # (name may change)
    h2 = h[a:b:sum]       # Adding endpoints to projection operations
    h2 = h[0:len:sum]     #   removes under or overflow from the calculation
+   h2 = h[v, a:b]        #   A single value v is like v:v+1:sum
    h2 = h[a:b, ...]      # Ellipsis work just like normal numpy
 
 Setting
@@ -58,7 +59,7 @@ allowed. These all return histograms, so flow bins are always preserved
 - the one exception is projection; since this removes an axis, the only
 use for the slice edges is to be explicit on what part you are
 interested for the projection. So an explicit (non-empty) slice here
-will case the relevant flow bin to be excluded (not currently supported).
+will case the relevant flow bin to be excluded.
 
 ``loc``, ``project``, and ``rebin`` all live inside the histogramming
 package (like boost-histogram), but are completely general and can be created by a
@@ -77,7 +78,8 @@ are slices, and follow the rules listed above. This looks like:
     h[{7: slice(0, 2, bh.rebin(4))}]       # slice and rebin axis 7
 
 
-If you don't like manually building slices, you can use the `Slicer()` utility to recover the original slicing syntax inside the dict:
+If you don't like manually building slices, you can use the `Slicer()` utility
+to recover the original slicing syntax inside the dict:
 
 .. code:: python
 
@@ -94,7 +96,6 @@ Invalid syntax:
 
 .. code:: python
 
-   h[v, a:b] # You cannot mix slices and bin contents access (h is an integer)
    h[1.0] # Floats are not allowed, just like numpy
    h[::2] # Skipping is not (currently) supported
    h[..., None] # None == np.newaxis is not supported
@@ -127,8 +128,10 @@ here <https://gist.github.com/henryiii/d545a673ea2b3225cb985c9c02ac958b>`__.
 `Extra doc
 here <https://docs.google.com/document/d/1bJKA7Y0QXf46w53UFizJ4bnZlVIkb4aCqx6m2hoN0HM/edit#heading=h.jvegm6z8f387>`__.
 
-Note that the API comes in two forms; the ``__call__``/``__new__`` operator form is more powerful, slower, optional, and is currently not supported by boost-histogram.
-A fully conforming UHI implementation must allow the tag form without the operators.
+Note that the API comes in two forms; the ``__call__``/``__new__`` operator
+form is more powerful, slower, optional, and is currently not supported by
+boost-histogram.  A fully conforming UHI implementation must allow the tag form
+without the operators.
 
 Basic implementation (WIP):
 
@@ -163,7 +166,11 @@ Basic implementation (WIP):
 
 
    class rebin:
-       "When used in the step of a Histogram's slice, rebin(n) combines bins, scaling their widths by a factor of n. If the number of bins is not divisible by n, the remainder is added to the overflow bin."
+       """
+       When used in the step of a Histogram's slice, rebin(n) combines bins,
+       scaling their widths by a factor of n. If the number of bins is not
+       divisible by n, the remainder is added to the overflow bin.
+       """
        projection = False
        def __init__(self, factor):
            self.factor = factor
