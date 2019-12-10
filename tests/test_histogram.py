@@ -407,11 +407,20 @@ def test_operators():
     h += h
     assert h[0] == 2
     assert h[1] == 0
+
     h *= 2
     assert h[0] == 4
     assert h[1] == 0
+
     assert (h + h)[0] == (h * 2)[0]
     assert (h + h)[0] == (2 * h)[0]
+
+    h /= 2
+    assert h[0] == 2
+    assert h[1] == 0
+
+    assert (h / 2)[0] == 1
+
     h2 = bh.Histogram(bh.axis.Regular(2, 0, 2))
     with pytest.raises(ValueError):
         h + h2
