@@ -62,7 +62,7 @@ def histogramdd(
 
     axs = []
     for n, (b, r) in enumerate(zip(bins, range)):
-        if isinstance(b, int):
+        if np.issubdtype(type(b), np.integer):
             if r is None:
                 # Nextafter may affect bin edges slightly
                 r = (np.min(a[n]), np.max(a[n]))
