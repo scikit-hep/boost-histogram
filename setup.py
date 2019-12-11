@@ -130,6 +130,7 @@ class BuildExt(build_ext):
 extras = {
     "test": ["pytest", "pytest-benchmark", "numpy", 'futures; python_version < "3"'],
     "docs": ["Sphinx>=2.0.0", "recommonmark>=0.5.0", "sphinx_rtd_theme"],
+    "examples": ["numpy", "ipykernel", "matplotlib"],
 }
 
 setup(
@@ -152,7 +153,7 @@ setup(
     setup_requires=[] + pytest_runner,
     extras_require=extras,
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "Intended Audience :: Information Technology",
         "Intended Audience :: Science/Research",

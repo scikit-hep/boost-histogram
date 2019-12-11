@@ -1,37 +1,38 @@
-from __future__ import print_function
-import sys
-import os
+#!/usr/bin/env python3
 
-sys.path.append(os.getcwd())
-
-# [ guide_python_histogram
-import histogram as hg
+import boost_histogram as bh
 
 # make 1-d histogram with 5 logarithmic bins from 1e0 to 1e5
-h = hg.histogram(hg.axis.regular_log(5, 1e0, 1e5, "x"))
+h = bh.Histogram(
+    bh.axis.Regular(5, 1e0, 1e5, metadata="x", transform=bh.axis.transform.log),
+    storage=bh.storage.Weight(),
+)
 
 # fill histogram with numbers
-for x in (2e0, 2e1, 2e2, 2e3, 2e4):
-    h(x, weight=4)  # increment bin counter by 4
+x = (2e0, 2e1, 2e2, 2e3, 2e4)
+h.fill(x, weight=4)  # increment bin counter by 4
 
 # iterate over bins and access bin counter
-for idx, (lower, upper) in enumerate(h.axis(0)):
+for idx, (lower, upper) in enumerate(h.axes[0]):
+    val = h[idx]
     print(
-        "bin {0} x in [{1}, {2}): {3} +/- {4}".format(
-            idx, lower, upper, h.at(idx).value, h.at(idx).variance ** 0.5
+        "bin {0} [{1:g}, {2:g}): {3} +/- {4}".format(
+            idx, lower, upper, val.value, val.variance ** 0.5
         )
     )
 
-# under- and overflow bins are accessed like in C++
-lo, up = h.axis(0)[-1]
+# under- and overflow bin
+lo, up = h.axes[0][bh.underflow]
 print(
-    "underflow [{0}, {1}): {2} +/- {3}".format(
-        lo, up, h.at(-1).value, h.at(-1).variance
+    "underflow [{0:g}, {1:g}): {2} +/- {3}".format(
+        lo, up, h[bh.underflow].value, h[bh.overflow].variance ** 0.5
     )
 )
-lo, up = h.axis(0)[5]
+lo, up = h.axes[0][bh.overflow]
 print(
-    "overflow  [{0}, {1}): {2} +/- {3}".format(lo, up, h.at(5).value, h.at(5).variance)
+    "overflow  [{0:g}, {1:g}): {2} +/- {3}".format(
+        lo, up, h[bh.overflow].value, h[bh.overflow].variance ** 0.5
+    )
 )
 
 # prints:
@@ -42,5 +43,3 @@ print(
 # bin 4 x in [10000.0, 100000.0): 4.0 +/- 4.0
 # underflow [0.0, 1.0): 0.0 +/- 0.0
 # overflow  [100000.0, inf): 0.0 +/- 0.0
-
-# ]
