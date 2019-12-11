@@ -30,6 +30,9 @@ opts = (
     {"bins": 10},
     {"bins": "auto" if np113 else 20},
     {"range": (0, 5), "bins": 30},
+    {"range": np.array((0, 5), dtype=np.float), "bins": np.int32(30)},
+    {"range": np.array((0, 3), dtype=np.double), "bins": np.uint32(10)},
+    {"range": np.array((0, 10), dtype=np.int), "bins": np.int8(30)},
     {"bins": [0, 1, 1.2, 1.3, 4, 21]},
 )
 
