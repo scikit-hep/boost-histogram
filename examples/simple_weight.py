@@ -1,25 +1,23 @@
-from __future__ import print_function
-import sys
-import os
+#!/usr/bin/env python3
 
-sys.path.append(os.getcwd())
+import boost_histogram as bh
 
-# [ getting_started_listing_04
-import histogram as hg
+# Make 1-d histogram with 5 logarithmic bins from 1e0 to 1e5
+h = bh.Histogram(
+    bh.axis.Regular(5, 1e0, 1e5, metadata="x", transform=bh.axis.transform.log),
+    storage=bh.storage.Weight(),
+)
 
-# make 1-d histogram with 5 logarithmic bins from 1e0 to 1e5
-h = hg.histogram(hg.axis.regular_log(5, 1e0, 1e5, "x"))
+# Fill histogram with numbers
+x = (2e0, 2e1, 2e2, 2e3, 2e4)
 
-# fill histogram with numbers
-for x in (2e0, 2e1, 2e2, 2e3, 2e4):
-    h(x, weight=2)
+# Doing this several times so the variance is more interesting
+h.fill(x, weight=2)
+h.fill(x, weight=2)
+h.fill(x, weight=2)
+h.fill(x, weight=2)
 
-# iterate over bins and access bin counter
-for idx, (lower, upper) in enumerate(h.axis(0)):
-    print(
-        "bin {0} x in [{1}, {2}): {3} +/- {4}".format(
-            idx, lower, upper, h.at(idx).value, h.at(idx).variance ** 0.5
-        )
-    )
-
-# ]
+# Iterate over bins and access bin counter
+for idx, (lower, upper) in enumerate(h.axes[0]):
+    val = h[idx]
+    print(f"bin {idx} in [{lower:g}, {upper:g}): {val.value} +/- {val.variance**.5}")
