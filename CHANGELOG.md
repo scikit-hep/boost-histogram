@@ -3,16 +3,22 @@
 #### User changes
 
 * Slices and single values can be mixed in indexing [#279][]
+* UHI locators supported on axes [#280][]
 
 #### Bug fixes
 
 * Properties on accumulator views now resolve correctly [#273][]
 * Division of a histogram by a number is supported again [#278][]
 * Setting a histogram with length one slice fixed [#279][]
+* Numpy functions now work with Numpy ints in `bins=` [#282][]
+* In-place addition avoids a copy [#284][]
 
 [#273]: https://github.com/scikit-hep/boost-histogram/pull/273
 [#278]: https://github.com/scikit-hep/boost-histogram/pull/278
 [#279]: https://github.com/scikit-hep/boost-histogram/pull/279
+[#280]: https://github.com/scikit-hep/boost-histogram/pull/280
+[#282]: https://github.com/scikit-hep/boost-histogram/pull/282
+[#284]: https://github.com/scikit-hep/boost-histogram/pull/284
 
 
 

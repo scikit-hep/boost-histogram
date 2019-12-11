@@ -404,11 +404,14 @@ def test_out_of_range():
 def test_operators():
     h = bh.Histogram(bh.axis.Integer(0, 2))
     h.fill(0)
+    h_orig = h
     h += h
+    assert h is h_orig
     assert h[0] == 2
     assert h[1] == 0
 
     h *= 2
+    assert h is h_orig
     assert h[0] == 4
     assert h[1] == 0
 
@@ -416,6 +419,7 @@ def test_operators():
     assert (h + h)[0] == (2 * h)[0]
 
     h /= 2
+    assert h is h_orig
     assert h[0] == 2
     assert h[1] == 0
 
