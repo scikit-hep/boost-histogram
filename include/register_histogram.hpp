@@ -60,6 +60,9 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
              })
 
         .def(py::self + py::self)
+        // .def(py::self + value_type())
+        .def(py::self += py::self)
+        // .def(py::self += value_type())
 
         .def(py::self == py::self)
         .def(py::self != py::self)

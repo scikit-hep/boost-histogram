@@ -25,6 +25,10 @@ _histograms = (
 )
 
 
+def _hist_or_val(other):
+    return other._hist if hasattr(other, "_hist") else other
+
+
 def _arg_shortcut(item):
     msg = "Developer shortcut: will be removed in a future version"
     if isinstance(item, tuple) and len(item) == 3:
@@ -129,7 +133,11 @@ class BaseHistogram(object):
         return _to_view(self._hist.view(False))
 
     def __add__(self, other):
-        return self.__class__(self._hist + other._hist)
+        return self.__class__(self._hist.__add__(other._hist))
+
+    def __iadd__(self, other):
+        self._hist.__iadd__(other._hist)
+        return self
 
     def __eq__(self, other):
         return self._hist == other._hist
@@ -139,40 +147,28 @@ class BaseHistogram(object):
 
     # If these fail, the underlying object throws the correct error
     def __mul__(self, other):
-        if isinstance(other, BaseHistogram):
-            return self.__class__(self._hist * other._hist)
-        else:
-            return self.__class__(self._hist * other)
+        return self.__class__(self._hist.__mul__(other))
 
     def __rmul__(self, other):
         return self * other
 
     def __imul__(self, other):
-        return self.__class__(self._hist.__imul__(other))
+        self._hist.__imul__(_hist_or_val(other))
+        return self
 
     def __truediv__(self, other):
-        if isinstance(other, BaseHistogram):
-            return self.__class__(self._hist.__truediv__(other._hist))
-        else:
-            return self.__class__(self._hist.__truediv__(other))
+        return self.__class__(self._hist.__truediv__(_hist_or_val(other)))
 
     def __div__(self, other):
-        if isinstance(other, BaseHistogram):
-            return self.__class__(self._hist.__div__(other._hist))
-        else:
-            return self.__class__(self._hist.__div__(other))
+        return self.__class__(self._hist.__div__(_hist_or_val(other)))
 
     def __itruediv__(self, other):
-        if isinstance(other, BaseHistogram):
-            return self.__class__(self._hist.__itruediv__(other._hist))
-        else:
-            return self.__class__(self._hist.__itruediv__(other))
+        self._hist.__itruediv__(_hist_or_val(other))
+        return self
 
     def __idiv__(self, other):
-        if isinstance(other, BaseHistogram):
-            return self.__class__(self._hist.__idiv__(other._hist))
-        else:
-            return self.__class__(self._hist.__idiv__(other))
+        self._hist.__idiv__(_hist_or_val(other))
+        return self
 
     def __copy__(self):
         other = self.__class__.__new__(self.__class__)
