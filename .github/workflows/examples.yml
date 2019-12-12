@@ -1,14 +1,16 @@
-name: Master Only
+name: Examples
 
 on:
   pull_request:
+    paths:
+    - 'examples/*.py'
+    - 'notebooks/*.ipynb'
   push:
     branches:
     - master
 
 jobs:
   examples:
-    name: Examples
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
@@ -18,10 +20,12 @@ jobs:
       with:
         python-version: '3.8.0'
     - name: Pre-install Numpy
-      run: python -m pip install numpy nbconvert
+      run: python -m pip install numpy nbconvert ipykernel
+    - name: Install kernel
+      run: python -m ipykernel install --user --name boost-hist
     - name: Build
       run: python -m pip install .[examples]
     - name: Examples
       run: for f in examples/*.py; do python "$f"; done
     - name: Notebooks
-      run: nbconvert --execute --inplace notebooks/*.ipynb
+      run: jupyter nbconvert --execute --inplace notebooks/*.ipynb

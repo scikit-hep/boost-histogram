@@ -1,7 +1,10 @@
-name: Format
+name: Tests
 
 on:
   pull_request:
+    branches:
+    - master
+    - develop
   push:
     branches:
     - master
@@ -9,6 +12,7 @@ on:
 
 jobs:
   pre-commit:
+    name: Format
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
