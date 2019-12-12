@@ -1,0 +1,27 @@
+name: Master Only
+
+on:
+  pull_request:
+  push:
+    branches:
+    - master
+
+jobs:
+  examples:
+    name: Examples
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+    - uses: actions/setup-python@v1
+      with:
+        python-version: '3.8.0'
+    - name: Pre-install Numpy
+      run: python -m pip install numpy nbconvert
+    - name: Build
+      run: python -m pip install .[examples]
+    - name: Examples
+      run: for f in examples/*.py; do python "$f"; done
+    - name: Notebooks
+      run: nbconvert --execute --inplace notebooks/*.ipynb
