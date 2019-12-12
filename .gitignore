@@ -35,6 +35,10 @@
 /*build*
 /docs/_build/*
 
+# Outputs
+/examples/*.png
+*.pkl
+
 # Python binary files
 *.pyc
 *__pycache__*

@@ -16,11 +16,11 @@ areas = np.prod(hist.axes.widths, axis=0)
 # Compute the density
 density = hist.view() / hist.sum() / areas
 
-# pcolormesh requires fully broadcast arrays for ij indexing, sadly, so get the
-# edges (50x1 and 1x50 arrays) and broadcast them out to 50x50.
-X, Y = np.broadcast_arrays(*hist.axes.edges)
+# Get the edges
+X, Y = hist.axes.edges
 
+# Make the plot
 fig, ax = plt.subplots()
-mesh = ax.pcolormesh(X, Y, density)
+mesh = ax.pcolormesh(X.T, Y.T, density.T)
 fig.colorbar(mesh)
-plt.show()
+plt.savefig("simple_density.png")
