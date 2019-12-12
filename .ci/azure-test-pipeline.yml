@@ -11,7 +11,7 @@ jobs:
 
 - job: LinuxSDist
   pool:
-    vmImage: 'ubuntu-16.04'
+    vmImage: 'ubuntu-latest'
   variables:
     python.architecture: 'none'
   steps:
@@ -31,17 +31,11 @@ jobs:
 - job: LinuxCMake
   strategy:
     matrix:
-      Python27:
-        python.version: '2.7'
-        python.architecture: 'x64'
       Python37:
         python.version: '3.7'
         python.architecture: 'x64'
-      Python35:
-        python.version: '3.5'
-        python.architecture: 'x64'
   pool:
-    vmImage: 'ubuntu-16.04'
+    vmImage: 'ubuntu-latest'
   steps:
     - template: azure-setup.yml
     - template: azure-cmake-steps.yml
@@ -50,7 +44,7 @@ jobs:
   strategy:
     matrix:
       macOS_Python36:
-        image: 'macOS-10.14'
+        image: 'macOS-latest'
         python.version: '3.6'
         python.architecture: 'x64'
       Win_Python27_32:
