@@ -6,7 +6,7 @@ steps:
     cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_HISTOGRAM_ERRORS=ON -DPYTHON_EXECUTABLE="$(which python)"
   displayName: 'Configure'
 
-- script: cmake --build . -j
+- script: cmake --build . -j 2
   displayName: 'Build'
   workingDirectory: build
 
