@@ -200,7 +200,7 @@ Support for this work was provided by the National Science Foundation cooperativ
 [azure-link]:              https://dev.azure.com/scikit-hep/boost-histogram/_build/latest?definitionId=2&branchName=develop
 [rtd-badge]:               https://readthedocs.org/projects/boost-histogram/badge/?version=latest
 [rtd-link]:                https://boost-histogram.readthedocs.io/en/latest/?badge=latest
-[actions-badge]:           https://github.com/scikit-hep/boost-histogram/workflows/Format/badge.svg
+[actions-badge]:           https://github.com/scikit-hep/boost-histogram/workflows/Tests/badge.svg
 [actions-link]:            https://github.com/scikit-hep/boost-histogram/actions
 
 [Boost::Histogram]:        https://www.boost.org/doc/libs/1_71_0/libs/histogram/doc/html/index.html
