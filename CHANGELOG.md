@@ -1,7 +1,7 @@
 ### Version 0.6.1
 
 Examples and notebooks are now up to date with the current state of the
-library.
+library. Using Boost 1.72 release.
 
 #### User changes
 
