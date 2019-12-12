@@ -1,5 +1,8 @@
 ### Version 0.6.1
 
+Examples and notebooks are now up to date with the current state of the
+library.
+
 #### User changes
 
 * Slices and single values can be mixed in indexing [#279][]
