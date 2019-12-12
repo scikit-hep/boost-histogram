@@ -46,7 +46,7 @@ jobs:
     - name: Configure
       run: mkdir -p build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_HISTOGRAM_ERRORS=ON -DPYTHON_EXECUTABLE="$(which python)"
     - name: Build
-      run: cmake --build build
+      run: cmake --build build -j 2
     - name: Test
       working-directory: ./build
       run: python -m pytest
