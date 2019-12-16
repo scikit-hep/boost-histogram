@@ -23,6 +23,8 @@ git submodule update --init --depth 10
 
 ## Development environment
 
+### Pip
+
 While developers often work in CMake, the "correct" way to develop a python
 package is in a virtual environment. This is how you would set one up with
 Python 3:
@@ -39,6 +41,10 @@ deactivate
 Now, you can run run notebooks using your system jupyter lab, and it will list
 the environment as available!
 
+To rebuild, you may need to delete the `/build` directory, and rerun `pip install -e .` from the environment.
+
+### CMake
+
 CMake is common for C++ development, and ties nicely to many C++ tools, like
 IDEs. If you want to use it for building, you can. Make a build directory and
 run CMake. If you have a specific Python you want to use, add
@@ -47,31 +53,54 @@ help installing the latest CMake version, [visit this
 page](https://cliutils.gitlab.io/modern-cmake/chapters/intro/installing.html);
 one option is to use pip to install CMake.
 
-```bash
-cmake -S . -B build-debug
-cmake --build build-debug -j4
-```
 
 > Note: Since setuptools uses a subdirectory called `build`, it is *slighly*
 > better to avoid making your CMake directory `build` as well. Also, you will
 > often have multiple CMake directories (`build-release`, `build-debug`, etc.),
 > so avoiding the descriptive name `build` is not a bad idea.
 
+You have three options for running code in python:
+
+1. Run from the build directory (only works with some commands, like `python -m
+pytest`, and not others, like `pytest`
+2. Add the build directory to your PYTHONPATH environment variable
+3. Set `CMAKE_INSTALL_PREFIX` to your site-packages and install (recommended
+for virtual environments).
+
+Here is the recommendation for a CMake install:
+
+
+```bash
+python3 -m venv env_cmake
+source ./env_cmake/bin/activate
+cmake -S . -B build-debug \
+    -GNinja \
+    -DPYTHON_EXECUTABLE=$(which python) \
+    -DCMAKE_INSTALL_PREFIX=$(python -c "import distutils.sysconfig; print(distutils.sysconfig.get_python_lib(plat_specific=False,standard_lib=False))")
+cmake --build build-debug -j4
+cmake --install build-debug
+```
+
+Note that option 3 will require reinstalling if the python files change, while
+options 1-2 will not if you have a recent version of CMake (symlinks are made).
+
+This could be simplified if PyBind11 supported the new CMake FindPython tools.
+
 ## Testing
 
-Run the unit tests (requires pytest and numpy). Use the `test` target from
-anywhere, or use `ctest` from the build directory, like this:
+Run the unit tests (requires pytest and numpy).
 
 ```bash
 python3 -m pytest
-
-# For the CMake method, the above from the build directory works, as does:
-ctest
 ```
 
-The tests require `numpy`, `pytest`, and `pytest-benchmark`. If you are using
-Python 2, you will need `futures` as well.
 
+For CMake, you can also use the `test` target from anywhere, or use `python3 -m
+pytest` or `ctest` from the build directory.
+
+The tests require `numpy`, `pytest`, and `pytest-benchmark`. If you are using
+Python 2, you will need `futures` as well. `pytest-sugar` adds some nice
+formatting.
 
 ## Benchmarking
 
