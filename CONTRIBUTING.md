@@ -196,3 +196,22 @@ end
 
 
 </details>
+
+<details><summary>Making a compiler flamegraph (click to expand)</summary>
+
+This requires LLVM 9+, and is based on [this post](https://aras-p.info/blog/2019/01/16/time-trace-timeline-flame-chart-profiler-for-Clang/).
+
+```bash
+brew install llvm         # macOS way to get clang-9
+python3 -m venv .env_core # general enviroment (no install will be made)
+. .env_core/bin/activate
+pip install -r dev-requirements.txt
+CXX="/usr/local/opt/llvm/bin/clang++" cmake -S . -B build-llvm \
+    -DCMAKE_CXX_FLAGS="-ftime-trace" \
+    -DPYTHON_EXECUTABLE=$(which python)
+cmake --build build-llvm/
+```
+
+Now open a browser with [SpeedScope](https://www.speedscope.app), and load one of the files.
+
+</details>
