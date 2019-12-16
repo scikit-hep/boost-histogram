@@ -196,3 +196,25 @@ def test_repr():
     assert repr(bh.overflow - 1) == "overflow - 1"
 
     assert repr(bh.rebin(2)) == "rebin(2)"
+
+
+# Was broken in 0.6.1
+def test_noflow_slicing():
+    noflow = dict(underflow=False, overflow=False)
+
+    h = bh.Histogram(
+        bh.axis.Regular(10, 0, 10),
+        bh.axis.Regular(10, 0, 10, **noflow),
+        bh.axis.Integer(0, 2, **noflow),
+    )
+
+    vals = np.arange(100).reshape(10, 10)
+    h[:, :, True] = vals
+
+    assert h[0, 1, True] == 1
+    assert h[1, 0, True] == 10
+    assert h[1, 1, True] == 11
+    assert h[3, 4, False] == 0
+
+    assert_array_equal(h[:, :, True].view(), vals)
+    assert_array_equal(h[:, :, False].view(), 0)

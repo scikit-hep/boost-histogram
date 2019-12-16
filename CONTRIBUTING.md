@@ -39,19 +39,23 @@ deactivate
 Now, you can run run notebooks using your system jupyter lab, and it will list
 the environment as available!
 
-
-You can use setuptools (`setup.py`) or CMake 3.14+ to build the package. CMake
-is preferable for most development, and setuptools is used for packaging on
-PyPI. Make a build directory and run CMake. If you have a specific Python you
-want to use, add `-DPYTHON_EXECUTABLE=$(which python)` or similar to the CMake
-line. If you need help installing the latest CMake version, [visit this
+CMake is common for C++ development, and ties nicely to many C++ tools, like
+IDEs. If you want to use it for building, you can. Make a build directory and
+run CMake. If you have a specific Python you want to use, add
+`-DPYTHON_EXECUTABLE=$(which python)` or similar to the CMake line. If you need
+help installing the latest CMake version, [visit this
 page](https://cliutils.gitlab.io/modern-cmake/chapters/intro/installing.html);
 one option is to use pip to install CMake.
 
 ```bash
-cmake -S . -B build
-cmake --build build -j4
+cmake -S . -B build-debug
+cmake --build build-debug -j4
 ```
+
+> Note: Since setuptools uses a subdirectory called `build`, it is *slighly*
+> better to avoid making your CMake directory `build` as well. Also, you will
+> often have multiple CMake directories (`build-release`, `build-debug`, etc.),
+> so avoiding the descriptive name `build` is not a bad idea.
 
 ## Testing
 
@@ -59,23 +63,15 @@ Run the unit tests (requires pytest and numpy). Use the `test` target from
 anywhere, or use `ctest` from the build directory, like this:
 
 ```bash
-ctest
-# Directly running with Python pytest works too
 python3 -m pytest
+
+# For the CMake method, the above from the build directory works, as does:
+ctest
 ```
 
 The tests require `numpy`, `pytest`, and `pytest-benchmark`. If you are using
 Python 2, you will need `futures` as well.
 
-To install using the pip method for development instead, run:
-
-```bash
-python3 -m venv .env
-. .env/bin/activate
-python -m pip install .[test]
-```
-
-You'll need to reinstall it if you want to rebuild.
 
 ## Benchmarking
 
