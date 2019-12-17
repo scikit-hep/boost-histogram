@@ -20,13 +20,6 @@ boost\_histogram.accumulators module
    :undoc-members:
    :show-inheritance:
 
-boost\_histogram.algorithm module
----------------------------------
-
-.. automodule:: boost_histogram.algorithm
-   :members:
-   :undoc-members:
-   :show-inheritance:
 
 boost\_histogram.numpy module
 -----------------------------

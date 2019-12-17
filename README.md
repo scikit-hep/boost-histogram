@@ -106,7 +106,7 @@ counts = hist.view()
     * `+`: Add two histograms
     * `*=`: Multiply by a scaler (not all storages) (`hist * scalar` and `scalar * hist` supported too)
     * `/=`: Divide by a scaler (not all storages) (`hist / scalar` supported too)
-    * `.to_numpy(flow=False)`: Convert to a numpy style tuple (with or without under/overflow bins)
+    * `.to_numpy(flow=False)`: Convert to a Numpy style tuple (with or without under/overflow bins)
     * `.view(flow=False)`: Get a view on the bin contents (with or without under/overflow bins)
     * `.axes`: Get the axes
         * `.axes[0]`: Get the 0th axis
@@ -114,7 +114,6 @@ counts = hist.view()
         * All other properties of axes available here, too
     * `.sum(flow=False)`: The total count of all bins
     * `.project(ax1, ax2, ...)`: Project down to listed axis (numbers)
-    * `.reduce(ax, reduce_option, ...)`: shrink, rebin, or slice, or any combination
 * Indexing - Supports the [Unified Histogram Indexing (UHI)](https://boost-histogram.readthedocs.io/en/latest/usage/indexing.html) proposal
 * Details
     * Use `bh.Histogram(..., storage=...)` to make a histogram (there are several different types)
