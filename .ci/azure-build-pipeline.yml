@@ -1,30 +1,52 @@
+# Copyright (c) 2019, Henry Schreiner.
+#
+# Distributed under the 3-clause BSD license, see accompanying file LICENSE
+# or https://github.com/scikit-hep/azure-wheel-helpers for details.
+
+# Template - you must copy (or symlink) this to your .ci folder
+# Packages usually will have a little custom code in here, and
+# can override any of the templates from here, as well
+
+# Builds can always be triggered in the GUI.
 trigger:
-  tags:
+  branches:
     include:
-    - v*
+      - 'refs/tags/*'
+      - 'master'
 
+# For a master-develop workflow:
 pr:
-- master
+  - master
 
 
+
+# You must set the package name here. Optionally change the other variables.
 variables:
-  # This is the output name, - is replaced by _
   package_name: boost_histogram
+  many_linux_base: skhep/manylinuxgcc-
+  dev_requirements_file: dev-requirements.txt
+  test_requirements_file: dev-requirements.txt
+  NPY_NUM_BUILD_JOBS: 4
+
 
 jobs:
 
-
 - job: LinuxSDist
   pool:
-    vmImage: 'ubuntu-16.04'
+    vmImage: 'ubuntu-latest'
   variables:
     python.architecture: 'none'
   steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.8'
     - script: |
+        python -m pip install --upgrade pip
         python -m pip install setuptools
-        python setup.py sdist
-      displayName: Publish sdist
-    - template: azure-publish-dist.yml
+      displayName: Install sdist deps
+    - script: python setup.py sdist
+      displayName: Prepare sdist
+    - template: azure-wheel-helpers/azure-publish-dist.yml
 
 - job: ManyLinux
   strategy:
@@ -37,23 +59,18 @@ jobs:
       64Bit:
         arch: x86_64
         plat: manylinux1_x86_64
-        image: skhep/manylinuxgcc-x86_64
+        image: $(many_linux_base)x86_64
         python.architecture: x64
       32Bit:
         arch: i686
         plat: manylinux1_i686
-        image: skhep/manylinuxgcc-i686
+        image: $(many_linux_base)i686
         python.architecture: x86
   pool:
-    vmImage: 'ubuntu-16.04'
+    vmImage: 'ubuntu-latest'
   steps:
-    - script: |
-        docker run -e NPY_NUM_BUILD_JOBS=4 -e PLAT=$(plat) -e package_name=$(package_name) --rm -v `pwd`:/io $(image) /io/.ci/build-wheels.sh
-        ls -lh wheelhouse/
-        mkdir -p dist
-        cp wheelhouse/$(package_name)*.whl dist/.
-      displayName: Build wheels
-    - template: azure-publish-dist.yml
+    - template: azure-wheel-helpers/azure-manylinux-wheels.yml
+    - template: azure-wheel-helpers/azure-publish-dist.yml
 
 - job: macOS
   variables:
@@ -69,11 +86,12 @@ jobs:
       Python38:
         python.version: '3.8'
   pool:
-    vmImage: 'macOS-10.14'
+    vmImage: 'macOS-latest'
   steps:
-    - template: azure-setup.yml
-    - template: azure-steps.yml
-    - template: azure-publish-dist.yml
+    - template: azure-wheel-helpers/azure-setup.yml
+    - template: azure-wheel-helpers/azure-steps.yml
+    - template: azure-wheel-helpers/azure-tests.yml
+    - template: azure-wheel-helpers/azure-publish-dist.yml
 
 - job: Windows
   strategy:
@@ -105,6 +123,7 @@ jobs:
   pool:
     vmImage: 'vs2017-win2016'
   steps:
-    - template: azure-setup.yml
-    - template: azure-steps.yml
-    - template: azure-publish-dist.yml
+    - template: azure-wheel-helpers/azure-setup.yml
+    - template: azure-wheel-helpers/azure-steps.yml
+    - template: azure-wheel-helpers/azure-tests.yml
+    - template: azure-wheel-helpers/azure-publish-dist.yml
