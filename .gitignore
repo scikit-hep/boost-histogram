@@ -42,7 +42,6 @@
 # Python binary files
 *.pyc
 *__pycache__*
-*.env
 *.egg-info
 .ipynb_checkpoints
 /wheelhouse/*
@@ -55,5 +54,5 @@
 *.clangd
 compile_commands.json
 
-# Venvs
-/*venv*
+# Venvs such as /.env
+/*env*

@@ -23,6 +23,8 @@ git submodule update --init --depth 10
 
 ## Development environment
 
+### Pip
+
 While developers often work in CMake, the "correct" way to develop a python
 package is in a virtual environment. This is how you would set one up with
 Python 3:
@@ -39,43 +41,66 @@ deactivate
 Now, you can run run notebooks using your system jupyter lab, and it will list
 the environment as available!
 
+To rebuild, you may need to delete the `/build` directory, and rerun `pip install -e .` from the environment.
 
-You can use setuptools (`setup.py`) or CMake 3.14+ to build the package. CMake
-is preferable for most development, and setuptools is used for packaging on
-PyPI. Make a build directory and run CMake. If you have a specific Python you
-want to use, add `-DPYTHON_EXECUTABLE=$(which python)` or similar to the CMake
-line. If you need help installing the latest CMake version, [visit this
+### CMake
+
+CMake is common for C++ development, and ties nicely to many C++ tools, like
+IDEs. If you want to use it for building, you can. Make a build directory and
+run CMake. If you have a specific Python you want to use, add
+`-DPYTHON_EXECUTABLE=$(which python)` or similar to the CMake line. If you need
+help installing the latest CMake version, [visit this
 page](https://cliutils.gitlab.io/modern-cmake/chapters/intro/installing.html);
 one option is to use pip to install CMake.
 
+
+> Note: Since setuptools uses a subdirectory called `build`, it is *slighly*
+> better to avoid making your CMake directory `build` as well. Also, you will
+> often have multiple CMake directories (`build-release`, `build-debug`, etc.),
+> so avoiding the descriptive name `build` is not a bad idea.
+
+You have three options for running code in python:
+
+1. Run from the build directory (only works with some commands, like `python -m
+pytest`, and not others, like `pytest`
+2. Add the build directory to your PYTHONPATH environment variable
+3. Set `CMAKE_INSTALL_PREFIX` to your site-packages and install (recommended
+for virtual environments).
+
+Here is the recommendation for a CMake install:
+
+
 ```bash
-cmake -S . -B build
-cmake --build build -j4
+python3 -m venv env_cmake
+source ./env_cmake/bin/activate
+cmake -S . -B build-debug \
+    -GNinja \
+    -DPYTHON_EXECUTABLE=$(which python) \
+    -DCMAKE_INSTALL_PREFIX=$(python -c "import distutils.sysconfig; print(distutils.sysconfig.get_python_lib(plat_specific=False,standard_lib=False))")
+cmake --build build-debug -j4
+cmake --install build-debug
 ```
+
+Note that option 3 will require reinstalling if the python files change, while
+options 1-2 will not if you have a recent version of CMake (symlinks are made).
+
+This could be simplified if PyBind11 supported the new CMake FindPython tools.
 
 ## Testing
 
-Run the unit tests (requires pytest and numpy). Use the `test` target from
-anywhere, or use `ctest` from the build directory, like this:
+Run the unit tests (requires pytest and numpy).
 
 ```bash
-ctest
-# Directly running with Python pytest works too
 python3 -m pytest
 ```
 
+
+For CMake, you can also use the `test` target from anywhere, or use `python3 -m
+pytest` or `ctest` from the build directory.
+
 The tests require `numpy`, `pytest`, and `pytest-benchmark`. If you are using
-Python 2, you will need `futures` as well.
-
-To install using the pip method for development instead, run:
-
-```bash
-python3 -m venv .env
-. .env/bin/activate
-python -m pip install .[test]
-```
-
-You'll need to reinstall it if you want to rebuild.
+Python 2, you will need `futures` as well. `pytest-sugar` adds some nice
+formatting.
 
 ## Benchmarking
 
@@ -169,5 +194,24 @@ end
   Azure releases.
 - Conda-forge will automatically make a PR to update a few hours later.
 
+
+</details>
+
+<details><summary>Making a compiler flamegraph (click to expand)</summary>
+
+This requires LLVM 9+, and is based on [this post](https://aras-p.info/blog/2019/01/16/time-trace-timeline-flame-chart-profiler-for-Clang/).
+
+```bash
+brew install llvm         # macOS way to get clang-9
+python3 -m venv .env_core # general enviroment (no install will be made)
+. .env_core/bin/activate
+pip install -r dev-requirements.txt
+CXX="/usr/local/opt/llvm/bin/clang++" cmake -S . -B build-llvm \
+    -DCMAKE_CXX_FLAGS="-ftime-trace" \
+    -DPYTHON_EXECUTABLE=$(which python)
+cmake --build build-llvm/
+```
+
+Now open a browser with [SpeedScope](https://www.speedscope.app), and load one of the files.
 
 </details>
