@@ -7,7 +7,7 @@ import pytest
 
 def test_1D_get_bin():
 
-    h = bh.Histogram(bh.axis.Regular(10, 0, 1))
+    h = bh.Histogram(bh.axis.Regular(10, 0, 0.99))
     h.fill([0.25, 0.25, 0.25, 0.15])
 
     assert h[0] == 0
@@ -27,7 +27,7 @@ def test_1D_get_bin():
 
 def test_2D_get_bin():
 
-    h = bh.Histogram(bh.axis.Regular(10, 0, 1), bh.axis.Regular(10, 0, 1))
+    h = bh.Histogram(bh.axis.Regular(10, 0, 0.99), bh.axis.Regular(10, 0, 0.99))
     h.fill(0.15, [0.25, 0.25, 0.25, 0.15])
 
     assert h[0, 0] == 0

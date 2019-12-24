@@ -11,7 +11,6 @@ schedules:
 
 
 variables:
-  # This is the output name, - is replaced by _
   package_name: boost_histogram
 
 jobs:
@@ -21,12 +20,12 @@ jobs:
   strategy:
     matrix:
       Python37:
-        python.version: '3.7'
+        python.version: '3.8'
         python.architecture: 'x64'
   pool:
-    vmImage: 'ubuntu-16.04'
+    vmImage: 'ubuntu-latest'
   steps:
-    - template: azure-setup.yml
+    - template: azure-wheel-helpers/azure-setup.yml
     - template: azure-live-at-head.yml
-    - template: azure-cmake-steps.yml
+    - template: azure-wheel-helpers/azure-cmake-steps.yml
 

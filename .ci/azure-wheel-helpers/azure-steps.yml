@@ -1,3 +1,8 @@
+# Copyright (c) 2019, Henry Schreiner.
+#
+# Distributed under the 3-clause BSD license, see accompanying file LICENSE
+# or https://github.com/scikit-hep/azure-wheel-helpers for details.
+
 steps:
 
 - script: |
@@ -6,7 +11,7 @@ steps:
     set DISTUTILS_USE_SDK=1
     python -m pip wheel . -w wheelhouse/
   displayName: 'Build wheel (Windows Python 2.7)'
-  condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['python.version'], '2.7'))
+  condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['python.version'], '2.7')) 
 
 - script: |
     python -m pip wheel . -w wheelhouse/
@@ -20,22 +25,11 @@ steps:
   displayName: 'Show wheelhouse'
 
 - script: |
-    python -m pip install boost_histogram --no-index -f wheelhouse
+    python -m pip install $(package_name) --no-index -f wheelhouse
   displayName: 'Install wheel'
-
-- script: |
-    python -m pytest --junitxml=junit/test-results.xml
-  workingDirectory: tests
-  displayName: 'Test with pytest'
-
-- task: PublishTestResults@2
-  inputs:
-    testResultsFiles: '**/test-*.xml'
-    testRunTitle: 'Publish test results for Python $(python.version)'
-  condition: succeededOrFailed()
 
 - script: |
     python -m pip install delocate
     /Library/Frameworks/Python.framework/Versions/$(python.version)/bin/delocate-wheel dist/$(package_name)*.whl
   displayName: 'Delocate wheels'
-  condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+  condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin')) 
