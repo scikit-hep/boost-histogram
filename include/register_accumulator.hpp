@@ -28,8 +28,7 @@ py::class_<A> register_accumulator(py::module acc, Args&&... args) {
              [](py::object self) {
                  const A& item = py::cast<const A&>(self);
                  py::str str   = shift_to_string(item);
-                 str           = str.attr("split")("(", 2).attr("__getitem__")(1);
-                 return py::str("{0.__class__.__name__}({1}").format(self, str);
+                 return py::str("{0.__class__.__name__}({1})").format(self, str);
              })
 
         .def("__copy__", [](const A& self) { return A(self); })
