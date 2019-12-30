@@ -1,3 +1,20 @@
+### IN DEVELOPMENT
+
+Documentation update. Now using development branch of Boost.Histogram again.
+
+#### Bug fixes
+
+* Allow slicing on flowless axes [#288][]
+* Sum repr fixed [#293][]
+
+#### Developer changes
+
+* Now using scikit-hep/azure-wheel-helpers via subtree [#292][]
+
+[#288]: https://github.com/scikit-hep/boost-histogram/pull/288
+[#292]: https://github.com/scikit-hep/boost-histogram/pull/292
+[#293]: https://github.com/scikit-hep/boost-histogram/pull/293
+
 ### Version 0.6.1
 
 Examples and notebooks are now up to date with the current state of the
