@@ -3,6 +3,7 @@
 Indexing
 ========
 
+
 This is the design document for Unified Histogram Indexing (UHI).  Much of the
 original plan is now implemented in boost-histogram.  Other histogramming
 libraries can implement support for this as well, and the "tag" functors, like
@@ -108,17 +109,123 @@ Rejected proposals or proposals for future consideration, maybe ``hist``-only:
    h2 = h[1.0j:2.5j + 1] # Adding a j suffix to a number could be used in place of `loc(x)`
    h2 = h[1.0] # Floats in place of `loc(x)`: too easy to make a mistake
 
+Examples
+--------
+
+
+For a histogram, the slice should be thought of like this:
+
+.. code:: python
+
+   histogram[start:stop:action]
+
+The start and stop can be either a bin number (following Python rules),
+or a callable; the callable will get the axis being acted on and should
+return an extended bin number (``-1`` and ``len(ax)`` are flow bins). A
+provided callable is ``bh.loc``, which converts from axis data
+coordinates into bin number.
+
+The final argument, ``action``, is special. A general API is being
+worked on, but for now, ``bh.sum`` will “project out” or “integrate
+over” an axes, and ``bh.rebin(n)`` will rebin by an integral factor.
+Both work correctly with limits; ``bh.sum`` will remove flow bins if
+given a range. ``h[0:len:bh.sum]`` will sum without the flow bins.
+
+Here are a few examples that highlight the functionality of UHI:
+
+Example 1:
+^^^^^^^^^^
+
+You want to slice axis 0 from 0 to 20, axis 1 from .5 to 1.5 in data
+coordinates, axis 2 needs to have double size bins (rebin by 2), and
+axis 3 should be summed over. You have a 4D histogram.
+
+Solution:
+
+.. code:: python
+
+   ans = h[:20, bh.loc(-.5):bh.loc(1.5), ::bh.rebin(2), ::bh.sum]
+
+Example 2:
+^^^^^^^^^^
+
+You want to set all bins above 4.0 in data coordinates to 0 on a 1D
+histogram.
+
+Solution:
+
+.. code:: python
+
+   h[bh.loc(4.0):] = 0
+
+You can set with an array, as well. The array can either be the same
+length as the range you give, or the same length as the range +
+under/overflows if the range is open ended (no limit given). For
+example:
+
+.. code:: python
+
+   h = bh.Histogram(bh.axis.Regular(10,0,1))
+   h[:] = np.ones(10) # underflow/overflow still 0
+   h[:] = np.ones(12) # underflow/overflow now set too
+
+Note that for clarity, while basic Numpy broadcasting is supported,
+axis-adding broadcasting is not supported; you must set a 2D histogram
+with a 2D array or a scalar, not a 1D array.
+
+Example 3:
+^^^^^^^^^^
+
+You want to sum from -infinity to 2.4 in data coordinates in axis 1,
+leaving all other axes alone. You have an ND histogram, with N >= 2.
+
+Solution:
+
+.. code:: python
+
+   ans = h[:, :bh.loc(2.4):bh.sum, ...]
+
+Notice that last example could be hard to write if the axis number, 1 in
+this case, was large or programmatically defined. In these cases, you
+can pass a dictionary of ``{axis:slice}`` into the indexing operation. A
+shortcut to quickly generate slices is provided, as well:
+
+.. code:: python
+
+   ans = h[{1: slice(None,bh.loc(2.4),bh.sum)}]
+
+   # Identical:
+   s = bh.tag.Slicer()
+   ans = h[{1: s[:bh.loc(2.4):bh.sum]}]
+
+Example 4:
+^^^^^^^^^^
+
+You want the underflow bin of a 1D histogram.
+
+Solution:
+
+.. code:: python
+
+   val = h1[bh.underflow]
+
+
+
+
+
 --------------
 
+Details
+-------
 
 
 Axis indexing
--------------
+^^^^^^^^^^^^^
 
 TODO: Possibly extend to axes. Would follow the 1D cases above.
 
 Implementation notes
---------------------
+^^^^^^^^^^^^^^^^^^^^
 
 loc, rebin, and sum are *not* unique tags, or special types, but rather
 APIs for classes. New versions of these could be added, and

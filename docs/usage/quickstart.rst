@@ -45,6 +45,9 @@ The exact same syntax is used for 1D, 2D, and ND histograms:
 
 See :ref:`usage-axes` and :ref:`usage-transforms`.
 
+You can also select a different storage with the ``storage=`` keyword argument;
+see :ref:`usage-storage` for details about the other storages.
+
 Filling a histogram
 -------------------
 
@@ -126,7 +129,7 @@ Computing with Histograms
 
 As an complete example, let's say you wanted to compute and plot the density:
 
-.. literalinclude:: ../../examples/docs_density.py
+.. literalinclude:: ../../examples/simple_density.py
    :language: python
 
 .. image:: ../_images/ex_hist_density.png

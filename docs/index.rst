@@ -16,9 +16,14 @@ Boost-histogram (`source repository <https://github.com/scikit-hep/boost-histogr
 
    usage/installation
    usage/quickstart
+   usage/histogram
    usage/axes
-   usage/indexing
+   usage/storage
+   usage/accumulators
    usage/transforms
+   usage/indexing
+   usage/analyses
+   usage/numpy
    usage/comparison
 
 .. toctree::
