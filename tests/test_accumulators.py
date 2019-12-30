@@ -8,6 +8,8 @@ import numpy as np
 def test_weighted_sum():
     a = bh.accumulators.WeightedSum(1.5, 2.5)
 
+    assert repr(a) == "WeightedSum(value=1.5, variance=2.5)"
+
     assert a == bh.accumulators.WeightedSum(1.5, 2.5)
 
     assert a.value == 1.5
@@ -47,6 +49,8 @@ def test_sum():
 
     assert a == bh.accumulators.Sum(6)
 
+    assert repr(a) == "Sum(6)"
+
 
 def test_weighted_mean():
     vals = [4, 1]
@@ -63,6 +67,10 @@ def test_weighted_mean():
     assert a == a2
 
     assert a == bh.accumulators.WeightedMean(3, 5, 2, 4.5)
+    assert (
+        repr(a)
+        == "WeightedMean(sum_of_weights=3, sum_of_weights_squared=5, value=2, variance=4.5)"
+    )
 
 
 def test_mean():
@@ -79,3 +87,5 @@ def test_mean():
     assert a == a2
 
     assert a == bh.accumulators.Mean(3, 2, 1)
+
+    assert repr(a) == "Mean(count=3, value=2, variance=1)"
