@@ -66,7 +66,7 @@ message(STATUS "Python ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
 
 # This is completely optional and just adds hints to IDEs - no affect on build at all.
 file(GLOB_RECURSE BOOST_HIST_FILES "extern/histogram/include/*.hpp")
-file(GLOB_RECURSE BOOST_HIST_PY_HEADERS "include/*.hpp")
+file(GLOB_RECURSE BOOST_HIST_PY_HEADERS "include/bh_python/*.hpp")
 
 # List the source files for the Python extension
 # On some backends (like make), this will regenerate if a file was added/removed

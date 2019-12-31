@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include "accumulators/mean.hpp"
-#include "accumulators/weighted_mean.hpp"
-#include "accumulators/weighted_sum.hpp"
+#include <bh_python/accumulators/mean.hpp>
+#include <bh_python/accumulators/weighted_mean.hpp>
+#include <bh_python/accumulators/weighted_sum.hpp>
 
 #include <boost/histogram/accumulators/sum.hpp>
 #include <boost/histogram/detail/counting_streambuf.hpp>

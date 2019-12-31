@@ -5,10 +5,10 @@
 
 #pragma once
 
-#include "pybind11.hpp"
+#include <bh_python/pybind11.hpp>
 
-#include "make_pickle.hpp"
-#include "storage.hpp"
+#include <bh_python/make_pickle.hpp>
+#include <bh_python/storage.hpp>
 
 /// Add helpers common to all storage types
 template <class A>

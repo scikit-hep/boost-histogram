@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "pybind11.hpp"
+#include <bh_python/pybind11.hpp>
 
 #include <pybind11/pytypes.h>
 

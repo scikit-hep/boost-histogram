@@ -3,14 +3,14 @@
 // Distributed under the 3-Clause BSD License.  See accompanying
 // file LICENSE or https://github.com/scikit-hep/boost-histogram for details.
 
-#include "pybind11.hpp"
+#include <bh_python/pybind11.hpp>
 
-#include "accumulators/mean.hpp"
-#include "accumulators/ostream.hpp"
-#include "accumulators/weighted_mean.hpp"
-#include "accumulators/weighted_sum.hpp"
-#include "kwargs.hpp"
-#include "register_accumulator.hpp"
+#include <bh_python/accumulators/mean.hpp>
+#include <bh_python/accumulators/ostream.hpp>
+#include <bh_python/accumulators/weighted_mean.hpp>
+#include <bh_python/accumulators/weighted_sum.hpp>
+#include <bh_python/kwargs.hpp>
+#include <bh_python/register_accumulator.hpp>
 #include <boost/histogram/accumulators/sum.hpp>
 #include <pybind11/operators.h>
 

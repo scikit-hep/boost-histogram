@@ -3,12 +3,12 @@
 // Distributed under the 3-Clause BSD License.  See accompanying
 // file LICENSE or https://github.com/scikit-hep/boost-histogram for details.
 
-#include "pybind11.hpp"
+#include <bh_python/pybind11.hpp>
 
-#include "axis.hpp"
-#include "kwargs.hpp"
-#include "register_axis.hpp"
-#include "regular_numpy.hpp"
+#include <bh_python/axis.hpp>
+#include <bh_python/kwargs.hpp>
+#include <bh_python/register_axis.hpp>
+#include <bh_python/regular_numpy.hpp>
 #include <boost/mp11.hpp>
 #include <vector>
 

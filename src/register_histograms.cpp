@@ -3,12 +3,12 @@
 // Distributed under the 3-Clause BSD License.  See accompanying
 // file LICENSE or https://github.com/scikit-hep/boost-histogram for details.
 
-#include "pybind11.hpp"
+#include <bh_python/pybind11.hpp>
 
-#include "axis.hpp"
-#include "histogram.hpp"
-#include "register_histogram.hpp"
-#include "storage.hpp"
+#include <bh_python/axis.hpp>
+#include <bh_python/histogram.hpp>
+#include <bh_python/register_histogram.hpp>
+#include <bh_python/storage.hpp>
 #include <boost/histogram/storage_adaptor.hpp>
 
 void register_histograms(py::module& hist) {

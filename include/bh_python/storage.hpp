@@ -5,11 +5,11 @@
 
 #pragma once
 
-#include "pybind11.hpp"
+#include <bh_python/pybind11.hpp>
 
-#include "accumulators/mean.hpp"
-#include "accumulators/weighted_mean.hpp"
-#include "accumulators/weighted_sum.hpp"
+#include <bh_python/accumulators/mean.hpp>
+#include <bh_python/accumulators/weighted_mean.hpp>
+#include <bh_python/accumulators/weighted_sum.hpp>
 
 #include <boost/histogram/accumulators/thread_safe.hpp>
 #include <boost/histogram/storage_adaptor.hpp>

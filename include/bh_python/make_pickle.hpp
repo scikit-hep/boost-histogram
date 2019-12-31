@@ -42,9 +42,9 @@
 
 #pragma once
 
-#include "pybind11.hpp"
+#include <bh_python/pybind11.hpp>
 
-#include "metadata.hpp"
+#include <bh_python/metadata.hpp>
 
 #include <boost/assert.hpp>
 #include <boost/core/nvp.hpp>
