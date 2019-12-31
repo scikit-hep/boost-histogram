@@ -5,10 +5,10 @@
 
 #pragma once
 
-#include "pybind11.hpp"
+#include <bh_python/pybind11.hpp>
 
-#include "accumulators/ostream.hpp"
-#include "make_pickle.hpp"
+#include <bh_python/accumulators/ostream.hpp>
+#include <bh_python/make_pickle.hpp>
 
 #include <utility>
 

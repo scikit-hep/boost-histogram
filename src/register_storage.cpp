@@ -3,10 +3,10 @@
 // Distributed under the 3-Clause BSD License.  See accompanying
 // file LICENSE or https://github.com/scikit-hep/boost-histogram for details.
 
-#include "pybind11.hpp"
+#include <bh_python/pybind11.hpp>
 
-#include "register_storage.hpp"
-#include "storage.hpp"
+#include <bh_python/register_storage.hpp>
+#include <bh_python/storage.hpp>
 #include <boost/histogram/storage_adaptor.hpp>
 
 void register_storages(py::module& storage) {

@@ -3,14 +3,14 @@
 // Distributed under the 3-Clause BSD License.  See accompanying
 // file LICENSE or https://github.com/scikit-hep/boost-histogram for details.
 
-#include "pybind11.hpp"
+#include <bh_python/pybind11.hpp>
 
 #include <pybind11/functional.h>
 #include <pybind11/operators.h>
 
-#include "axis.hpp"
-#include "make_pickle.hpp"
-#include "transform.hpp"
+#include <bh_python/axis.hpp>
+#include <bh_python/make_pickle.hpp>
+#include <bh_python/transform.hpp>
 #include <boost/histogram/axis/regular.hpp>
 
 template <class T, class... Args>

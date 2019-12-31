@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "metadata.hpp"
+#include <bh_python/metadata.hpp>
 
 #include <boost/core/nvp.hpp>
 #include <boost/histogram/axis/regular.hpp>

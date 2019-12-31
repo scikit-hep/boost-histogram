@@ -5,15 +5,15 @@
 
 #pragma once
 
-#include "pybind11.hpp"
+#include <bh_python/pybind11.hpp>
 
-#include "accumulators/ostream.hpp"
-#include "axis.hpp"
-#include "fill.hpp"
-#include "histogram.hpp"
-#include "make_pickle.hpp"
-#include "storage.hpp"
-#include "sum.hpp"
+#include <bh_python/accumulators/ostream.hpp>
+#include <bh_python/axis.hpp>
+#include <bh_python/fill.hpp>
+#include <bh_python/histogram.hpp>
+#include <bh_python/make_pickle.hpp>
+#include <bh_python/storage.hpp>
+#include <bh_python/sum.hpp>
 
 #include <boost/histogram/algorithm/empty.hpp>
 #include <boost/histogram/algorithm/project.hpp>

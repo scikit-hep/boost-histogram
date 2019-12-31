@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "pybind11.hpp"
+#include <bh_python/pybind11.hpp>
 
 #include <boost/core/nvp.hpp>
 #include <boost/histogram/axis/regular.hpp>

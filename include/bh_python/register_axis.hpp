@@ -5,13 +5,13 @@
 
 #pragma once
 
-#include "pybind11.hpp"
+#include <bh_python/pybind11.hpp>
 
-#include "array_like.hpp"
-#include "axis.hpp"
-#include "fill.hpp"
-#include "make_pickle.hpp"
-#include "options.hpp"
+#include <bh_python/array_like.hpp>
+#include <bh_python/axis.hpp>
+#include <bh_python/fill.hpp>
+#include <bh_python/make_pickle.hpp>
+#include <bh_python/options.hpp>
 
 #include <boost/histogram/axis/ostream.hpp>
 #include <boost/histogram/axis/traits.hpp>

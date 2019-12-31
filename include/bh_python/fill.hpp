@@ -5,12 +5,12 @@
 
 #pragma once
 
-#include "pybind11.hpp"
+#include <bh_python/pybind11.hpp>
 
-#include "axis.hpp"
-#include "kwargs.hpp"
-#include "overload.hpp"
-#include "vector_string_caster.hpp"
+#include <bh_python/axis.hpp>
+#include <bh_python/kwargs.hpp>
+#include <bh_python/overload.hpp>
+#include <bh_python/vector_string_caster.hpp>
 
 #include <boost/histogram/detail/accumulator_traits.hpp>
 #include <boost/histogram/detail/axes.hpp>

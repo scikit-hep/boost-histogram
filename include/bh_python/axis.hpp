@@ -5,10 +5,10 @@
 
 #pragma once
 
-#include "pybind11.hpp"
+#include <bh_python/pybind11.hpp>
 
-#include "regular_numpy.hpp"
-#include "transform.hpp"
+#include <bh_python/regular_numpy.hpp>
+#include <bh_python/transform.hpp>
 
 #include <boost/histogram/axis.hpp>
 #include <boost/histogram/indexed.hpp>
