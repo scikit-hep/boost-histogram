@@ -3,6 +3,9 @@
 Analyses examples
 =================
 
+Bool and category axes
+----------------------
+
 Taken together, the flexibility in axes and the tools to easily sum over
 axes can be applied to transform the way you approach analysis with
 histograms. For example, let’s say you are presented with the following
