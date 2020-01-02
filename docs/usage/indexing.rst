@@ -9,6 +9,9 @@ original plan is now implemented in boost-histogram.  Other histogramming
 libraries can implement support for this as well, and the "tag" functors, like
 ``sum`` and ``loc`` can be used between libraries.
 
+Syntax
+------
+
 The following examples assume you have imported ``loc``, ``sum``, ``rebin``,
 ``underflow``, and ``overflow`` from boost-histogram or any other library that
 implements UHI.
