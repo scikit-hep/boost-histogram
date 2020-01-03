@@ -218,3 +218,47 @@ def test_noflow_slicing():
 
     assert_array_equal(h[:, :, True].view(), vals)
     assert_array_equal(h[:, :, False].view(), 0)
+
+
+def test_pick_str_category():
+    noflow = dict(underflow=False, overflow=False)
+
+    h = bh.Histogram(
+        bh.axis.Regular(10, 0, 10),
+        bh.axis.Regular(10, 0, 10, **noflow),
+        bh.axis.StrCategory(["on", "off", "maybe"]),
+    )
+
+    vals = np.arange(100).reshape(10, 10)
+    h[:, :, bh.loc("on")] = vals
+
+    assert h[0, 1, bh.loc("on")] == 1
+    assert h[1, 0, bh.loc("on")] == 10
+    assert h[1, 1, bh.loc("on")] == 11
+    assert h[3, 4, bh.loc("maybe")] == 0
+
+    assert_array_equal(h[:, :, bh.loc("on")].view(), vals)
+    assert_array_equal(h[:, :, bh.loc("off")].view(), 0)
+
+
+def test_pick_int_category():
+    noflow = dict(underflow=False, overflow=False)
+
+    h = bh.Histogram(
+        bh.axis.Regular(10, 0, 10),
+        bh.axis.Regular(10, 0, 10, **noflow),
+        bh.axis.IntCategory([3, 5, 7]),
+    )
+
+    vals = np.arange(100).reshape(10, 10)
+    h[:, :, bh.loc(3)] = vals
+    h[:, :, bh.loc(5)] = vals + 1
+
+    assert h[0, 1, bh.loc(3)] == 1
+    assert h[1, 0, bh.loc(5)] == 10 + 1
+    assert h[1, 1, bh.loc(5)] == 11 + 1
+    assert h[3, 4, bh.loc(7)] == 0
+
+    assert_array_equal(h[:, :, bh.loc(3)].view(), vals)
+    assert_array_equal(h[:, :, bh.loc(5)].view(), vals + 1)
+    assert_array_equal(h[:, :, bh.loc(7)].view(), 0)
