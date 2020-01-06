@@ -49,7 +49,7 @@ def test_sum():
 
     assert a == bh.accumulators.Sum(6)
 
-    assert repr(a) == "Sum(6)"
+    assert repr(a) == "Sum(6 + 0)"
 
 
 def test_weighted_mean():

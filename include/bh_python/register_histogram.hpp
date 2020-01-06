@@ -181,7 +181,7 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
         .def("reduce",
              [](const histogram_t& self, py::args args) {
                  return bh::algorithm::reduce(
-                     self, py::cast<std::vector<bh::algorithm::reduce_option>>(args));
+                     self, py::cast<std::vector<bh::algorithm::reduce_command>>(args));
              })
 
         .def("project",

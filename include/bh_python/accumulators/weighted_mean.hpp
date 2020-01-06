@@ -23,33 +23,37 @@ namespace accumulators {
   Uses West's incremental algorithm to improve numerical stability
   of mean and variance computation.
 */
-template <typename RealType>
+template <typename ValueType>
 struct weighted_mean {
+    using value_type      = ValueType;
+    using const_reference = const value_type&;
+
     weighted_mean() = default;
-    weighted_mean(const RealType& wsum,
-                  const RealType& wsum2,
-                  const RealType& mean,
-                  const RealType& variance)
+
+    weighted_mean(const value_type& wsum,
+                  const value_type& wsum2,
+                  const value_type& mean,
+                  const value_type& variance)
         : sum_of_weights(wsum)
         , sum_of_weights_squared(wsum2)
         , value(mean)
         , sum_of_weighted_deltas_squared(
               variance * (sum_of_weights - sum_of_weights_squared / sum_of_weights)) {}
 
-    weighted_mean(const RealType& wsum,
-                  const RealType& wsum2,
-                  const RealType& mean,
-                  const RealType& sum_of_weighted_deltas_squared,
-                  bool)
+    weighted_mean(const value_type& wsum,
+                  const value_type& wsum2,
+                  const value_type& mean,
+                  const value_type& sum_of_weighted_deltas_squared,
+                  bool /* tag to trigger Python internal constructor */)
         : sum_of_weights(wsum)
         , sum_of_weights_squared(wsum2)
         , value(mean)
         , sum_of_weighted_deltas_squared(sum_of_weighted_deltas_squared) {}
 
-    void operator()(const RealType& x) { operator()(boost::histogram::weight(1), x); }
+    void operator()(const value_type& x) { operator()(boost::histogram::weight(1), x); }
 
-    void operator()(const boost::histogram::weight_type<RealType>& w,
-                    const RealType& x) {
+    void operator()(const boost::histogram::weight_type<value_type>& w,
+                    const value_type& x) {
         sum_of_weights += w.value;
         sum_of_weights_squared += w.value * w.value;
         const auto delta = x - value;
@@ -61,17 +65,18 @@ struct weighted_mean {
     weighted_mean& operator+=(const weighted_mean<T>& rhs) {
         if(sum_of_weights != 0 || rhs.sum_of_weights != 0) {
             const auto tmp = value * sum_of_weights
-                             + static_cast<RealType>(rhs.value * rhs.sum_of_weights);
-            sum_of_weights += static_cast<RealType>(rhs.sum_of_weights);
-            sum_of_weights_squared += static_cast<RealType>(rhs.sum_of_weights_squared);
+                             + static_cast<value_type>(rhs.value * rhs.sum_of_weights);
+            sum_of_weights += static_cast<value_type>(rhs.sum_of_weights);
+            sum_of_weights_squared
+                += static_cast<value_type>(rhs.sum_of_weights_squared);
             value = tmp / sum_of_weights;
         }
         sum_of_weighted_deltas_squared
-            += static_cast<RealType>(rhs.sum_of_weighted_deltas_squared);
+            += static_cast<value_type>(rhs.sum_of_weighted_deltas_squared);
         return *this;
     }
 
-    weighted_mean& operator*=(const RealType& s) {
+    weighted_mean& operator*=(const value_type& s) {
         value *= s;
         sum_of_weighted_deltas_squared *= s * s;
         return *this;
@@ -90,7 +95,7 @@ struct weighted_mean {
         return !operator==(rhs);
     }
 
-    RealType variance() const {
+    value_type variance() const {
         return sum_of_weighted_deltas_squared
                / (sum_of_weights - sum_of_weights_squared / sum_of_weights);
     }
@@ -104,8 +109,8 @@ struct weighted_mean {
                             sum_of_weighted_deltas_squared);
     }
 
-    RealType sum_of_weights = RealType(), sum_of_weights_squared = RealType(),
-             value = RealType(), sum_of_weighted_deltas_squared = RealType();
+    value_type sum_of_weights = value_type(), sum_of_weights_squared = value_type(),
+               value = value_type(), sum_of_weighted_deltas_squared = value_type();
 };
 
 } // namespace accumulators

@@ -21,31 +21,37 @@ namespace accumulators {
   Uses Welford's incremental algorithm to improve the numerical
   stability of mean and variance computation.
 */
-template <class RealType>
+template <class ValueType>
 struct mean {
+    using value_type      = ValueType;
+    using const_reference = const value_type&;
+
     mean() = default;
-    mean(const RealType& n, const RealType& mean, const RealType& variance) noexcept
+
+    mean(const value_type& n,
+         const value_type& mean,
+         const value_type& variance) noexcept
         : count(n)
         , value(mean)
         , sum_of_deltas_squared(variance * (n - 1)) {}
 
-    mean(const RealType& sum,
-         const RealType& mean,
-         const RealType& sum_of_deltas_squared,
+    mean(const value_type& sum,
+         const value_type& mean,
+         const value_type& sum_of_deltas_squared,
          bool /* Tag to trigger python internal constructor */)
         : count(sum)
         , value(mean)
         , sum_of_deltas_squared(sum_of_deltas_squared) {}
 
-    void operator()(const RealType& x) noexcept {
-        count += static_cast<RealType>(1);
+    void operator()(const value_type& x) noexcept {
+        count += static_cast<value_type>(1);
         const auto delta = x - value;
         value += delta / count;
         sum_of_deltas_squared += delta * (x - value);
     }
 
-    void operator()(const boost::histogram::weight_type<RealType>& w,
-                    const RealType& x) noexcept {
+    void operator()(const boost::histogram::weight_type<value_type>& w,
+                    const value_type& x) noexcept {
         count += w.value;
         const auto delta = x - value;
         value += w.value * delta / count;
@@ -56,15 +62,15 @@ struct mean {
     mean& operator+=(const mean<T>& rhs) noexcept {
         if(count != 0 || rhs.count != 0) {
             const auto tmp
-                = value * count + static_cast<RealType>(rhs.value * rhs.count);
+                = value * count + static_cast<value_type>(rhs.value * rhs.count);
             count += rhs.count;
             value = tmp / count;
         }
-        sum_of_deltas_squared += static_cast<RealType>(rhs.sum_of_deltas_squared);
+        sum_of_deltas_squared += static_cast<value_type>(rhs.sum_of_deltas_squared);
         return *this;
     }
 
-    mean& operator*=(const RealType& s) noexcept {
+    mean& operator*=(const value_type& s) noexcept {
         value *= s;
         sum_of_deltas_squared *= s * s;
         return *this;
@@ -81,7 +87,7 @@ struct mean {
         return !operator==(rhs);
     }
 
-    RealType variance() const noexcept { return sum_of_deltas_squared / (count - 1); }
+    value_type variance() const noexcept { return sum_of_deltas_squared / (count - 1); }
 
     template <class Archive>
     void serialize(Archive& ar, unsigned) {
@@ -90,7 +96,7 @@ struct mean {
         ar& boost::make_nvp("sum_of_deltas_squared", sum_of_deltas_squared);
     }
 
-    RealType count = 0, value = 0, sum_of_deltas_squared = 0;
+    value_type count = 0, value = 0, sum_of_deltas_squared = 0;
 };
 
 } // namespace accumulators

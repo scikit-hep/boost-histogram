@@ -18,43 +18,57 @@
 namespace accumulators {
 
 /// Holds sum of weights and its variance estimate
-template <typename RealType>
+template <class ValueType>
 struct weighted_sum {
+    using value_type      = ValueType;
+    using const_reference = const value_type&;
+
     weighted_sum() = default;
-    explicit weighted_sum(const RealType& value) noexcept
-        : value(value)
-        , variance(value) {}
-    weighted_sum(const RealType& value, const RealType& variance) noexcept
+
+    /// Initialize sum to value and allow implicit conversion
+    weighted_sum(const_reference value) noexcept
+        : weighted_sum(value, value) {}
+
+    /// Allow implicit conversion from sum<T>
+    template <class T>
+    weighted_sum(const weighted_sum<T>& s) noexcept
+        : weighted_sum(s.value(), s.variance()) {}
+
+    /// Initialize sum to value and variance
+    weighted_sum(const_reference value, const_reference variance) noexcept
         : value(value)
         , variance(variance) {}
 
     /// Increment by one.
-    weighted_sum& operator++() { return operator+=(1); }
+    weighted_sum& operator++() {
+        value += 1;
+        variance += 1;
+        return *this;
+    }
 
     /// Increment by value.
     template <typename T>
-    weighted_sum& operator+=(const T& val) {
-        value += val;
-        variance += val * val;
+    weighted_sum& operator+=(const bh::weight_type<T>& w) {
+        value += w.value;
+        variance += w.value * w.value;
         return *this;
     }
 
     /// Added another weighted sum.
-    template <typename T>
-    weighted_sum& operator+=(const weighted_sum<T>& rhs) {
-        value += static_cast<RealType>(rhs.value);
-        variance += static_cast<RealType>(rhs.variance);
+    weighted_sum& operator+=(const weighted_sum& rhs) {
+        value += rhs.value;
+        variance += rhs.variance;
         return *this;
     }
 
     /// Scale by value.
-    weighted_sum& operator*=(const RealType& x) {
+    weighted_sum& operator*=(const value_type& x) {
         value *= x;
         variance *= x * x;
         return *this;
     }
 
-    bool operator==(const RealType& rhs) const noexcept {
+    bool operator==(const value_type& rhs) const noexcept {
         return value == rhs && variance == rhs;
     }
 
@@ -80,8 +94,8 @@ struct weighted_sum {
         ar& boost::make_nvp("variance", variance);
     }
 
-    RealType value    = RealType();
-    RealType variance = RealType();
+    value_type value    = value_type();
+    value_type variance = value_type();
 };
 
 } // namespace accumulators
