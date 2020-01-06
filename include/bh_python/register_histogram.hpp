@@ -13,7 +13,6 @@
 #include <bh_python/histogram.hpp>
 #include <bh_python/make_pickle.hpp>
 #include <bh_python/storage.hpp>
-#include <bh_python/sum.hpp>
 
 #include <boost/histogram/algorithm/empty.hpp>
 #include <boost/histogram/algorithm/project.hpp>
@@ -166,7 +165,8 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
         .def(
             "sum",
             [](const histogram_t& self, bool flow) {
-                return sum_histogram(self, flow);
+                return bh::algorithm::sum(
+                    self, flow ? bh::coverage::all : bh::coverage::inner);
             },
             "flow"_a = false)
 
