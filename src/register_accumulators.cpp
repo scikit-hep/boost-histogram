@@ -88,7 +88,11 @@ void register_accumulators(py::module& accumulators) {
         .def_readonly("value", &weighted_sum::value)
         .def_readonly("variance", &weighted_sum::variance)
 
-        .def(py::self += double())
+        .def("__iadd__",
+             [](weighted_sum& self, double value) {
+                 self += bh::weight(value);
+                 return self;
+             })
 
         .def(
             "fill",
@@ -97,7 +101,7 @@ void register_accumulators(py::module& accumulators) {
                 finalize_args(kwargs);
                 if(variance.is_none()) {
                     py::vectorize([](weighted_sum& self, double val) {
-                        self += val;
+                        self += bh::weight(val);
                         return false;
                     })(self, value);
                 } else {

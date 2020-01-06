@@ -40,22 +40,6 @@ handle_nonzero_width(std::basic_ostream<CharT, Traits>& os, const T& x) {
 
 // Note that the names are *not* included here, so they can be added in Pybind11.
 
-// namespace boost {
-// namespace histogram {
-// namespace accumulators {
-// template <class CharT, class Traits, class W>
-// std::basic_ostream<CharT, Traits>&
-// operator<<(std::basic_ostream<CharT, Traits>& os,
-//           const sum<W>& x) {
-//    if(os.width() == 0)
-//        return os << x.large() << " + " << x.small();
-//    return handle_nonzero_width(os, x);
-//}
-//
-//} // namespace accumulators
-//} // namespace histogram
-//} // namespace boost
-
 namespace accumulators {
 
 template <class CharT, class Traits, class W>
