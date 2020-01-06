@@ -4,8 +4,10 @@ Documentation update. Now using development branch of Boost.Histogram again.
 
 #### Bug fixes
 
-* Allow slicing on flowless axes [#288][]
-* Sum repr fixed [#293][]
+* Fix sum over category axes in indexing [#298][]
+* Allow single category item selection [#298][]
+* Allow slicing on axes without flow bins [#288][]
+* Sum repr no longer throws error [#293][]
 
 #### Developer changes
 
@@ -14,6 +16,7 @@ Documentation update. Now using development branch of Boost.Histogram again.
 [#288]: https://github.com/scikit-hep/boost-histogram/pull/288
 [#292]: https://github.com/scikit-hep/boost-histogram/pull/292
 [#293]: https://github.com/scikit-hep/boost-histogram/pull/293
+[#298]: https://github.com/scikit-hep/boost-histogram/pull/298
 
 ### Version 0.6.1
 
