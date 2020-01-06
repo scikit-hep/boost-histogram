@@ -150,8 +150,7 @@ void register_accumulators(py::module& accumulators) {
     register_accumulator<sum>(accumulators, "Sum")
         .def(py::init<const double&>(), "value"_a)
 
-        .def_property(
-            "value", &sum::operator double, [](sum& s, double v) { s = v; })
+        .def_property_readonly("value", &sum::value)
 
         .def(py::self += double())
 
