@@ -61,18 +61,14 @@ struct weighted_mean {
         sum_of_weighted_deltas_squared += w.value * delta * (x - value);
     }
 
-    template <typename T>
-    weighted_mean& operator+=(const weighted_mean<T>& rhs) {
+    weighted_mean& operator+=(const weighted_mean& rhs) {
         if(sum_of_weights != 0 || rhs.sum_of_weights != 0) {
-            const auto tmp = value * sum_of_weights
-                             + static_cast<value_type>(rhs.value * rhs.sum_of_weights);
-            sum_of_weights += static_cast<value_type>(rhs.sum_of_weights);
-            sum_of_weights_squared
-                += static_cast<value_type>(rhs.sum_of_weights_squared);
+            const auto tmp = value * sum_of_weights + rhs.value * rhs.sum_of_weights;
+            sum_of_weights += rhs.sum_of_weights;
+            sum_of_weights_squared += rhs.sum_of_weights_squared;
             value = tmp / sum_of_weights;
         }
-        sum_of_weighted_deltas_squared
-            += static_cast<value_type>(rhs.sum_of_weighted_deltas_squared);
+        sum_of_weighted_deltas_squared += rhs.sum_of_weighted_deltas_squared;
         return *this;
     }
 
@@ -82,18 +78,14 @@ struct weighted_mean {
         return *this;
     }
 
-    template <typename T>
-    bool operator==(const weighted_mean<T>& rhs) const noexcept {
+    bool operator==(const weighted_mean& rhs) const noexcept {
         return sum_of_weights == rhs.sum_of_weights
                && sum_of_weights_squared == rhs.sum_of_weights_squared
                && value == rhs.value
                && sum_of_weighted_deltas_squared == rhs.sum_of_weighted_deltas_squared;
     }
 
-    template <typename T>
-    bool operator!=(const T& rhs) const noexcept {
-        return !operator==(rhs);
-    }
+    bool operator!=(const weighted_mean rhs) const noexcept { return !operator==(rhs); }
 
     value_type variance() const {
         return sum_of_weighted_deltas_squared
@@ -109,8 +101,10 @@ struct weighted_mean {
                             sum_of_weighted_deltas_squared);
     }
 
-    value_type sum_of_weights = value_type(), sum_of_weights_squared = value_type(),
-               value = value_type(), sum_of_weighted_deltas_squared = value_type();
+    value_type sum_of_weights{};
+    value_type sum_of_weights_squared{};
+    value_type value{};
+    value_type sum_of_weighted_deltas_squared{};
 };
 
 } // namespace accumulators

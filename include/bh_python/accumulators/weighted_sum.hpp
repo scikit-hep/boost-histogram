@@ -46,7 +46,7 @@ struct weighted_sum {
         return *this;
     }
 
-    /// Increment by value.
+    /// Increment by weight.
     template <typename T>
     weighted_sum& operator+=(const bh::weight_type<T>& w) {
         value += w.value;
@@ -83,10 +83,7 @@ struct weighted_sum {
     }
 
     // lossy conversion must be explicit
-    template <class T>
-    explicit operator T() const {
-        return static_cast<T>(value);
-    }
+    explicit operator const_reference() const { return value; }
 
     template <class Archive>
     void serialize(Archive& ar, unsigned /* version */) {
@@ -94,8 +91,8 @@ struct weighted_sum {
         ar& boost::make_nvp("variance", variance);
     }
 
-    value_type value    = value_type();
-    value_type variance = value_type();
+    value_type value{};
+    value_type variance{};
 };
 
 } // namespace accumulators

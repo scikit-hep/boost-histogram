@@ -58,15 +58,13 @@ struct mean {
         sum_of_deltas_squared += w.value * delta * (x - value);
     }
 
-    template <class T>
-    mean& operator+=(const mean<T>& rhs) noexcept {
+    mean& operator+=(const mean& rhs) noexcept {
         if(count != 0 || rhs.count != 0) {
-            const auto tmp
-                = value * count + static_cast<value_type>(rhs.value * rhs.count);
+            const auto tmp = value * count + rhs.value * rhs.count;
             count += rhs.count;
             value = tmp / count;
         }
-        sum_of_deltas_squared += static_cast<value_type>(rhs.sum_of_deltas_squared);
+        sum_of_deltas_squared += rhs.sum_of_deltas_squared;
         return *this;
     }
 
@@ -76,16 +74,12 @@ struct mean {
         return *this;
     }
 
-    template <class T>
-    bool operator==(const mean<T>& rhs) const noexcept {
+    bool operator==(const mean& rhs) const noexcept {
         return count == rhs.count && value == rhs.value
                && sum_of_deltas_squared == rhs.sum_of_deltas_squared;
     }
 
-    template <class T>
-    bool operator!=(const mean<T>& rhs) const noexcept {
-        return !operator==(rhs);
-    }
+    bool operator!=(const mean& rhs) const noexcept { return !operator==(rhs); }
 
     value_type variance() const noexcept { return sum_of_deltas_squared / (count - 1); }
 
@@ -96,7 +90,9 @@ struct mean {
         ar& boost::make_nvp("sum_of_deltas_squared", sum_of_deltas_squared);
     }
 
-    value_type count = 0, value = 0, sum_of_deltas_squared = 0;
+    value_type count{};
+    value_type value{};
+    value_type sum_of_deltas_squared{};
 };
 
 } // namespace accumulators
