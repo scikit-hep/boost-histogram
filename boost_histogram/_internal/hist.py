@@ -484,7 +484,6 @@ class Histogram(BaseHistogram):
         slices = []
         zeroes_start = []
         zeroes_stop = []
-        pick = dict()
 
         # We could use python's sum here, but for now, a private sum is used
         class ext_sum:
@@ -493,8 +492,7 @@ class Histogram(BaseHistogram):
         # Compute needed slices and projections
         for i, ind in iterator:
             if hasattr(ind, "__index__"):
-                pick[i] = ind.__index__()
-                ind = slice(None)
+                ind = slice(ind.__index__(), ind.__index__() + 1, ext_sum())
 
             elif not isinstance(ind, slice):
                 raise IndexError(
@@ -536,14 +534,9 @@ class Histogram(BaseHistogram):
         reduced = self._reduce(*slices)
 
         if not integrations:
-            result = self.__class__(reduced)
+            return self.__class__(reduced)
         else:
             projections = [i for i in range(self.rank) if i not in integrations]
-
-            # For each axes projected out, we need to lower "pick" since it
-            # operates after the projection
-            reduce_ax = lambda ax: sum(i in projections for i in range(ax))
-            pick = {reduce_ax(ax): pick[ax] for ax in pick}
 
             # Replacement for crop missing in BH
             for i in zeroes_start:
@@ -553,33 +546,11 @@ class Histogram(BaseHistogram):
                 if self.axes[i].options.overflow:
                     reduced._hist._reset_row(i, reduced.axes[i].size)
 
-            result = (
+            return (
                 self.__class__(reduced.project(*projections))
                 if projections
                 else reduced.sum(flow=True)
             )
-
-        # Allow user to "pick" out values when mixed with slices
-        if pick:
-            # Sum out the axes. We will replace the contents, so "drop" would be
-            # just as good if there was one.
-            sresult = result[{ax: slice(None, None, ext_sum()) for ax in pick}]
-
-            # Make an array of selections, starting with [:,:,...,:]
-            bins_indexes = [slice(None)] * result.rank
-            # Now make the axis selections, remembering we will be in flow view
-            for ax in pick:
-                bins_indexes[ax] = pick[ax] + result._axis(ax).options.underflow
-
-            # If the result is a single value, we need to avoid [...]
-            if hasattr(sresult, "rank"):
-                sresult[...] = result.view(flow=True)[tuple(bins_indexes)]
-            else:
-                sresult = result.view(flow=True)[tuple(bins_indexes)]
-
-            result = sresult
-
-        return result
 
     def __setitem__(self, index, value):
         """
