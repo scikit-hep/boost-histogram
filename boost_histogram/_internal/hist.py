@@ -550,7 +550,7 @@ class Histogram(BaseHistogram):
                 if self.axes[i].options.underflow:
                     reduced._hist._reset_row(i, -1)
             for i in zeroes_stop:
-                if self.axes[i].options.underflow:
+                if self.axes[i].options.overflow:
                     reduced._hist._reset_row(i, reduced.axes[i].size)
 
             result = (
