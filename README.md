@@ -198,7 +198,7 @@ Support for this work was provided by the National Science Foundation cooperativ
 [actions-badge]:           https://github.com/scikit-hep/boost-histogram/workflows/Tests/badge.svg
 [actions-link]:            https://github.com/scikit-hep/boost-histogram/actions
 
-[Boost::Histogram]:        https://www.boost.org/doc/libs/1_71_0/libs/histogram/doc/html/index.html
+[Boost::Histogram]:        https://www.boost.org/doc/libs/release/libs/histogram/doc/html/index.html
 [Boost::Histogram source]: https://github.com/boostorg/histogram
 [fastest libraries]:       https://iscinumpy.gitlab.io/post/histogram-speeds-in-python/
 [conda-link]:              https://github.com/conda-forge/boost-histogram-feedstock
