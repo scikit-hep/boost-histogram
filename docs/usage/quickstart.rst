@@ -85,7 +85,7 @@ Accessing the contents
 ----------------------
 
 You can use ``hist.view()`` to get
-a numpy array (or a RecArray-like wrapper for non-simple storages).
+a Numpy array (or a RecArray-like wrapper for non-simple storages).
 Most methods like ``.view()`` offer an optional keyword
 argument that you can pass, ``flow=True``, to enable the under and
 overflow bins (disabled by default).
@@ -98,7 +98,7 @@ overflow bins (disabled by default).
 Setting the contents
 --------------------
 
-You can set the contents directly as you would a numpy array;
+You can set the contents directly as you would a Numpy array;
 you can set either values or arrays at a time:
 
 .. code:: python
@@ -123,6 +123,29 @@ properties and methods are also available directly on the ``axes`` tuple:
    X, Y = hist.axes.centers
 
 See :ref:`usage-axes`.
+
+
+Saving Histograms
+-----------------
+
+You can save histograms using pickle:
+
+.. code:: python
+
+    import pickle
+
+    with open('file.pkl', 'wb') as f:
+        pickle.dump(h, f)
+
+    with open('file.pkl', 'rb') as f:
+        h2 = pickle.load(f)
+
+    assert h == h2
+
+Special care was taken to ensure that this is fast and efficient.  Please use
+the latest version of the Pickle protocol you feel comfortable using; you
+cannot use version 0, the version that is default on Python 2. The most recent
+versions provide performance benefits.
 
 Computing with Histograms
 -------------------------

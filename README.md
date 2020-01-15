@@ -70,9 +70,9 @@ counts = hist.view()
     * `bh.axis.Variable([start, edge1, edge2, ..., stop], underflow=True, overflow=True)`: Uneven bin spacing
     * `bh.axis.Category([...], growth=False)`: Integer or string categories
 * Axis features:
-    * `.index(values)`: The index at a point (or points) on the axis
-    * `.value(indexes)`: The value for a fractional bin in the axis
-    * `.bin(i)`: The bin edges or a bin value (categories)
+    * `.index(value)`: The index at a point (or points) on the axis
+    * `.value(index)`: The value for a fractional bin (or bins) in the axis
+    * `.bin(i)`: The bin edges (continuous axis) or a bin value (discrete axis)
     * `.centers`: The N bin centers (if continuous)
     * `.edges`: The N+1 bin edges (if continuous)
     * `.extent`: The number of bins (including under/overflow)
@@ -80,7 +80,6 @@ counts = hist.view()
     * `.options`: The options set on the axis (`bh.axis.options`)
     * `.size`: The number of bins (not including under/overflow)
     * `.widths`: The N bin widths
-
 * Many storage types
     * `bh.storage.Double()`: Doubles for weighted values (default)
     * `bh.storage.Int64()`: 64-bit unsigned integers
@@ -95,24 +94,52 @@ counts = hist.view()
     * `bh.accumulator.Mean`: Running count, mean, and variance (Welfords's incremental algorithm)
     * `bh.accumulator.WeightedMean`: Tracks a weighted sum, mean, and variance (West's incremental algorithm)
 * Histogram operations
-    * `h.fill(arr, ..., weight=...)` Fill with N arrays or single values
-    * `h.rank`: The number of dimensions
-    * `h.size or len(h)`: The number of bins
-    * `.reset()`: Set counters to 0
-    * `+`: Add two histograms
-    * `*=`: Multiply by a scaler (not all storages) (`hist * scalar` and `scalar * hist` supported too)
-    * `/=`: Divide by a scaler (not all storages) (`hist / scalar` supported too)
-    * `.to_numpy(flow=False)`: Convert to a Numpy style tuple (with or without under/overflow bins)
-    * `.view(flow=False)`: Get a view on the bin contents (with or without under/overflow bins)
-    * `.axes`: Get the axes
-        * `.axes[0]`: Get the 0th axis
-        * `.axes.edges`: The lower values as a broadcasting-ready array
-        * All other properties of axes available here, too
-    * `.sum(flow=False)`: The total count of all bins
-    * `.project(ax1, ax2, ...)`: Project down to listed axis (numbers)
+  * `h.rank`: The number of dimensions
+  * `h.size or len(h)`: The number of bins
+  * `+`: Add two histograms (storages must match types currently)
+  * `*=`: Multiply by a scaler (not all storages) (`hist * scalar` and `scalar * hist` supported too)
+  * `/=`: Divide by a scaler (not all storages) (`hist / scalar` supported too)
+  * `.sum(flow=False)`: The total count of all bins
+  * `.project(ax1, ax2, ...)`: Project down to listed axis (numbers)
+  * `.to_numpy(flow=False)`: Convert to a Numpy style tuple (with or without under/overflow bins)
+  * `.view(flow=False)`: Get a view on the bin contents (with or without under/overflow bins)
+  * `.reset()`: Set counters to 0
+  * `.empty(flow=False)`: Check to see if the histogram is empty (can check flow bins too if asked)
+  * `.copy(deep=False)`: Make a copy of a histogram
+  * `.axes`: Get the axes as a tuple-like (all properties of axes are available too)
+      * `.axes[0]`: Get the 0th axis
+      * `.axes.edges`: The lower values as a broadcasting-ready array
+      * `.axes.centers`: The centers of the bins broadcasting-ready array
+      * `.axes.widths`: The bin widths as a broadcasting-ready array
+      * `.axes.metadata`: A tuple of the axes metadata
+      * `.axes.size`: A tuple of the axes sizes (size without flow)
+      * `.axes.extent`: A tuple of the axes extents (size with flow)
+      * `.axes.bin(*args)`: Returns the bin edges as a tuple of pairs (continuous axis) or values (describe)
+      * `.axes.index(*args)`: Returns the bin index at a value for each axis
+      * `.axes.value(*args)`: Returns the bin value at an index for each axis
 * Indexing - Supports the [Unified Histogram Indexing (UHI)](https://boost-histogram.readthedocs.io/en/latest/usage/indexing.html) proposal
+    * Bin content access / setting
+        * `v = h[b]`: Access bin content by index number
+        * `v = h[{0:b}]`: All actions can be represented by `axis:item` dictionary instead of by position (mostly useful for slicing)
+    * Slicing to get histogram or set array of values
+        * `h2 = h[a:b]`: Access a slice of a histogram, cut portions go to flow bins if present
+        * `h2 = h[:, ...]`: Using `:` and `...` supported just like Numpy
+        * `h2 = h[::bh.sum]`: Third item in slice is the "action"
+        * `h[...] = array`: Set the bin contents, either include or omit flow bins
+    * Special accessors
+        * `bh.loc(v)`: Supply value in axis coordinates instead of bin number
+        * `bh.underflow`: The underflow bin (use empty beginning on slice for slicing instead)
+        * `bh.overflow`: The overflow bin (use empty end on slice for slicing instead)
+    * Special actions (third item in slice)
+        * `bh.sum`: Remove axes via projection; if limits are given, use those
+        * `bh.rebin(n)`: Rebin an axis
+* Numpy compatibility
+    * `bh.numpy` provides faster [drop in replacements](https://boost-histogram.readthedocs.io/en/latest/usage/numpy.html) for Numpy histogram functions
+    * Histograms follow the buffer interface, and provide `.view()`
+    * Histograms can be converted to numpy style output tuple with `.to_numpy()`
 * Details
     * Use `bh.Histogram(..., storage=...)` to make a histogram (there are several different types)
+    * All objects support copy/deepcopy/pickle
 
 
 ## Supported platforms
