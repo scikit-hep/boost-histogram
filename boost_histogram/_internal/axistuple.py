@@ -19,6 +19,11 @@ class AxesTuple(tuple):
     def metadata(self):
         return tuple(s.metadata for s in self)
 
+    @metadata.setter
+    def metadata(self, values):
+        for s, v in zip(self, values):
+            s.metadata = v
+
     @property
     def extent(self):
         return tuple(s.extent for s in self)

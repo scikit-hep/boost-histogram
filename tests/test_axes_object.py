@@ -20,6 +20,10 @@ def test_axes_all_at_once():
     assert h.axes.extent == (12, 7, 3)
     assert h.axes.metadata == (2, "hi", None)
 
+    h.axes.metadata = None, 3, "bye"
+
+    assert h.axes.metadata == (None, 3, "bye")
+
     centers = h.axes.centers
     answers = np.ogrid[0.5:10, 0.5:5, 0.5:2]
 
