@@ -21,17 +21,7 @@ def histogramdd(
     np = _np  # Hidden to keep module clean
 
     with _KWArgs(kwargs) as k:
-        bh_warning = k.optional("bh")
-        if bh_warning is not None:
-            import warnings
-
-            warnings.warn(
-                "bh=True has been replaced by histogram=bh.Histogram", FutureWarning
-            )
-            bh_warning = bh.Histogram
-        else:
-            bh_warning = None
-        bh_cls = k.optional("histogram", bh_warning)
+        bh_cls = k.optional("histogram", None)
         cls = _hist.Histogram if bh_cls is None else bh_cls
         bh_storage = k.optional("storage", _storage.Double())
 

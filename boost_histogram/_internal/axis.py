@@ -11,7 +11,6 @@ from .sig_tools import inject_signature
 from .axis_transform import AxisTransform
 from .utils import cast, register, set_family, MAIN_FAMILY, CPP_FAMILY, set_module
 
-import warnings
 import copy
 
 
@@ -633,25 +632,6 @@ class IntCategory(BaseIntCategory, CategoryMixin, MainAxisMixin):
         "Return inner part of signature for use in repr"
 
         return "[{0}]".format(", ".join(format(c, "g") for c in self))
-
-
-@inject_signature("categories, *, metadata=None, growth=False")
-def Category(categories, **kwargs):
-    """
-    Deprecated: Use IntCategory or StrCategory instead.
-    This shortcut may return eventually.
-    """
-    warnings.warn("Use IntCategory or StrCategory instead of Category", FutureWarning)
-
-    if len(categories) < 1:
-        raise TypeError(
-            "Cannot deduce int vs. str, please use IntCategory/StrCategory instead"
-        )
-
-    try:
-        return IntCategory(categories, **kwargs)
-    except TypeError:
-        return StrCategory(categories, **kwargs)
 
 
 @set_family(CPP_FAMILY)

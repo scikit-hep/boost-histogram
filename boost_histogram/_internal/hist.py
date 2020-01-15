@@ -106,13 +106,6 @@ class BaseHistogram(object):
             else:
                 raise KeyError("Only storages allowed in storage argument")
 
-        # Temporary warning mechanism
-        if hasattr(storage, "_warning"):
-            msg = "Please replace storage.{0} with storage.{1}()".format(
-                storage._warning, storage.__class__.__name__
-            )
-            warnings.warn(msg, FutureWarning)
-
         # Allow a tuple to represent a regular axis
         axes = [_arg_shortcut(arg) for arg in axes]
 
@@ -376,20 +369,6 @@ class Histogram(BaseHistogram):
                 indexes[i] %= hist.axis(i).size
 
         return indexes, enumerate(indexes)
-
-    def axis(self, i):
-        """
-        Deprecated: Use axes[] instead.
-        """
-        warnings.warn("Use axes[] instead of axis()", FutureWarning)
-        return self._axis(i)
-
-    def at(self, *args):
-        """
-        Deprecated: Use [] instead.
-        """
-        warnings.warn("Use [] indexing instead.", FutureWarning)
-        return self._hist.at(*args)
 
     def to_numpy(self, flow=False):
         """

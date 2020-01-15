@@ -38,13 +38,3 @@ from .version import __version__
 # Workarounds for smooth transitions from 0.5 series. Will be removed after 0.6.
 
 from .tag import project
-
-
-class histogram(Histogram):
-    __slots__ = ()
-
-    def __init__(self, *args, **kwargs):
-        import warnings
-
-        warnings.warn("Use Histogram instead of histogram", FutureWarning)
-        super(histogram, self).__init__(*args, **kwargs)
