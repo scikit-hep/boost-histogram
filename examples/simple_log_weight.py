@@ -25,7 +25,7 @@ for idx, (lower, upper) in enumerate(h.axes[0]):
 lo, up = h.axes[0][bh.underflow]
 print(
     "underflow [{0:g}, {1:g}): {2} +/- {3}".format(
-        lo, up, h[bh.underflow].value, h[bh.overflow].variance ** 0.5
+        lo, up, h[bh.underflow].value, h[bh.underflow].variance ** 0.5
     )
 )
 lo, up = h.axes[0][bh.overflow]
