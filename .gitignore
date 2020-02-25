@@ -59,7 +59,7 @@ compile_commands.json
 /*env*
 
 # Generated version
-/boost_histogram/version.py
+/src/boost_histogram/version.py
 
 # Allow all contributors to be installed
 /node_modules/*

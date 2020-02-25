@@ -75,12 +75,13 @@ Here is the recommendation for a CMake install:
 ```bash
 python3 -m venv env_cmake
 source ./env_cmake/bin/activate
+pip install -r dev-requirements.txt
 cmake -S . -B build-debug \
     -GNinja \
     -DPYTHON_EXECUTABLE=$(which python) \
     -DCMAKE_INSTALL_PREFIX=$(python -c "import distutils.sysconfig; print(distutils.sysconfig.get_python_lib(plat_specific=False,standard_lib=False))")
 cmake --build build-debug -j4
-cmake --install build-debug
+cmake --install build-debug # Option 3 only
 ```
 
 Note that option 3 will require reinstalling if the python files change, while
@@ -100,9 +101,9 @@ python3 -m pytest
 For CMake, you can also use the `test` target from anywhere, or use `python3 -m
 pytest` or `ctest` from the build directory.
 
-The tests require `numpy`, `pytest`, and `pytest-benchmark`. If you are using
-Python 2, you will need `futures` as well. `pytest-sugar` adds some nice
-formatting.
+The build requires `setuptools_scm`. The tests require `numpy`, `pytest`, and
+`pytest-benchmark`. If you are using Python 2, you will need `futures` as well.
+`pytest-sugar` adds some nice formatting.
 
 ## Benchmarking
 
