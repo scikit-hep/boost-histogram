@@ -130,7 +130,7 @@ class BuildExt(build_ext):
 extras = {
     "test": ["pytest", "pytest-benchmark", "numpy", 'futures; python_version < "3"'],
     "docs": ["Sphinx>=2.0.0", "recommonmark>=0.5.0", "sphinx_rtd_theme"],
-    "examples": ["numpy", "ipykernel", "matplotlib", "xarray"],
+    "examples": ["numpy", "ipykernel", "matplotlib", "xarray", "xhistogram"],
 }
 
 setup(
