@@ -1,0 +1,16 @@
+[build-system]
+requires = [
+    "setuptools>=40.8.0",
+    "wheel",
+    "numpy==1.13.3; python_version=='2.7'",
+    "numpy==1.13.3; python_version=='3.5'",
+    "numpy==1.13.3; python_version=='3.6'",
+    "numpy==1.14.5; python_version=='3.7'",
+    "numpy==1.17.3; python_version>='3.8'",
+    "setuptools_scm[toml]"
+]
+
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+write_to = "boost_histogram/version.py"

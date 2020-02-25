@@ -6,27 +6,6 @@ import setuptools
 import sys
 import os
 
-# Change to using pathlib when Python2 support is dropped
-class Path(object):
-    def __init__(self, s):
-        self._s = os.path.normpath(str(s))
-
-    def __str__(self):
-        return self._s
-
-    def __truediv__(self, s):
-        return self.__class__(os.path.join(str(self), str(s)))
-
-    def open(self, *args, **kwargs):
-        return open(str(self), *args, **kwargs)
-
-    @property
-    def parent(self):
-        return self.__class__(os.path.dirname(str(self)))
-
-
-# Base directory as a Path
-BASE_DIR = Path(__file__).parent
 
 # Official trick to avoid pytest-runner as requirement if not needed
 needs_pytest = {"pytest", "test", "ptr"}.intersection(sys.argv)
@@ -40,15 +19,6 @@ try:
     distutils.ccompiler.CCompiler.compile = CCompiler_compile
 except ImportError:
     print("Numpy not found, parallel compile not available")
-
-# Read __version__ into about
-about = {}
-with (BASE_DIR / "boost_histogram" / "version.py").open() as f:
-    exec(f.read(), about)
-
-# Read in readme
-with (BASE_DIR / "README.md").open("rb") as f:
-    description = f.read().decode("utf8", "ignore")
 
 SRC_FILES = [
     "src/module.cpp",
@@ -128,52 +98,19 @@ class BuildExt(build_ext):
 
 
 extras = {
-    "test": ["pytest", "pytest-benchmark", "numpy", 'futures; python_version < "3"'],
+    "test": ["pytest", "pytest-benchmark", 'futures; python_version < "3"'],
     "docs": ["Sphinx>=2.0.0", "recommonmark>=0.5.0", "sphinx_rtd_theme"],
-    "examples": ["numpy", "ipykernel", "matplotlib", "xarray", "xhistogram", "netCDF4"],
+    "examples": ["matplotlib", "xarray", "xhistogram", "netCDF4", "numba"],
+    "dev": ["pytest-sugar", "ipykernel"],
 }
+extras["all"] = sum(extras.values(), [])
 
 setup(
-    name="boost-histogram",
-    version=about["__version__"],
-    author="Hans Dembinski and Henry Schreiner",
-    author_email="hschrein@cern.ch",
-    maintainer="Hans Dembinski and Henry Schreiner",
-    maintainer_email="hschrein@cern.ch",
-    url="https://github.com/scikit-hep/boost-histogram",
-    description="The Boost::Histogram Python wrapper.",
-    long_description=description,
-    long_description_content_type="text/markdown",
     ext_modules=ext_modules,
-    packages=find_packages(exclude=["tests"]),
     cmdclass={"build_ext": BuildExt},
     test_suite="tests",
     install_requires=["numpy"],
     tests_require=extras["test"],
     setup_requires=[] + pytest_runner,
     extras_require=extras,
-    classifiers=[
-        "Development Status :: 4 - Beta",
-        "Intended Audience :: Developers",
-        "Intended Audience :: Information Technology",
-        "Intended Audience :: Science/Research",
-        "License :: OSI Approved :: BSD License",
-        "Operating System :: Microsoft :: Windows",
-        "Operating System :: MacOS",
-        "Operating System :: POSIX",
-        "Operating System :: Unix",
-        "Programming Language :: Python",
-        "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3.5",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: C++",
-        "Topic :: Scientific/Engineering",
-        "Topic :: Scientific/Engineering :: Information Analysis",
-        "Topic :: Scientific/Engineering :: Mathematics",
-        "Topic :: Scientific/Engineering :: Physics",
-        "Topic :: Software Development",
-        "Topic :: Utilities",
-    ],
 )

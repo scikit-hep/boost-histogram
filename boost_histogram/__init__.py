@@ -33,7 +33,7 @@ from ._internal.hist import Histogram
 from . import axis, storage, accumulators, utils, numpy
 from .tag import loc, rebin, sum, underflow, overflow
 
-from .version import __version__
+from .version import version as __version__
 
 # Workarounds for smooth transitions from 0.5 series. Will be removed after 0.6.
 

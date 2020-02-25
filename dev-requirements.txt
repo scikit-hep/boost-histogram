@@ -1,4 +1,6 @@
 pytest
 pytest-benchmark
 numpy
+setuptools_scm
+toml
 futures; python_version < "3"

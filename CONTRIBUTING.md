@@ -32,16 +32,18 @@ Python 3:
 ```bash
 python3 -m venv .env
 source ./.env/bin/activate
-pip install numpy ipykernel pytest-sugar numba matplotlib
+pip install -e .[all]
+
+# Optional: setup kernel for external Jupyter then deactivate
 python -m ipykernel install --user --name boost-hist
-pip install -e .[test]
 deactivate
 ```
 
 Now, you can run notebooks using your system jupyter lab, and it will list
 the environment as available!
 
-To rebuild, you may need to delete the `/build` directory, and rerun `pip install -e .` from the environment.
+To rebuild, rerun `pip install -e .` from the environment, if the commit has
+changed, you will get a new build.
 
 ### CMake
 
@@ -172,9 +174,7 @@ end
 - Finish merging open PRs that will go into VERSION
 - Add most recent changes to the Changelog
     - Replace "in development" header with VERSION
-- Bump version
-    - Change in `boost_histogram/version.py`
-    - Change banner in README to VERSION
+- (Next release only: remove banner in README)
 - Sync master with develop through a PR
 - Make sure the full wheel build runs on master without issues (will happen in
   previous step)
