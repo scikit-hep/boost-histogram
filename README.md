@@ -207,6 +207,17 @@ We would like to acknowledge the contributors that made this project possible ([
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
 <!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="http://iscinumpy.gitlab.io"><img src="https://avatars1.githubusercontent.com/u/4616906?v=4" width="100px;" alt=""/><br /><sub><b>Henry Schreiner</b></sub></a><br /><a href="#maintenance-henryiii" title="Maintenance">🚧</a> <a href="https://github.com/scikit-hep/boost-histogram/commits?author=henryiii" title="Code">💻</a> <a href="https://github.com/scikit-hep/boost-histogram/commits?author=henryiii" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/HDembinski"><img src="https://avatars0.githubusercontent.com/u/2631586?v=4" width="100px;" alt=""/><br /><sub><b>Hans Dembinski</b></sub></a><br /><a href="#maintenance-HDembinski" title="Maintenance">🚧</a> <a href="https://github.com/scikit-hep/boost-histogram/commits?author=HDembinski" title="Code">💻</a></td>
+    <td align="center"><a href="http://lovelybuggies.github.io"><img src="https://avatars3.githubusercontent.com/u/29083689?v=4" width="100px;" alt=""/><br /><sub><b>N!no</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/commits?author=LovelyBuggies" title="Tests">⚠️</a> <a href="https://github.com/scikit-hep/boost-histogram/commits?author=LovelyBuggies" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/jpivarski"><img src="https://avatars0.githubusercontent.com/u/1852447?v=4" width="100px;" alt=""/><br /><sub><b>Jim Pivarski</b></sub></a><br /><a href="#ideas-jpivarski" title="Ideas, Planning, & Feedback">🤔</a></td>
+    <td align="center"><a href="https://github.com/nsmith-"><img src="https://avatars3.githubusercontent.com/u/6587412?v=4" width="100px;" alt=""/><br /><sub><b>Nicholas Smith</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/issues?q=author%3Ansmith-" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="http://www-pnp.physics.ox.ac.uk/~huffman/"><img src="https://avatars3.githubusercontent.com/u/45843291?v=4" width="100px;" alt=""/><br /><sub><b>physicscitizen</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/issues?q=author%3Aphysicscitizen" title="Bug reports">🐛</a></td>
+  </tr>
+</table>
+
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
 <!-- ALL-CONTRIBUTORS-LIST:END -->
