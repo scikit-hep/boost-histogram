@@ -7,4 +7,4 @@ __all__ = ("histogram", "axis", "storage", "accumulators", "algorithm", "__versi
 from .._internal.hist import histogram
 
 from . import axis, storage, accumulators, algorithm
-from ..version import __version__
+from .. import __version__

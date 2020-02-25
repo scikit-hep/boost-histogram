@@ -13,4 +13,4 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
-write_to = "boost_histogram/version.py"
+write_to = "src/boost_histogram/version.py"
