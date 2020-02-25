@@ -200,6 +200,18 @@ For the moment, you need to uninstall and reinstall to ensure you have the lates
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for details on how to set up a development environment.
 
+## Contributors
+
+We would like to acknowledge the contributors that made this project possible ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<!-- markdownlint-enable -->
+<!-- prettier-ignore-end -->
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification.
 
 ## Talks and other documentation/tutorial sources
 

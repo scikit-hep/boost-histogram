@@ -56,3 +56,8 @@ compile_commands.json
 
 # Venvs such as /.env
 /*env*
+
+# Allow all contributors to be installed
+/node_modules/*
+/yarn.lock
+/package.json
