@@ -215,3 +215,19 @@ cmake --build build-llvm/
 Now open a browser with [SpeedScope](https://www.speedscope.app), and load one of the files.
 
 </details>
+
+<details><summary>Adding a contributor (click to expand)</summary>
+
+First, you need to install the [all contributor CLI](https://allcontributors.org/docs/en/cli/installation):
+
+```bash
+yarn add --dev all-contributors-cli
+```
+
+Then, you can add contributors:
+
+```bash
+yarn all-contributors add henryiii maintenance,code,doc
+```
+
+</details>
