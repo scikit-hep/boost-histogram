@@ -1,17 +1,7 @@
-cmake_minimum_required(VERSION 3.10...3.15)
+cmake_minimum_required(VERSION 3.10...3.16)
 
-# Grab the version from the python files
-set(VERSION_REGEX [=[__version__[ \t]*=[ \t]*"(.+)"]=])
-
-# Read in the line containing the version
-file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/boost_histogram/version.py"
-    VERSION_STRING REGEX ${VERSION_REGEX})
-
-# Pick out just the version
-string(REGEX REPLACE ${VERSION_REGEX} "\\1" VERSION_STRING "${VERSION_STRING}")
-
-project(BOOST_HISTOGRAM LANGUAGES CXX VERSION ${VERSION_STRING})
-
+project(BOOST_HISTOGRAM LANGUAGES CXX)
+# Version is added later
 
 # Boost histogram requires C++14
 set(CMAKE_CXX_STANDARD 14)
@@ -55,7 +45,6 @@ endif()
 
 
 # Display versions
-message(STATUS "boost-histogram ${BOOST_HISTOGRAM_VERSION}")
 message(STATUS "CMake ${CMAKE_VERSION}")
 
 # Adding PyBind11 and setting up Python
@@ -188,9 +177,28 @@ function(python_import)
     endforeach()
     if(FAILED_NAMES)
         list(JOIN FAILED_NAMES " " FAILED_NAMES)
-        message(SEND_ERROR "Dependencies missing, try installing:\n  ${PYTHON_EXECUTABLE} -m pip install ${FAILED_NAMES}\n")
+        message(FATAL_ERROR "Dependencies missing, try installing:\n  ${PYTHON_EXECUTABLE} -m pip install ${FAILED_NAMES}\n")
     endif()
 endfunction()
+
+python_import(setuptools_scm)
+
+execute_process(
+  COMMAND
+  ${PYTHON_EXECUTABLE} -c "from setuptools_scm import get_version; print(get_version(root='${CMAKE_CURRENT_SOURCE_DIR}'))"
+  RESULT_VARIABLE VERSION_PRESENT
+  OUTPUT_VARIABLE VERSION_STRING
+  ERROR_VARIABLE VERSION_STRING)
+
+if(NOT VERSION_PRESENT EQUAL 0)
+    message(FATAL_ERROR "Cannot detect ${VERSION_PRESENT} the version from setuptools_scm\n${VERSION_STRING}")
+endif()
+
+string(STRIP "${VERSION_STRING}" VERSION_STRING)
+string(REGEX MATCH [=[^[0-9]+\.[0-9]+\.[0-9]+]=] VERSION_STRING "${VERSION_STRING}")
+
+project(BOOST_HISTOGRAM LANGUAGES CXX VERSION ${VERSION_STRING})
+message(STATUS "boost-histogram ${BOOST_HISTOGRAM_VERSION}")
 
 if(BUILD_TESTING)
 
