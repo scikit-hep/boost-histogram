@@ -1,4 +1,3 @@
-graft boost_histogram
 graft include
 graft scripts
 graft src
@@ -26,5 +25,5 @@ global-exclude .ipynb_checkpoints
 global-exclude *.py[co]
 global-exclude __pycache__
 
-include CMakeLists.txt LICENSE README.md setup.py dev-requirements.txt setup.cfg CONTRIBUTING.md CHANGELOG.md
+include CMakeLists.txt LICENSE README.md setup.py dev-requirements.txt setup.cfg pyproject.toml CONTRIBUTING.md CHANGELOG.md
 recursive-include extern *LICENSE*

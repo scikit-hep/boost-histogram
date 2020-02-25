@@ -40,9 +40,7 @@ jobs:
     - task: UsePythonVersion@0
       inputs:
         versionSpec: '3.8'
-    - script: |
-        python -m pip install --upgrade pip
-        python -m pip install setuptools
+    - script: python -m pip install "setuptools>=42" "setuptools_scm[toml]>=3.4"
       displayName: Install sdist deps
     - script: python setup.py sdist
       displayName: Prepare sdist

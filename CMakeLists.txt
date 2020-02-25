@@ -181,23 +181,39 @@ function(python_import)
     endif()
 endfunction()
 
-python_import(setuptools_scm)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/boost_histogram/version.py")
+    set(VERSION_REGEX [=[version[ \t]*=[ \t]*["']([0-9]+\.[0-9]+\.[0-9]+)]=])
 
-execute_process(
-  COMMAND
-  ${PYTHON_EXECUTABLE} -c "from setuptools_scm import get_version; print(get_version(root='${CMAKE_CURRENT_SOURCE_DIR}'))"
-  RESULT_VARIABLE VERSION_PRESENT
-  OUTPUT_VARIABLE VERSION_FULL_STRING
-  ERROR_VARIABLE VERSION_FULL_STRING)
+    # Read in the line containing the version
+    file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/src/boost_histogram/version.py"
+        VERSION_STRING REGEX [=[version[ \t]*=]=])
 
-if(NOT VERSION_PRESENT EQUAL 0)
-    message(FATAL_ERROR "Cannot detect ${VERSION_PRESENT} the version from setuptools_scm\n${VERSION_STRING}")
+    # Pick out just the version
+    string(REGEX MATCH [=[[0-9]+\.[0-9]+\.[0-9]+]=] VERSION_STRING "${VERSION_STRING}")
+else()
+    python_import(setuptools_scm)
+
+    execute_process(
+      COMMAND
+      ${PYTHON_EXECUTABLE} -c "from setuptools_scm import get_version; print(get_version(root='${CMAKE_CURRENT_SOURCE_DIR}'))"
+      RESULT_VARIABLE VERSION_PRESENT
+      OUTPUT_VARIABLE VERSION_FULL_STRING
+      ERROR_VARIABLE VERSION_ERROR)
+
+    if(ERROR_VARIABLE)
+        message(STATUS "Warning from setuptools_scm:\n${ERROR_VARIABLE}")
+    endif()
+
+    if(NOT VERSION_PRESENT EQUAL 0)
+        message(FATAL_ERROR "Cannot detect ${VERSION_PRESENT} the version from setuptools_scm\n${VERSION_STRING}")
+    endif()
+
+    string(STRIP "${VERSION_FULL_STRING}" VERSION_FULL_STRING)
+    string(REGEX MATCH [=[^[0-9]+\.[0-9]+\.[0-9]+]=] VERSION_STRING "${VERSION_FULL_STRING}")
+    string(REPLACE "-" "." VERSION_STRING "${VERSION_STRING}")
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/boost_histogram/version.py" "version = '${VERSION_FULL_STRING}'" )
+    message(STATUS "Full version output: ${VERSION_FULL_STRING}")
 endif()
-
-string(STRIP "${VERSION_FULL_STRING}" VERSION_FULL_STRING)
-string(REGEX MATCH [=[^[0-9]+\.[0-9]+\.[0-9]+]=] VERSION_STRING "${VERSION_FULL_STRING}")
-string(REPLACE "-" "." VERSION_STRING "${VERSION_STRING}")
-file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/boost_histogram/version.py" "version = '${VERSION_FULL_STRING}'" )
 
 project(BOOST_HISTOGRAM LANGUAGES CXX VERSION ${VERSION_STRING})
 message(STATUS "boost-histogram ${BOOST_HISTOGRAM_VERSION}")
