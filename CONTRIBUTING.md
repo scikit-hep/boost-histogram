@@ -38,7 +38,7 @@ pip install -e .[test]
 deactivate
 ```
 
-Now, you can run run notebooks using your system jupyter lab, and it will list
+Now, you can run notebooks using your system jupyter lab, and it will list
 the environment as available!
 
 To rebuild, you may need to delete the `/build` directory, and rerun `pip install -e .` from the environment.
