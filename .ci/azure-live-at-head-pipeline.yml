@@ -11,15 +11,14 @@ schedules:
 
 
 variables:
-  package_name: boost_histogram
+  dev_requirements_file: dev-requirements.txt
 
 jobs:
-
 
 - job: LinuxCMake
   strategy:
     matrix:
-      Python37:
+      Python38:
         python.version: '3.8'
         python.architecture: 'x64'
   pool:
@@ -27,5 +26,5 @@ jobs:
   steps:
     - template: azure-wheel-helpers/azure-setup.yml
     - template: azure-live-at-head.yml
-    - template: azure-wheel-helpers/azure-cmake-steps.yml
+    - template: azure-cmake-steps.yml
 
