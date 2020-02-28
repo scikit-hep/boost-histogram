@@ -335,7 +335,7 @@ class Regular(BaseRegular, MainAxisMixin):
 
 
 @set_module("boost_histogram.cpp.axis")
-@set_family(MAIN_FAMILY)
+@set_family(CPP_FAMILY)
 class regular(BaseRegular, CppAxisMixin):
     __slots__ = ()
 
