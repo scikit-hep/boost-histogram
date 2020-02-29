@@ -215,6 +215,7 @@ def test_noflow_slicing():
     assert h[1, 0, True] == 10
     assert h[1, 1, True] == 11
     assert h[3, 4, False] == 0
+    assert h[{0: 3, 1: 4, 2: False}] == 0
 
     assert_array_equal(h[:, :, True].view(), vals)
     assert_array_equal(h[:, :, False].view(), 0)
@@ -234,6 +235,7 @@ def test_singleflow_slicing():
     assert h[1, 1] == 5
 
     assert_array_equal(h[:, 1 : 3 : bh.sum], vals[:, 1:3].sum(axis=1))
+    assert_array_equal(h[{1: slice(1, 3, bh.sum)}], vals[:, 1:3].sum(axis=1))
     assert_array_equal(h[1 : 3 : bh.sum, :], vals[1:3, :].sum(axis=0))
 
 
@@ -255,6 +257,7 @@ def test_pick_str_category():
     assert h[3, 4, bh.loc("maybe")] == 0
 
     assert_array_equal(h[:, :, bh.loc("on")].view(), vals)
+    assert_array_equal(h[{2: bh.loc("on")}].view(), vals)
     assert_array_equal(h[:, :, bh.loc("off")].view(), 0)
 
 
@@ -279,5 +282,6 @@ def test_pick_int_category():
     assert h[3, 4, bh.loc(12)] == 134
 
     assert_array_equal(h[:, :, bh.loc(3)].view(), vals)
+    assert_array_equal(h[{2: bh.loc(3)}].view(), vals)
     assert_array_equal(h[:, :, bh.loc(5)].view(), vals + 1)
     assert_array_equal(h[:, :, bh.loc(7)].view(), 0)
