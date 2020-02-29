@@ -342,14 +342,16 @@ class Histogram(BaseHistogram):
 
         # Support dict access
         if hasattr(index, "items"):
-            return index, index.items()
+            indexes = [slice(None)] * hist.rank()
+            for k, v in index.items():
+                indexes[k] = v
 
         # Normalize -> h[i] == h[i,]
-        elif not isinstance(index, tuple):
-            index = (index,)
-
-        # Now a list
-        indexes = _expand_ellipsis(index, hist.rank())
+        else:
+            if not isinstance(index, tuple):
+                index = (index,)
+            # Now a list
+            indexes = _expand_ellipsis(index, hist.rank())
 
         if len(indexes) != hist.rank():
             raise IndexError("Wrong number of indices for histogram")
@@ -368,7 +370,7 @@ class Histogram(BaseHistogram):
                     raise IndexError("histogram index is out of range")
                 indexes[i] %= hist.axis(i).size
 
-        return indexes, enumerate(indexes)
+        return indexes
 
     def to_numpy(self, flow=False):
         """
@@ -449,7 +451,7 @@ class Histogram(BaseHistogram):
 
     def __getitem__(self, index):
 
-        indexes, iterator = self._compute_commonindex(index)
+        indexes = self._compute_commonindex(index)
 
         # If this is (now) all integers, return the bin contents
         # But don't try *dict!
@@ -469,7 +471,7 @@ class Histogram(BaseHistogram):
             projection = True
 
         # Compute needed slices and projections
-        for i, ind in iterator:
+        for i, ind in enumerate(indexes):
             if hasattr(ind, "__index__"):
                 ind = slice(ind.__index__(), ind.__index__() + 1, ext_sum())
 
@@ -554,7 +556,7 @@ class Histogram(BaseHistogram):
         is 2 larger). Bin edges must be a close match, as well. If you don't
         want this level of type safety, just use ``h[...] = h2.view()``.
         """
-        indexes, iterator = self._compute_commonindex(index)
+        indexes = self._compute_commonindex(index)
 
         if isinstance(value, BaseHistogram):
             raise TypeError("Not supported yet")
@@ -578,7 +580,7 @@ class Histogram(BaseHistogram):
 
         # Here, value_n does not increment with n if this is not a slice
         value_n = 0
-        for n, request in iterator:
+        for n, request in enumerate(indexes):
             has_underflow = self.axes[n].options.underflow
             has_overflow = self.axes[n].options.overflow
 
