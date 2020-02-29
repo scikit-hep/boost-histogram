@@ -76,7 +76,7 @@ using ``bh.sum`` as the third slice argument:
         bh.axis.Regular(10, 0, 1),
         bh.axis.Regular(10, 0, 1),
     )
-    mini = hist[1:5, bh.loc(0.2):bh.loc(0.9), ::bh.sum)
+    mini = hist[1:5, bh.loc(0.2):bh.loc(0.9), ::bh.sum]
     # Will be 4 bins x 7 bins
 
 See :ref:`usage-indexing`.
