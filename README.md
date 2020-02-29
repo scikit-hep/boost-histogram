@@ -215,6 +215,7 @@ We would like to acknowledge the contributors that made this project possible ([
     <td align="center"><a href="https://github.com/jpivarski"><img src="https://avatars0.githubusercontent.com/u/1852447?v=4" width="100px;" alt=""/><br /><sub><b>Jim Pivarski</b></sub></a><br /><a href="#ideas-jpivarski" title="Ideas, Planning, & Feedback">🤔</a></td>
     <td align="center"><a href="https://github.com/nsmith-"><img src="https://avatars3.githubusercontent.com/u/6587412?v=4" width="100px;" alt=""/><br /><sub><b>Nicholas Smith</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/issues?q=author%3Ansmith-" title="Bug reports">🐛</a></td>
     <td align="center"><a href="http://www-pnp.physics.ox.ac.uk/~huffman/"><img src="https://avatars3.githubusercontent.com/u/45843291?v=4" width="100px;" alt=""/><br /><sub><b>physicscitizen</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/issues?q=author%3Aphysicscitizen" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://www.linkedin.com/in/chanchal-kumar-maji-9230a9145/"><img src="https://avatars1.githubusercontent.com/u/31502077?v=4" width="100px;" alt=""/><br /><sub><b>Chanchal Kumar Maji</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/commits?author=ChanchalKumarMaji" title="Documentation">📖</a></td>
   </tr>
 </table>
 
