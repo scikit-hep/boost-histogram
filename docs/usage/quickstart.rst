@@ -40,7 +40,7 @@ The exact same syntax is used for 1D, 2D, and ND histograms:
    hist3D = bh.Histogram(
        bh.axis.Regular(10, 0, 100, circular=True),
        bh.axis.Regular(10, 0.0, 10.0),
-       bh.axis.Variable([1,2,3,4,5,5.5,6])
+       bh.axis.Variable([1, 2, 3, 4, 5, 5.5, 6])
    )
 
 See :ref:`usage-axes` and :ref:`usage-transforms`.
