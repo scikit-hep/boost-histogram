@@ -32,18 +32,25 @@ Python 3:
 ```bash
 python3 -m venv .env
 source ./.env/bin/activate
-pip install -e .[all]
+pip install -e -v .[all]
+```
 
-# Optional: setup kernel for external Jupyter then deactivate
+<details><summary>Optional: External Jupyter kernel (click to expand)</summary>
+
+You can set up a kernel for external Jupyter then deactivate your environment:
+
+```python
 python -m ipykernel install --user --name boost-hist
 deactivate
 ```
 
-Now, you can run notebooks using your system jupyter lab, and it will list
+Now, you can run notebooks using your system JupyterLab, and it will list
 the environment as available!
+</details>
 
-To rebuild, rerun `pip install -e .` from the environment, if the commit has
-changed, you will get a new build.
+To rebuild, rerun `pip install -e -v .` from the environment, if the commit has
+changed, you will get a new build. Due to the `-e`, Python changes do not require
+a rebuild.
 
 ### CMake
 
@@ -102,8 +109,7 @@ For CMake, you can also use the `test` target from anywhere, or use `python3 -m
 pytest` or `ctest` from the build directory.
 
 The build requires `setuptools_scm`. The tests require `numpy`, `pytest`, and
-`pytest-benchmark`. If you are using Python 2, you will need `futures` as well.
-`pytest-sugar` adds some nice formatting.
+`pytest-benchmark`. `pytest-sugar` adds some nice formatting.
 
 ## Benchmarking
 

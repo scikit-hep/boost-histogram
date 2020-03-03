@@ -11,10 +11,14 @@ from . import _core
 from . import storage as _storage
 
 from ._internal.kwargs import KWArgs as _KWArgs
+from ._internal.sig_tools import inject_signature as _inject_signature
 
 import numpy as _np
 
 
+@_inject_signature(
+    "a, bins=10, range=None, normed=None, weights=None, density=None, *, histogram=None, storage=None, threads=None"
+)
 def histogramdd(
     a, bins=10, range=None, normed=None, weights=None, density=None, **kwargs
 ):
@@ -22,6 +26,7 @@ def histogramdd(
 
     with _KWArgs(kwargs) as k:
         bh_cls = k.optional("histogram", None)
+        threads = k.optional("threads", None)
         cls = _hist.Histogram if bh_cls is None else bh_cls
         bh_storage = k.optional("storage", _storage.Double())
 
@@ -64,7 +69,7 @@ def histogramdd(
             b[-1] = np.nextafter(b[-1], np.finfo("d").max)
             axs.append(_axis.Variable(b))
 
-    hist = cls(*axs, storage=bh_storage).fill(*a, weight=weights)
+    hist = cls(*axs, storage=bh_storage).fill(*a, weight=weights, threads=threads)
 
     if density:
         areas = np.prod(hist.axes.widths, axis=0)
@@ -74,12 +79,18 @@ def histogramdd(
     return hist if bh_cls is not None else hist.to_numpy()
 
 
+@_inject_signature(
+    "x, y, bins=10, range=None, normed=None, weights=None, density=None, *, histogram=None, storage=None, threads=None"
+)
 def histogram2d(
     x, y, bins=10, range=None, normed=None, weights=None, density=None, **kwargs
 ):
     return histogramdd((x, y), bins, range, normed, weights, density, **kwargs)
 
 
+@_inject_signature(
+    "a, bins=10, range=None, normed=None, weights=None, density=None, *, histogram=None, storage=None, threads=None"
+)
 def histogram(
     a, bins=10, range=None, normed=None, weights=None, density=None, **kwargs
 ):
@@ -106,9 +117,10 @@ for f, n in zip(
 
     H = """\
     Return a boost-histogram object using the same arguments as numpy's {}.
-    This does not support the deprecated normed=True argument. Two extra
+    This does not support the deprecated normed=True argument. Three extra
     arguments are added: histogram=bh.Histogram will enable object based
-    output, and storage=bh.storage.* lets you set the storage used.
+    output, storage=bh.storage.* lets you set the storage used, and threads=int
+    lets you set the number of threads to fill with (0 for auto, None for 1).
     """
 
     f.__doc__ = H.format(n.__name__) + n.__doc__

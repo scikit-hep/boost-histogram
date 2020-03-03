@@ -12,7 +12,9 @@ You call ``.fill`` to fill. You must have one 1D array (or scalar value) per dim
 numeric arrays should be continuously laid out in memory, and either 64-bit floats or ints. If any other layouts or
 numeric datatypes are supplied, a temporary copy will be made internally before filling.
 
-All storages support a `weight=` parameter, and some storages support a `sample=` parameter. If supplied, they must be a scalar (applies to all items equally) or an iterable of scalars/1D arrays that matches the number of dimensions of the histogram.
+All storages support a ``weight=`` parameter, and some storages support a ``sample=`` parameter. If supplied, they must be a scalar (applies to all items equally) or an iterable of scalars/1D arrays that matches the number of dimensions of the histogram.
+
+The summing accumulators (not ``Mean()`` and ``WeightedMean())``) support threaded filling. Pass ``threads=N`` to the fill parameter to fill with ``N`` threads (and using 0 will select the number of virtual cores on your system). This is helpful only if you have a large number of entries compared to your number of bins, as all non-atomic storages will make copies for each thread, and then will recombine after the fill is complete.
 
 Views
 ^^^^^
