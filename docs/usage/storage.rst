@@ -23,7 +23,7 @@ a copy.
 
 .. code:: python
 
-    h = bh.Histogram(bh.axis.Regular(10,0,1))    # Double() is the default
+    h = bh.Histogram(bh.axis.Regular(10, 0, 1))    # Double() is the default
     h.fill([.2, .3], weight=[.5, 2])             # Weights are optional
     print(f"{h[bh.loc(.2)]=}\n{h[bh.loc(.3)]=}") # Python 3.8 print
 
@@ -49,7 +49,7 @@ non-integer fills for data that should represent raw, unweighed counts.
 
 .. code:: python
 
-    h = bh.Histogram(bh.axis.Regular(10,0,1), storage=bh.storage.Int64())
+    h = bh.Histogram(bh.axis.Regular(10, 0, 1), storage=bh.storage.Int64())
     h.fill([.2, .3], weight=[1, 2])               # Integer weights supported
     print(f"{h[bh.loc(.2)]=}\n{h[bh.loc(.2)]=}")
 

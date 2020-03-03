@@ -95,7 +95,7 @@ So you can transition your code slowly to boost-histogram.
 
    data  = np.random.multivariate_normal(
        (0, 0),
-       ((1,0),(0,.5)),
+       ((1, 0),(0, .5)),
        10_000_000).T.copy()
 
 We can check the performance against Numpy again; Numpy does not do well
@@ -104,7 +104,7 @@ with regular spaced bins in more than 1D:
 .. code:: python
 
    %%timeit
-   np.histogram2d(*data, bins=(400, 200), range=((-2,2), (-1, 1)))
+   np.histogram2d(*data, bins=(400, 200), range=((-2, 2), (-1, 1)))
 
 .. code::
 
@@ -113,7 +113,7 @@ with regular spaced bins in more than 1D:
 .. code:: python
 
    %%timeit
-   bh.numpy.histogram2d(*data, bins=(400, 200), range=((-2,2), (-1, 1)))
+   bh.numpy.histogram2d(*data, bins=(400, 200), range=((-2, 2), (-1, 1)))
 
 .. code:: text
 

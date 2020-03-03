@@ -168,7 +168,7 @@ example:
 
 .. code:: python
 
-   h = bh.Histogram(bh.axis.Regular(10,0,1))
+   h = bh.Histogram(bh.axis.Regular(10, 0, 1))
    h[:] = np.ones(10) # underflow/overflow still 0
    h[:] = np.ones(12) # underflow/overflow now set too
 
