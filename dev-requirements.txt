@@ -4,4 +4,3 @@ numpy
 setuptools >=42
 setuptools_scm >=3.4
 toml
-futures; python_version < "3"

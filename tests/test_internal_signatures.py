@@ -44,9 +44,10 @@ def test_simple_sigs():
 def test_fill_sig():
     from inspect import Parameter
 
-    a, b, c, d = inspect.signature(bh.Histogram.fill).parameters.values()
+    a, b, c, d, e = inspect.signature(bh.Histogram.fill).parameters.values()
 
     assert a == Parameter("self", Parameter.POSITIONAL_OR_KEYWORD)
     assert b == Parameter("args", Parameter.VAR_POSITIONAL)
     assert c == Parameter("weight", Parameter.KEYWORD_ONLY, default=None)
     assert d == Parameter("sample", Parameter.KEYWORD_ONLY, default=None)
+    assert e == Parameter("threads", Parameter.KEYWORD_ONLY, default=None)

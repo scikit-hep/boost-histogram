@@ -14,6 +14,9 @@ import warnings
 import copy
 import numpy as np
 
+import os
+import threading
+
 _histograms = (
     _core.hist.any_double,
     _core.hist.any_int64,
@@ -168,7 +171,7 @@ class BaseHistogram(object):
         other._hist = copy.copy(self._hist)
         return other
 
-    @inject_signature("self, *args, weight=None, sample=None")
+    @inject_signature("self, *args, weight=None, sample=None, threads=None")
     def fill(self, *args, **kwargs):
         """
         Insert data into the histogram.
@@ -181,10 +184,73 @@ class BaseHistogram(object):
             Provide weights (only if the histogram storage supports it)
         sample : List[Union[Array[float], Array[int], Array[str], float, int, str]]]
             Provide samples (only if the histogram storage supports it)
-
+        threads : Optional[int]
+            Fill with threads. Defaults to None, which does not activate
+            threaded filling.  Using 0 will automatically pick the number of
+            available threads (usually two per core).
         """
 
-        self._hist.fill(*args, **kwargs)
+        threads = kwargs.pop("threads", None)
+
+        if threads is None or threads is 1:
+            self._hist.fill(*args, **kwargs)
+        else:
+            if threads == 0:
+                threads = os.cpu_count()
+
+            print(self._hist._storage_type)
+            if (
+                self._hist._storage_type is _core.storage.mean
+                or self._hist._storage_type is _core.storage.weighted_mean
+            ):
+                raise RuntimeError("Mean histograms do not support threaded filling")
+
+            weight = kwargs.pop("weight", None)
+            sample = kwargs.pop("sample", None)
+
+            data = [np.array_split(a, threads) for a in args]
+
+            if weight is None or np.isscalar(weight):
+                weights = [weight] * threads
+            else:
+                weights = np.array_split(weight, threads)
+
+            if sample is None or np.isscalar(sample):
+                samples = [sample] * threads
+            else:
+                samples = np.array_split(sample, threads)
+
+            if self._hist._storage_type is _core.storage.atomic_int64:
+
+                def fun(weight, sample, *args):
+                    self._hist.fill(*args, weight=weight, sample=sample)
+
+            else:
+                sum_lock = threading.Lock()
+
+                def fun(weight, sample, *args):
+                    local_hist = self._hist.__copy__()
+                    local_hist.reset()
+                    kw = {}
+                    if weight is not None:
+                        kw["weight"] = weight
+                    if sample is not None:
+                        kw["sample"] = sample
+                    local_hist.fill(*args, **kw)
+                    with sum_lock:
+                        self._hist += local_hist
+
+            thread_list = [
+                threading.Thread(target=fun, args=arrays)
+                for arrays in zip(weights, samples, *data)
+            ]
+
+            for thread in thread_list:
+                thread.start()
+
+            for thread in thread_list:
+                thread.join()
+
         return self
 
     def __repr__(self):
