@@ -100,7 +100,7 @@ You can now use it like this:
    my_log = ctypes.cast(mylib.my_log, ftype)
    my_exp = ctypes.cast(mylib.my_exp, ftype)
 
-   bh.axis.Regular(10,1,4, transform=bh.axis.transform.Function(my_log, my_exp))
+   bh.axis.Regular(10, 1, 4, transform=bh.axis.transform.Function(my_log, my_exp))
 
 
 Note that you do actually have to cast it to the correct function type; just setting
