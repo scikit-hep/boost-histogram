@@ -36,10 +36,19 @@ T optional_arg(py::kwargs& kwargs, const char* name, T original_value) {
     }
 }
 
+/// Remove a value from a keyword argument dict if None, do not remove if non None
+/// (triggers final error)
+inline void none_only_arg(py::kwargs& kwargs, const char* name) {
+    if(kwargs.contains(name)) {
+        if(kwargs[name].is_none())
+            kwargs.attr("pop")(name);
+    }
+}
+
 /// Run this last; it will provide an error if other keyword are still present
 inline void finalize_args(const py::kwargs& kwargs) {
     if(kwargs.size() > 0) {
         auto keys = py::str(", ").attr("join")(kwargs.attr("keys")());
-        throw py::key_error(py::str("Unidentified keywords found: {0}").format(keys));
+        throw py::key_error(py::str("Unidentified keyword(s) found: {0}").format(keys));
     }
 }

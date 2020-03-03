@@ -151,6 +151,7 @@ void fill_impl(bh::detail::accumulator_traits_holder<true>,
                const VArgs& vargs,
                const weight_t& weight,
                py::kwargs& kwargs) {
+    none_only_arg(kwargs, "sample");
     finalize_args(kwargs);
 
     // releasing gil here is safe, we don't manipulate refcounts
