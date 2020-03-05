@@ -1,8 +1,5 @@
-boost\_histogram package
-========================
-
 Subpackages
------------
+===========
 
 .. toctree::
 
@@ -10,7 +7,7 @@ Subpackages
    boost_histogram.cpp
 
 Submodules
-----------
+==========
 
 boost\_histogram.accumulators module
 ------------------------------------
