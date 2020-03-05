@@ -1,3 +1,6 @@
+# To regenerate API docs:
+# sphinx-apidoc -o api ../src/boost_histogram -M -f -t template/
+
 # Configuration file for the Sphinx documentation builder.
 #
 # This file only contains a selection of the most common options. For a full
@@ -31,9 +34,7 @@ from pkg_resources import get_distribution, DistributionNotFound
 try:
     version = get_distribution(__name__).version
 except DistributionNotFound:
-    from setuptools_scm import get_version
-
-    version = get_version(root="..", relative_to=__file__)
+    pass  # No version (latest/git hash)
 
 
 # -- General configuration ---------------------------------------------------
@@ -56,7 +57,14 @@ templates_path = ["_templates"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ["_build", "**.ipynb_checkpoints", "Thumbs.db", ".DS_Store", ".env"]
+exclude_patterns = [
+    "_build",
+    "**.ipynb_checkpoints",
+    "Thumbs.db",
+    ".DS_Store",
+    ".env",
+    "api/boost_histogram.*.rst",
+]
 
 # Read the Docs needs this explicitly listed.
 master_doc = "index"

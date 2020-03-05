@@ -1,5 +1,3 @@
-boost_histogram
-===============
 
 .. toctree::
    :maxdepth: 4

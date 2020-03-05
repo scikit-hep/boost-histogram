@@ -104,7 +104,6 @@ extras = {
         "recommonmark>=0.5.0",
         "sphinx_rtd_theme",
         "nbsphinx",
-        "setuptools_scm",
         "sphinx_copybutton",
     ],
     "examples": ["matplotlib", "xarray", "xhistogram", "netCDF4", "numba"],

@@ -1,68 +1,61 @@
-Subpackages
-===========
+boost\_histogram
+================
 
-.. toctree::
+.. automodule:: boost_histogram
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-   boost_histogram.axis
-   boost_histogram.cpp
 
-Submodules
-==========
+.. include:: boost_histogram.axis.rst
+.. include:: boost_histogram.cpp.rst
 
-boost\_histogram.accumulators module
-------------------------------------
+
+boost\_histogram.accumulators
+=============================
 
 .. automodule:: boost_histogram.accumulators
    :members:
    :undoc-members:
    :show-inheritance:
 
-
-boost\_histogram.numpy module
------------------------------
+boost\_histogram.numpy
+======================
 
 .. automodule:: boost_histogram.numpy
    :members:
    :undoc-members:
    :show-inheritance:
 
-boost\_histogram.storage module
--------------------------------
+boost\_histogram.storage
+========================
 
 .. automodule:: boost_histogram.storage
    :members:
    :undoc-members:
    :show-inheritance:
 
-boost\_histogram.tag module
----------------------------
+boost\_histogram.tag
+====================
 
 .. automodule:: boost_histogram.tag
    :members:
    :undoc-members:
    :show-inheritance:
 
-boost\_histogram.utils module
------------------------------
+boost\_histogram.utils
+======================
 
 .. automodule:: boost_histogram.utils
    :members:
    :undoc-members:
    :show-inheritance:
 
-boost\_histogram.version module
--------------------------------
+boost\_histogram.version
+========================
 
 .. automodule:: boost_histogram.version
    :members:
    :undoc-members:
    :show-inheritance:
 
-
-Module contents
----------------
-
-.. automodule:: boost_histogram
-   :members:
-   :undoc-members:
-   :show-inheritance:
