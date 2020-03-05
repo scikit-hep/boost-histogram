@@ -44,9 +44,9 @@ Boost-histogram (`source <https://github.com/scikit-hep/boost-histogram>`__) is 
   notebooks/BoostHistogramHandsOn
 
 .. toctree::
-    :caption: API Reference:
+  :caption: API Reference:
 
-    api/modules
+  api/modules
 
 
 Indices and tables

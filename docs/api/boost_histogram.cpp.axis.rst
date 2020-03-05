@@ -1,22 +1,17 @@
-boost\_histogram.cpp.axis package
-=================================
+boost\_histogram.cpp.axis
+=========================
 
-Submodules
-----------
+.. automodule:: boost_histogram.cpp.axis
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-boost\_histogram.cpp.axis.transform module
-------------------------------------------
+
+boost\_histogram.cpp.axis.transform
+===================================
 
 .. automodule:: boost_histogram.cpp.axis.transform
    :members:
    :undoc-members:
    :show-inheritance:
 
-
-Module contents
----------------
-
-.. automodule:: boost_histogram.cpp.axis
-   :members:
-   :undoc-members:
-   :show-inheritance:
