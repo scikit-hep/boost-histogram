@@ -65,3 +65,6 @@ compile_commands.json
 /node_modules/*
 /yarn.lock
 /package.json
+
+# Testing
+/.benchmarks/*

@@ -34,6 +34,16 @@ Boost-histogram (`source <https://github.com/scikit-hep/boost-histogram>`__) is 
    usage/comparison
 
 .. toctree::
+  :maxdepth: 2
+  :caption: Examples:
+
+  notebooks/SimpleExample
+  notebooks/ThreadedFills
+  notebooks/PerformanceComparison
+  notebooks/xarray
+  notebooks/BoostHistogramHandsOn
+
+.. toctree::
     :caption: API Reference:
 
     api/modules

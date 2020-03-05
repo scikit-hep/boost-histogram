@@ -17,7 +17,7 @@ import sys
 
 DIR = os.path.abspath(os.path.dirname(__file__))
 BASEDIR = os.path.abspath(os.path.dirname(DIR))
-sys.path.append(BASEDIR)
+sys.path.append(os.path.join(BASEDIR, "src"))
 
 # -- Project information -----------------------------------------------------
 
@@ -25,24 +25,15 @@ project = "boost_histogram"
 copyright = "2019, Henry Schreiner, Hans Dembinski"
 author = "Henry Schreiner, Hans Dembinski"
 
+# It is better to use pkg_resources, but we can't build on RtD
+from pkg_resources import get_distribution, DistributionNotFound
 
-# The full version, including alpha/beta/rc tags
-def get_version(version_file):
-    RE_VERSION = re.compile(r"""^__version__\s*=\s*['"]([^'"]*)['"]""", re.MULTILINE)
-    with open(version_file) as f:
-        contents = f.read()
-    mo = RE_VERSION.search(contents)
-    if not mo:
-        raise RuntimeError("Unable to find version string in {}.".format(version_file))
+try:
+    version = get_distribution(__name__).version
+except DistributionNotFound:
+    from setuptools_scm import get_version
 
-    return mo.group(1)
-
-
-release = get_version(
-    os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "..", "boost_histogram", "version.py")
-    )
-)
+    version = get_version(root="..", relative_to=__file__)
 
 
 # -- General configuration ---------------------------------------------------
@@ -50,7 +41,14 @@ release = get_version(
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ["recommonmark", "sphinx.ext.autodoc", "sphinx.ext.napoleon"]
+extensions = [
+    "recommonmark",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.napoleon",
+    "nbsphinx",
+    "sphinx.ext.mathjax",
+    "sphinx_copybutton",
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -58,10 +56,19 @@ templates_path = ["_templates"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", ".env"]
+exclude_patterns = ["_build", "**.ipynb_checkpoints", "Thumbs.db", ".DS_Store", ".env"]
 
 # Read the Docs needs this explicitly listed.
 master_doc = "index"
+
+# -- Options for Notebook input ----------------------------------------------
+
+nbsphinx_execute = "never"  # Can change to auto
+
+nbsphinx_execute_arguments = [
+    "--InlineBackend.figure_formats={'png2x'}",
+    "--InlineBackend.rc={'figure.dpi': 96}",
+]
 
 # -- Options for HTML output -------------------------------------------------
 
