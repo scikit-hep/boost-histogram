@@ -99,7 +99,14 @@ class BuildExt(build_ext):
 
 extras = {
     "test": ["pytest", "pytest-benchmark"],
-    "docs": ["Sphinx>=2.0.0", "recommonmark>=0.5.0", "sphinx_rtd_theme"],
+    "docs": [
+        "Sphinx>=2.0.0",
+        "recommonmark>=0.5.0",
+        "sphinx_rtd_theme",
+        "nbsphinx",
+        "setuptools_scm",
+        "sphinx_copybutton",
+    ],
     "examples": ["matplotlib", "xarray", "xhistogram", "netCDF4", "numba"],
     "dev": ["pytest-sugar", "ipykernel"],
 }

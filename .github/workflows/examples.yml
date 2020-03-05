@@ -28,4 +28,4 @@ jobs:
     - name: Examples
       run: for f in examples/*.py; do python "$f"; done
     - name: Notebooks
-      run: jupyter nbconvert --execute --inplace notebooks/*.ipynb
+      run: jupyter nbconvert --execute --ExecutePreprocessor.timeout=90 --inplace notebooks/*.ipynb
