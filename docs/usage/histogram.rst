@@ -62,7 +62,7 @@ Saving a Histogram
 
 You can save a histogram using pickle:
 
-.. code:: python
+.. code:: python3
 
     import pickle
 

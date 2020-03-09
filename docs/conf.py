@@ -73,6 +73,8 @@ master_doc = "index"
 
 nbsphinx_execute = "never"  # Can change to auto
 
+highlight_language = "python3"
+
 nbsphinx_execute_arguments = [
     "--InlineBackend.figure_formats={'png2x'}",
     "--InlineBackend.rc={'figure.dpi': 96}",

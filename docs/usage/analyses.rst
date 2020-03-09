@@ -24,7 +24,7 @@ In a traditional analysis, you might bin over ``value`` where
 each run number. With boost-histogram, you can make a single histogram,
 and use an axis for each:
 
-.. code:: python
+.. code:: python3
 
    value_ax = bh.axis.Regular(100, -5, 5)
    bool_ax = bh.axis.Integer(0, 2, underflow=False, overflow=False)
@@ -34,7 +34,7 @@ Now, you can use these axes to create a single histogram that you can
 fill. If you want to get a histogram of all run numbers and just the
 True ``is_valid`` selection, you can use a ``sum``:
 
-.. code:: python
+.. code:: python3
 
    h1 = hist[:, True, ::bh.sum]
 

@@ -31,7 +31,7 @@ Conda via `conda-forge <https://github.com/conda-forge/boost-histogram-feedstock
 All the normal best-practices for Python apply; you should be in a
 virtual environment, etc. See :ref:`usage-installation` for more details. An example of usage:
 
-.. code:: python
+.. code:: python3
 
    import boost_histogram as bh
 

@@ -85,7 +85,7 @@ Integer axis
 
 One common use for an integer axis could be a true/false axis:
 
-.. code:: python
+.. code:: python3
 
    bool_axis = bh.axis.Integer(0, 2, underflow=False, overflow=False)
 
@@ -104,7 +104,7 @@ Category axis
 
 One use for an IntCategory axis is for an IntEnum (Python 3):
 
-.. code:: python
+.. code:: python3
 
     import enum
 

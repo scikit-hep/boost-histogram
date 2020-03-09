@@ -36,7 +36,7 @@ tuple, and ``threads=N`` to select a number of threads to fill with.
 
 If you try the following in an IPython session, you will get:
 
-.. code:: python
+.. code:: python3
 
    import numpy as np
    import boost_histogram as bh
@@ -62,7 +62,7 @@ ND histograms. But if you already use Numpy histograms and you really
 don’t want to rewrite your code, boost-histogram has adaptors for the
 three histogram functions in Numpy:
 
-.. code:: python
+.. code:: python3
 
    %%timeit
    bins, edges = bh.numpy.histogram(norm_vals, bins=100, range=(0, 10))
@@ -75,13 +75,13 @@ This is only a hair slower than using the raw boost-histogram API,
 and is still a nice performance boost over Numpy. You can even use the
 Numpy syntax if you want a boost-histogram object later:
 
-.. code:: python
+.. code:: python3
 
    hist = bh.numpy.histogram(norm_vals, bins=100, range=(0, 10), histogram=bh.Histogram)
 
 You can later get a Numpy style output tuple from a histogram object:
 
-.. code:: python
+.. code:: python3
 
    bins, edges = hist.to_numpy()
 
@@ -91,7 +91,7 @@ So you can transition your code slowly to boost-histogram.
 2D Histogram example
 ^^^^^^^^^^^^^^^^^^^^
 
-.. code:: python
+.. code:: python3
 
    data  = np.random.multivariate_normal(
        (0, 0),
@@ -101,16 +101,16 @@ So you can transition your code slowly to boost-histogram.
 We can check the performance against Numpy again; Numpy does not do well
 with regular spaced bins in more than 1D:
 
-.. code:: python
+.. code:: python3
 
    %%timeit
    np.histogram2d(*data, bins=(400, 200), range=((-2, 2), (-1, 1)))
 
-.. code::
+.. code:: text
 
    1.31 s ± 17.3 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 
-.. code:: python
+.. code:: python3
 
    %%timeit
    bh.numpy.histogram2d(*data, bins=(400, 200), range=((-2, 2), (-1, 1)))

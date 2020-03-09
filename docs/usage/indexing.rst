@@ -19,7 +19,7 @@ implements UHI.
 Access:
 ^^^^^^^
 
-.. code:: python
+.. code:: python3
 
    v = h[b]          # Returns bin contents, indexed by bin number
    v = h[loc(b)]     # Returns the bin containing the value
@@ -29,7 +29,7 @@ Access:
 Slicing:
 ^^^^^^^^
 
-.. code:: python
+.. code:: python3
 
    h == h[:]             # Slice over everything
    h2 = h[a:b]           # Slice of histogram (includes flow bins)
@@ -46,7 +46,7 @@ Slicing:
 Setting
 ^^^^^^^
 
-.. code:: python
+.. code:: python3
 
    # Single values
    h[b] = v         # Returns bin contents, indexed by bin number
@@ -75,7 +75,7 @@ to run on an axis or a few axes out of many. For this use case, you can pass a
 dictionary to the index, and that has the syntax ``{axis:action}``. The actions
 are slices, and follow the rules listed above. This looks like:
 
-.. code:: python
+.. code:: python3
 
     h[{0: slice(None, None, bh.rebin(2))}] # rebin axis 0 by two
     h[{1: slice(0, bh.loc(3.5))}]          # slice axis 1 from 0 to the data coordinate 3.5
@@ -85,7 +85,7 @@ are slices, and follow the rules listed above. This looks like:
 If you don't like manually building slices, you can use the `Slicer()` utility
 to recover the original slicing syntax inside the dict:
 
-.. code:: python
+.. code:: python3
 
     s = bh.tag.Slicer()
 
@@ -98,7 +98,7 @@ to recover the original slicing syntax inside the dict:
 Invalid syntax:
 ^^^^^^^^^^^^^^^
 
-.. code:: python
+.. code:: python3
 
    h[1.0] # Floats are not allowed, just like numpy
    h[::2] # Skipping is not (currently) supported
@@ -107,7 +107,7 @@ Invalid syntax:
 Rejected proposals or proposals for future consideration, maybe ``hist``-only:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code:: python
+.. code:: python3
 
    h2 = h[1.0j:2.5j + 1] # Adding a j suffix to a number could be used in place of `loc(x)`
    h2 = h[1.0] # Floats in place of `loc(x)`: too easy to make a mistake
@@ -118,7 +118,7 @@ Examples
 
 For a histogram, the slice should be thought of like this:
 
-.. code:: python
+.. code:: python3
 
    histogram[start:stop:action]
 
@@ -145,7 +145,7 @@ axis 3 should be summed over. You have a 4D histogram.
 
 Solution:
 
-.. code:: python
+.. code:: python3
 
    ans = h[:20, bh.loc(-.5):bh.loc(1.5), ::bh.rebin(2), ::bh.sum]
 
@@ -157,7 +157,7 @@ histogram.
 
 Solution:
 
-.. code:: python
+.. code:: python3
 
    h[bh.loc(4.0):] = 0
 
@@ -166,7 +166,7 @@ length as the range you give, or the same length as the range +
 under/overflows if the range is open ended (no limit given). For
 example:
 
-.. code:: python
+.. code:: python3
 
    h = bh.Histogram(bh.axis.Regular(10, 0, 1))
    h[:] = np.ones(10) # underflow/overflow still 0
@@ -184,7 +184,7 @@ leaving all other axes alone. You have an ND histogram, with N >= 2.
 
 Solution:
 
-.. code:: python
+.. code:: python3
 
    ans = h[:, :bh.loc(2.4):bh.sum, ...]
 
@@ -193,7 +193,7 @@ this case, was large or programmatically defined. In these cases, you
 can pass a dictionary of ``{axis:slice}`` into the indexing operation. A
 shortcut to quickly generate slices is provided, as well:
 
-.. code:: python
+.. code:: python3
 
    ans = h[{1: slice(None,bh.loc(2.4),bh.sum)}]
 
@@ -208,7 +208,7 @@ You want the underflow bin of a 1D histogram.
 
 Solution:
 
-.. code:: python
+.. code:: python3
 
    val = h1[bh.underflow]
 
@@ -245,7 +245,7 @@ without the operators.
 
 Basic implementation (WIP):
 
-.. code:: python
+.. code:: python3
 
    class loc:
        "When used in the start or stop of a Histogram's slice, x is taken to be the position in data coordinates."
