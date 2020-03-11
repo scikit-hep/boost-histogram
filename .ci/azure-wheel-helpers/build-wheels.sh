@@ -26,7 +26,7 @@ echo "Using Pythons: ${pys[@]}"
 # Compile wheels
 for PYBIN in "${pys[@]}"; do
     "${PYBIN}/pip" install -r /io/$dev_requirements_file
-    "${PYBIN}/pip" wheel /io/ -w wheelhouse/
+    "${PYBIN}/pip" wheel -v /io/ -w wheelhouse/
 done
 
 # Bundle external shared libraries into the wheels
