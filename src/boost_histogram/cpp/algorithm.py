@@ -4,11 +4,13 @@ del absolute_import, division, print_function
 
 __all__ = (
     "shrink_and_rebin",
-    "shrink",
+    "crop_and_rebin",
     "slice_and_rebin",
     "rebin",
     "shrink",
+    "crop",
     "slice",
+    "slice_mode",
     "sum",
     "reduce",
     "empty",
@@ -16,12 +18,23 @@ __all__ = (
     "project",
 )
 
-from .._core.algorithm import shrink_and_rebin, slice_and_rebin, rebin, shrink, slice
+from .._core.algorithm import (
+    shrink_and_rebin,
+    crop_and_rebin,
+    slice_and_rebin,
+    rebin,
+    shrink,
+    crop,
+    slice,
+    slice_mode,
+)
 
 shrink_and_rebin.__module__ = "boost_histogram.cpp"
+crop_and_rebin.__module__ = "boost_histogram.cpp"
 slice_and_rebin.__module__ = "boost_histogram.cpp"
 rebin.__module__ = "boost_histogram.cpp"
 shrink.__module__ = "boost_histogram.cpp"
+crop.__module__ = "boost_histogram.cpp"
 slice.__module__ = "boost_histogram.cpp"
 
 
@@ -44,7 +57,6 @@ def reduce(histogram, *args):
     """
     Reduce based on one or more reduce_option's.
     """
-
     return histogram._reduce(*args)
 
 
@@ -54,5 +66,4 @@ def project(histogram, *args):
     Provided a list of axis numbers, this will produce the histogram over those
     axes only. Flow bins are used if available.
     """
-
     return histogram._project(*args)

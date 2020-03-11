@@ -3,8 +3,10 @@
 # However, this is a test so we will import both.
 import boost_histogram as bh
 import boost_histogram.cpp as bhc
-import pytest
+from boost_histogram.cpp.algorithm import slice_mode
 from numpy.testing import assert_array_equal
+import numpy as np
+import pytest
 
 
 def test_usage_bh():
@@ -77,22 +79,102 @@ def test_transform_repr():
     ), "<class 'boost_histogram.cpp.axis.transform.pow'>"
 
 
-def test_shrink_1d():
-    h = bhc.histogram(bhc.axis.regular(20, 1, 5))
-    h.fill(1.1)
-    hs = bhc.algorithm.reduce(h, bhc.algorithm.shrink(0, 1, 2))
-    assert_array_equal(hs, [1, 0, 0, 0, 0])
+def test_shrink():
+    from boost_histogram.cpp.algorithm import reduce, shrink
+
+    h = bhc.histogram(bhc.axis.regular(4, 1, 5))
+    np.asarray(h)[:] = 1
+
+    hs = reduce(h, shrink(0, 2, 3))
+    assert hs.axis(0) == bhc.axis.regular(1, 2, 3)
+    assert_array_equal(hs, [1])
+    assert hs.at(-1) == 1
+    assert hs.at(1) == 2
+
+    hs2 = reduce(h, shrink(2, 3))
+    assert hs == hs2
 
 
-def test_rebin_1d():
-    h = bhc.histogram(bhc.axis.regular(20, 1, 5))
-    h.fill(1.1)
-    hs = bhc.algorithm.reduce(h, bhc.algorithm.rebin(0, 4))
-    assert_array_equal(hs, [1, 0, 0, 0, 0])
+def test_crop():
+    from boost_histogram.cpp.algorithm import reduce, crop
+
+    h = bhc.histogram(bhc.axis.regular(4, 1, 5))
+    np.asarray(h)[:] = 1
+
+    hs = reduce(h, crop(0, 2, 3))
+    assert hs.axis(0) == bhc.axis.regular(1, 2, 3)
+    assert_array_equal(hs, [1])
+    assert hs.at(-1) == 0
+    assert hs.at(1) == 0
+
+    hs2 = reduce(h, crop(2, 3))
+    assert hs == hs2
 
 
-def test_shrink_rebin_1d():
-    h = bhc.histogram(bhc.axis.regular(20, 0, 4))
-    h.fill(1.1)
-    hs = bhc.algorithm.reduce(h, bhc.algorithm.shrink_and_rebin(0, 1, 3, 2))
-    assert_array_equal(hs, [1, 0, 0, 0, 0])
+@pytest.mark.parametrize("mode", (slice_mode.shrink, slice_mode.crop))
+def test_slice(mode):
+    from boost_histogram.cpp.algorithm import reduce, slice
+
+    h = bhc.histogram(bhc.axis.regular(4, 1, 5))
+    np.asarray(h)[:] = 1
+    assert_array_equal(h, [1, 1, 1, 1])
+
+    hs = reduce(h, slice(0, 1, 2, mode=mode))
+    assert hs.axis(0) == bhc.axis.regular(1, 2, 3)
+    assert_array_equal(hs, [1])
+    assert hs.at(-1) == (1 if mode == slice_mode.shrink else 0)
+    assert hs.at(1) == (2 if mode == slice_mode.shrink else 0)
+
+    hs2 = reduce(h, slice(1, 2, mode=mode))
+    assert hs == hs2
+
+
+def test_rebin():
+    from boost_histogram.cpp.algorithm import reduce, rebin
+
+    h = bhc.histogram(bhc.axis.regular(4, 1, 5))
+    np.asarray(h)[:] = 1
+    assert_array_equal(h, [1, 1, 1, 1])
+
+    hs = reduce(h, rebin(0, 4))
+    assert hs.axis(0) == bhc.axis.regular(1, 1, 5)
+    assert_array_equal(hs, [4])
+
+    hs2 = reduce(h, rebin(4))
+    assert hs == hs2
+
+
+def test_shrink_and_rebin():
+    from boost_histogram.cpp.algorithm import reduce, shrink_and_rebin
+
+    h = bhc.histogram(bhc.axis.regular(5, 0, 5))
+    np.asarray(h)[:] = 1
+    hs = reduce(h, shrink_and_rebin(0, 1, 3, 2))
+    assert hs.axis(0) == bhc.axis.regular(1, 1, 3)
+    assert_array_equal(hs, [2])
+    hs2 = reduce(h, shrink_and_rebin(1, 3, 2))
+    assert hs == hs2
+
+
+def test_crop_and_rebin():
+    from boost_histogram.cpp.algorithm import reduce, crop_and_rebin
+
+    h = bhc.histogram(bhc.axis.regular(5, 0, 5))
+    np.asarray(h)[:] = 1
+    hs = reduce(h, crop_and_rebin(0, 1, 3, 2))
+    assert hs.axis(0) == bhc.axis.regular(1, 1, 3)
+    assert_array_equal(hs, [2])
+    hs2 = reduce(h, crop_and_rebin(1, 3, 2))
+    assert hs == hs2
+
+
+def test_slice_and_rebin():
+    from boost_histogram.cpp.algorithm import reduce, slice_and_rebin
+
+    h = bhc.histogram(bhc.axis.regular(5, 0, 5))
+    np.asarray(h)[:] = 1
+    hs = reduce(h, slice_and_rebin(0, 1, 3, 2))
+    assert hs.axis(0) == bhc.axis.regular(1, 1, 3)
+    assert_array_equal(hs, [2])
+    hs2 = reduce(h, slice_and_rebin(1, 3, 2))
+    assert hs == hs2
