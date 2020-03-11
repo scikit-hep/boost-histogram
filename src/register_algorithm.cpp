@@ -22,7 +22,7 @@ void register_algorithms(py::module& algorithm) {
 
                 if(self.range == range_t::indices) {
                     return py::str("reduce_command(slice{0}({1}, begin={2}, "
-                                   "end={3}{4}, crop={5}))")
+                                   "end={3}{4}, mode={5}))")
                         .format(suffix,
                                 start,
                                 self.begin.index,
@@ -40,6 +40,12 @@ void register_algorithms(py::module& algorithm) {
             // self.range == range_t::none
             return py::str("reduce_command(merge({0}))").format(self.merge);
         });
+
+    using slice_mode = bh::algorithm::slice_mode;
+
+    py::enum_<slice_mode>(algorithm, "slice_mode")
+        .value("shrink", slice_mode::shrink)
+        .value("crop", slice_mode::crop);
 
     algorithm
         .def("shrink_and_rebin",
@@ -80,67 +86,86 @@ void register_algorithms(py::module& algorithm) {
              "interval is removed.\n"
              ":param merge: how many adjacent bins to merge into one.")
 
+        .def("crop_and_rebin",
+             py::overload_cast<unsigned, double, double, unsigned>(
+                 &bh::algorithm::crop_and_rebin),
+             "iaxis"_a,
+             "lower"_a,
+             "upper"_a,
+             "merge"_a,
+             "Crop and rebin option to be used in reduce().\n"
+             "\n"
+             "To crop and rebin in one command. Equivalent to passing both the "
+             "crop and the\n"
+             "rebin option for the same axis to reduce.\n"
+             "\n"
+             ":param iaxis: which axis to operate on.\n"
+             ":param lower: lowest bound that should be kept.\n"
+             ":param upper: highest bound that should be kept. If upper is inside "
+             "bin interval, the whole "
+             "interval is removed.\n"
+             ":param merge: how many adjacent bins to merge into one.")
         .def(
-            "slice_and_rebin",
-            [](unsigned iaxis,
-               bh::axis::index_type a,
-               bh::axis::index_type b,
-               unsigned merge,
-               bool crop) {
-                return bh::algorithm::slice_and_rebin(
-                    iaxis,
-                    a,
-                    b,
-                    merge,
-                    crop ? bh::algorithm::slice_mode::crop
-                         : bh::algorithm::slice_mode::shrink);
-            },
-            "iaxis"_a,
-            "begin"_a,
-            "end"_a,
+            "crop_and_rebin",
+            py::overload_cast<double, double, unsigned>(&bh::algorithm::crop_and_rebin),
+            "lower"_a,
+            "upper"_a,
             "merge"_a,
-            "crop"_a = false,
-            "Slice and rebin option to be used in reduce().\n"
+            "Positional crop and rebin option to be used in reduce().\n"
             "\n"
-            "To slice and rebin in one command. Equivalent to passing both the "
-            "slice() and the\n"
-            "rebin() option for the same axis to reduce.\n"
+            "To crop and rebin in one command. Equivalent to passing both the "
+            "crop and the\n"
+            "rebin option for the same axis to reduce.\n"
             "\n"
             ":param iaxis: which axis to operate on.\n"
-            ":param begin: first index that should be kept.\n"
-            ":param end: one past the last index that should be kept.\n"
-            ":param merge: how many adjacent bins to merge into one.\n"
-            ":param crop: if false (default), add counts in removed bins to flow bins; "
-            "if true, remove counts completely")
-        .def(
-            "slice_and_rebin",
-            [](bh::axis::index_type a,
-               bh::axis::index_type b,
-               unsigned merge,
-               bool crop) {
-                return bh::algorithm::slice_and_rebin(
-                    a,
-                    b,
-                    merge,
-                    crop ? bh::algorithm::slice_mode::crop
-                         : bh::algorithm::slice_mode::shrink);
-            },
-            "begin"_a,
-            "end"_a,
-            "merge"_a,
-            "crop"_a = false,
-            "Positional slice and rebin option to be used in reduce().\n"
-            "\n"
-            "To slice and rebin in one command. Equivalent to passing both the "
-            "slice() and the\n"
-            "rebin() option for the same axis to reduce.\n"
-            "\n"
-            ":param iaxis: which axis to operate on.\n"
-            ":param begin: first index that should be kept.\n"
-            ":param end: one past the last index that should be kept.\n"
-            ":param merge: how many adjacent bins to merge into one.\n"
-            ":param crop: if false (default), add counts in removed bins to flow bins; "
-            "if true, remove counts completely")
+            ":param lower: lowest bound that should be kept.\n"
+            ":param upper: highest bound that should be kept. If upper is inside "
+            "bin interval, the whole "
+            "interval is removed.\n"
+            ":param merge: how many adjacent bins to merge into one.")
+
+        .def("slice_and_rebin",
+             py::overload_cast<unsigned,
+                               bh::axis::index_type,
+                               bh::axis::index_type,
+                               unsigned,
+                               slice_mode>(&bh::algorithm::slice_and_rebin),
+             "iaxis"_a,
+             "begin"_a,
+             "end"_a,
+             "merge"_a,
+             "mode"_a = slice_mode::shrink,
+             "Slice and rebin option to be used in reduce().\n"
+             "\n"
+             "To slice and rebin in one command. Equivalent to passing both the "
+             "slice() and the\n"
+             "rebin() option for the same axis to reduce.\n"
+             "\n"
+             ":param iaxis: which axis to operate on.\n"
+             ":param begin: first index that should be kept.\n"
+             ":param end: one past the last index that should be kept.\n"
+             ":param merge: how many adjacent bins to merge into one.\n"
+             ":param mode: see slice_mode")
+        .def("slice_and_rebin",
+             py::overload_cast<bh::axis::index_type,
+                               bh::axis::index_type,
+                               unsigned,
+                               slice_mode>(&bh::algorithm::slice_and_rebin),
+             "begin"_a,
+             "end"_a,
+             "merge"_a,
+             "mode"_a = slice_mode::shrink,
+             "Positional slice and rebin option to be used in reduce().\n"
+             "\n"
+             "To slice and rebin in one command. Equivalent to passing both the "
+             "slice() and the\n"
+             "rebin() option for the same axis to reduce.\n"
+             "\n"
+             ":param iaxis: which axis to operate on.\n"
+             ":param begin: first index that should be kept.\n"
+             ":param end: one past the last index that should be kept.\n"
+             ":param merge: how many adjacent bins to merge into one.\n"
+             ":param mode: see slice_mode")
 
         .def("rebin",
              py::overload_cast<unsigned, unsigned>(&bh::algorithm::rebin),
@@ -158,33 +183,31 @@ void register_algorithms(py::module& algorithm) {
              "lower"_a,
              "upper"_a)
 
-        .def(
-            "slice",
-            [](unsigned iaxis,
-               bh::axis::index_type a,
-               bh::axis::index_type b,
-               bool crop) {
-                return bh::algorithm::slice(iaxis,
-                                            a,
-                                            b,
-                                            crop ? bh::algorithm::slice_mode::crop
-                                                 : bh::algorithm::slice_mode::shrink);
-            },
-            "iaxis"_a,
-            "begin"_a,
-            "end"_a,
-            "crop"_a = false)
-        .def(
-            "slice",
-            [](bh::axis::index_type a, bh::axis::index_type b, bool crop) {
-                return bh::algorithm::slice(a,
-                                            b,
-                                            crop ? bh::algorithm::slice_mode::crop
-                                                 : bh::algorithm::slice_mode::shrink);
-            },
-            "begin"_a,
-            "end"_a,
-            "crop"_a = false)
+        .def("crop",
+             py::overload_cast<unsigned, double, double>(&bh::algorithm::crop),
+             "iaxis"_a,
+             "lower"_a,
+             "upper"_a)
+        .def("crop",
+             py::overload_cast<double, double>(&bh::algorithm::crop),
+             "lower"_a,
+             "upper"_a)
+
+        .def("slice",
+             py::overload_cast<unsigned,
+                               bh::axis::index_type,
+                               bh::axis::index_type,
+                               slice_mode>(&bh::algorithm::slice),
+             "iaxis"_a,
+             "begin"_a,
+             "end"_a,
+             "mode"_a = slice_mode::shrink)
+        .def("slice",
+             py::overload_cast<bh::axis::index_type, bh::axis::index_type, slice_mode>(
+                 &bh::algorithm::slice),
+             "begin"_a,
+             "end"_a,
+             "mode"_a = slice_mode::shrink)
 
         ;
 }
