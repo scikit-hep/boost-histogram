@@ -5,7 +5,7 @@
 
 steps:
 - script: |
-    python -m pip install -U pytest pytest-cov pytest-azurepipelines
+    python -m pip install -U pytest pytest-cov pytest-azurepipelines "coverage>=5.0"
   displayName: Install Azure testing requirements
 
 - script: |
