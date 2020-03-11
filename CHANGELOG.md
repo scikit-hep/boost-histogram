@@ -1,3 +1,31 @@
+## Version 0.7.0 (in progress)
+
+#### User changes
+
+* Added `threads=` keyword to `.fill` and numpy functions; 0 for automatic, default is 1 [#325][]
+* `.metadata` is now settable directly from the AxesTuple [#303][]
+* Deprecated items from 0.5.x now dropped [#301][]
+* `cpp` mode updates and fixes [#317][]
+
+#### Bug fixes
+
+* Dict indexing is now identical to positional indexing, fixes "picking" axes in dict [#320][]
+* Passing `samples=None` is now always allowed in `.fill` [#325][]
+
+#### Developer changes
+
+* Build system update, higher requirements for developers (only) [#314][]
+    * Version is now obtained from `setuptools_scm`, no longer stored in repo
+* Removed `futures` requirement for Python 2 tests
+* Updated Boost.Histogram, cleaner code with fewer workarounds
+
+[#301]: https://github.com/scikit-hep/boost-histogram/pull/301
+[#303]: https://github.com/scikit-hep/boost-histogram/pull/303
+[#314]: https://github.com/scikit-hep/boost-histogram/pull/314
+[#317]: https://github.com/scikit-hep/boost-histogram/pull/317
+[#320]: https://github.com/scikit-hep/boost-histogram/pull/320
+[#325]: https://github.com/scikit-hep/boost-histogram/pull/325
+
 ### Version 0.6.2
 
 Common analysis tasks are now better supported. Much more complete
