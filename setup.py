@@ -7,10 +7,6 @@ import sys
 import os
 
 
-# Official trick to avoid pytest-runner as requirement if not needed
-needs_pytest = {"pytest", "test", "ptr"}.intersection(sys.argv)
-pytest_runner = ["pytest-runner"] if needs_pytest else []
-
 # Use -j N or set the environment variable NPY_NUM_BUILD_JOBS
 try:
     from numpy.distutils.ccompiler import CCompiler_compile
@@ -114,9 +110,6 @@ extras["all"] = sum(extras.values(), [])
 setup(
     ext_modules=ext_modules,
     cmdclass={"build_ext": BuildExt},
-    test_suite="tests",
     install_requires=["numpy"],
-    tests_require=extras["test"],
-    setup_requires=[] + pytest_runner,
     extras_require=extras,
 )
