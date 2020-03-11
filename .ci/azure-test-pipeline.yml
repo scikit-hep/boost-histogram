@@ -9,6 +9,7 @@ variables:
   dev_requirements_file: dev-requirements.txt
   test_requirements_file: dev-requirements.txt
   NPY_NUM_BUILD_JOBS: 4
+  MACOSX_DEPLOYMENT_TARGET: 10.9
 
 jobs:
 
