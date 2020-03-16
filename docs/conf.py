@@ -32,7 +32,7 @@ author = "Henry Schreiner, Hans Dembinski"
 from pkg_resources import get_distribution, DistributionNotFound
 
 try:
-    version = get_distribution(__name__).version
+    version = get_distribution("boost_histogram").version
 except DistributionNotFound:
     pass  # No version (latest/git hash)
 

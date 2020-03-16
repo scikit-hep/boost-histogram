@@ -14,12 +14,6 @@
 
 Python bindings for [Boost::Histogram][] ([source][Boost::Histogram source]), a C++14 library. This should become one of the [fastest libraries][] for histogramming, while still providing the power of a full histogram object.
 
-> ## Version 0.6.2: Public beta
->
-> Please feel free to try out boost-histogram and give feedback.
-> Join the [discussion on gitter][gitter-link] or [open an issue](https://github.com/scikit-hep/boost-histogram/issues)!
-
-
 ## Installation
 
 You can install this library from [PyPI](https://pypi.org/project/boost-histogram/) with pip:

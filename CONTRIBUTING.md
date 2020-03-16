@@ -180,8 +180,6 @@ end
 
 - Finish merging open PRs that will go into VERSION
 - Add most recent changes to the Changelog
-    - Replace "in development" header with VERSION
-- (Next release only: remove banner in README)
 - Sync master with develop through a PR
 - Make sure the full wheel build runs on master without issues (will happen in
   previous step)
