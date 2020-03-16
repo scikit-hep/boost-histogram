@@ -38,8 +38,11 @@ crop.__module__ = "boost_histogram.cpp"
 slice.__module__ = "boost_histogram.cpp"
 
 
-def sum(histogram, flow=False):
-    """Sum a histogram, optionally with flow bins"""
+def sum(histogram, flow=True):
+    """\
+    Sum a histogram, optionally without flow bins. The default matches the C++
+    default of all bins included in the sum.
+    """
     return histogram._sum(flow)
 
 

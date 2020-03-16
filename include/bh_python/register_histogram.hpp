@@ -145,7 +145,7 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
                     throw std::out_of_range(
                         "The axis value must be less than the rank");
             },
-            "i"_a,
+            "i"_a = 0,
             py::keep_alive<0, 1>())
 
         .def("at",
