@@ -12,7 +12,9 @@
 [![Conda-Forge](https://img.shields.io/conda/vn/conda-forge/boost-histogram)][conda-link]
 [![Scikit-HEP][sk-badge]](https://scikit-hep.org/)
 
-Python bindings for [Boost::Histogram][] ([source][Boost::Histogram source]), a C++14 library. This should become one of the [fastest libraries][] for histogramming, while still providing the power of a full histogram object.
+Python bindings for [Boost::Histogram][] ([source][Boost::Histogram source]), a
+C++14 library. This should become one of the [fastest libraries][] for
+histogramming, while still providing the power of a full histogram object.
 
 ## Installation
 

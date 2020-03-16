@@ -1,4 +1,10 @@
-## Version 0.7.0 (in progress)
+## Version 0.7.0
+
+This version removes deprecated functionality, and has several backend
+improvements. The most noticeable user-facing change is the multithreaded fill
+feature, which can enable significant speedups when you have a dataset that is
+much larger than the number of bins in your histogram and have free cores to
+use. Several small bugs have been fixed.
 
 #### User changes
 
