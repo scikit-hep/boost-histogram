@@ -192,7 +192,7 @@ class BaseHistogram(object):
 
         threads = kwargs.pop("threads", None)
 
-        if threads is None or threads is 1:
+        if threads is None or threads == 1:
             self._hist.fill(*args, **kwargs)
         else:
             if threads == 0:
