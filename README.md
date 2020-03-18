@@ -211,6 +211,9 @@ We would like to acknowledge the contributors that made this project possible ([
     <td align="center"><a href="http://www-pnp.physics.ox.ac.uk/~huffman/"><img src="https://avatars3.githubusercontent.com/u/45843291?v=4" width="100px;" alt=""/><br /><sub><b>physicscitizen</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/issues?q=author%3Aphysicscitizen" title="Bug reports">🐛</a></td>
     <td align="center"><a href="https://www.linkedin.com/in/chanchal-kumar-maji-9230a9145/"><img src="https://avatars1.githubusercontent.com/u/31502077?v=4" width="100px;" alt=""/><br /><sub><b>Chanchal Kumar Maji</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/commits?author=ChanchalKumarMaji" title="Documentation">📖</a></td>
   </tr>
+  <tr>
+    <td align="center"><a href="https://ddavis.io/"><img src="https://avatars2.githubusercontent.com/u/3202090?v=4" width="100px;" alt=""/><br /><sub><b>Doug Davis</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/issues?q=author%3Adouglasdavis" title="Bug reports">🐛</a></td>
+  </tr>
 </table>
 
 <!-- markdownlint-enable -->

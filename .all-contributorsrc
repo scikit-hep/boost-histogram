@@ -76,6 +76,15 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "douglasdavis",
+      "name": "Doug Davis",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/3202090?v=4",
+      "profile": "https://ddavis.io/",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7
