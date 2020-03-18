@@ -198,7 +198,6 @@ class BaseHistogram(object):
             if threads == 0:
                 threads = os.cpu_count()
 
-            print(self._hist._storage_type)
             if (
                 self._hist._storage_type is _core.storage.mean
                 or self._hist._storage_type is _core.storage.weighted_mean
