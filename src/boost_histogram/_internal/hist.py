@@ -279,7 +279,7 @@ class BaseHistogram(object):
             s = repr(self)
         return s
 
-    def _axis(self, i):
+    def _axis(self, i=0):
         """
         Get N-th axis.
         """
