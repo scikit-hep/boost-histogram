@@ -84,7 +84,7 @@ def test_shrink():
     from boost_histogram.cpp.algorithm import reduce, shrink
 
     h = bhc.histogram(bhc.axis.regular(4, 1, 5))
-    np.asarray(h)[:] = 1
+    h.view()[:] = 1
 
     hs = reduce(h, shrink(0, 2, 3))
     assert hs.axis(0) == bhc.axis.regular(1, 2, 3)
@@ -100,7 +100,7 @@ def test_crop():
     from boost_histogram.cpp.algorithm import reduce, crop
 
     h = bhc.histogram(bhc.axis.regular(4, 1, 5))
-    np.asarray(h)[:] = 1
+    h.view()[:] = 1
 
     hs = reduce(h, crop(0, 2, 3))
     assert hs.axis(0) == bhc.axis.regular(1, 2, 3)
@@ -117,7 +117,7 @@ def test_slice(mode):
     from boost_histogram.cpp.algorithm import reduce, slice
 
     h = bhc.histogram(bhc.axis.regular(4, 1, 5))
-    np.asarray(h)[:] = 1
+    h.view()[:] = 1
     assert_array_equal(h, [1, 1, 1, 1])
 
     hs = reduce(h, slice(0, 1, 2, mode=mode))
@@ -134,7 +134,7 @@ def test_rebin():
     from boost_histogram.cpp.algorithm import reduce, rebin
 
     h = bhc.histogram(bhc.axis.regular(4, 1, 5))
-    np.asarray(h)[:] = 1
+    h.view()[:] = 1
     assert_array_equal(h, [1, 1, 1, 1])
 
     hs = reduce(h, rebin(0, 4))
@@ -149,7 +149,7 @@ def test_shrink_and_rebin():
     from boost_histogram.cpp.algorithm import reduce, shrink_and_rebin
 
     h = bhc.histogram(bhc.axis.regular(5, 0, 5))
-    np.asarray(h)[:] = 1
+    h.view()[:] = 1
     hs = reduce(h, shrink_and_rebin(0, 1, 3, 2))
     assert hs.axis(0) == bhc.axis.regular(1, 1, 3)
     assert_array_equal(hs, [2])
@@ -161,7 +161,7 @@ def test_crop_and_rebin():
     from boost_histogram.cpp.algorithm import reduce, crop_and_rebin
 
     h = bhc.histogram(bhc.axis.regular(5, 0, 5))
-    np.asarray(h)[:] = 1
+    h.view()[:] = 1
     hs = reduce(h, crop_and_rebin(0, 1, 3, 2))
     assert hs.axis(0) == bhc.axis.regular(1, 1, 3)
     assert_array_equal(hs, [2])
@@ -173,9 +173,19 @@ def test_slice_and_rebin():
     from boost_histogram.cpp.algorithm import reduce, slice_and_rebin
 
     h = bhc.histogram(bhc.axis.regular(5, 0, 5))
-    np.asarray(h)[:] = 1
+    h.view()[:] = 1
     hs = reduce(h, slice_and_rebin(0, 1, 3, 2))
     assert hs.axis(0) == bhc.axis.regular(1, 1, 3)
     assert_array_equal(hs, [2])
     hs2 = reduce(h, slice_and_rebin(1, 3, 2))
     assert hs == hs2
+
+
+def test_sum():
+    from boost_histogram.cpp.algorithm import sum
+
+    h = bhc.histogram(bhc.axis.integer(1, 5))
+    h.view(True)[:] = 1
+    assert sum(h) == 6  # C++ behavior is to include flow bins by default
+    assert sum(h, False) == 4
+    assert sum(h, True) == 6
