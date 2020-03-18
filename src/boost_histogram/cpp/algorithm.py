@@ -56,13 +56,6 @@ def empty(histogram, flow=False):
     return histogram._empty(flow)
 
 
-def reduce(histogram, *args):
-    """
-    Reduce based on one or more reduce_option's.
-    """
-    return histogram._reduce(*args)
-
-
 def project(histogram, *args):
     """
     Project to a single axis or several axes on a multidiminsional histogram.
