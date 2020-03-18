@@ -125,8 +125,14 @@ class BaseHistogram(object):
 
         raise TypeError("Unsupported storage")
 
+    def view(self, flow=False):
+        """
+        Return a view into the data, optionally with overflow turned on.
+        """
+        return _to_view(self._hist.view(flow))
+
     def __array__(self):
-        return _to_view(self._hist.view(False))
+        return self.view(False)
 
     def __add__(self, other):
         return self.__class__(self._hist.__add__(other._hist))
@@ -466,12 +472,6 @@ class Histogram(BaseHistogram):
             return copy.deepcopy(self)
         else:
             return copy.copy(self)
-
-    def view(self, flow=False):
-        """
-        Return a view into the data, optionally with overflow turned on.
-        """
-        return _to_view(self._hist.view(flow))
 
     def reset(self):
         """
