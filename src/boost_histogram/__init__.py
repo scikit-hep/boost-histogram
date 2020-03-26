@@ -28,6 +28,15 @@ except ImportError as err:
         err.msg += "\nDid you forget to compile? Use CMake or Setuptools to build, see the readme"
     raise err
 
+# Support cloudpickle - pybind11 submodules do not have __file__ attributes
+# And setting this in C++ causes a segfault
+_core.accumulators.__file__ = _core.__file__
+_core.algorithm.__file__ = _core.__file__
+_core.axis.__file__ = _core.__file__
+_core.axis.transform.__file__ = _core.__file__
+_core.hist.__file__ = _core.__file__
+_core.storage.__file__ = _core.__file__
+
 
 from ._internal.hist import Histogram
 from . import axis, storage, accumulators, utils, numpy

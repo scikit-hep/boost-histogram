@@ -103,7 +103,7 @@ extras = {
         "sphinx_copybutton",
     ],
     "examples": ["matplotlib", "xarray", "xhistogram", "netCDF4", "numba"],
-    "dev": ["pytest-sugar", "ipykernel"],
+    "dev": ["pytest-sugar", "ipykernel", "cloudpickle"],
 }
 extras["all"] = sum(extras.values(), [])
 
