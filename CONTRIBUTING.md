@@ -32,7 +32,7 @@ Python 3:
 ```bash
 python3 -m venv .env
 source ./.env/bin/activate
-pip install -e -v .[all]
+pip install -v -e .[all]
 ```
 
 <details><summary>Optional: External Jupyter kernel (click to expand)</summary>
@@ -48,7 +48,7 @@ Now, you can run notebooks using your system JupyterLab, and it will list
 the environment as available!
 </details>
 
-To rebuild, rerun `pip install -e -v .` from the environment, if the commit has
+To rebuild, rerun `pip install -v -e .` from the environment, if the commit has
 changed, you will get a new build. Due to the `-e`, Python changes do not require
 a rebuild.
 
