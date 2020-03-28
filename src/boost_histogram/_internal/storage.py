@@ -17,6 +17,8 @@ class Storage(object):
 @set_family(MAIN_FAMILY)
 @set_module("boost_histogram.storage")
 class Int64(store.int64, Storage):
+    def __init__(self):
+        self._PyType = int()
     pass
 
 
@@ -29,6 +31,8 @@ class Double(store.double, Storage):
 @set_family(MAIN_FAMILY)
 @set_module("boost_histogram.storage")
 class AtomicInt64(store.atomic_int64, Storage):
+    def __init__(self):
+        self._PyType = int()
     pass
 
 

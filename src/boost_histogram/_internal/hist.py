@@ -98,11 +98,11 @@ class BaseHistogram(object):
 
         # Keyword only trick (change when Python2 is dropped)
         with KWArgs(kwargs) as k:
-            storage = k.optional("storage", Double())
+            self._storage = k.optional("storage", Double())
 
         # Check for missed parenthesis or incorrect types
-        if not isinstance(storage, Storage):
-            if issubclass(storage, Storage):
+        if not isinstance(self._storage, Storage):
+            if issubclass(self._storage, Storage):
                 raise KeyError(
                     "Passing in an initialized storage has been removed. Please add ()."
                 )
@@ -119,8 +119,8 @@ class BaseHistogram(object):
 
         # Check all available histograms, and if the storage matches, return that one
         for h in _histograms:
-            if isinstance(storage, h._storage_type):
-                self._hist = h(axes, storage)
+            if isinstance(self._storage, h._storage_type):
+                self._hist = h(axes, self._storage)
                 return
 
         raise TypeError("Unsupported storage")
@@ -195,9 +195,14 @@ class BaseHistogram(object):
             threaded filling.  Using 0 will automatically pick the number of
             available threads (usually two per core).
         """
-
+        # should not allow float weight for int storage
+        if "weight" in kwargs:
+                for w in kwargs["weight"]:
+                    if not isinstance(self._storage._PyType, type(w)):
+                        raise TypeError("Weight type must match storage type.")
+        
         threads = kwargs.pop("threads", None)
-
+        
         if threads is None or threads == 1:
             self._hist.fill(*args, **kwargs)
         else:
@@ -208,7 +213,7 @@ class BaseHistogram(object):
                 self._hist._storage_type is _core.storage.mean
                 or self._hist._storage_type is _core.storage.weighted_mean
             ):
-                raise RuntimeError("Mean histograms do not support threaded filling")
+                raise RuntimeError("Mean histograms do not support threaded filling.")
 
             weight = kwargs.pop("weight", None)
             sample = kwargs.pop("sample", None)
