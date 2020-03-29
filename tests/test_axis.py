@@ -55,7 +55,6 @@ def test_metadata(axis, args, opt, kwargs):
 
         assert axis(*args, **kwargs).metadata is m
         mcopy = copy.deepcopy(m)
-        # assert axis(*args, m).metadata is not mcopy
         assert axis(*args, **kwargs).metadata == m
         assert axis(*args, **kwargs).metadata == mcopy
         assert axis(*args, **kwargs).metadata != "bar"
