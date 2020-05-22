@@ -18,7 +18,6 @@ jobs:
         os: [ubuntu-18.04, windows-latest, macos-latest]
     env:
       CIBW_SKIP: pp* cp27-win*
-      CIBW_ENVIRONMENT_MACOS: "MACOSX_DEPLOYMENT_TARGET=10.9"
 
     steps:
     - uses: actions/checkout@v1
@@ -84,6 +83,8 @@ jobs:
       fail-fast: false
     env:
       CIBW_BUILD: cp27-win*
+      DISTUTILS_USE_SDK: 1
+      MSSdk: 1
 
     steps:
     - uses: actions/checkout@v1
@@ -104,12 +105,12 @@ jobs:
 
     - name: Build 32 bit wheel
       run: |
-        vcvarsall.bat x86
+        "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86
         python -m cibuildwheel --output-dir wheelhouse
 
     - name: Build 64 bit wheel
       run: |
-        vcvarsall.bat x86
+        "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
         python -m cibuildwheel --output-dir wheelhouse
 
     - uses: actions/upload-artifact@v1
