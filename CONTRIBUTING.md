@@ -32,7 +32,7 @@ Python 3:
 ```bash
 python3 -m venv .env
 source ./.env/bin/activate
-pip install -v -e .[all]
+pip install -ve .[all]
 ```
 
 <details><summary>Optional: External Jupyter kernel (click to expand)</summary>
@@ -48,7 +48,7 @@ Now, you can run notebooks using your system JupyterLab, and it will list
 the environment as available!
 </details>
 
-To rebuild, rerun `pip install -v -e .` from the environment, if the commit has
+To rebuild, rerun `pip install -ve .` from the environment, if the commit has
 changed, you will get a new build. Due to the `-e`, Python changes do not require
 a rebuild.
 
@@ -98,7 +98,7 @@ This could be simplified if PyBind11 supported the new CMake FindPython tools.
 
 ## Testing
 
-Run the unit tests (requires pytest and numpy).
+Run the unit tests (requires pytest and NumPy).
 
 ```bash
 python3 -m pytest
