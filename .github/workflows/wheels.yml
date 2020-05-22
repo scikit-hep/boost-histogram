@@ -48,7 +48,7 @@ jobs:
     name: Build wheel on ManyLinux1
     runs-on: ubuntu-18.04
     env:
-      CIBW_build: cp*manylinux_x86_64 cp*manylinux_i686
+      CIBW_BUILD: cp*manylinux_x86_64 cp*manylinux_i686
       CIBW_MANYLINUX_X86_64_IMAGE: skhep/manylinuxgcc-x86_64
       CIBW_MANYLINUX_I686_IMAGE: skhep/manylinuxgcc-i686
 
@@ -105,12 +105,12 @@ jobs:
 
     - name: Build 32 bit wheel
       run: |
-        "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86
+        "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars32.bat"
         python -m cibuildwheel --output-dir wheelhouse
 
     - name: Build 64 bit wheel
       run: |
-        "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
+        "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
         python -m cibuildwheel --output-dir wheelhouse
 
     - uses: actions/upload-artifact@v1
