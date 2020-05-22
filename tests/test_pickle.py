@@ -258,3 +258,14 @@ def test_trans_wrapped(copy_fn):
     tr2 = copy_fn(tr)
 
     assert tr._this is not tr2._this
+
+
+# Testing #342
+def test_cloudpickle():
+    cloudpickle = pytest.importorskip("cloudpickle")
+    h = bh.Histogram(bh.axis.Regular(50, 0, 20))
+    h.fill([1, 2, 3, 4, 5])
+    h2 = loads(cloudpickle.dumps(h))
+
+    assert h == h2
+    assert h is not h2
