@@ -105,12 +105,12 @@ jobs:
 
     - name: Build 64 bit wheel
       run: |
-        "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
         python -m cibuildwheel --output-dir wheelhouse
 
     - name: Build 32 bit wheel
       run: |
-        "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars32.bat"
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86
         python -m cibuildwheel --output-dir wheelhouse
 
     - uses: actions/upload-artifact@v1
