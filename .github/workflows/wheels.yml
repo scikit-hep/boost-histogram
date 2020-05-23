@@ -101,15 +101,17 @@ jobs:
 
     - name: Build 64 bit wheel
       run: |
-        . "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
         python -m cibuildwheel --output-dir wheelhouse
+      shell: cmd
       env:
         CIBW_BUILD: cp27-win_amd64
 
     - name: Build 32 bit wheel
       run: |
-        . "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86
         python -m cibuildwheel --output-dir wheelhouse
+      shell: cmd
       env:
         CIBW_BUILD: cp27-win32
 
