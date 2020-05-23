@@ -39,7 +39,7 @@ jobs:
 
     - uses: actions/upload-artifact@v1
       with:
-        name: wheels
+        name: ${{matrix.os}}-wheels
         path: ./wheelhouse
 
 
@@ -72,7 +72,7 @@ jobs:
 
     - uses: actions/upload-artifact@v1
       with:
-        name: manylinux1wheels
+        name: manylinux1-wheels
         path: ./wheelhouse
 
   # Windows 2.7 (requires PyBind11 workaround)
@@ -105,15 +105,17 @@ jobs:
 
     - name: Build 64 bit wheel
       run: |
-        & "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
         python -m cibuildwheel --output-dir wheelhouse
+      shell: cmd
 
     - name: Build 32 bit wheel
       run: |
-        & "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86
         python -m cibuildwheel --output-dir wheelhouse
+      shell: cmd
 
     - uses: actions/upload-artifact@v1
       with:
-        name: win27wheels
+        name: win27-wheels
         path: ./wheelhouse
