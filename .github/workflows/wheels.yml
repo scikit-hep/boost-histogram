@@ -8,6 +8,8 @@ env:
   CIBW_BUILD_VERBOSITY: 1
 
 
+# todo: make an sdist, second job download abd publish
+
 jobs:
   build_wheels:
     name: Build wheel on ${{ matrix.os }}
@@ -16,8 +18,6 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-18.04, windows-latest, macos-latest]
-    env:
-      CIBW_SKIP: pp* cp27-win*
 
     steps:
     - uses: actions/checkout@v1
@@ -36,21 +36,22 @@ jobs:
     - name: Build wheel
       run: |
         python -m cibuildwheel --output-dir wheelhouse
+      env:
+        CIBW_SKIP: pp* cp27-win*
+        
+    - name: Show files
+      run: ls -lh wheelhouse
+      shell: bash
 
-    - uses: actions/upload-artifact@v1
+    - uses: actions/upload-artifact@v2
       with:
-        name: ${{matrix.os}}-wheels
-        path: ./wheelhouse
+        path: wheelhouse/*.whl
 
 
   # Manylinux1 with workaround
   build_manylinux1_wheels:
     name: Build wheel on ManyLinux1
     runs-on: ubuntu-18.04
-    env:
-      CIBW_BUILD: cp*manylinux_x86_64 cp*manylinux_i686
-      CIBW_MANYLINUX_X86_64_IMAGE: skhep/manylinuxgcc-x86_64
-      CIBW_MANYLINUX_I686_IMAGE: skhep/manylinuxgcc-i686
 
     steps:
     - uses: actions/checkout@v1
@@ -69,11 +70,18 @@ jobs:
     - name: Build wheel
       run: |
         python -m cibuildwheel --output-dir wheelhouse
+      env:
+        CIBW_BUILD: cp*manylinux_x86_64 cp*manylinux_i686
+        CIBW_MANYLINUX_X86_64_IMAGE: skhep/manylinuxgcc-x86_64
+        CIBW_MANYLINUX_I686_IMAGE: skhep/manylinuxgcc-i686
+        
+    - name: Show files
+      run: ls -lh wheelhouse
+      shell: bash
 
-    - uses: actions/upload-artifact@v1
+    - uses: actions/upload-artifact@v2
       with:
-        name: manylinux1-wheels
-        path: ./wheelhouse
+        path: wheelhouse/*.whl
 
   # Windows 2.7 (requires PyBind11 workaround)
   build_win27_wheels:
@@ -114,8 +122,11 @@ jobs:
       shell: cmd
       env:
         CIBW_BUILD: cp27-win32
+        
+    - name: Show files
+      run: ls -lh wheelhouse
+      shell: bash
 
-    - uses: actions/upload-artifact@v1
+    - uses: actions/upload-artifact@v2
       with:
-        name: win27-wheels
-        path: ./wheelhouse
+        path: wheelhouse/*.whl
