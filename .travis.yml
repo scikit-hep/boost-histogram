@@ -1,0 +1,33 @@
+language: python
+
+env:
+  global:
+    - TWINE_USERNAME=__token__
+    # Note: TWINE_PASSWORD is set to an API token in Travis settings
+    - CIBW_TEST_EXTRAS=test
+    - CIBW_TEST_COMMAND="pytest {project}/tests"
+    - CIBW_BUILD_VERBOSITY=1
+
+jobs:
+  include:
+    - services: docker
+      arch: arm64
+    - services: docker
+      arch: ppc64le
+    - services: docker
+      arch: s390x
+
+install:
+  - python3 -m pip install cibuildwheel==1.4.1
+
+script:
+  - python3 -m cibuildwheel --output-dir wheelhouse
+  - ls -h wheelhouse
+
+    # after_success:
+    #   # if the release was tagged, upload them to PyPI
+    #   - |
+    #     if [[ $TRAVIS_TAG ]]; then
+    #       python3 -m pip install twine
+    #       python3 -m twine upload wheelhouse/*.whl
+    #     fi
