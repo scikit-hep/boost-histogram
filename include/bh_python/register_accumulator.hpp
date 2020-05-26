@@ -34,8 +34,22 @@ py::class_<A> register_accumulator(py::module acc, Args&&... args) {
         .def(py::init<>())
 
         .def(py::self += py::self)
-        .def(py::self == py::self)
-        .def(py::self != py::self)
+        .def("__eq__",
+             [](const A& self, const py::object& other) {
+                 try {
+                     return self == py::cast<A>(other);
+                 } catch(py::cast_error) {
+                     return false;
+                 }
+             })
+        .def("__ne__",
+             [](const A& self, const py::object& other) {
+                 try {
+                     return self != py::cast<A>(other);
+                 } catch(py::cast_error) {
+                     return true;
+                 }
+             })
 
         .def(py::self *= double())
 

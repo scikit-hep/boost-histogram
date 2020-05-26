@@ -97,8 +97,22 @@ py::class_<A> register_axis(py::module& m, Args&&... args) {
 
     ax.def("__repr__", &shift_to_string<A>)
 
-        .def(py::self == py::self)
-        .def(py::self != py::self)
+        .def("__eq__",
+             [](const A& self, const py::object& other) {
+                 try {
+                     return self == py::cast<A>(other);
+                 } catch(py::cast_error) {
+                     return false;
+                 }
+             })
+        .def("__ne__",
+             [](const A& self, const py::object& other) {
+                 try {
+                     return self != py::cast<A>(other);
+                 } catch(py::cast_error) {
+                     return true;
+                 }
+             })
 
         .def_property_readonly(
             "options",
