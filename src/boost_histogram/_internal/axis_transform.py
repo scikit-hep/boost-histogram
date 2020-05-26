@@ -37,7 +37,7 @@ class AxisTransform(object):
 
     def __init__(self):
         "Create a new transform instance"
-        cpp_class, = self._types
+        (cpp_class,) = self._types
         self._this = cpp_class()
 
     def forward(self, value):
@@ -61,7 +61,7 @@ class Pow(AxisTransform):
 
     def __init__(self, power):
         "Create a new transform instance"
-        cpp_class, = self._types
+        (cpp_class,) = self._types
         self._this = cpp_class(power)
 
     @property
@@ -133,7 +133,7 @@ class Function(AxisTransform):
             convert = k.optional("convert")
             name = k.optional("name", "")
 
-        cpp_class, = self._types
+        (cpp_class,) = self._types
         self._this = cpp_class(forward, inverse, convert, name)
 
     # This one does need to be a normal method

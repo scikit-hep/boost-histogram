@@ -110,7 +110,7 @@ class BaseHistogram(object):
                 raise KeyError("Only storages allowed in storage argument")
 
         # Allow a tuple to represent a regular axis
-        axes = [_arg_shortcut(arg) for arg in axes]
+        axes = tuple(_arg_shortcut(arg) for arg in axes)
 
         if len(axes) > _core.hist._axes_limit:
             raise IndexError(
@@ -327,8 +327,8 @@ class histogram(BaseHistogram):
     # runtime argument list, etc.
     @inject_signature("self, *args, weight=None, sample=None")
     def __call__(self, *args, **kwargs):
-        args = (((a,) if isinstance(a, str) else a) for a in args)
-        self._hist.fill(*args, **kwargs)
+        args_gen = (((a,) if isinstance(a, str) else a) for a in args)
+        self._hist.fill(*args_gen, **kwargs)
         return self
 
     def _reset(self):

@@ -63,9 +63,7 @@ def fields(*names):
     def injector(cls):
         if hasattr(cls, "_FIELDS"):
             raise RuntimeError(
-                "{0} already has had a fields decorator applied".format(
-                    self.__class__.__name__
-                )
+                "{0} already has had a fields decorator applied".format(cls.__name__)
             )
         fields = []
         for name in names:
