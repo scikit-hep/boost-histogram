@@ -71,24 +71,24 @@ class loc(Locator):
         return axis.index(self.value) + self.offset
 
 
-class underflow(Locator):
+class Underflow(Locator):
     __slots__ = ()
 
     def __call__(self, axis):
         return -1 + self.offset
 
 
-underflow = underflow()
+underflow = Underflow()
 
 
-class overflow(Locator):
+class Overflow(Locator):
     __slots__ = ()
 
     def __call__(self, axis):
         return len(axis) + self.offset
 
 
-overflow = overflow()
+overflow = Overflow()
 
 
 class at(object):

@@ -220,7 +220,7 @@ message(STATUS "boost-histogram ${BOOST_HISTOGRAM_VERSION}")
 
 if(BUILD_TESTING)
 
-    python_import(numpy pytest pytest-benchmark)
+    python_import(numpy pytest pytest-benchmark six typing)
 
     # Support for running from build directory
     file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/pytest.ini"

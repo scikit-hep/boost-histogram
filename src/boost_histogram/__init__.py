@@ -24,9 +24,25 @@ __all__ = (
 try:
     from . import _core
 except ImportError as err:
-    if "_core" in err.msg and "boost_histogram" in err.msg:
-        err.msg += "\nDid you forget to compile? Use CMake or Setuptools to build, see the readme"
-    raise err
+    msg = str(err)
+    if "_core" not in msg:
+        raise
+
+    import sys
+
+    new_msg = "Did you forget to compile boost-histogram? Use CMake or Setuptools to build, see the readme."
+    total_msg = "\n".join([msg, new_msg])
+
+    # Python 2
+    if sys.version_info.major < 3:
+        orig = sys.exc_info()
+        assert orig[0] is not None and orig[2] is not None
+        exc_info = orig[0], orig[0](total_msg), orig[2]
+        exec("raise exc_info[0], exc_info[1], exc_info[2]")
+    else:
+        new_exception = type(err)(new_msg, name=err.name, path=err.path)
+        exec("raise new_exception from err")
+
 
 # Support cloudpickle - pybind11 submodules do not have __file__ attributes
 # And setting this in C++ causes a segfault
