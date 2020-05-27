@@ -34,7 +34,7 @@ jobs:
 
 
   build_wheels:
-    name: ${{ matrix.type }} wheel on ${{ matrix.os }}
+    name: ${{ matrix.type }} wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -63,12 +63,10 @@ jobs:
         python-version: '3.7'
 
     - name: Install cibuildwheel
-      run: |
-        python -m pip install cibuildwheel==1.4.2
+      run: python -m pip install cibuildwheel==1.4.2
 
     - name: Build wheel
-      run: |
-        python -m cibuildwheel --output-dir wheelhouse
+      run: python -m cibuildwheel --output-dir wheelhouse
       env:
         CIBW_SKIP: pp* cp27-win* cp35-win* cp35-mac*
         CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.CIBW_MANYLINUX_I686_IMAGE }}
@@ -86,7 +84,7 @@ jobs:
 
   # Windows 2.7 (requires PyBind11 workaround)
   build_win27_wheels:
-    name: Build Windows 2.7 wheel
+    name: Py 2.7 wheels on Windows
     runs-on: windows-latest
 
     steps:
@@ -99,8 +97,7 @@ jobs:
         python-version: '3.7'
 
     - name: Install cibuildwheel
-      run: |
-        python -m pip install cibuildwheel==1.4.2
+      run: python -m pip install cibuildwheel==1.4.2
 
     - name: Build 64-bit wheel
       run: |
@@ -132,6 +129,7 @@ jobs:
 
 
   upload_all:
+    name: Upload if release
     needs: [build_wheels, build_win27_wheels, build_sdist]
     runs-on: ubuntu-latest
 
@@ -145,9 +143,19 @@ jobs:
 
     - uses: actions/download-artifact@v2
       with:
+        name: artifact
         path: dist
 
     - name: Print contents
-      run: ls -lh dist
+      run: |
+        ls -lh dist
+        echo "---"
+        ls -lh dist/*
 
     - run: twine check dist/*
+
+    - uses: pypa/gh-action-pypi-publish@master
+      with:
+        user: __token__
+        password: ${{ secrets.pypi_password }}
+      if: github.event_name == 'release' && github.event.action == 'published'
