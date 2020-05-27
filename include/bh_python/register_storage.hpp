@@ -16,8 +16,22 @@ py::class_<A> register_storage(py::module& m, const char* name, const char* desc
     py::class_<A> storage(m, name, desc);
 
     storage.def(py::init<>())
-        .def(py::self == py::self)
-        .def(py::self != py::self)
+        .def("__eq__",
+             [](const A& self, const py::object& other) {
+                 try {
+                     return self == py::cast<A>(other);
+                 } catch(py::cast_error) {
+                     return false;
+                 }
+             })
+        .def("__ne__",
+             [](const A& self, const py::object& other) {
+                 try {
+                     return self != py::cast<A>(other);
+                 } catch(py::cast_error) {
+                     return true;
+                 }
+             })
         .def(make_pickle<A>())
         .def("__copy__", [](const A& self) { return A(self); })
         .def("__deepcopy__", [](const A& self, py::object) { return A(self); });
@@ -34,8 +48,22 @@ register_storage(py::module& m, const char* name, const char* desc) {
     py::class_<A> storage(m, name, desc);
 
     storage.def(py::init<>())
-        .def(py::self == py::self)
-        .def("__ne__", [](const A& a, const A& b) { return !(a == b); })
+        .def("__eq__",
+             [](const A& self, const py::object& other) {
+                 try {
+                     return self == py::cast<A>(other);
+                 } catch(py::cast_error) {
+                     return false;
+                 }
+             })
+        .def("__ne__",
+             [](const A& self, const py::object& other) {
+                 try {
+                     return !(self == py::cast<A>(other));
+                 } catch(py::cast_error) {
+                     return true;
+                 }
+             })
         .def(make_pickle<A>())
         .def("__copy__", [](const A& self) { return A(self); })
         .def("__deepcopy__", [](const A& self, py::object) { return A(self); });

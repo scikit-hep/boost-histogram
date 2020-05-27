@@ -38,8 +38,22 @@ void register_axes(py::module& mod) {
              "overflow"_a  = false,
              "circular"_a  = false,
              "growth"_a    = false)
-        .def(py::self == py::self)
-        .def(py::self != py::self)
+        .def("__eq__",
+             [](const options& self, const py::object& other) {
+                 try {
+                     return self == py::cast<options>(other);
+                 } catch(py::cast_error) {
+                     return false;
+                 }
+             })
+        .def("__ne__",
+             [](const options& self, const py::object& other) {
+                 try {
+                     return self != py::cast<options>(other);
+                 } catch(py::cast_error) {
+                     return true;
+                 }
+             })
         .def(py::pickle([](const options& op) { return py::make_tuple(op.option); },
                         [](py::tuple t) {
                             if(t.size() != 1)

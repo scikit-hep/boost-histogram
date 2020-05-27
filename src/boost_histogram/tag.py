@@ -24,6 +24,7 @@ class Slicer(object):
 
 class Locator(object):
     __slots__ = ("offset",)
+    NAME = ""
 
     def __init__(self, offset=0):
         if not isinstance(offset, int):
@@ -49,7 +50,7 @@ class Locator(object):
         return ""
 
     def __repr__(self):
-        s = self.__class__.__name__
+        s = self.NAME or self.__class__.__name__
         s += self._print_self_()
         if self.offset != 0:
             s += " + " if self.offset > 0 else " - "
@@ -71,24 +72,26 @@ class loc(Locator):
         return axis.index(self.value) + self.offset
 
 
-class underflow(Locator):
+class Underflow(Locator):
     __slots__ = ()
+    NAME = "underflow"
 
     def __call__(self, axis):
         return -1 + self.offset
 
 
-underflow = underflow()
+underflow = Underflow()
 
 
-class overflow(Locator):
+class Overflow(Locator):
     __slots__ = ()
+    NAME = "overflow"
 
     def __call__(self, axis):
         return len(axis) + self.offset
 
 
-overflow = overflow()
+overflow = Overflow()
 
 
 class at(object):

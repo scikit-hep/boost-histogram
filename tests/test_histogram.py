@@ -203,6 +203,52 @@ def test_growing_cats():
     assert h.size == 4
 
 
+def test_metadata_add():
+    h1 = bh.Histogram(
+        bh.axis.IntCategory([1, 2, 3]), bh.axis.StrCategory(["1", "2", "3"])
+    )
+    h2 = bh.Histogram(
+        bh.axis.IntCategory([1, 2, 3]), bh.axis.StrCategory(["1", "2", "3"])
+    )
+    h1.fill([1, 2, 1, 2], ["1", "1", "2", "2"])
+    h2.fill([2, 3, 2, 3], ["2", "2", "3", "3"])
+
+    h3 = h1 + h2
+
+    assert h1.axes[0].size == 3
+    assert h2.axes[0].size == 3
+    assert h3.axes[0].size == 3
+
+    assert h1.axes[1].size == 3
+    assert h2.axes[1].size == 3
+    assert h3.axes[1].size == 3
+
+    assert h3[bh.loc(2), bh.loc("2")] == 2.0
+
+
+def test_grow_and_add():
+    h1 = bh.Histogram(
+        bh.axis.IntCategory([], growth=True), bh.axis.StrCategory([], growth=True)
+    )
+    h2 = bh.Histogram(
+        bh.axis.IntCategory([], growth=True), bh.axis.StrCategory([], growth=True)
+    )
+    h1.fill([1, 2, 1, 2], ["hi", "hi", "ho", "ho"])
+    h2.fill([2, 3, 4, 5], ["ho", "ho", "hum", "hum"])
+
+    h3 = h1 + h2
+
+    assert h1.axes[0].size == 2
+    assert h2.axes[0].size == 4
+    assert h3.axes[0].size == 5
+
+    assert h1.axes[1].size == 2
+    assert h2.axes[1].size == 2
+    assert h3.axes[1].size == 3
+
+    assert h3[bh.loc(2), bh.loc("ho")] == 2.0
+
+
 @pytest.mark.parametrize("flow", [True, False])
 def test_fill_2d(flow):
     h = bh.Histogram(
