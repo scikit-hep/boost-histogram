@@ -34,7 +34,7 @@ jobs:
 
 
   build_wheels:
-    name: Build wheel on ${{ matrix.os }} ${{ matrix.type }}
+    name: ${{ matrix.type }} wheel on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -44,14 +44,13 @@ jobs:
 
         include:
           - type: Standard
-            env:
-              CIBW_SKIP: pp* cp35-win* cp35-mac*
+            CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
+            CIBW_MANYLINUX_I686_IMAGE: manylinux2010
+
           - os: ubuntu-18.04
             type: ManyLinux1
-            env:
-              CIBW_BUILD: cp*manylinux_x86_64 cp*manylinux_i686
-              CIBW_MANYLINUX_X86_64_IMAGE: skhep/manylinuxgcc-x86_64
-              CIBW_MANYLINUX_I686_IMAGE: skhep/manylinuxgcc-i686
+            CIBW_MANYLINUX_X86_64_IMAGE: skhep/manylinuxgcc-x86_64
+            CIBW_MANYLINUX_I686_IMAGE: skhep/manylinuxgcc-i686
 
     steps:
     - uses: actions/checkout@v1
@@ -70,6 +69,10 @@ jobs:
     - name: Build wheel
       run: |
         python -m cibuildwheel --output-dir wheelhouse
+      env:
+        CIBW_SKIP: pp* cp27-win* cp35-win* cp35-mac*
+        CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.CIBW_MANYLINUX_I686_IMAGE }}
+        CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.CIBW_MANYLINUX_X86_64_IMAGE }}
 
     - name: Show files
       run: ls -lh wheelhouse
@@ -85,11 +88,6 @@ jobs:
   build_win27_wheels:
     name: Build Windows 2.7 wheel
     runs-on: windows-latest
-    strategy:
-      fail-fast: false
-    env:
-      DISTUTILS_USE_SDK: 1
-      MSSdk: 1
 
     steps:
     - uses: actions/checkout@v1
@@ -111,6 +109,8 @@ jobs:
       shell: cmd
       env:
         CIBW_BUILD: cp27-win_amd64
+        DISTUTILS_USE_SDK: 1
+        MSSdk: 1
 
     - name: Build 32-bit wheel
       run: |
@@ -119,6 +119,8 @@ jobs:
       shell: cmd
       env:
         CIBW_BUILD: cp27-win32
+        DISTUTILS_USE_SDK: 1
+        MSSdk: 1
 
     - name: Show files
       run: ls -lh wheelhouse
