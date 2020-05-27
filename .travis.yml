@@ -18,7 +18,7 @@ jobs:
       arch: s390x
 
 install:
-  - python3 -m pip install cibuildwheel==1.4.1
+  - python3 -m pip install cibuildwheel==1.4.2
 
 script:
   - python3 -m cibuildwheel --output-dir wheelhouse

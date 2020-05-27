@@ -31,13 +31,13 @@ jobs:
 
     - name: Install cibuildwheel
       run: |
-        python -m pip install cibuildwheel==1.4.1
+        python -m pip install cibuildwheel==1.4.2
 
     - name: Build wheel
       run: |
         python -m cibuildwheel --output-dir wheelhouse
       env:
-        CIBW_SKIP: pp* cp27-many* cp35-win* cp35-mac*
+        CIBW_SKIP: pp* cp35-win* cp35-mac*
 
     - name: Show files
       run: ls -lh wheelhouse
@@ -65,7 +65,7 @@ jobs:
 
         #   - name: Install cibuildwheel
         #     run: |
-        #       python -m pip install cibuildwheel==1.4.1
+        #       python -m pip install cibuildwheel==1.4.2
 
         #   - name: Build wheel
         #     run: |
@@ -108,15 +108,15 @@ jobs:
       run: |
         python -m pip install git+https://github.com/joerick/cibuildwheel
 
-    - name: Build 64 bit wheel
+    - name: Build 64-bit wheel
       run: |
-        call vcvarsall.bat x64
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x64
         python -m cibuildwheel --output-dir wheelhouse
       shell: cmd
       env:
         CIBW_BUILD: cp27-win_amd64
 
-    - name: Build 32 bit wheel
+    - name: Build 32-bit wheel
       run: |
         call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86
         python -m cibuildwheel --output-dir wheelhouse
