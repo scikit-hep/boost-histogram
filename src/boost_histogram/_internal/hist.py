@@ -139,6 +139,7 @@ class BaseHistogram(object):
 
     def __iadd__(self, other):
         self._hist.__iadd__(other._hist)
+        self.axes = AxesTuple(self._axis(i) for i in range(self.rank))
         return self
 
     def __eq__(self, other):
