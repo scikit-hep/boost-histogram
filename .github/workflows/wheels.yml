@@ -34,12 +34,24 @@ jobs:
 
 
   build_wheels:
-    name: Build wheel on ${{ matrix.os }}
+    name: Build wheel on ${{ matrix.os }} ${{ matrix.type }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-18.04, windows-latest, macos-latest]
+        type: [Standard]
+
+        include:
+          - type: Standard
+            env:
+              CIBW_SKIP: pp* cp35-win* cp35-mac*
+          - os: ubuntu-18.04
+            type: ManyLinux1
+            env:
+              CIBW_BUILD: cp*manylinux_x86_64 cp*manylinux_i686
+              CIBW_MANYLINUX_X86_64_IMAGE: skhep/manylinuxgcc-x86_64
+              CIBW_MANYLINUX_I686_IMAGE: skhep/manylinuxgcc-i686
 
     steps:
     - uses: actions/checkout@v1
@@ -58,8 +70,6 @@ jobs:
     - name: Build wheel
       run: |
         python -m cibuildwheel --output-dir wheelhouse
-      env:
-        CIBW_SKIP: pp* cp35-win* cp35-mac*
 
     - name: Show files
       run: ls -lh wheelhouse
@@ -67,42 +77,6 @@ jobs:
 
     - name: Upload wheels
       uses: actions/upload-artifact@v2
-      with:
-        path: wheelhouse/*.whl
-
-
-  # Manylinux1 with workaround
-  build_manylinux1_wheels:
-    name: Build wheel on ManyLinux1
-    runs-on: ubuntu-18.04
-
-    steps:
-    - uses: actions/checkout@v1
-      with:
-        submodules: true
-
-    - name: Setup Python 3.7
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.7'
-
-    - name: Install cibuildwheel
-      run: |
-        python -m pip install cibuildwheel==1.4.2
-
-    - name: Build wheel
-      run: |
-        python -m cibuildwheel --output-dir wheelhouse
-      env:
-        CIBW_BUILD: cp*manylinux_x86_64 cp*manylinux_i686
-        CIBW_MANYLINUX_X86_64_IMAGE: skhep/manylinuxgcc-x86_64
-        CIBW_MANYLINUX_I686_IMAGE: skhep/manylinuxgcc-i686
-
-    - name: Show files
-      run: ls -lh wheelhouse
-      shell: bash
-
-    - uses: actions/upload-artifact@v2
       with:
         path: wheelhouse/*.whl
 
@@ -156,7 +130,8 @@ jobs:
 
 
   upload_all:
-    needs: [build_wheels, build_win27_wheels, build_manylinux1_wheels, build_sdist]
+    needs: [build_wheels, build_win27_wheels, build_sdist]
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/setup-python@v2
