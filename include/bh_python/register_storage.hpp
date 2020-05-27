@@ -20,7 +20,7 @@ py::class_<A> register_storage(py::module& m, const char* name, const char* desc
              [](const A& self, const py::object& other) {
                  try {
                      return self == py::cast<A>(other);
-                 } catch(py::cast_error) {
+                 } catch(const py::cast_error&) {
                      return false;
                  }
              })
@@ -28,7 +28,7 @@ py::class_<A> register_storage(py::module& m, const char* name, const char* desc
              [](const A& self, const py::object& other) {
                  try {
                      return self != py::cast<A>(other);
-                 } catch(py::cast_error) {
+                 } catch(const py::cast_error&) {
                      return true;
                  }
              })
@@ -52,7 +52,7 @@ register_storage(py::module& m, const char* name, const char* desc) {
              [](const A& self, const py::object& other) {
                  try {
                      return self == py::cast<A>(other);
-                 } catch(py::cast_error) {
+                 } catch(const py::cast_error&) {
                      return false;
                  }
              })
@@ -60,7 +60,7 @@ register_storage(py::module& m, const char* name, const char* desc) {
              [](const A& self, const py::object& other) {
                  try {
                      return !(self == py::cast<A>(other));
-                 } catch(py::cast_error) {
+                 } catch(const py::cast_error&) {
                      return true;
                  }
              })

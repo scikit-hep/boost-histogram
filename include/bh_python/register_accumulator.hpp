@@ -38,7 +38,7 @@ py::class_<A> register_accumulator(py::module acc, Args&&... args) {
              [](const A& self, const py::object& other) {
                  try {
                      return self == py::cast<A>(other);
-                 } catch(py::cast_error) {
+                 } catch(const py::cast_error&) {
                      return false;
                  }
              })
@@ -46,7 +46,7 @@ py::class_<A> register_accumulator(py::module acc, Args&&... args) {
              [](const A& self, const py::object& other) {
                  try {
                      return self != py::cast<A>(other);
-                 } catch(py::cast_error) {
+                 } catch(const py::cast_error&) {
                      return true;
                  }
              })

@@ -67,7 +67,7 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
              [](const histogram_t& self, const py::object& other) {
                  try {
                      return self == py::cast<histogram_t>(other);
-                 } catch(py::cast_error) {
+                 } catch(const py::cast_error&) {
                      return false;
                  }
              })
@@ -75,7 +75,7 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
              [](const histogram_t& self, const py::object& other) {
                  try {
                      return self != py::cast<histogram_t>(other);
-                 } catch(py::cast_error) {
+                 } catch(const py::cast_error&) {
                      return true;
                  }
              })

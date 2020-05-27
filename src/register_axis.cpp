@@ -42,7 +42,7 @@ void register_axes(py::module& mod) {
              [](const options& self, const py::object& other) {
                  try {
                      return self == py::cast<options>(other);
-                 } catch(py::cast_error) {
+                 } catch(const py::cast_error&) {
                      return false;
                  }
              })
@@ -50,7 +50,7 @@ void register_axes(py::module& mod) {
              [](const options& self, const py::object& other) {
                  try {
                      return self != py::cast<options>(other);
-                 } catch(py::cast_error) {
+                 } catch(const py::cast_error&) {
                      return true;
                  }
              })
