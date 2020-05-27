@@ -8,24 +8,46 @@ env:
   CIBW_BUILD_VERBOSITY: 1
 
 
-# todo: make an sdist, second job download and publish
-
 jobs:
+  build_sdist:
+    name: Build SDist
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+
+    - name: Setup Python 3.7
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7'
+
+    - name: Install deps
+      run: python -m pip install "setuptools>=42" "setuptools_scm[toml]>=4.1.0"
+
+    - name: Build SDist
+      run: python setup.py sdist
+
+    - uses: actions/upload-artifact@v2
+      with:
+        path: dist/*.tar.gz
+
+
   build_wheels:
     name: Build wheel on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-18.04] # , windows-latest, macos-latest]
+        os: [ubuntu-18.04, windows-latest, macos-latest]
 
     steps:
     - uses: actions/checkout@v1
       with:
         submodules: true
 
-    - uses: actions/setup-python@v2
-      name: Install Python
+    - name: Setup Python 3.7
+      uses: actions/setup-python@v2
       with:
         python-version: '3.7'
 
@@ -43,45 +65,47 @@ jobs:
       run: ls -lh wheelhouse
       shell: bash
 
-    - uses: actions/upload-artifact@v2
+    - name: Upload wheels
+      uses: actions/upload-artifact@v2
       with:
         path: wheelhouse/*.whl
 
 
-        # # Manylinux1 with workaround
-        # build_manylinux1_wheels:
-        #   name: Build wheel on ManyLinux1
-        #   runs-on: ubuntu-18.04
+  # Manylinux1 with workaround
+  build_manylinux1_wheels:
+    name: Build wheel on ManyLinux1
+    runs-on: ubuntu-18.04
 
-        #   steps:
-        #   - uses: actions/checkout@v1
-        #     with:
-        #       submodules: true
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
 
-        #   - uses: actions/setup-python@v2
-        #     name: Install Python
-        #     with:
-        #       python-version: '3.7'
+    - name: Setup Python 3.7
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7'
 
-        #   - name: Install cibuildwheel
-        #     run: |
-        #       python -m pip install cibuildwheel==1.4.2
+    - name: Install cibuildwheel
+      run: |
+        python -m pip install cibuildwheel==1.4.2
 
-        #   - name: Build wheel
-        #     run: |
-        #       python -m cibuildwheel --output-dir wheelhouse
-        #     env:
-        #       CIBW_BUILD: cp*manylinux_x86_64 cp*manylinux_i686
-        #       CIBW_MANYLINUX_X86_64_IMAGE: skhep/manylinuxgcc-x86_64
-        #       CIBW_MANYLINUX_I686_IMAGE: skhep/manylinuxgcc-i686
+    - name: Build wheel
+      run: |
+        python -m cibuildwheel --output-dir wheelhouse
+      env:
+        CIBW_BUILD: cp*manylinux_x86_64 cp*manylinux_i686
+        CIBW_MANYLINUX_X86_64_IMAGE: skhep/manylinuxgcc-x86_64
+        CIBW_MANYLINUX_I686_IMAGE: skhep/manylinuxgcc-i686
 
-        #   - name: Show files
-        #     run: ls -lh wheelhouse
-        #     shell: bash
+    - name: Show files
+      run: ls -lh wheelhouse
+      shell: bash
 
-        #   - uses: actions/upload-artifact@v2
-        #     with:
-        #       path: wheelhouse/*.whl
+    - uses: actions/upload-artifact@v2
+      with:
+        path: wheelhouse/*.whl
+
 
   # Windows 2.7 (requires PyBind11 workaround)
   build_win27_wheels:
@@ -98,15 +122,13 @@ jobs:
       with:
         submodules: true
 
-    - uses: microsoft/setup-msbuild@v1.0.0
-
     - uses: actions/setup-python@v2
       with:
         python-version: '3.7'
 
     - name: Install cibuildwheel
       run: |
-        python -m pip install git+https://github.com/joerick/cibuildwheel
+        python -m pip install cibuildwheel==1.4.2
 
     - name: Build 64-bit wheel
       run: |
@@ -131,3 +153,24 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         path: wheelhouse/*.whl
+
+
+  upload_all:
+    needs: [build_wheels, build_win27_wheels, build_manylinux1_wheels, build_sdist]
+
+    steps:
+    - uses: actions/setup-python@v2
+      with:
+        python-version: "3.8"
+
+    - name: Install dependencies
+      run: python -m pip install twine "setuptools>=42" "setuptools_scm[toml]>=4.1.0"
+
+    - uses: actions/download-artifact@v2
+      with:
+        path: dist
+
+    - name: Print contents
+      run: ls -lh dist
+
+    - run: twine check dist/*
