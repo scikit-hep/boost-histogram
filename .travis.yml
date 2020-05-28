@@ -18,8 +18,9 @@ jobs:
       arch: arm64
     - services: docker
       arch: ppc64le
-    - services: docker
-      arch: s390x
+    # - services: docker
+    #   arch: s390x
+    # beta - Doesn't always work. Wait till Travis fixes.
 
 install:
   - python3 -m pip install cibuildwheel==1.4.2
