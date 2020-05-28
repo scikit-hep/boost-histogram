@@ -26,12 +26,11 @@ install:
 
 script:
   - sed -i '/numpy/d' pyproject.toml
-  - python3 -m cibuildwheel --output-dir wheelhouse
+  - python3 -m cibuildwheel --output-dir dist
 
-after_success:
-  - |
-    if [[ $TRAVIS_TAG ]]; then
-      python3 -m pip install twine
-      python3 -m twine check wheelhouse/*
-      python3 -m twine upload wheelhouse/*.whl
-    fi
+
+deploy:
+  distributions: "--license"  # Trick travis, see https://github.com/travis-ci/dpl/blob/577fb987337b6275f85cc104a38df30d030a860e/lib/dpl/providers/pypi.rb#L36
+  username: __token__
+  cleanup: false
+

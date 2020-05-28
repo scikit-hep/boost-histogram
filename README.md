@@ -129,10 +129,10 @@ counts = hist.view()
     * Special actions (third item in slice)
         * `bh.sum`: Remove axes via projection; if limits are given, use those
         * `bh.rebin(n)`: Rebin an axis
-* Numpy compatibility
-    * `bh.numpy` provides faster [drop in replacements](https://boost-histogram.readthedocs.io/en/latest/usage/numpy.html) for Numpy histogram functions
+* NumPy compatibility
+    * `bh.numpy` provides faster [drop in replacements](https://boost-histogram.readthedocs.io/en/latest/usage/numpy.html) for NumPy histogram functions
     * Histograms follow the buffer interface, and provide `.view()`
-    * Histograms can be converted to numpy style output tuple with `.to_numpy()`
+    * Histograms can be converted to NumPy style output tuple with `.to_numpy()`
 * Details
     * Use `bh.Histogram(..., storage=...)` to make a histogram (there are several different types)
     * All objects support copy/deepcopy/pickle
@@ -148,20 +148,18 @@ The easiest way to get boost-histogram is to use a binary wheel, which happens w
 python -m pip install boost-histogram
 ```
 
-These are the supported platforms for which wheels are produced:
+These are the supported platforms for which wheels are produced using [cibuildwheel](https://cibuildwheel.readthedocs.io/en/stable/):
 
 | System | Arch | Python versions |
 |---------|-----|------------------|
-| ManyLinux1 (custom GCC 9.2) | 64 & 32-bit | 2.7, 3.5, 3.6, 3.7, 3.8 |
-| ManyLinux2010 | 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8 |
-| macOS 10.9+ | 64-bit | 2.7, 3.6, 3.7, 3.8 |
-| Windows | 64 & 32-bit | 2.7, 3.6, 3.7, 3.8 |
+| ManyLinux1 (custom GCC 9.2) | 32 & 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8 |
+| ManyLinux2010 | 32 & 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8 |
+| macOS 10.9+ | 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8 |
+| Windows | 32 & 64-bit | 2.7, 3.6, 3.7, 3.8 |
 
 
-* Linux: I'm not supporting 3.4 because I have to build the Numpy wheels to do so.
 * manylinux1: Using a custom docker container with GCC 9.2; should work but can't be called directly other compiled extensions unless they do the same thing (think that's the main caveat). Supporting 32 bits because it's there.
-* manylinux2010: Requires pip 10+ and a version of Linux newer than 2010. This is very new technology.
-* MacOS: Uses the dedicated 64 bit 10.9+ Python.org builds. We are not supporting 3.5 because those no longer provide binaries (could add a 32+64 fat 10.6+ that really was 10.9+, but not worth it unless there is a need for it).
+* manylinux2010: Requires pip 10+ and a version of Linux newer than 2010.
 * Windows: PyBind11 requires compilation with a newer copy of Visual Studio than Python 2.7's Visual Studio 2008; you need to have the [Visual Studio 2015 distributable][msvc2015] installed (the dll is included in 2017 and 2019, as well).
 
 [msvc2015]: https://www.microsoft.com/en-us/download/details.aspx?id=48145
@@ -171,9 +169,9 @@ If you are on a Linux system that is not part of the "many" in manylinux, such a
 
 #### Conda-Forge
 
-The boost-histogram package is available on Conda-Forge, as well. All supported versions are available with the exception of Windows + Python 2.7, which cannot built due to the age of the compiler. Please use Pip if you *really* need Python 2.7 on Windows. You will also need the VS 2015 distributable, as described above.
+The boost-histogram package is available on Conda-Forge, as well. All supported versions are available with the exception of Windows + Python 2.7, which cannot built due to the age of the compiler and conda-forge policies. Please use Pip if you *really* need Python 2.7 on Windows. You will also need the VS 2015 distributable, as described above.
 
-```
+```bash
 conda install -c conda-forge boost-histogram
 ```
 

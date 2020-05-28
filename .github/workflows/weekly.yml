@@ -2,7 +2,7 @@ name: Weekly update
 
 on:
   schedule:
-    - chron: "0 12 * * 0"
+    chron: "0 12 * * 0"
 
 jobs:
   basic:
