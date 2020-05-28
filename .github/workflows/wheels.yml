@@ -2,9 +2,11 @@ name: Wheels
 
 on:
   pull_request:
-  push:
     branch:
       - master
+  push:
+    branch:
+      - wheels
     tags:
       - "v*"
   release:

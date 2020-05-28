@@ -3,7 +3,6 @@
 # boost-histogram for Python
 
 [![Gitter][gitter-badge]][gitter-link]
-[![Build Status][azure-badge]][azure-link]
 [![Actions Status][actions-badge]][actions-link]
 [![Documentation Status][rtd-badge]][rtd-link]
 [![DOI](https://zenodo.org/badge/148885351.svg)](https://zenodo.org/badge/latestdoi/148885351)
@@ -240,8 +239,6 @@ Support for this work was provided by the National Science Foundation cooperativ
 
 [gitter-badge]:            https://badges.gitter.im/HSF/PyHEP-histogramming.svg
 [gitter-link]:             https://gitter.im/HSF/PyHEP-histogramming?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
-[azure-badge]:             https://dev.azure.com/scikit-hep/boost-histogram/_apis/build/status/bh-tests?branchName=develop
-[azure-link]:              https://dev.azure.com/scikit-hep/boost-histogram/_build/latest?definitionId=2&branchName=develop
 [rtd-badge]:               https://readthedocs.org/projects/boost-histogram/badge/?version=latest
 [rtd-link]:                https://boost-histogram.readthedocs.io/en/latest/?badge=latest
 [actions-badge]:           https://github.com/scikit-hep/boost-histogram/workflows/Tests/badge.svg
