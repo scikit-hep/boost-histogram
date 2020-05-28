@@ -4,13 +4,12 @@ branches:
   only:
     - master
     - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
+    - henryiii/gha-test
 
 env:
   global:
     - TWINE_USERNAME=__token__
     # Set TWINE_PASSWORD in Travis UI
-    - CIBW_TEST_EXTRAS=test
-    - CIBW_TEST_COMMAND="pytest {project}/tests"
     - CIBW_BUILD_VERBOSITY=1
 
 jobs:
@@ -23,14 +22,16 @@ jobs:
       arch: s390x
 
 install:
-  - python3 -m pip install cibuildwheel==1.4.2 twine
+  - python3 -m pip install cibuildwheel==1.4.2
 
 script:
+  - sed -i '/numpy/d' pyproject.toml
   - python3 -m cibuildwheel --output-dir wheelhouse
   - twine check wheelhouse/*
 
 after_success:
   - |
     if [[ $TRAVIS_TAG ]]; then
+      python3 -m pip install twine
       python3 -m twine upload wheelhouse/*.whl
     fi
