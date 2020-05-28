@@ -1,6 +1,14 @@
 name: Wheels
 
-on: [push, pull_request]
+on:
+  pull_request:
+  push:
+    branch:
+      - master
+    tags:
+      - "v*"
+  release:
+
 
 env:
   CIBW_TEST_EXTRAS: test
@@ -145,12 +153,6 @@ jobs:
       with:
         name: artifact
         path: dist
-
-    - name: Print contents
-      run: |
-        ls -lh dist
-        echo "---"
-        ls -lh dist/*
 
     - run: twine check dist/*
 
