@@ -59,3 +59,36 @@ jobs:
     - name: Test
       working-directory: ./build
       run: python -m pytest
+
+  build_wheels:
+    name: Wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-18.04, windows-latest, macos-latest]
+
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+
+    - name: Setup Python 3.7
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7'
+
+    - name: Install cibuildwheel
+      run: python -m pip install cibuildwheel==1.4.2 twine
+
+    - name: Build wheel
+      run: python -m cibuildwheel --output-dir wheelhouse
+      env:
+        CIBW_BUILD: cp38-win_amd64 cp27-manylinux_i686 cp37-macosx_x86_64
+        CIBW_TEST_EXTRAS: test
+        CIBW_TEST_COMMAND: pytest {project}/tests
+        CIBW_BUILD_VERBOSITY: 1
+
+    - name: Check wheels
+      run: twine check wheelhouse/*
+      shell: bash

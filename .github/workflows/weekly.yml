@@ -1,0 +1,25 @@
+name: Weekly update
+
+on:
+  schedule:
+    - cron: "0 12 * * 0"
+
+jobs:
+  basic:
+    name: Head on Python 3.8
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+
+    - uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Build and install wheel
+      run: pip install -v .[test]
+
+    - name: Test
+      run: python -m pytest

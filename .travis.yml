@@ -1,0 +1,37 @@
+language: python
+
+branches:
+  only:
+    - master
+    - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
+    - henryiii/gha-test
+
+env:
+  global:
+    - TWINE_USERNAME=__token__
+    # Set TWINE_PASSWORD in Travis UI
+    - CIBW_BUILD_VERBOSITY=1
+
+jobs:
+  include:
+    - services: docker
+      arch: arm64
+    - services: docker
+      arch: ppc64le
+    # - services: docker
+    #   arch: s390x
+    # beta - Doesn't always work. Wait till Travis fixes.
+
+install:
+  - python3 -m pip install cibuildwheel==1.4.2
+
+script:
+  - sed -i '/numpy/d' pyproject.toml
+  - python3 -m cibuildwheel --output-dir dist
+
+
+deploy:
+  distributions: "--license"  # Trick travis, see https://github.com/travis-ci/dpl/blob/577fb987337b6275f85cc104a38df30d030a860e/lib/dpl/providers/pypi.rb#L36
+  username: __token__
+  cleanup: false
+

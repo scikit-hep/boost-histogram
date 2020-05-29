@@ -190,13 +190,7 @@ end
   the version, though this was a massive release that touched almost every
   area.
     - Version tag should be `"v" + major + "." + minor + "." + patch`.
-- This should trigger an Azure wheel build. Note the name of the build (should
-  be the date plus a number)
-- In the Azure web interface, go to release pipelines and click create release.
-  Make sure the build it is pulling artifacts from matches the correct build
-  (should always choose latest, which *should* be correct) See
-  https://iscinumpy.gitlab.io/post/azure-devops-releases/ for details about
-  Azure releases.
+- GHA will build and send to PyPI for you when you release.
 - Conda-forge will automatically make a PR to update a few hours later.
 
 
