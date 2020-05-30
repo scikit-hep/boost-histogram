@@ -6,6 +6,13 @@ __all__ = ("Slicer", "Locator", "at", "loc", "overflow", "underflow", "rebin", "
 
 import numpy as _np
 
+# bh.sum is just the Python sum, so from boost_histogram import * is safe (but
+# not recommended)
+try:
+    from builtins import sum
+except ImportError:
+    from __builtin__ import sum
+
 
 class Slicer(object):
     """
@@ -109,7 +116,6 @@ class at(object):
 
 class rebin(object):
     __slots__ = ("factor",)
-    projection = False
 
     def __init__(self, value):
         self.factor = value
@@ -118,18 +124,3 @@ class rebin(object):
         return "{self.__class__.__name__}({self.factor})".format(self=self)
 
     # TODO: Add __call__ to support UHI
-
-
-class sum(object):
-    __slots__ = ()
-    projection = True
-
-    # Supports UHI on general histograms, and acts nicely
-    # if imported from boost_histogram directly
-    def __new__(cls, *args, **kwargs):
-        return _np.sum(*args, **kwargs)
-
-
-# Compat only, will be removed after 0.6 release
-class project(sum):
-    pass

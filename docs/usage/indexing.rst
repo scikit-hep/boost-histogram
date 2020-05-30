@@ -260,14 +260,7 @@ Basic implementation (WIP):
 
    # Other flags, such as callable functions, could be added and detected later.
 
-   class sum:
-       "When used in the step of a Histogram's slice, sum sums over and eliminates what remains of the axis after slicing."
-       projection = True
-
-       # Optional, not supported in boost-histogram yet
-       def __new__(cls, binning, axis, counts):
-           return None, numpy.add.reduce(counts, axis=axis)
-
+   # UHI will perform a maximum performance sum when python's sum is encountered
 
    def underflow(axis):
        return -1
@@ -281,8 +274,9 @@ Basic implementation (WIP):
        scaling their widths by a factor of n. If the number of bins is not
        divisible by n, the remainder is added to the overflow bin.
        """
-       projection = False
        def __init__(self, factor):
+           # Items with .factor are specially treated in boost-histogram,
+           # performing a high performance rebinning
            self.factor = factor
 
        # Optional and not used by boost-histogram

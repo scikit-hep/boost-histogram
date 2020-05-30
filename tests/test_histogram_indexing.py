@@ -112,6 +112,12 @@ def test_basic_projection():
     assert h1 == h2[..., :: bh.sum, :: bh.sum]
     assert h2.sum(flow=True) == h2[:: bh.sum, :: bh.sum, :: bh.sum]
 
+    # Python's builtin sum is identical to bh.sum
+    assert bh.sum is sum
+    assert h1 == h2[:, ::sum, ::sum]
+    assert h1 == h2[..., ::sum, ::sum]
+    assert h2.sum(flow=True) == h2[::sum, ::sum, ::sum]
+
 
 def test_slicing_projection():
     h1 = bh.Histogram(
