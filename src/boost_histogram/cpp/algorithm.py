@@ -1,6 +1,17 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 
+from .._core.algorithm import (
+    shrink_and_rebin,
+    crop_and_rebin,
+    slice_and_rebin,
+    rebin,
+    shrink,
+    crop,
+    slice,
+    slice_mode,
+)
+
 del absolute_import, division, print_function
 
 __all__ = (
@@ -19,16 +30,6 @@ __all__ = (
     "project",
 )
 
-from .._core.algorithm import (
-    shrink_and_rebin,
-    crop_and_rebin,
-    slice_and_rebin,
-    rebin,
-    shrink,
-    crop,
-    slice,
-    slice_mode,
-)
 
 shrink_and_rebin.__module__ = "boost_histogram.cpp"
 crop_and_rebin.__module__ = "boost_histogram.cpp"

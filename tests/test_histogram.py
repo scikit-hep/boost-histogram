@@ -556,7 +556,7 @@ def test_pickle_0():
             a.fill(i, j, 0, 0, 0)
             for k in range(a.axes[2].extent):
                 a.fill(i, j, k, 0, 0)
-                for l in range(a.axes[3].extent):
+                for l in range(a.axes[3].extent):  # noqa: E741
                     a.fill(i, j, k, l, 0)
                     for m in range(a.axes[4].extent):
                         a.fill(i, j, k, l, m * 0.5 * np.pi)
@@ -592,7 +592,7 @@ def test_pickle_1():
             a.fill(i, j, 0, 0, weight=10)
             for k in range(a.axes[2].extent):
                 a.fill(i, j, k, 0, weight=2)
-                for l in range(a.axes[3].extent):
+                for l in range(a.axes[3].extent):  # noqa: E741
                     a.fill(i, j, k, l, weight=5)
 
     io = BytesIO()

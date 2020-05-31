@@ -4,7 +4,6 @@ import pytest
 import boost_histogram as bh
 import numpy as np
 from numpy.testing import assert_array_equal, assert_almost_equal
-from functools import partial
 
 
 def fillit(hist, *args, **kwargs):

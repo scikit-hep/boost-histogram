@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 
-del absolute_import, division, print_function
-
 import inspect
+
+del absolute_import, division, print_function
 
 
 def make_signature_params(sig, locals={}):

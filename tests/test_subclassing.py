@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 import boost_histogram as bh
 
-import pytest
-
 
 def test_subclass():
     NEW_FAMILY = object()

@@ -179,8 +179,9 @@ class BaseHistogram(object):
         other._hist = copy.copy(self._hist)
         return other
 
+    # TODO: Marked as too complex by flake8. Should be factored out a bit.
     @inject_signature("self, *args, weight=None, sample=None, threads=None")
-    def fill(self, *args, **kwargs):
+    def fill(self, *args, **kwargs):  # noqa: C901
         """
         Insert data into the histogram.
 
@@ -393,7 +394,7 @@ class Histogram(BaseHistogram):
             else " "
             if len(self.axes) > 0
             else "",
-            comma="," if len(self.axes) > 0 else "",
+            comma=sep,
         )
         ret += ")"
         outer = self.sum(flow=True)
@@ -516,7 +517,8 @@ class Histogram(BaseHistogram):
         """
         return self.axes.size
 
-    def __getitem__(self, index):
+    # TODO: Marked as too complex by flake8. Should be factored out a bit.
+    def __getitem__(self, index):  # noqa: C901
 
         indexes = self._compute_commonindex(index)
 

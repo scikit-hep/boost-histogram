@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
-import pytest
-from pytest import approx
 
 import boost_histogram as bh
-import numpy as np
 
 
 def test_weighted_sum():

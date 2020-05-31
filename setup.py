@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
-from setuptools import find_packages
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
 import setuptools
 import sys
-import os
 
 
 # Use -j N or set the environment variable NPY_NUM_BUILD_JOBS
@@ -44,6 +42,7 @@ ext_modules = [
         "boost_histogram._core", SRC_FILES, include_dirs=INCLUDE_DIRS, language="c++"
     )
 ]
+
 
 # As of Python 3.6, CCompiler has a `has_flag` method.
 # cf http://bugs.python.org/issue26689

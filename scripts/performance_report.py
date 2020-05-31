@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-import boost_histogram as bh
 from timeit import timeit
 import math
+import multiprocessing
 
 print("Welcome to boost-histogram's performance report")
 
@@ -53,8 +53,6 @@ def print_timer(setup, statement, name, storage, fill, flow, base=None, n=10):
     )
     return time
 
-
-import multiprocessing
 
 c = multiprocessing.cpu_count()
 counts = [c // 2 ** x for x in reversed(range(int(math.log2(c) + 1)))]

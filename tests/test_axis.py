@@ -715,7 +715,7 @@ class TestCategory(Axis):
 
         ax = bh.axis.StrCategory("ABC", metadata="foo")
         # If unicode is the default (Python 3, generally)
-        if type("") == type(u""):
+        if type("") == type(u""):  # noqa: E721
             assert repr(ax) == "StrCategory(['A', 'B', 'C'], metadata='foo')"
         else:
             assert repr(ax) == "StrCategory([u'A', u'B', u'C'], metadata='foo')"
@@ -742,7 +742,7 @@ class TestCategory(Axis):
             with pytest.raises(IndexError):
                 a.bin(3)
         else:
-            assert a.bin(3) == None
+            assert a.bin(3) is None
 
     @pytest.mark.parametrize("ref", ([1, 2, 3], ("A", "B", "C")))
     @pytest.mark.parametrize("growth", (False, True))
@@ -769,7 +769,7 @@ class TestCategory(Axis):
         for i, r in enumerate(ref):
             assert a.value(i) == r
         assert_array_equal(a.value(range(3)), ref)
-        assert a.value(3) == None
+        assert a.value(3) is None
         assert_array_equal(a.value((0, 3)), [ref[0], None])
         assert_array_equal(
             a.value(np.array((0, 1, 2, 3))), [ref[0], ref[1], ref[2], None]
