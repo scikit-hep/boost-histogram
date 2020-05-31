@@ -54,5 +54,3 @@ Unified Histogram Indexing
 
 Numpy compatibility
    The Python bindings do several things to simplify Numpy compatibility.
-
-

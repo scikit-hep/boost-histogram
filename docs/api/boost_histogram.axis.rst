@@ -14,4 +14,3 @@ boost\_histogram.axis.transform
    :members:
    :undoc-members:
    :show-inheritance:
-

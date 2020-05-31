@@ -120,4 +120,3 @@ Indices and tables
    :target: https://github.com/conda-forge/boost-histogram-feedstock
 .. |Scikit-HEP| image:: https://scikit-hep.org/assets/images/Scikit--HEP-Project-blue.svg
    :target: https://scikit-hep.org/
-

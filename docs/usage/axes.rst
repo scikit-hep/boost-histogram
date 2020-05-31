@@ -126,5 +126,3 @@ Manipulating Axes
 Axes have a variety of methods and properties that are useful. When inside a histogram, you can also access
 these directly on the ``hist.axes`` object, and they return a tuple of valid results. If the property or method
 normally returns an array, the ``axes`` version returns a broadcasting-ready version in the output tuple.
-
-

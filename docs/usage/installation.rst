@@ -106,4 +106,3 @@ can install directly from GitHub if you would like.
 .. code:: bash
 
    python -m pip install git+https://github.com/scikit-hep/boost-histogram.git@develop
-

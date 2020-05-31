@@ -40,4 +40,3 @@ True ``is_valid`` selection, you can use a ``sum``:
 
 You can expand this example to any number of dimensions, boolean flags,
 and categories.
-

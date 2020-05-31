@@ -8,4 +8,3 @@ git ls-files -- '*.cpp' '*.hpp' '*.cu' '*.h' | xargs clang-format -style=file -s
 git diff --exit-code --color
 
 set +evx
-

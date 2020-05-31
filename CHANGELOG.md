@@ -218,4 +218,3 @@ First beta release and beginning of the changelog.
 * Indexing and the array versions (such as centers) are incomplete and subject to change
 * The numpy module is provisional and subject to change
 * Docstrings and signatures will improve in later versions (especially on Python 3)
-
