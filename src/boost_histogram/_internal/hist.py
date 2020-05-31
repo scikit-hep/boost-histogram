@@ -532,14 +532,10 @@ class Histogram(BaseHistogram):
         zeroes_start = []
         zeroes_stop = []
 
-        # We could use python's sum here, but for now, a private sum is used
-        class ext_sum:
-            projection = True
-
         # Compute needed slices and projections
         for i, ind in enumerate(indexes):
             if hasattr(ind, "__index__"):
-                ind = slice(ind.__index__(), ind.__index__() + 1, ext_sum())
+                ind = slice(ind.__index__(), ind.__index__() + 1, sum)
 
             elif not isinstance(ind, slice):
                 raise IndexError(
@@ -548,19 +544,16 @@ class Histogram(BaseHistogram):
             if ind != slice(None):
                 merge = 1
                 if ind.step is not None:
-                    if hasattr(ind.step, "projection"):
-                        if ind.step.projection:
-                            integrations.add(i)
-                            if ind.start is not None:  # TODO: Support callables too
-                                zeroes_start.append(i)
-                            if ind.stop is not None:
-                                zeroes_stop.append(i)
-                            if ind.stop is None and ind.start is None:
-                                continue
-                        elif hasattr(ind.step, "factor"):
-                            merge = ind.step.factor
-                        else:
-                            raise IndexError("Invalid rebin, must have integer .factor")
+                    if ind.step is sum:
+                        integrations.add(i)
+                        if ind.start is not None:  # TODO: Support callables too
+                            zeroes_start.append(i)
+                        if ind.stop is not None:
+                            zeroes_stop.append(i)
+                        if ind.stop is None and ind.start is None:
+                            continue
+                    elif hasattr(ind.step, "factor"):
+                        merge = ind.step.factor
                     else:
                         raise IndexError(
                             "The third argument to a slice must be rebin or projection"
