@@ -181,10 +181,10 @@ def test_growth():
     h.fill(-1)
     h.fill(1)
     h.fill(1)
-    for i in range(255):
+    for _ in range(255):
         h.fill(0)
     h.fill(0)
-    for i in range(1000 - 256):
+    for _ in range(1000 - 256):
         h.fill(0)
     print(h.view(flow=True))
     assert h[bh.underflow] == 0
@@ -618,7 +618,7 @@ def test_pickle_1():
 def test_numpy_conversion_0():
     a = bh.Histogram(bh.axis.Integer(0, 3, underflow=False, overflow=False))
     a.fill(0)
-    for i in range(5):
+    for _ in range(5):
         a.fill(1)
     c = np.array(a)  # a copy
     v = np.asarray(a)  # a view
@@ -627,13 +627,13 @@ def test_numpy_conversion_0():
         assert t.dtype == np.double  # CLASSIC: np.uint8
         assert_array_equal(t, (1, 5, 0))
 
-    for i in range(10):
+    for _ in range(10):
         a.fill(2)
     # copy does not change, but view does
     assert_array_equal(c, (1, 5, 0))
     assert_array_equal(v, (1, 5, 10))
 
-    for i in range(255):
+    for _ in range(255):
         a.fill(1)
     c = np.array(a)
 
@@ -646,7 +646,7 @@ def test_numpy_conversion_0():
 def test_numpy_conversion_1():
     # CLASSIC: was weight array
     h = bh.Histogram(bh.axis.Integer(0, 3))
-    for i in range(10):
+    for _ in range(10):
         h.fill(1, weight=3)
     c = np.array(h)  # a copy
     v = np.asarray(h)  # a view
@@ -665,7 +665,7 @@ def test_numpy_conversion_2():
     for i in range(a.axes[0].extent):
         for j in range(a.axes[1].extent):
             for k in range(a.axes[2].extent):
-                for m in range(i + j + k):
+                for _ in range(i + j + k):
                     a.fill(i, j, k)
                 r[i, j, k] = i + j + k
 
@@ -733,17 +733,17 @@ def test_numpy_conversion_5():
     )
 
     a.fill(0, 0)
-    for i in range(80):
+    for _ in range(80):
         a = a + a
     # a now holds a multiprecision type
     a.fill(1, 0)
-    for i in range(2):
+    for _ in range(2):
         a.fill(2, 0)
-    for i in range(3):
+    for _ in range(3):
         a.fill(0, 1)
-    for i in range(4):
+    for _ in range(4):
         a.fill(1, 1)
-    for i in range(5):
+    for _ in range(5):
         a.fill(2, 1)
     a1 = a.view()
     assert a1.shape == (3, 2)
