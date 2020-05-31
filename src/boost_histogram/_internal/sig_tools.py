@@ -6,12 +6,17 @@ import inspect
 del absolute_import, division, print_function
 
 
-def make_signature_params(sig, locals={}):
+def make_signature_params(sig, locals=None):
+    if locals is None:
+        locals = {}
     exec("def _({0}): pass".format(sig), globals(), locals)
     return list(inspect.signature(locals["_"]).parameters.values())
 
 
-def inject_signature(sig, locals={}):
+def inject_signature(sig, locals=None):
+    if locals is None:
+        locals = {}
+
     def wrap(f):
         # Don't add on Python 2
         if not hasattr(inspect, "Parameter"):
