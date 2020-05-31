@@ -173,4 +173,3 @@ You can use strings to look up functions in the shared library:
    bh.axis.Regular(10, 1, 4,
                    transform=bh.axis.transform.Function("my_log", "my_exp",
                                                          convert=lookup))
-

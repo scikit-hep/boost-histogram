@@ -91,4 +91,3 @@ WeightedMean
 ^^^^^^^^^^^^
 
 This is similar to Mean, but also keeps track a sum of weights like term as well.
-

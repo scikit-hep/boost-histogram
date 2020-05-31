@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import boost_histogram as bh
 from timeit import timeit
 import math

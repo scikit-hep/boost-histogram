@@ -33,4 +33,3 @@ boost\_histogram.cpp.storage
    :members:
    :undoc-members:
    :show-inheritance:
-

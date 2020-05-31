@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # You can enter maximum compatibility mode by typing:
 # import boost_histogram.cpp as bh
 # However, this is a test so we will import both.

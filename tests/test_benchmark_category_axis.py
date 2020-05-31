@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import pytest
 import boost_histogram as bh
 import numpy as np

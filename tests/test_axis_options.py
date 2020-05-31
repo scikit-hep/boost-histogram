@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from boost_histogram.axis import options
 
 
