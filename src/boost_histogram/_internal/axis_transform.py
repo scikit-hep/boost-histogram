@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 
-del absolute_import, division, print_function
-
 from .._core import axis as ca
 
-from .utils import register, set_family, CPP_FAMILY, MAIN_FAMILY, set_module
+from .utils import register, set_family, MAIN_FAMILY, set_module
 from .sig_tools import inject_signature
 from .kwargs import KWArgs
 
 import copy
+
+del absolute_import, division, print_function
 
 
 @set_module("boost_histogram.axis.transform")
@@ -146,6 +146,6 @@ def _internal_conversion(value):
     return getattr(ca.transform, value)
 
 
-### CPP FAMILY ###
+# CPP FAMILY
 
 # Not currently included, uses normal family for now.

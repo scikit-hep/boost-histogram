@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 
-del absolute_import, division, print_function  # hides these from IPython
-
-__all__ = ("histogram", "histogram2d", "histogramdd")
-
 from . import axis as _axis
 from ._internal import hist as _hist
 from ._internal.utils import cast as _cast
@@ -15,6 +11,11 @@ from ._internal.kwargs import KWArgs as _KWArgs
 from ._internal.sig_tools import inject_signature as _inject_signature
 
 import numpy as _np
+
+
+del absolute_import, division, print_function  # hides these from IPython
+
+__all__ = ("histogram", "histogram2d", "histogramdd")
 
 
 @_inject_signature(

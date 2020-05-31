@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 
-del absolute_import, division, print_function
-
 from .axis import Axis
 
 import numpy as np
+
+del absolute_import, division, print_function
 
 
 class AxesTuple(tuple):

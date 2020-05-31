@@ -84,11 +84,11 @@ def test_make_any_hist(storage):
 
 def test_make_any_hist_storage():
 
-    assert float != type(
-        bh.Histogram(bh.axis.Regular(5, 1, 2), storage=bh.storage.Int64())[0]
+    assert not isinstance(
+        bh.Histogram(bh.axis.Regular(5, 1, 2), storage=bh.storage.Int64())[0], float
     )
-    assert float == type(
-        bh.Histogram(bh.axis.Regular(5, 1, 2), storage=bh.storage.Double())[0]
+    assert isinstance(
+        bh.Histogram(bh.axis.Regular(5, 1, 2), storage=bh.storage.Double())[0], float
     )
 
 

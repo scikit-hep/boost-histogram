@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
+
 # You can enter maximum compatibility mode by typing:
 # import boost_histogram.cpp as bh
 # However, this is a test so we will import both.
+
 import boost_histogram as bh
 import boost_histogram.cpp as bhc
 from boost_histogram.cpp.algorithm import slice_mode
 from numpy.testing import assert_array_equal
-import numpy as np
 import pytest
 
 

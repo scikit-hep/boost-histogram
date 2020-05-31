@@ -1,18 +1,16 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 
-del absolute_import, division, print_function
-
-__all__ = ("Slicer", "Locator", "at", "loc", "overflow", "underflow", "rebin", "sum")
-
-import numpy as _np
-
 # bh.sum is just the Python sum, so from boost_histogram import * is safe (but
 # not recommended)
 try:
     from builtins import sum
 except ImportError:
-    from __builtin__ import sum
+    from __builtin__ import sum  # type: ignore
+
+del absolute_import, division, print_function
+
+__all__ = ("Slicer", "Locator", "at", "loc", "overflow", "underflow", "rebin", "sum")
 
 
 class Slicer(object):

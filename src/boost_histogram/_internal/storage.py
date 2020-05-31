@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 
-del absolute_import, division, print_function
-
 from .._core import storage as store
 from .utils import set_family, MAIN_FAMILY, CPP_FAMILY, set_module
+
+del absolute_import, division, print_function
+
 
 # Simple mixin to provide a common base class for types
 class Storage(object):
@@ -12,7 +13,7 @@ class Storage(object):
         return "{self.__class__.__name__}()".format(self=self)
 
 
-### MAIN FAMILY
+# MAIN FAMILY
 
 
 @set_family(MAIN_FAMILY)
@@ -57,7 +58,7 @@ class WeightedMean(store.weighted_mean, Storage):
     pass
 
 
-### CPP FAMILY ###
+# CPP FAMILY
 
 
 @set_family(CPP_FAMILY)

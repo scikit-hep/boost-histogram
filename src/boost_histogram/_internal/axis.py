@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 
-del absolute_import, division, print_function
-
-from .._core.axis import options
-
 from .._core import axis as ca
 
 from .kwargs import KWArgs
@@ -13,6 +9,8 @@ from .axis_transform import AxisTransform
 from .utils import cast, register, set_family, MAIN_FAMILY, CPP_FAMILY, set_module
 
 import copy
+
+del absolute_import, division, print_function
 
 
 # Contains common methods and properties to all axes

@@ -1,16 +1,13 @@
 # -*- coding: utf-8 -*-
-import pytest
-import numpy as np
+
 from numpy.testing import assert_array_equal, assert_almost_equal
-
+import copy
 import ctypes
+import math
+import numpy as np
+import pytest
 
-ftype = ctypes.CFUNCTYPE(ctypes.c_double, ctypes.c_double)
-
-
-def python_convert(x):
-    return ftype(x)
-
+import boost_histogram as bh
 
 try:
     # Python 2
@@ -18,10 +15,12 @@ try:
 except ImportError:
     from pickle import loads, dumps
 
-import copy
-import math
 
-import boost_histogram as bh
+ftype = ctypes.CFUNCTYPE(ctypes.c_double, ctypes.c_double)
+
+
+def python_convert(x):
+    return ftype(x)
 
 
 def pickle_roundtrip_protocol_2(x):

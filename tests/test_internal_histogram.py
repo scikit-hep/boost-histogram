@@ -99,7 +99,12 @@ def test_str_categories_histogram():
     )
 
     vals = ["a", "b", "b", "c"]
-    # Can't fill yet
+
+    hist.fill(vals)
+
+    assert hist[bh.loc("a")] == 1
+    assert hist[bh.loc("b")] == 2
+    assert hist[bh.loc("c")] == 1
 
 
 def test_growing_histogram():
