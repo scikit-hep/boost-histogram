@@ -63,7 +63,7 @@ page](https://cliutils.gitlab.io/modern-cmake/chapters/intro/installing.html);
 one option is to use pip to install CMake.
 
 
-> Note: Since setuptools uses a subdirectory called `build`, it is *slighly*
+> Note: Since setuptools uses a subdirectory called `build`, it is *slightly*
 > better to avoid making your CMake directory `build` as well. Also, you will
 > often have multiple CMake directories (`build-release`, `build-debug`, etc.),
 > so avoiding the descriptive name `build` is not a bad idea.
@@ -202,7 +202,7 @@ This requires LLVM 9+, and is based on [this post](https://aras-p.info/blog/2019
 
 ```bash
 brew install llvm         # macOS way to get clang-9
-python3 -m venv .env_core # general enviroment (no install will be made)
+python3 -m venv .env_core # general environment (no install will be made)
 . .env_core/bin/activate
 pip install -r dev-requirements.txt
 CXX="/usr/local/opt/llvm/bin/clang++" cmake -S . -B build-llvm \
