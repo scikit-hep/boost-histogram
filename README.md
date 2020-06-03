@@ -3,6 +3,7 @@
 # boost-histogram for Python
 
 [![Gitter][gitter-badge]][gitter-link]
+[![Stack Overflow][stack-overflow-badge]][stack-overflow-link]
 [![Actions Status][actions-badge]][actions-link]
 [![Documentation Status][rtd-badge]][rtd-link]
 [![DOI](https://zenodo.org/badge/148885351.svg)](https://zenodo.org/badge/latestdoi/148885351)
@@ -247,3 +248,5 @@ Support for this work was provided by the National Science Foundation cooperativ
 [fastest libraries]:       https://iscinumpy.gitlab.io/post/histogram-speeds-in-python/
 [conda-link]:              https://github.com/conda-forge/boost-histogram-feedstock
 [sk-badge]:                https://scikit-hep.org/assets/images/Scikit--HEP-Project-blue.svg
+[stack-overflow-badge]:    https://img.shields.io/badge/stack-overflow-orange
+[stack-overflow-link]:     https://stackoverflow.com/questions/tagged/boost-histogram
