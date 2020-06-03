@@ -36,10 +36,10 @@ Regular axis: Transforms
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 Regular axes support transforms, as well; these are functions that convert from an external,
-non-regular bin spacing to an internal, regularly spaced one. A tranform is made of two functions,
-a ``forward`` function, which converts external to internal (and for which the tranform is usually named),
+non-regular bin spacing to an internal, regularly spaced one. A transform is made of two functions,
+a ``forward`` function, which converts external to internal (and for which the transform is usually named),
 and a ``inverse`` function, which converts from the internal space back to the external space. If you
-know the functional form of your spacing, you can get the benifits of a constant performance scaling
+know the functional form of your spacing, you can get the benefits of a constant performance scaling
 just like you would with a normal regular axis, rather than falling back to a variable axis and a poorer
 scaling from the bin edge lookup required there.
 
