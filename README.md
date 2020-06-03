@@ -211,6 +211,7 @@ We would like to acknowledge the contributors that made this project possible ([
   </tr>
   <tr>
     <td align="center"><a href="https://ddavis.io/"><img src="https://avatars2.githubusercontent.com/u/3202090?v=4" width="100px;" alt=""/><br /><sub><b>Doug Davis</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/issues?q=author%3Adouglasdavis" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://github.com/pgrimaud"><img src="https://avatars1.githubusercontent.com/u/1866496?v=4" width="100px;" alt=""/><br /><sub><b>Pierre Grimaud</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/commits?author=pgrimaud" title="Documentation">📖</a></td>
   </tr>
 </table>
 
