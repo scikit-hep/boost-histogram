@@ -69,5 +69,5 @@ compile_commands.json
 # Testing
 /.benchmarks/*
 
-# IDEs
-/.idea
+# PyCharm
+.idea
