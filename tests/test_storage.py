@@ -63,6 +63,21 @@ def test_setting_weight():
     assert_array_equal(a.view().variance, b.view()["variance"])
 
 
+def test_sum_weight():
+    h = bh.Histogram(bh.axis.Integer(0, 10), storage=bh.storage.Weight())
+    h.fill([1, 2, 3, 3, 3, 4, 5])
+    v = h.view().copy()
+    res = np.sum(v)
+    hres = h.sum()
+    assert res.value == hres.value == 7
+    assert res.variance == hres.variance == 7
+
+    v2 = v + v
+    h2 = h + h
+
+    assert_array_equal(h2.view(), v2)
+
+
 def test_setting_profile():
     h = bh.Histogram(bh.axis.Regular(10, 0, 10), storage=bh.storage.Mean())
 
