@@ -534,8 +534,6 @@ class Histogram(BaseHistogram):
 
         integrations = set()
         slices = []
-        zeroes_start = []
-        zeroes_stop = []
 
         # Compute needed slices and projections
         for i, ind in enumerate(indexes):
@@ -546,35 +544,32 @@ class Histogram(BaseHistogram):
                 raise IndexError(
                     "Must be a slice, an integer, or follow the locator protocol."
                 )
+            start, stop = self.axes[i]._process_loc(ind.start, ind.stop)
+
             if ind != slice(None):
                 merge = 1
                 if ind.step is not None:
-                    if ind.step is sum:
-                        integrations.add(i)
-                        if ind.start is not None:  # TODO: Support callables too
-                            zeroes_start.append(i)
-                        if ind.stop is not None:
-                            zeroes_stop.append(i)
-                        if ind.stop is None and ind.start is None:
-                            continue
-                    elif hasattr(ind.step, "factor"):
+                    if hasattr(ind.step, "factor"):
                         merge = ind.step.factor
+                    elif callable(ind.step):
+                        if ind.step is sum:
+                            integrations.add(i)
+                        else:
+                            raise RuntimeError("Full UHI not supported yet")
+
+                        if ind.start is not None or ind.stop is not None:
+                            slices.append(
+                                _core.algorithm.slice(
+                                    i, start, stop, _core.algorithm.slice_mode.crop
+                                )
+                            )
+                        continue
                     else:
                         raise IndexError(
                             "The third argument to a slice must be rebin or projection"
                         )
 
-                process_loc = (
-                    lambda x, y: y
-                    if x is None
-                    else x(self._axis(i))
-                    if callable(x)
-                    else x
-                )
-                begin = process_loc(ind.start, 0)
-                end = process_loc(ind.stop, len(self._axis(i)))
-
-                slices.append(_core.algorithm.slice_and_rebin(i, begin, end, merge))
+                slices.append(_core.algorithm.slice_and_rebin(i, start, stop, merge))
 
         reduced = self._reduce(*slices)
 
@@ -582,14 +577,6 @@ class Histogram(BaseHistogram):
             return self.__class__(reduced)
         else:
             projections = [i for i in range(self.rank) if i not in integrations]
-
-            # Replacement for crop missing in BH
-            for i in zeroes_start:
-                if self.axes[i].options.underflow:
-                    reduced._hist._reset_row(i, -1)
-            for i in zeroes_stop:
-                if self.axes[i].options.overflow:
-                    reduced._hist._reset_row(i, reduced.axes[i].size)
 
             return (
                 self.__class__(reduced.project(*projections))
