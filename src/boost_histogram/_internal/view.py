@@ -82,6 +82,44 @@ class WeightedSumView(View):
     __slots__ = ()
     _PARENT = WeightedSum
 
+    # Could be implemented on master View
+    def __array_ufunc__(self, ufunc, method, *inputs, **kwargs):
+
+        # This one is defined for record arrays, so just use it
+        # (Doesn't get picked up the pass-through)
+        if ufunc is np.equal and method == "__call__" and len(inputs) == 2:
+            return ufunc(np.asarray(inputs[0]), np.asarray(inputs[1]), **kwargs)
+
+        # ufuncts that are allowed to simply combine
+        simple_pairs = (np.add,)
+
+        if (
+            ufunc in simple_pairs
+            and method == "__call__"
+            and len(inputs) == 2
+            and isinstance(inputs[1], self.__class__)
+        ):
+            (result,) = (
+                kwargs.pop("out")
+                if "out" in kwargs
+                else [np.empty(self.shape, self.dtype)]
+            )
+            for field in self._FIELDS:
+                ufunc(inputs[0][field], inputs[1][field], out=result[field], **kwargs)
+            return result.view(self.__class__)
+
+        # ufuncs that are allowed to reduce
+        simple_reduces = (np.add,)
+
+        if ufunc in simple_reduces and method == "reduce" and len(inputs) == 1:
+            results = (ufunc.reduce(self[field], **kwargs) for field in self._FIELDS)
+            return self._PARENT._make(*results)
+
+        # If unsupported, just pass through (will return not implemented)
+        return super(WeightedSumView, self).__array_ufunc__(
+            ufunc, method, *inputs, **kwargs
+        )
+
 
 @fields(
     "sum_of_weights",
