@@ -615,8 +615,17 @@ class Histogram(BaseHistogram):
         value = np.asarray(value)
         view = self.view(flow=True)
 
+        # Shortcut: allow raw arrays for WeightedSum
+        weighted_dtype = np.dtype([("value", "<f8"), ("variance", "<f8")])
+        if (
+            view.dtype == weighted_dtype != value.dtype
+            and len(value.dtype) != 2
+            and value.ndim > 0
+            and value.shape[-1] == 2
+        ):
+            value = value.astype(np.double).view(weighted_dtype)[..., 0]
         # Disallow mismatched data types
-        if len(value.dtype) != len(view.dtype):
+        elif len(value.dtype) != len(view.dtype):
             raise ValueError("Mismatched data types; matching types required")
 
         # Numpy does not broadcast partial slices, but we would need

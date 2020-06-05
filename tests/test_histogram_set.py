@@ -75,6 +75,24 @@ def test_2d_set_array():
     assert_array_equal(h.view(), np.ones((10, 10)))
 
 
+def test_weighted_set_shortcut():
+    h = bh.Histogram(bh.axis.Regular(10, 0, 1), storage=bh.storage.Weight())
+
+    h[0] = (1, 2)
+
+    assert h[0].value == 1
+    assert h[0].variance == 2
+
+    h[3:6] = ((3, 4), (5, 6), (7, 8))
+
+    assert h[3].value == 3
+    assert h[3].variance == 4
+    assert h[4].value == 5
+    assert h[4].variance == 6
+    assert h[5].value == 7
+    assert h[5].variance == 8
+
+
 @pytest.mark.parametrize(
     "storage, default",
     (
