@@ -75,6 +75,23 @@ class Axis(object):
     def __iter__(self):
         return self._ax.__iter__()
 
+    def _process_loc(self, start, stop):
+        """
+        Compute start and stop into actual start and stop values in Boost.Histogram.
+        None -> -1 or 0 for start, -> len or len+1 for stop. If start or stop are
+        callable, then call them with the axes.
+        """
+
+        def _process_internal(item, default):
+            return default if item is None else item(self) if callable(item) else item
+
+        begin = _process_internal(start, -1 if self._ax.options.underflow else 0)
+        end = _process_internal(
+            stop, len(self) + (1 if self._ax.options.overflow else 0)
+        )
+
+        return begin, end
+
 
 # Mixin for main style classes
 # Contains common methods and properties to all Main module axes
