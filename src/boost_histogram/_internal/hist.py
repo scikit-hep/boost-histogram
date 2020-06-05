@@ -556,6 +556,7 @@ class Histogram(BaseHistogram):
                 pass
 
         integrations = set()
+        manual_integrations = dict()
         slices = []
 
         # Compute needed slices and projections
@@ -578,7 +579,7 @@ class Histogram(BaseHistogram):
                         if ind.step is sum:
                             integrations.add(i)
                         else:
-                            raise RuntimeError("Full UHI not supported yet")
+                            manual_integrations[i] = ind.step
 
                         if ind.start is not None or ind.stop is not None:
                             slices.append(
@@ -596,16 +597,23 @@ class Histogram(BaseHistogram):
 
         reduced = self._hist.reduce(*slices)
 
-        if not integrations:
+        if not integrations or manual_integrations:
             return self.__class__(reduced)
         else:
-            projections = [i for i in range(self.ndim) if i not in integrations]
+            if integrations:
+                projections = [i for i in range(self.ndim) if i not in integrations]
+                if not projections:
+                    return reduced.sum(flow=True)
+                projected = (
+                    self.__class__(reduced.project(*projections))
+                    if integrations
+                    else reduced
+                )
 
-            return (
-                self.__class__(reduced.project(*projections))
-                if projections
-                else reduced.sum(flow=True)
-            )
+                for key, funct in manual_integrations.items():
+                    count = sum(it < key for it in integrations)
+
+                return projected
 
     def __setitem__(self, index, value):
         """
