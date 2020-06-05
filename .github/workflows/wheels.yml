@@ -7,8 +7,6 @@ on:
   push:
     branches:
       - wheels
-    tags:
-      - "v*"
   release:
 
 
@@ -27,16 +25,19 @@ jobs:
       with:
         submodules: true
 
-    - name: Setup Python 3.7
+    - name: Setup Python 3.8
       uses: actions/setup-python@v2
       with:
-        python-version: '3.7'
+        python-version: '3.8'
 
     - name: Install deps
-      run: python -m pip install "setuptools>=42" "setuptools_scm[toml]>=4.1.0"
+      run: python -m pip install "setuptools>=42" "setuptools_scm[toml]>=4.1.0" twine
 
     - name: Build SDist
       run: python setup.py sdist
+
+    - name: Check metadata
+      run: twine check dist/*
 
     - uses: actions/upload-artifact@v2
       with:
@@ -142,24 +143,19 @@ jobs:
     name: Upload if release
     needs: [build_wheels, build_win27_wheels, build_sdist]
     runs-on: ubuntu-latest
+    if: github.event_name == 'release' && github.event.action == 'published'
 
     steps:
     - uses: actions/setup-python@v2
       with:
         python-version: "3.8"
 
-    - name: Install dependencies
-      run: python -m pip install twine "setuptools>=42" "setuptools_scm[toml]>=4.1.0"
-
     - uses: actions/download-artifact@v2
       with:
         name: artifact
         path: dist
 
-    - run: twine check dist/*
-
     - uses: pypa/gh-action-pypi-publish@master
       with:
         user: __token__
         password: ${{ secrets.pypi_password }}
-      if: github.event_name == 'release' && github.event.action == 'published'
