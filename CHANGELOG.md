@@ -1,3 +1,44 @@
+## Version 0.8.0
+
+
+#### User changes
+
+* Weighted histogram cells can now be assigned directly from iterables [#375][]
+* Weighted views can be summed and added [#368][]
+* Sum is now identical to the built-in sum function [#365][]
+* Adding growing axis is better supported [#358][]
+* More deprecated functionality removed
+
+#### Bug fixes
+* Support older versions of [CloudPickle][] (issue properly fixed upstream soon) [#343][]
+* Drop extra printout [#338][]
+
+#### Developer change
+
+* Update Boost to 1.73 [#359][], PyBind11 to 2.5.0 [#351][]
+* Cropping no longer uses workaround [#373][]
+* Many more checks added to [`pre-commit`][] [#366][]
+* Better testing and support of `cpp` interface [#340][]
+* Wheelbuilding migrated to [`cibuildwheel`][] and GHA [#361][]
+
+[CloudPickle]: https://github.com/cloudpipe/cloudpickle
+[`cibuildwheel`]: https://cibuildwheel.readthedocs.io/en/stable
+[`pre-commit`]: https://pre-commit.com
+
+[#375]: https://github.com/scikit-hep/boost-histogram/pull/375
+[#368]: https://github.com/scikit-hep/boost-histogram/pull/368
+[#365]: https://github.com/scikit-hep/boost-histogram/pull/365
+[#358]: https://github.com/scikit-hep/boost-histogram/pull/358
+[#343]: https://github.com/scikit-hep/boost-histogram/pull/343
+[#338]: https://github.com/scikit-hep/boost-histogram/pull/338
+[#359]: https://github.com/scikit-hep/boost-histogram/pull/359
+[#351]: https://github.com/scikit-hep/boost-histogram/pull/351
+[#373]: https://github.com/scikit-hep/boost-histogram/pull/373
+[#366]: https://github.com/scikit-hep/boost-histogram/pull/366
+[#340]: https://github.com/scikit-hep/boost-histogram/pull/340
+[#361]: https://github.com/scikit-hep/boost-histogram/pull/361
+
+
 ## Version 0.7.0
 
 This version removes deprecated functionality, and has several backend
@@ -8,7 +49,7 @@ use. Several small bugs have been fixed.
 
 #### User changes
 
-* Added `threads=` keyword to `.fill` and numpy functions; 0 for automatic, default is 1 [#325][]
+* Added `threads=` keyword to `.fill` and NumPy functions; 0 for automatic, default is 1 [#325][]
 * `.metadata` is now settable directly from the AxesTuple [#303][]
 * Deprecated items from 0.5.x now dropped [#301][]
 * `cpp` mode updates and fixes [#317][]

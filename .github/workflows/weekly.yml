@@ -18,8 +18,6 @@ jobs:
     - name: Update to latest
       run: git submodule foreach "git checkout develop || git checkout master"
 
-
-
     - uses: actions/setup-python@v2
       with:
         python-version: 3.8
