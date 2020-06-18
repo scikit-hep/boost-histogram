@@ -571,7 +571,7 @@ class Histogram(BaseHistogram):
 
                 slices.append(_core.algorithm.slice_and_rebin(i, start, stop, merge))
 
-        reduced = self._reduce(*slices)
+        reduced = self._hist.reduce(*slices)
 
         if not integrations:
             return self.__class__(reduced)
