@@ -5,6 +5,7 @@
 
 #include <bh_python/pybind11.hpp>
 
+#include <bh_python/accumulators/collector.hpp>
 #include <bh_python/accumulators/mean.hpp>
 #include <bh_python/accumulators/ostream.hpp>
 #include <bh_python/accumulators/weighted_mean.hpp>
@@ -14,6 +15,50 @@
 #include <boost/histogram/accumulators/sum.hpp>
 #include <pybind11/operators.h>
 
+// should be updated when py::vectorize is updated to support consumers
+template <class Consumer, class Value = double>
+void consume(Consumer& c, decltype(c(Value{}), py::object{}) x) {
+    py::vectorize([](Consumer& c, Value x) {
+        c(x);
+        return false;
+    })(c, x);
+}
+
+// should be updated when py::vectorize is updated to support consumers
+template <class Consumer, class Value = double>
+void consume(Consumer& c, decltype(c += Value{}, py::object{}) x) {
+    py::vectorize([](Consumer& c, Value x) {
+        c += x;
+        return false;
+    })(c, x);
+}
+
+// should be updated when py::vectorize is updated to support consumers
+template <class Consumer>
+void consume_w(Consumer& c, py::object w) {
+    py::vectorize([](Consumer& c, double w) {
+        c += bh::weight(w);
+        return false;
+    })(c, w);
+}
+
+// should be updated when py::vectorize is updated to support consumers
+template <class Consumer>
+void consume_w(Consumer& c, py::object w, py::object x) {
+    py::vectorize([](Consumer& c, double w, double x) {
+        c(bh::weight(w), x);
+        return false;
+    })(c, w, x);
+}
+
+std::size_t from_python_index(std::size_t size, ssize_t idx) {
+    if(idx < 0)
+        idx += static_cast<ssize_t>(size);
+    if(idx >= static_cast<ssize_t>(size))
+        throw py::index_error("index is out of range");
+    return static_cast<std::size_t>(idx);
+}
+
 /// The mean fill can be implemented once. (sum fill varies slightly)
 template <class T>
 decltype(auto) make_mean_fill() {
@@ -21,15 +66,9 @@ decltype(auto) make_mean_fill() {
         py::object weight = optional_arg(kwargs, "weight", py::none());
         finalize_args(kwargs);
         if(weight.is_none()) {
-            py::vectorize([](T& self, double val) {
-                self(val);
-                return false;
-            })(self, value);
+            consume(self, value);
         } else {
-            py::vectorize([](T& self, double wei, double val) {
-                self(bh::weight(wei), val);
-                return false;
-            })(self, weight, value);
+            consume_w(self, weight, value);
         }
         return self;
     };
@@ -100,11 +139,10 @@ void register_accumulators(py::module& accumulators) {
                 py::object variance = optional_arg(kwargs, "variance", py::none());
                 finalize_args(kwargs);
                 if(variance.is_none()) {
-                    py::vectorize([](weighted_sum& self, double val) {
-                        self += bh::weight(val);
-                        return false;
-                    })(self, value);
+                    consume_w(self, value);
                 } else {
+                    // should be updated when py::vectorize is updated to support
+                    // consumers
                     py::vectorize([](weighted_sum& self, double val, double var) {
                         self += weighted_sum(val, var);
                         return false;
@@ -157,11 +195,7 @@ void register_accumulators(py::module& accumulators) {
         .def(
             "fill",
             [](sum& self, py::object value) {
-                py::vectorize([](sum& self, double v) {
-                    self += v;
-                    return false; // Required in PyBind11 2.4.2,
-                                  // requirement may be removed
-                })(self, value);
+                consume(self, value);
                 return self;
             },
             "value"_a,
@@ -323,6 +357,49 @@ void register_accumulators(py::module& accumulators) {
         .def("_ipython_key_completions_",
              [](py::object /* self */) {
                  return py::make_tuple("count", "value", "sum_of_deltas_squared");
+             })
+
+        ;
+
+    using weight_collector = accumulators::weight_collector<double>;
+    using std::size_t;
+
+    register_accumulator<weight_collector>(accumulators, "WeightCollector")
+        .def(py::init([](py::sequence weight) {
+                 auto wc = new weight_collector{};
+                 consume_w(*wc, weight);
+                 return wc;
+             }),
+             "seq"_a)
+
+        // .def("view", ...) TODO
+
+        .def("__call__",
+             [](weight_collector& self, double w) {
+                 self += bh::weight(w);
+                 return self;
+             })
+
+        .def(
+            "fill",
+            [](weight_collector& self, py::object weight) {
+                consume_w(self, weight);
+                return self;
+            },
+            "weight"_a,
+            "Fill the collector with weights.")
+
+        .def("__len__", [](const weight_collector& self) { return self.data.size(); })
+
+        // .def("__iter__", ...) TODO
+
+        .def("__getitem__",
+             [](const weight_collector& self, ssize_t idx) {
+                 return self.data[from_python_index(self.data.size(), idx)];
+             })
+        .def("__setitem__",
+             [](weight_collector& self, ssize_t idx, double w) {
+                 self.data[from_python_index(self.data.size(), idx)] = w;
              })
 
         ;

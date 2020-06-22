@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <bh_python/accumulators/collector.hpp>
 #include <bh_python/accumulators/mean.hpp>
 #include <bh_python/accumulators/weighted_mean.hpp>
 #include <bh_python/accumulators/weighted_sum.hpp>
@@ -75,6 +76,28 @@ operator<<(std::basic_ostream<CharT, Traits>& os,
            const ::boost::histogram::accumulators::thread_safe<T>& x) {
     os << x.load();
     return os;
+}
+
+template <class CharT, class Traits, class W>
+std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& os,
+                                              const weight_collector<W>& wc) {
+    if(os.width() == 0) {
+        os << "[";
+        const auto n = wc.data.size();
+        if(n > 10) {
+            for(std::size_t i = 0; i != 5; ++i)
+                os << wc.data[i] << " ";
+            os << "...";
+            for(std::size_t i = n - 5; i != n; ++i)
+                os << " " << wc.data[i];
+        } else {
+            bool first = true;
+            for(auto&& x : wc.data)
+                os << (first ? (first = false, "") : " ") << x;
+        }
+        os << "]";
+    }
+    return handle_nonzero_width(os, wc);
 }
 
 } // namespace accumulators
