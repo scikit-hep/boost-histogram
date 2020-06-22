@@ -17,6 +17,7 @@ def _load():
 
 locals().update(_load())
 del absolute_import, division, print_function
+del _load
 
 # Not supported by PyBind builtins
 # Enable if wrapper added
