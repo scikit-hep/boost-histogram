@@ -16,18 +16,18 @@
 #include <pybind11/operators.h>
 
 // should be updated when py::vectorize is updated to support consumers
-template <class Consumer, class Value = double>
-void consume(Consumer& c, decltype(c(Value{}), py::object{}) x) {
-    py::vectorize([](Consumer& c, Value x) {
+template <class Consumer>
+auto consume(Consumer& c, py::object x) -> decltype(c(0.0), void()) {
+    py::vectorize([](Consumer& c, double x) {
         c(x);
         return false;
     })(c, x);
 }
 
 // should be updated when py::vectorize is updated to support consumers
-template <class Consumer, class Value = double>
-void consume(Consumer& c, decltype(c += Value{}, py::object{}) x) {
-    py::vectorize([](Consumer& c, Value x) {
+template <class Consumer>
+auto consume(Consumer& c, py::object x) -> decltype(c += 0.0, void()) {
+    py::vectorize([](Consumer& c, double x) {
         c += x;
         return false;
     })(c, x);
@@ -374,7 +374,7 @@ void register_accumulators(py::module& accumulators) {
 
         // .def("view", ...) TODO
 
-        .def("__call__",
+        .def("__iadd__",
              [](weight_collector& self, double w) {
                  self += bh::weight(w);
                  return self;
@@ -390,8 +390,6 @@ void register_accumulators(py::module& accumulators) {
             "Fill the collector with weights.")
 
         .def("__len__", [](const weight_collector& self) { return self.data.size(); })
-
-        // .def("__iter__", ...) TODO
 
         .def("__getitem__",
              [](const weight_collector& self, ssize_t idx) {

@@ -84,18 +84,20 @@ std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>&
     if(os.width() == 0) {
         os << "[";
         const auto n = wc.data.size();
-        if(n > 10) {
+        if(n > 1000) {
             for(std::size_t i = 0; i != 5; ++i)
-                os << wc.data[i] << " ";
+                os << wc.data[i] << ", ";
             os << "...";
             for(std::size_t i = n - 5; i != n; ++i)
-                os << " " << wc.data[i];
+                os << ", " << wc.data[i];
         } else {
-            bool first = true;
-            for(auto&& x : wc.data)
-                os << (first ? (first = false, "") : " ") << x;
+            for(std::size_t i = 0; i != n; ++i) {
+                os << wc.data[i];
+                if(i < n - 1)
+                    os << ", ";
+            }
         }
-        os << "]";
+        return os << "]";
     }
     return handle_nonzero_width(os, wc);
 }
