@@ -97,16 +97,18 @@ def test_weight_collector():
 
     assert len(a) == 3
     assert list(a) == [1, 2, 3]
+    assert a.view().sum() == 6
     assert a[0] == 1
     a[0] = 9
+    a.view()[1:] *= 2
 
-    assert repr(a) == "WeightCollector([9, 2, 3])"
+    assert repr(a) == "WeightCollector([9, 4, 6])"
 
     ws = [4, 5, 6, 7, 8, 9, 10, 11]
     a.fill(ws)
 
     assert len(a) == 11
-    assert repr(a) == "WeightCollector([9, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])"
+    assert repr(a) == "WeightCollector([9, 4, 6, 4, 5, 6, 7, 8, 9, 10, 11])"
 
     a2 = bh.accumulators.WeightCollector().fill(range(1001))
     assert repr(a2) == "WeightCollector([0, 1, 2, 3, 4, ..., 996, 997, 998, 999, 1000])"

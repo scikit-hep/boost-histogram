@@ -372,7 +372,12 @@ void register_accumulators(py::module& accumulators) {
              }),
              "seq"_a)
 
-        // .def("view", ...) TODO
+        .def("view",
+             [](py::object pyself) {
+                 auto& self = py::cast<weight_collector&>(pyself);
+                 return py::array(
+                     static_cast<ssize_t>(self.data.size()), self.data.data(), pyself);
+             })
 
         .def("__iadd__",
              [](weight_collector& self, double w) {
