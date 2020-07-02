@@ -72,7 +72,7 @@ class AxesTuple(tuple):
     # Python 2 support - remove after 1.0
     def __getslice__(self, start, stop):
         result = super(AxesTuple, self).__getslice__(start, stop)
-        return self.__class__(result) if isinstance(result, tuple) else result
+        return self.__class__(result)
 
     value.__doc__ = Axis.value.__doc__
     index.__doc__ = Axis.index.__doc__
