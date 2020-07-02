@@ -292,3 +292,31 @@ def test_pick_int_category():
     assert_array_equal(h[{2: bh.loc(3)}].view(), vals)
     assert_array_equal(h[:, :, bh.loc(5)].view(), vals + 1)
     assert_array_equal(h[:, :, bh.loc(7)].view(), 0)
+
+
+def test_axes_tuple():
+    h = bh.Histogram(bh.axis.Regular(10, 0, 1))
+    assert isinstance(h.axes[:1], bh._internal.axistuple.AxesTuple)
+    assert isinstance(h.axes[0], bh.axis.Regular)
+
+    (before,) = h.axes.centers[:1]
+    (after,) = h.axes[:1].centers
+
+    assert_array_equal(before, after)
+
+
+def test_axes_tuple_Nd():
+    h = bh.Histogram(
+        bh.axis.Integer(0, 5), bh.axis.Integer(0, 4), bh.axis.Integer(0, 6)
+    )
+    assert isinstance(h.axes[:2], bh._internal.axistuple.AxesTuple)
+    assert isinstance(h.axes[1], bh.axis.Integer)
+
+    b1, b2 = h.axes.centers[1:3]
+    a1, a2 = h.axes[1:3].centers
+
+    assert_array_equal(b1.flatten(), a1.flatten())
+    assert_array_equal(b2.flatten(), a2.flatten())
+
+    assert b1.ndim == 3
+    assert a1.ndim == 2
