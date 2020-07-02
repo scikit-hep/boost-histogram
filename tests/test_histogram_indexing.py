@@ -268,6 +268,28 @@ def test_pick_str_category():
     assert_array_equal(h[:, :, bh.loc("off")].view(), 0)
 
 
+def test_string_shortcut():
+    h = bh.Histogram(
+        bh.axis.Integer(0, 10),
+        bh.axis.StrCategory(["1", "a", "hello"]),
+        storage=bh.storage.Int64(),
+    )
+    h[...] = np.arange(30).reshape([10, 3])
+
+    assert h[3, "a"] == 10
+    assert h[4, "1"] == 12
+    assert h[5, "hello"]
+
+    with pytest.raises(TypeError):
+        h[bh.loc("1"), 1]
+
+    with pytest.raises(TypeError):
+        h["1", 1]
+
+    with pytest.raises(TypeError):
+        h["1", "1"]
+
+
 def test_pick_int_category():
     noflow = dict(underflow=False, overflow=False)
 

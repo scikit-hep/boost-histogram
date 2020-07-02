@@ -13,6 +13,20 @@ import copy
 del absolute_import, division, print_function
 
 
+def _isstr(value):
+    """
+    Check to see if this is a stringlike or a (nested) iterable of stringlikes
+    """
+    str_types = (type(""), type(""))
+
+    if isinstance(value, str_types):
+        return True
+    elif hasattr(value, "__iter__"):
+        return all(_isstr(v) for v in value)
+    else:
+        return isinstance(value, str_types)
+
+
 # Contains common methods and properties to all axes
 @set_module("boost_histogram.axis")
 class Axis(object):
@@ -28,7 +42,10 @@ class Axis(object):
         Return the fractional index(es) given a value (or values) on the axis.
         """
 
-        return self._ax.index(value)
+        if not _isstr(value):
+            return self._ax.index(value)
+        else:
+            raise TypeError("index(value) cannot be a string for a numerical axis")
 
     def value(self, index):
         """
@@ -83,7 +100,15 @@ class Axis(object):
         """
 
         def _process_internal(item, default):
-            return default if item is None else item(self) if callable(item) else item
+            return (
+                default
+                if item is None
+                else item(self)
+                if callable(item)
+                else self.index(item)
+                if isinstance(item, str)
+                else item
+            )
 
         begin = _process_internal(start, -1 if self._ax.options.underflow else 0)
         end = _process_internal(
@@ -558,7 +583,7 @@ class BaseStrCategory(Axis):
 
         # We need to make sure we support Python 2 for now :(
         # henryiii: This shortcut possibly should be removed
-        if isinstance(categories, (type(""), type(u""))):
+        if isinstance(categories, (type(""), type(""))):
             categories = list(categories)
 
         if options == {"growth"}:
@@ -567,6 +592,18 @@ class BaseStrCategory(Axis):
             self._ax = ca.category_str(categories, metadata)
         else:
             raise KeyError("Unsupported collection of options")
+
+    def index(self, value):
+        """
+        Return the fractional index(es) given a value (or values) on the axis.
+        """
+
+        if _isstr(value):
+            return self._ax.index(value)
+        else:
+            raise TypeError(
+                "index(value) must be a string or iterable of strings for a StrCategory axis"
+            )
 
 
 @register({ca.category_int, ca.category_int_growth})

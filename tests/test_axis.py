@@ -698,7 +698,6 @@ class TestCategory(Axis):
         assert bh.axis.StrCategory(["A", "B"]) != bh.axis.StrCategory("BA")
 
     @pytest.mark.parametrize("ref", ([1, 2, 3], "ABC"))
-    @pytest.mark.parametrize("growth", (False, True))
     def test_len(self, ref, growth):
         Cat = bh.axis.StrCategory if isinstance(ref[0], str) else bh.axis.IntCategory
         a = Cat(ref, growth=growth)
@@ -721,7 +720,6 @@ class TestCategory(Axis):
             assert repr(ax) == "StrCategory([u'A', u'B', u'C'], metadata='foo')"
 
     @pytest.mark.parametrize("ref", ([1, 2, 3], "ABC"))
-    @pytest.mark.parametrize("growth", (False, True))
     def test_getitem(self, ref, growth):
         Cat = bh.axis.StrCategory if isinstance(ref[0], str) else bh.axis.IntCategory
 
@@ -745,14 +743,14 @@ class TestCategory(Axis):
             assert a.bin(3) is None
 
     @pytest.mark.parametrize("ref", ([1, 2, 3], ("A", "B", "C")))
-    @pytest.mark.parametrize("growth", (False, True))
     def test_iter(self, ref, growth):
         Cat = bh.axis.StrCategory if isinstance(ref[0], str) else bh.axis.IntCategory
         a = Cat(ref, growth=growth)
         assert_array_equal(a, ref)
 
-    @pytest.mark.parametrize("ref", ([1, 2, 3, 4], ("A", "B", "C", "D")))
-    @pytest.mark.parametrize("growth", (False, True))
+    @pytest.mark.parametrize(
+        "ref", ([1, 2, 3, 4], ("A", "B", "C", "D")), ids=("int", "str")
+    )
     def test_index(self, ref, growth):
         Cat = bh.axis.StrCategory if isinstance(ref[0], str) else bh.axis.IntCategory
         a = Cat(ref[:-1], growth=growth)
@@ -762,7 +760,6 @@ class TestCategory(Axis):
         assert_array_equal(a.index(np.reshape(ref, (2, 2))), [[0, 1], [2, 3]])
 
     @pytest.mark.parametrize("ref", ([1, 2, 3], ("A", "B", "C")))
-    @pytest.mark.parametrize("growth", (False, True))
     def test_value(self, ref, growth):
         Cat = bh.axis.StrCategory if isinstance(ref[0], str) else bh.axis.IntCategory
         a = Cat(ref, growth=growth)
@@ -779,7 +776,6 @@ class TestCategory(Axis):
             a.value([[2], [2]])
 
     @pytest.mark.parametrize("ref", ([1, 2, 3], "ABC"))
-    @pytest.mark.parametrize("growth", (False, True))
     def test_edges_centers_widths(self, ref, growth):
         Cat = bh.axis.StrCategory if isinstance(ref[0], str) else bh.axis.IntCategory
         a = Cat(ref, growth=growth)
