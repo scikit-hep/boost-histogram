@@ -5,7 +5,6 @@ import numpy as np
 
 
 @pytest.mark.benchmark(group="IntCategory")
-@pytest.mark.parametrize("growth", (False, True))
 @pytest.mark.parametrize("dtype", ("i", tuple))
 def test_IntCategory(benchmark, growth, dtype):
     np.random.seed(42)
@@ -22,7 +21,6 @@ def test_IntCategory(benchmark, growth, dtype):
 
 
 @pytest.mark.benchmark(group="StrCategory")
-@pytest.mark.parametrize("growth", (False, True))
 @pytest.mark.parametrize("dtype", ("S", "U", "O", tuple))
 def test_StrCategory(benchmark, growth, dtype):
     np.random.seed(42)

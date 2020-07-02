@@ -268,6 +268,25 @@ def test_pick_str_category():
     assert_array_equal(h[:, :, bh.loc("off")].view(), 0)
 
 
+def test_string_requirement():
+    h = bh.Histogram(
+        bh.axis.Integer(0, 10),
+        bh.axis.StrCategory(["1", "a", "hello"]),
+        storage=bh.storage.Int64(),
+    )
+
+    with pytest.raises(TypeError):
+        h[bh.loc("1"), bh.loc(1)]
+
+    with pytest.raises(TypeError):
+        h[bh.loc(1), bh.loc(1)]
+
+    with pytest.raises(TypeError):
+        h[bh.loc("1"), bh.loc("1")]
+
+    assert h[bh.loc(1), bh.loc("1")] == 0
+
+
 def test_pick_int_category():
     noflow = dict(underflow=False, overflow=False)
 
