@@ -434,10 +434,7 @@ class Histogram(BaseHistogram):
 
         # Allow [bh.loc(...)] to work
         for i in range(len(indexes)):
-            # Shortcut: strings directly work on string axes
-            if isinstance(indexes[i], str):
-                indexes[i] = self.axes[i].index(indexes[i])
-            elif callable(indexes[i]):
+            if callable(indexes[i]):
                 indexes[i] = indexes[i](self.axes[i])
             elif hasattr(indexes[i], "flow"):
                 if indexes[i].flow == 1:

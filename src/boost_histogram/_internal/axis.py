@@ -17,7 +17,7 @@ def _isstr(value):
     """
     Check to see if this is a stringlike or a (nested) iterable of stringlikes
     """
-    str_types = (type(""), type(""))
+    str_types = (type(""), type(u""))
 
     if isinstance(value, str_types):
         return True
@@ -100,15 +100,7 @@ class Axis(object):
         """
 
         def _process_internal(item, default):
-            return (
-                default
-                if item is None
-                else item(self)
-                if callable(item)
-                else self.index(item)
-                if isinstance(item, str)
-                else item
-            )
+            return default if item is None else item(self) if callable(item) else item
 
         begin = _process_internal(start, -1 if self._ax.options.underflow else 0)
         end = _process_internal(
@@ -583,7 +575,7 @@ class BaseStrCategory(Axis):
 
         # We need to make sure we support Python 2 for now :(
         # henryiii: This shortcut possibly should be removed
-        if isinstance(categories, (type(""), type(""))):
+        if isinstance(categories, (type(""), type(u""))):
             categories = list(categories)
 
         if options == {"growth"}:
