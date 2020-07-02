@@ -140,7 +140,7 @@ class BaseHistogram(object):
 
     def __iadd__(self, other):
         self._hist.__iadd__(other._hist)
-        self.axes = AxesTuple(self._axis(i) for i in range(self.rank))
+        self.axes = AxesTuple(self._axis(i) for i in range(self.ndim))
         return self
 
     def __eq__(self, other):
@@ -358,19 +358,19 @@ class Histogram(BaseHistogram):
         super(Histogram, self).__init__(*args, **kwargs)
 
         # If this is a property, tab completion in IPython does not work
-        self.axes = AxesTuple(self._axis(i) for i in range(self.rank))
+        self.axes = AxesTuple(self._axis(i) for i in range(self.ndim))
 
     __init__.__doc__ = BaseHistogram.__init__.__doc__
 
     def __copy__(self):
         other = super(Histogram, self).__copy__()
-        other.axes = AxesTuple(other._axis(i) for i in range(other.rank))
+        other.axes = AxesTuple(other._axis(i) for i in range(other.ndim))
         return other
 
     def __deepcopy__(self, memo):
         other = self.__class__.__new__(self.__class__)
         other._hist = copy.deepcopy(self._hist, memo)
-        other.axes = AxesTuple(other._axis(i) for i in range(other.rank))
+        other.axes = AxesTuple(other._axis(i) for i in range(other.ndim))
         return other
 
     def __getstate__(self):
@@ -380,7 +380,7 @@ class Histogram(BaseHistogram):
 
     def __setstate__(self, state):
         self.__dict__.update(state)
-        self.axes = AxesTuple(self._axis(i) for i in range(self.rank))
+        self.axes = AxesTuple(self._axis(i) for i in range(self.ndim))
 
     def __repr__(self):
         newline = "\n  "
@@ -501,6 +501,15 @@ class Histogram(BaseHistogram):
     @property
     def rank(self):
         """
+        Number of axes (dimensions) of histogram. DEPRECATED, use ndim.
+        """
+        msg = "Use .ndim instead"
+        warnings.warn(msg, FutureWarning)
+        return self._hist.rank()
+
+    @property
+    def ndim(self):
+        """
         Number of axes (dimensions) of histogram.
         """
         return self._hist.rank()
@@ -576,7 +585,7 @@ class Histogram(BaseHistogram):
         if not integrations:
             return self.__class__(reduced)
         else:
-            projections = [i for i in range(self.rank) if i not in integrations]
+            projections = [i for i in range(self.ndim) if i not in integrations]
 
             return (
                 self.__class__(reduced.project(*projections))

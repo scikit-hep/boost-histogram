@@ -11,7 +11,7 @@ def test_make_regular_1D(opt, extent):
         bh.axis.Regular(3, 2, 5, underflow="u" in opt, overflow="o" in opt)
     )
 
-    assert hist.rank == 1
+    assert hist.ndim == 1
     assert hist.axes[0].size == 3
     assert hist.axes[0].extent == 3 + extent
     assert hist.axes[0].bin(1) == (3, 4)
@@ -20,7 +20,7 @@ def test_make_regular_1D(opt, extent):
 @pytest.mark.filterwarnings("ignore")
 def test_shortcuts():
     hist = bh.Histogram((1, 2, 3), (10, 0, 1))
-    assert hist.rank == 2
+    assert hist.ndim == 2
     for i in range(2):
         assert isinstance(hist.axes[i], bh.axis.Regular)
         assert not isinstance(hist.axes[i], bh.axis.Variable)
@@ -43,7 +43,7 @@ def test_make_regular_2D(opt, extent):
         bh.axis.Regular(5, 1, 6, underflow="u" in opt, overflow="o" in opt),
     )
 
-    assert hist.rank == 2
+    assert hist.ndim == 2
     assert hist.axes[0].size == 3
     assert hist.axes[0].extent == 3 + extent
     assert hist.axes[0].bin(1) == approx((3, 4))
@@ -70,7 +70,7 @@ def test_make_any_hist(storage):
         storage=storage,
     )
 
-    assert hist.rank == 3
+    assert hist.ndim == 3
     assert hist.axes[0].size == 3
     assert hist.axes[0].extent == 5
     assert hist.axes[0].bin(1) == approx((2, 3))

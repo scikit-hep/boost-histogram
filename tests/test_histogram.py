@@ -38,7 +38,7 @@ def test_init():
         bh.Histogram(bh.axis.Integer(-1, 1), unknown_keyword="nh")
 
     h = bh.Histogram(bh.axis.Integer(-1, 2))
-    assert h.rank == 1
+    assert h.ndim == 1
     assert h.axes[0] == bh.axis.Integer(-1, 2)
     assert h.axes[0].extent == 5
     assert h.axes[0].size == 3
@@ -484,12 +484,12 @@ def test_project():
     h.fill(1, 3)
 
     h0 = h.project(0)
-    assert h0.rank == 1
+    assert h0.ndim == 1
     assert h0.axes[0] == bh.axis.Integer(0, 2)
     assert [h0[i] for i in range(2)] == [2, 1]
 
     h1 = h.project(1)
-    assert h1.rank == 1
+    assert h1.ndim == 1
     assert h1.axes[0] == bh.axis.Integer(1, 4)
     assert [h1[i] for i in range(3)] == [1, 1, 1]
 
@@ -565,7 +565,7 @@ def test_pickle_0():
     b = pickle.loads(io)
 
     assert id(a) != id(b)
-    assert a.rank == b.rank
+    assert a.ndim == b.ndim
     assert a.axes[0] == b.axes[0]
     assert a.axes[1] == b.axes[1]
     assert a.axes[2] == b.axes[2]
@@ -601,7 +601,7 @@ def test_pickle_1():
     b = pickle.load(io)
 
     assert id(a) != id(b)
-    assert a.rank == b.rank
+    assert a.ndim == b.ndim
     assert a.axes[0] == b.axes[0]
     assert a.axes[1] == b.axes[1]
     assert a.axes[2] == b.axes[2]
