@@ -120,7 +120,6 @@ def test_fill_int_1d():
         h[-3]
 
 
-@pytest.mark.parametrize("flow", [True, False])
 def test_fill_1d(flow):
     h = bh.Histogram(bh.axis.Regular(3, -1, 2, underflow=flow, overflow=flow))
     with pytest.raises(ValueError):
@@ -250,7 +249,6 @@ def test_grow_and_add():
     assert h3[bh.loc(2), bh.loc("ho")] == 2.0
 
 
-@pytest.mark.parametrize("flow", [True, False])
 def test_fill_2d(flow):
     h = bh.Histogram(
         bh.axis.Integer(-1, 2, underflow=flow, overflow=flow),
@@ -284,7 +282,6 @@ def test_fill_2d(flow):
                 assert get(h, i, j) == m[i][j]
 
 
-@pytest.mark.parametrize("flow", [True, False])
 def test_add_2d(flow):
     h = bh.Histogram(
         bh.axis.Integer(-1, 2, underflow=flow, overflow=flow),
@@ -323,7 +320,6 @@ def test_add_2d_bad():
         a += b
 
 
-@pytest.mark.parametrize("flow", [True, False])
 def test_add_2d_w(flow):
     h = bh.Histogram(
         bh.axis.Integer(-1, 2, underflow=flow, overflow=flow),

@@ -45,7 +45,6 @@ def make_and_run_hist(flow, storage, vals):
 
 
 @pytest.mark.benchmark(group="2d-fills")
-@pytest.mark.parametrize("flow", (True, False), ids=["flow", "noflow"])
 @pytest.mark.parametrize("dtype", vals)
 @pytest.mark.parametrize("storage", STORAGES)
 def test_2d(benchmark, flow, storage, dtype):

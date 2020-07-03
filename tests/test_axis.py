@@ -580,8 +580,6 @@ class TestInteger:
             -1, 2, underflow=False
         )
 
-    @pytest.mark.parametrize("underflow", [0, 1])
-    @pytest.mark.parametrize("overflow", [0, 1])
     def test_len(self, underflow, overflow):
         a = bh.axis.Integer(-1, 3, underflow=underflow, overflow=overflow)
         assert len(a) == 4
