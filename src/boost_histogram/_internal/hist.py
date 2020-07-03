@@ -10,6 +10,7 @@ from .axistuple import AxesTuple
 from .sig_tools import inject_signature
 from .storage import Double, Storage
 from .utils import cast, register, set_family, MAIN_FAMILY, CPP_FAMILY, set_module
+from .six import string_types
 
 import warnings
 import copy
@@ -27,6 +28,16 @@ _histograms = (
     _core.hist.any_mean,
     _core.hist.any_weighted_mean,
 )
+
+
+def _fill_cast(value):
+    """
+    Convert to NumPy arrays. Some buffer objects do not get converted by forcecast.
+    """
+    if isinstance(value, string_types + (bytes,)) or not hasattr(value, "__iter__"):
+        return value
+    else:
+        return np.ascontiguousarray(value)
 
 
 def _hist_or_val(other):
@@ -198,6 +209,9 @@ class BaseHistogram(object):
             threaded filling.  Using 0 will automatically pick the number of
             available threads (usually two per core).
         """
+
+        # Convert to NumPy arrays
+        args = (_fill_cast(a) for a in args)
 
         threads = kwargs.pop("threads", None)
 
