@@ -573,15 +573,13 @@ class BaseStrCategory(Axis):
             metadata = k.optional("metadata")
             options = k.options(growth=False)
 
-        # We need to make sure we support Python 2 for now :(
-        # henryiii: This shortcut possibly should be removed
-        if isinstance(categories, (type(""), type(u""))):
-            categories = list(categories)
+        # henryiii: We currently expand "abc" to "a", "b", "c" - some
+        # Python interfaces protect against that
 
         if options == {"growth"}:
-            self._ax = ca.category_str_growth(categories, metadata)
+            self._ax = ca.category_str_growth(tuple(categories), metadata)
         elif options == set():
-            self._ax = ca.category_str(categories, metadata)
+            self._ax = ca.category_str(tuple(categories), metadata)
         else:
             raise KeyError("Unsupported collection of options")
 
@@ -625,9 +623,9 @@ class BaseIntCategory(Axis):
             options = k.options(growth=False)
 
         if options == {"growth"}:
-            self._ax = ca.category_int_growth(categories, metadata)
+            self._ax = ca.category_int_growth(tuple(categories), metadata)
         elif options == set():
-            self._ax = ca.category_int(categories, metadata)
+            self._ax = ca.category_int(tuple(categories), metadata)
         else:
             raise KeyError("Unsupported collection of options")
 

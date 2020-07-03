@@ -647,8 +647,10 @@ class TestCategory(Axis):
     def test_init(self):
         # should not raise
         bh.axis.IntCategory([1, 2])
+        bh.axis.IntCategory({1, 2})
         bh.axis.IntCategory((1, 2), metadata="foo")
         bh.axis.StrCategory(["A", "B"])
+        bh.axis.StrCategory({"A", "B"})
         bh.axis.StrCategory("AB")
         bh.axis.StrCategory("AB", metadata="foo")
 
