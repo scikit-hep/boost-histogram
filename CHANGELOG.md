@@ -7,13 +7,16 @@
 * Weighted views can be summed and added [#368][]
 * Sum is now identical to the built-in sum function [#365][]
 * Adding growing axis is better supported [#358][]
+* Slicing an AxesTuple now keeps the type [#384][]
+* `ndim` replaces `rank` for NumPy compatibility [#385][]
 * More deprecated functionality removed
 
 #### Bug fixes
 * Support older versions of [CloudPickle][] (issue properly fixed upstream soon) [#343][]
 * Drop extra printout [#338][]
+* Throw an error instead of returning an incorrect result in more places [#386][]
 
-#### Developer change
+#### Developer changes
 
 * Update Boost to 1.73 [#359][], PyBind11 to 2.5.0 [#351][]
 * Cropping no longer uses workaround [#373][]
@@ -25,18 +28,21 @@
 [`cibuildwheel`]: https://cibuildwheel.readthedocs.io/en/stable
 [`pre-commit`]: https://pre-commit.com
 
-[#375]: https://github.com/scikit-hep/boost-histogram/pull/375
-[#368]: https://github.com/scikit-hep/boost-histogram/pull/368
-[#365]: https://github.com/scikit-hep/boost-histogram/pull/365
-[#358]: https://github.com/scikit-hep/boost-histogram/pull/358
-[#343]: https://github.com/scikit-hep/boost-histogram/pull/343
 [#338]: https://github.com/scikit-hep/boost-histogram/pull/338
-[#359]: https://github.com/scikit-hep/boost-histogram/pull/359
-[#351]: https://github.com/scikit-hep/boost-histogram/pull/351
-[#373]: https://github.com/scikit-hep/boost-histogram/pull/373
-[#366]: https://github.com/scikit-hep/boost-histogram/pull/366
 [#340]: https://github.com/scikit-hep/boost-histogram/pull/340
+[#343]: https://github.com/scikit-hep/boost-histogram/pull/343
+[#351]: https://github.com/scikit-hep/boost-histogram/pull/351
+[#358]: https://github.com/scikit-hep/boost-histogram/pull/358
+[#359]: https://github.com/scikit-hep/boost-histogram/pull/359
 [#361]: https://github.com/scikit-hep/boost-histogram/pull/361
+[#365]: https://github.com/scikit-hep/boost-histogram/pull/365
+[#366]: https://github.com/scikit-hep/boost-histogram/pull/366
+[#368]: https://github.com/scikit-hep/boost-histogram/pull/368
+[#373]: https://github.com/scikit-hep/boost-histogram/pull/373
+[#375]: https://github.com/scikit-hep/boost-histogram/pull/375
+[#384]: https://github.com/scikit-hep/boost-histogram/pull/384
+[#385]: https://github.com/scikit-hep/boost-histogram/pull/385
+[#386]: https://github.com/scikit-hep/boost-histogram/pull/386
 
 
 ## Version 0.7.0
