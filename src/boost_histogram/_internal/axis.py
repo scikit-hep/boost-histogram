@@ -7,6 +7,7 @@ from .kwargs import KWArgs
 from .sig_tools import inject_signature
 from .axis_transform import AxisTransform
 from .utils import cast, register, set_family, MAIN_FAMILY, CPP_FAMILY, set_module
+from .six import string_types
 
 import copy
 
@@ -17,14 +18,13 @@ def _isstr(value):
     """
     Check to see if this is a stringlike or a (nested) iterable of stringlikes
     """
-    str_types = (type(""), type(u""))
 
-    if isinstance(value, str_types):
+    if isinstance(value, string_types + (bytes,)):
         return True
     elif hasattr(value, "__iter__"):
         return all(_isstr(v) for v in value)
     else:
-        return isinstance(value, str_types)
+        return False
 
 
 # Contains common methods and properties to all axes
