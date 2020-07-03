@@ -1,4 +1,4 @@
-// Copyright 2015-2019 Henry Schreiner and Hans Dembinski
+// Copyright 2015-2020 Henry Schreiner and Hans Dembinski
 //
 // Distributed under the 3-Clause BSD License.  See accompanying
 // file LICENSE or https://github.com/scikit-hep/boost-histogram for details.
@@ -17,21 +17,28 @@
 #include <boost/histogram/fwd.hpp>
 #include <iosfwd>
 
+/**
+  \file boost/histogram/accumulators/ostream.hpp
+  Simple streaming operators for the builtin accumulator types.
+  Mostly similer to boost/histogram/accumulators/ostream.hpp
+ */
+
 template <class CharT, class Traits, class T>
 std::basic_ostream<CharT, Traits>&
 handle_nonzero_width(std::basic_ostream<CharT, Traits>& os, const T& x) {
     const auto w = os.width();
     os.width(0);
-    boost::histogram::detail::counting_streambuf<CharT, Traits> cb;
-    const auto saved = os.rdbuf(&cb);
-    os << x;
-    os.rdbuf(saved);
+    std::streamsize count = 0;
+    {
+        auto g = ::boost::histogram::detail::make_count_guard(os, count);
+        os << x;
+    }
     if(os.flags() & std::ios::left) {
         os << x;
-        for(auto i = cb.count; i < w; ++i)
+        for(auto i = count; i < w; ++i)
             os << os.fill();
     } else {
-        for(auto i = cb.count; i < w; ++i)
+        for(auto i = count; i < w; ++i)
             os << os.fill();
         os << x;
     }
