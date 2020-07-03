@@ -108,6 +108,9 @@ using category_str_growth
 BHP_SPECIALIZE_NAME(category_str)
 BHP_SPECIALIZE_NAME(category_str_growth)
 
+using boolean = bh::axis::boolean<metadata_t>;
+BHP_SPECIALIZE_NAME(boolean)
+
 // Axis defined elsewhere
 BHP_SPECIALIZE_NAME(regular_numpy)
 
@@ -275,7 +278,8 @@ using axis_variant = bh::axis::variant<axis::regular_uoflow,
                                        axis::category_int,
                                        axis::category_int_growth,
                                        axis::category_str,
-                                       axis::category_str_growth>;
+                                       axis::category_str_growth,
+                                       axis::boolean>;
 
 // This saves a little typing
 using vector_axis_variant = std::vector<axis_variant>;

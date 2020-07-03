@@ -532,6 +532,69 @@ class TestVariable(Axis):
         assert_allclose(a.widths, [1, 2])
 
 
+class TestBoolean:
+    def test_init(self):
+        bh.axis.Boolean()
+        bh.axis.Boolean(metadata="foo")
+
+        with pytest.raises(TypeError):
+            bh.axis.Boolean(1)
+
+        ax = bh.axis.Boolean()
+        assert isinstance(ax, bh.axis.Boolean)
+        assert ax.options == bh.axis.options()
+
+    def test_equal(self):
+        assert bh.axis.Boolean() == bh.axis.Boolean()
+        assert bh.axis.Boolean(metadata="hi") == bh.axis.Boolean(metadata="hi")
+        assert bh.axis.Boolean(metadata="hi") != bh.axis.Boolean()
+        assert bh.axis.Boolean(metadata="hi") != bh.axis.Boolean(metadata="ho")
+
+    def test_len(self):
+        a = bh.axis.Boolean()
+        assert len(a) == 2
+        assert a.size == 2
+        assert a.extent == 2
+
+    def test_repr(self):
+        a = bh.axis.Boolean()
+        assert repr(a) == "Boolean()"
+
+        a = bh.axis.Boolean(metadata="hi")
+        assert repr(a) == "Boolean(metadata='hi')"
+
+    def test_label(self):
+        a = bh.axis.Boolean(metadata="foo")
+        assert a.metadata == "foo"
+        a.metadata = "bar"
+        assert a.metadata == "bar"
+
+    def test_getitem(self):
+        a = bh.axis.Boolean()
+        ref = [False, True]
+        for i, r in enumerate(ref):
+            assert a.bin(i) == r
+            assert a[i] == r
+        assert a.bin(0) == 0
+        assert a.bin(1) == 1
+
+    def test_iter(self):
+        a = bh.axis.Boolean()
+        ref = (False, True)
+        assert_array_equal(a, ref)
+
+    def test_index(self):
+        a = bh.axis.Boolean()
+        assert a.index(False) == 0
+        assert a.index(True) == 1
+
+    def test_edges_centers_widths(self):
+        a = bh.axis.Boolean()
+        assert_allclose(a.edges, [0.0, 1.0, 2.0])
+        assert_allclose(a.centers, [0.5, 1.5])
+        assert_allclose(a.widths, [1, 1])
+
+
 class TestInteger:
     def test_init(self):
         bh.axis.Integer(-1, 2)

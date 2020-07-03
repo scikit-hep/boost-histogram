@@ -153,5 +153,9 @@ void register_axes(py::module& mod) {
                "metadata"_a);
     });
 
+    register_axis<axis::boolean>(mod, "boolean")
+        .def(py::init<>())
+        .def(py::init<metadata_t>(), "metadata"_a);
+
     ;
 }
