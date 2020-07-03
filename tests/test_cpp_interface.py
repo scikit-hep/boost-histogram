@@ -57,14 +57,14 @@ def test_repr():
     assert (
         repr(h)
         == """histogram(
-  regular(4, 0, 4, metadata="None", options=underflow | overflow),
+  regular(4, 0, 4, metadata=None, options=underflow | overflow),
   storage=double())"""
     )
 
 
 def test_axis_reprs():
     ax = bhc.axis.regular(4, 0, 4)
-    assert repr(ax) == 'regular(4, 0, 4, metadata="None", options=underflow | overflow)'
+    assert repr(ax) == "regular(4, 0, 4, metadata=None, options=underflow | overflow)"
     assert repr(type(ax)) == "<class 'boost_histogram.cpp.axis.regular'>"
 
 
