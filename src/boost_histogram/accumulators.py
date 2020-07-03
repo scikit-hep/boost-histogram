@@ -1,15 +1,23 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 
-from ._core.accumulators import Sum, Mean, WeightedSum, WeightedMean
 
+def _load():
+    from ._core import accumulators as acc
+
+    r = {}
+    for key in dir(acc):
+        if key.startswith("_"):
+            continue
+        cls = getattr(acc, key)
+        cls.__module__ = "boost_histogram.accumulators"
+        r[key] = cls
+    return r
+
+
+locals().update(_load())
 del absolute_import, division, print_function
-
-__all__ = ("Sum", "Mean", "WeightedSum", "WeightedMean")
-
-for cls in (Sum, Mean, WeightedSum, WeightedMean):
-    cls.__module__ = "boost_histogram.accumulators"
-del cls
+del _load
 
 # Not supported by PyBind builtins
 # Enable if wrapper added
