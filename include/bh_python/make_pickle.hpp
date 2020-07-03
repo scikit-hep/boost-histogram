@@ -49,6 +49,7 @@
 #include <boost/assert.hpp>
 #include <boost/core/nvp.hpp>
 #include <boost/histogram/detail/array_wrapper.hpp>
+#include <boost/histogram/detail/span.hpp>
 #include <boost/mp11/function.hpp> // mp_or
 #include <boost/mp11/utility.hpp>  // mp_valid
 

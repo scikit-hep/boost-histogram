@@ -158,3 +158,10 @@ inline func_transform deep_copy<func_transform>(const func_transform& input,
 
     return func_transform(forward, inverse, convert, name);
 }
+
+// Print in repr
+template <class CharT, class Traits>
+std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& os,
+                                              const func_transform&) {
+    return os << "func_transform";
+}
