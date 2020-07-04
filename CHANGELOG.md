@@ -1,5 +1,10 @@
 ## Version 0.8.0
 
+This version was released just before SciPy 2020 and Boost 1.74. Highlights
+include better accumulator views, simpler summing, better NumPy and Pandas
+compatibility, and sums on growing axes. Lots of backend work,
+including a new wheel building system, internal changes and better reliance
+on Boost.Histogram's C++ tools for actions like cropping.
 
 #### User changes
 
@@ -9,10 +14,12 @@
 * Adding growing axis is better supported [#358][]
 * Slicing an AxesTuple now keeps the type [#384][]
 * `ndim` replaces `rank` for NumPy compatibility [#385][]
+* Any array-like supported in fill [#391][], any iterable can be used for Categories [#392][]
 * More deprecated functionality removed
 
 #### Bug fixes
-* Support older versions of [CloudPickle][] (issue properly fixed upstream soon) [#343][]
+
+* Support older versions of [CloudPickle][] (issue also fixed upstream) [#343][]
 * Drop extra printout [#338][]
 * Throw an error instead of returning an incorrect result in more places [#386][]
 
@@ -21,7 +28,7 @@
 * Update Boost to 1.73 [#359][], PyBind11 to 2.5.0 [#351][]
 * Cropping no longer uses workaround [#373][]
 * Many more checks added to [`pre-commit`][] [#366][]
-* Better testing and support of `cpp` interface [#340][]
+* Deprecating `cpp` interface [#391][]
 * Wheelbuilding migrated to [`cibuildwheel`][] and GHA [#361][]
 
 [CloudPickle]: https://github.com/cloudpipe/cloudpickle
@@ -43,6 +50,8 @@
 [#384]: https://github.com/scikit-hep/boost-histogram/pull/384
 [#385]: https://github.com/scikit-hep/boost-histogram/pull/385
 [#386]: https://github.com/scikit-hep/boost-histogram/pull/386
+[#391]: https://github.com/scikit-hep/boost-histogram/pull/391
+[#392]: https://github.com/scikit-hep/boost-histogram/pull/392
 
 
 ## Version 0.7.0
@@ -161,7 +170,8 @@ transition existing 0.5.x code to the new API.
 * Signatures are much nicer in Python 3 [#188][]
 * Reprs are better, various properties like `__module__` are now set correctly [#200][]
 
-#### Bug fixes:
+#### Bug fixes
+
 * Unlimited and AtomicInt storages now allow single item access [#194][]
 * `.view()` now no longer makes a copy [#194][]
 * Fixes related to string category axis fills [#233][], [#230][]
