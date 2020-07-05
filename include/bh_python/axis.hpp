@@ -181,14 +181,15 @@ decltype(auto) unchecked_bin(const A& ax, bh::axis::index_type i) {
 template <class A>
 py::array_t<double> edges(const A& ax, bool flow = false, bool numpy_upper = false) {
     auto continuous = [flow, numpy_upper](const auto& ax) {
-        using index_type = std::conditional_t<
-            bh::axis::traits::is_continuous<std::decay_t<decltype(ax)>>::value,
-            bh::axis::real_index_type,
-            bh::axis::index_type>;
+        using AX = std::decay_t<decltype(ax)>;
+        using index_type
+            = std::conditional_t<bh::axis::traits::is_continuous<AX>::value,
+                                 bh::axis::real_index_type,
+                                 bh::axis::index_type>;
         const index_type underflow
-            = flow && (bh::axis::traits::options(ax) & option::underflow);
+            = flow && (bh::axis::traits::get_options<AX>::test(option::underflow));
         const index_type overflow
-            = flow && (bh::axis::traits::options(ax) & option::overflow);
+            = flow && (bh::axis::traits::get_options<AX>::test(option::overflow));
 
         py::array_t<double> edges(
             static_cast<std::size_t>(ax.size() + 1 + overflow + underflow));
@@ -207,11 +208,12 @@ py::array_t<double> edges(const A& ax, bool flow = false, bool numpy_upper = fal
     return select(
         continuous,
         [flow](const auto& ax) {
-            static_assert(!(std::decay_t<decltype(ax)>::options() & option::underflow),
+            using AX = std::decay_t<decltype(ax)>;
+            static_assert(!bh::axis::traits::get_options<AX>::test(option::underflow),
                           "discrete axis never has underflow");
 
             const bh::axis::index_type overflow
-                = flow && (bh::axis::traits::options(ax) & option::overflow);
+                = flow && bh::axis::traits::get_options<AX>::test(option::overflow);
 
             py::array_t<double> edges(
                 static_cast<std::size_t>(ax.size() + 1 + overflow));

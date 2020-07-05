@@ -116,9 +116,7 @@ py::class_<A> register_axis(py::module& m, Args&&... args) {
 
         .def_property_readonly(
             "options",
-            [](const A& self) {
-                return options{static_cast<unsigned>(self.options())};
-            },
+            [](const A&) { return options{bh::axis::traits::get_options<A>::value}; },
             "Return the options associated to the axis")
 
         .def_property(
@@ -150,13 +148,12 @@ py::class_<A> register_axis(py::module& m, Args&&... args) {
             "bin",
             [](const A& ax, int i) {
                 const bh::axis::index_type begin
-                    = bh::axis::traits::static_options<A>::test(
+                    = bh::axis::traits::get_options<A>::test(
                           bh::axis::option::underflow)
                           ? -1
                           : 0;
                 const bh::axis::index_type end
-                    = bh::axis::traits::static_options<A>::test(
-                          bh::axis::option::overflow)
+                    = bh::axis::traits::get_options<A>::test(bh::axis::option::overflow)
                           ? ax.size() + 1
                           : ax.size();
                 if(begin <= i && i < end)
