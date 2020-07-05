@@ -608,6 +608,34 @@ def test_pickle_1():
     assert a == b
 
 
+def test_pickle_bool():
+    a = bh.Histogram(bh.axis.Boolean(), bh.axis.Boolean(metadata={"one": 1}))
+    assert isinstance(a, bh.Histogram)
+
+    a.fill([True, True, False, False], [True, False, True, True])
+    a.fill([True, True, True], True)
+
+    assert a[True, True] == 4
+    assert a[True, False] == 1
+    assert a[False, True] == 2
+    assert a[False, False] == 0
+
+    io = BytesIO()
+    pickle.dump(a, io, protocol=-1)
+    io.seek(0)
+    b = pickle.load(io)
+
+    assert id(a) != id(b)
+    assert a.ndim == b.ndim
+    assert a.axes[0] == b.axes[0]
+    assert a.axes[1] == b.axes[1]
+    assert a.sum() == b.sum()
+    assert repr(a) == repr(b)
+    assert str(a) == str(b)
+    assert a == b
+    assert_array_equal(a.view(), b.view())
+
+
 # Numpy tests
 
 
