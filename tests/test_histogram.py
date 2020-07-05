@@ -473,6 +473,24 @@ def test_operators():
         h + h2
 
 
+def test_hist_hist_div():
+    h1 = bh.Histogram(bh.axis.Boolean())
+    h2 = bh.Histogram(bh.axis.Boolean())
+
+    h1[:] = (8, 6)
+    h2[:] = (2, 3)
+
+    h3 = h1 / h2
+
+    assert h3[False] == 4
+    assert h3[True] == 2
+
+    h1 /= h2
+
+    assert h1[False] == 4
+    assert h1[True] == 2
+
+
 def test_project():
     h = bh.Histogram(bh.axis.Integer(0, 2), bh.axis.Integer(1, 4))
     h.fill(0, 1)
