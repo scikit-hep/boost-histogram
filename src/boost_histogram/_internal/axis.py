@@ -687,3 +687,45 @@ class int_category(BaseIntCategory, CppAxisMixin):
 @set_module("boost_histogram.cpp.axis")
 class str_category(BaseStrCategory, CppAxisMixin):
     __slots__ = ()
+
+
+# Contains all common methods and properties for the boolean axis
+@register({ca.boolean})
+class BaseBoolean(Axis):
+    __slots__ = ()
+
+    @inject_signature("self, *, metadata=None")
+    def __init__(self, **kwargs):
+        """
+        Make an axis for boolean values.
+
+        Parameters
+        ----------
+        metadata : object
+            Any Python object to attach to the axis, like a label.
+        """
+        with KWArgs(kwargs) as k:
+            metadata = k.optional("metadata")
+
+        self._ax = ca.boolean(metadata)
+
+
+@set_family(MAIN_FAMILY)
+@set_module("boost_histogram.axis")
+class Boolean(BaseBoolean, MainAxisMixin):
+    __slots__ = ()
+
+    def _repr_args(self):
+        "Return inner part of signature for use in repr"
+        return ""
+
+    def _repr_kwargs(self):
+        """
+        Return options for use in repr. Metadata is last,
+        just in case it spans multiple lines.
+        """
+
+        if self.metadata is not None:
+            return "metadata={0!r}".format(self.metadata)
+        else:
+            return ""
