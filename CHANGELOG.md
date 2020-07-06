@@ -15,6 +15,8 @@ on Boost.Histogram's C++ tools for actions like cropping.
 * Slicing an AxesTuple now keeps the type [#384][]
 * `ndim` replaces `rank` for NumPy compatibility [#385][]
 * Any array-like supported in fill [#391][], any iterable can be used for Categories [#392][]
+* Added Boolean axes, from Boost.Histogram 1.74 [#390][]
+* Division between histograms is supported [#393][]
 * More deprecated functionality removed
 
 #### Bug fixes
@@ -25,7 +27,7 @@ on Boost.Histogram's C++ tools for actions like cropping.
 
 #### Developer changes
 
-* Update Boost to 1.73 [#359][], PyBind11 to 2.5.0 [#351][]
+* Update Boost to 1.73 [#359][], PyBind11 to 2.5.0 [#351][], Boost.Histogram to pre-1.74 [#388][]
 * Cropping no longer uses workaround [#373][]
 * Many more checks added to [`pre-commit`][] [#366][]
 * Deprecating `cpp` interface [#391][]
@@ -50,8 +52,11 @@ on Boost.Histogram's C++ tools for actions like cropping.
 [#384]: https://github.com/scikit-hep/boost-histogram/pull/384
 [#385]: https://github.com/scikit-hep/boost-histogram/pull/385
 [#386]: https://github.com/scikit-hep/boost-histogram/pull/386
+[#388]: https://github.com/scikit-hep/boost-histogram/pull/388
+[#390]: https://github.com/scikit-hep/boost-histogram/pull/390
 [#391]: https://github.com/scikit-hep/boost-histogram/pull/391
 [#392]: https://github.com/scikit-hep/boost-histogram/pull/392
+[#393]: https://github.com/scikit-hep/boost-histogram/pull/393
 
 
 ## Version 0.7.0

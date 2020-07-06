@@ -172,17 +172,35 @@ class BaseHistogram(object):
         return self
 
     def __truediv__(self, other):
-        return self.__class__(self._hist.__truediv__(_hist_or_val(other)))
+        if isinstance(other, BaseHistogram):
+            result = self.copy()
+            result.__itruediv__(other)
+            return result
+        else:
+            return self.__class__(self._hist.__truediv__(_hist_or_val(other)))
 
     def __div__(self, other):
-        return self.__class__(self._hist.__div__(_hist_or_val(other)))
+        if isinstance(other, BaseHistogram):
+            result = self.copy()
+            result.__idiv__(other)
+            return result
+        else:
+            return self.__class__(self._hist.__div__(_hist_or_val(other)))
 
     def __itruediv__(self, other):
-        self._hist.__itruediv__(_hist_or_val(other))
+        if isinstance(other, BaseHistogram):
+            view = self.view(flow=True)
+            view.__itruediv__(other.view(flow=True))
+        else:
+            self._hist.__itruediv__(_hist_or_val(other))
         return self
 
     def __idiv__(self, other):
-        self._hist.__idiv__(_hist_or_val(other))
+        if isinstance(other, BaseHistogram):
+            view = self.view(flow=True)
+            view.__idiv__(other.view(flow=True))
+        else:
+            self._hist.__idiv__(_hist_or_val(other))
         return self
 
     def __copy__(self):
