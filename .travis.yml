@@ -27,7 +27,7 @@ install:
 
 script:
   - sed -i '/numpy/d' pyproject.toml
-  - python3 -m cibuildwheel --output-dir dist
+  - travis_wait python3 -m cibuildwheel --output-dir dist
 
 
 deploy:
