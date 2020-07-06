@@ -4,13 +4,11 @@ branches:
   only:
     - master
     - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
-    - henryiii/gha-test
 
 env:
   global:
     - TWINE_USERNAME=__token__
     # Set TWINE_PASSWORD in Travis UI
-    - CIBW_BUILD_VERBOSITY=1
 
 jobs:
   include:
@@ -27,7 +25,7 @@ install:
 
 script:
   - sed -i '/numpy/d' pyproject.toml
-  - travis_wait python3 -m cibuildwheel --output-dir dist
+  - CIBW_BUILD_VERBOSITY=1 python3 -m cibuildwheel --output-dir dist
 
 
 deploy:
