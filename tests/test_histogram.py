@@ -626,6 +626,18 @@ def test_pickle_1():
     assert a == b
 
 
+def test_pick_bool():
+    a = bh.Histogram(bh.axis.Boolean(), bh.axis.Boolean(metadata={"one": 1}))
+
+    a.fill([True, True, False, False], [True, False, True, True])
+    a.fill([True, True, True], True)
+
+    assert_array_equal(a[True, :].view(), [1, 4])
+    assert_array_equal(a[False, :].view(), [0, 2])
+    assert_array_equal(a[:, False].view(), [0, 1])
+    assert_array_equal(a[:, True].view(), [2, 4])
+
+
 def test_pickle_bool():
     a = bh.Histogram(bh.axis.Boolean(), bh.axis.Boolean(metadata={"one": 1}))
     assert isinstance(a, bh.Histogram)
