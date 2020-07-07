@@ -55,6 +55,7 @@ See :ref:`usage-quickstart` for more.
 
    usage/installation
    usage/quickstart
+   CHANGELOG
    usage/histogram
    usage/axes
    usage/storage

@@ -13,8 +13,8 @@
 [![Scikit-HEP][sk-badge]](https://scikit-hep.org/)
 
 Python bindings for [Boost::Histogram][] ([source][Boost::Histogram source]), a
-C++14 library. This should become one of the [fastest libraries][] for
-histogramming, while still providing the power of a full histogram object.
+C++14 library. This is of the [fastest libraries][] for
+histogramming, while still providing the power of a full histogram object. See [what's new](./docs/CHANGELOG.md).
 
 ## Installation
 

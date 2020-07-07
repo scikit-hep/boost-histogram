@@ -1,4 +1,7 @@
-## Version 0.8.0
+# What's new in boost-histogram
+
+## Version 0.8
+### Version 0.8.0
 
 This version was released just before SciPy 2020 and Boost 1.74. Highlights
 include better accumulator views, simpler summing, better NumPy and Pandas
@@ -59,7 +62,8 @@ on Boost.Histogram's C++ tools for actions like cropping.
 [#393]: https://github.com/scikit-hep/boost-histogram/pull/393
 
 
-## Version 0.7.0
+## Version 0.7
+### Version 0.7.0
 
 This version removes deprecated functionality, and has several backend
 improvements. The most noticeable user-facing change is the multithreaded fill
@@ -92,6 +96,9 @@ use. Several small bugs have been fixed.
 [#317]: https://github.com/scikit-hep/boost-histogram/pull/317
 [#320]: https://github.com/scikit-hep/boost-histogram/pull/320
 [#325]: https://github.com/scikit-hep/boost-histogram/pull/325
+
+
+## Version 0.6
 
 ### Version 0.6.2
 
@@ -142,7 +149,7 @@ library. Using Boost 1.72 release.
 
 
 
-## Version 0.6
+### Version 0.6.0
 
 
 This version fills out most of the remaining features missing from the 0.5.x
@@ -219,6 +226,8 @@ transition existing 0.5.x code to the new API.
 [#264]: https://github.com/scikit-hep/boost-histogram/pull/264
 
 
+## Version 0.5
+
 ### Version 0.5.2
 
 #### User changes:
@@ -269,7 +278,7 @@ transition existing 0.5.x code to the new API.
 [#159]: https://github.com/scikit-hep/boost-histogram/pull/159
 
 
-## Version 0.5
+### Version 0.5.0
 
 First beta release and beginning of the changelog.
 
