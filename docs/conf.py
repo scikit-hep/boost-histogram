@@ -26,7 +26,7 @@ sys.path.append(os.path.join(BASEDIR, "src"))
 # -- Project information -----------------------------------------------------
 
 project = "boost_histogram"
-copyright = "2019, Henry Schreiner, Hans Dembinski"
+copyright = "2020, Henry Schreiner, Hans Dembinski"
 author = "Henry Schreiner, Hans Dembinski"
 
 # It is better to use pkg_resources, but we can't build on RtD
@@ -72,6 +72,9 @@ master_doc = "index"
 
 # -- Options for Notebook input ----------------------------------------------
 
+html_logo = "_images/BoostHistogramPythonLogo.png"
+html_title = "boost-histogram docs"
+
 nbsphinx_execute = "never"  # Can change to auto
 
 highlight_language = "python3"
@@ -86,7 +89,20 @@ nbsphinx_execute_arguments = [
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_rtd_theme"
+html_theme = "sphinx_book_theme"
+
+# Config for the Sphinx book
+
+html_baseurl = "https://boost-histogram.readthedocs.io/en/latest/"
+
+
+html_theme_options = {
+    "home_page_in_toc": True,
+    "repository_url": "https://github.com/scikit-hep/boost-histogram",
+    "use_repository_button": True,
+    "use_issues_button": True,
+    "use_edit_page_button": True,
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

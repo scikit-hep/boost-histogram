@@ -41,22 +41,16 @@ System                      Arch        Python versions
 =========================== =========== =======================
 ManyLinux1 (custom GCC 9.2) 64 & 32-bit 2.7, 3.5, 3.6, 3.7, 3.8
 ManyLinux2010               64-bit      2.7, 3.5, 3.6, 3.7, 3.8
-macOS 10.9+                 64-bit      2.7, 3.6, 3.7, 3.8
-Windows                     64 & 32-bit 2.7, 3.6, 3.7, 3.8
+macOS 10.9+                 64-bit      2.7, 3.5, 3.6, 3.7, 3.8
+Windows                     64 & 32-bit 2.7, 3.5, 3.6, 3.7, 3.8
 =========================== =========== =======================
 
--  Linux: I’m not supporting 3.4 because I have to build the Numpy
-   wheels to do so.
 -  manylinux1: Using a custom docker container with GCC 9.2; should work
-   but can’t be called directly other compiled extensions unless they do
+   but can't be called directly other compiled extensions unless they do
    the same thing (think that’s the main caveat). Supporting 32 bits
    because it’s there.
 -  manylinux2010: Requires pip 10+ and a version of Linux newer than
-   2010. This is very new technology.
--  MacOS: Uses the dedicated 64 bit 10.9+ Python.org builds. We are not
-   supporting 3.5 because those no longer provide binaries (could add a
-   32+64 fat 10.6+ that really was 10.9+, but not worth it unless there
-   is a need for it).
+   2010.
 -  Windows: PyBind11 requires compilation with a newer copy of Visual
    Studio than Python 2.7’s Visual Studio 2008; you need to have the
    `Visual Studio 2015
