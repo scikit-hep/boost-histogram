@@ -40,15 +40,19 @@ All the normal best-practices for Python apply; you should be in a virtual envir
 import boost_histogram as bh
 
 # Compose axis however you like; this is a 2D histogram
-hist = bh.Histogram(bh.axis.Regular(2, 0, 1),
-                    bh.axis.Regular(4, 0.0, 1.0))
+hist = bh.Histogram(
+    bh.axis.Regular(2, 0, 1),
+    bh.axis.Regular(4, 0.0, 1.0),
+)
 
 # Filling can be done with arrays, one per dimension
-hist.fill([.3, .5, .2],
-          [.1, .4, .9])
+hist.fill(
+    [0.3, 0.5, 0.2], [0.1, 0.4, 0.9]
+)
 
 # Numpy array view into histogram counts, no overflow bins
 counts = hist.view()
+
 ```
 
 ## Features
@@ -66,6 +70,7 @@ counts = hist.view()
     * `bh.axis.Integer(start, stop, underflow=True, overflow=True, growth=False)`: Special high-speed version of `regular` for evenly spaced bins of width 1
     * `bh.axis.Variable([start, edge1, edge2, ..., stop], underflow=True, overflow=True)`: Uneven bin spacing
     * `bh.axis.Category([...], growth=False)`: Integer or string categories
+    * `bh.axis.Boolean()`: A True/False axis [(known issue with slicing/selection in 0.8.0)]()
 * Axis features:
     * `.index(value)`: The index at a point (or points) on the axis
     * `.value(index)`: The value for a fractional bin (or bins) in the axis
@@ -91,7 +96,7 @@ counts = hist.view()
     * `bh.accumulator.Mean`: Running count, mean, and variance (Welfords's incremental algorithm)
     * `bh.accumulator.WeightedMean`: Tracks a weighted sum, mean, and variance (West's incremental algorithm)
 * Histogram operations
-  * `h.rank`: The number of dimensions
+  * `h.ndim`: The number of dimensions
   * `h.size or len(h)`: The number of bins
   * `+`: Add two histograms (storages must match types currently)
   * `*=`: Multiply by a scaler (not all storages) (`hist * scalar` and `scalar * hist` supported too)
@@ -121,14 +126,14 @@ counts = hist.view()
     * Slicing to get histogram or set array of values
         * `h2 = h[a:b]`: Access a slice of a histogram, cut portions go to flow bins if present
         * `h2 = h[:, ...]`: Using `:` and `...` supported just like Numpy
-        * `h2 = h[::bh.sum]`: Third item in slice is the "action"
+        * `h2 = h[::sum]`: Third item in slice is the "action"
         * `h[...] = array`: Set the bin contents, either include or omit flow bins
     * Special accessors
         * `bh.loc(v)`: Supply value in axis coordinates instead of bin number
         * `bh.underflow`: The underflow bin (use empty beginning on slice for slicing instead)
         * `bh.overflow`: The overflow bin (use empty end on slice for slicing instead)
     * Special actions (third item in slice)
-        * `bh.sum`: Remove axes via projection; if limits are given, use those
+        * `sum`: Remove axes via projection; if limits are given, use those
         * `bh.rebin(n)`: Rebin an axis
 * NumPy compatibility
     * `bh.numpy` provides faster [drop in replacements](https://boost-histogram.readthedocs.io/en/latest/usage/numpy.html) for NumPy histogram functions
@@ -156,7 +161,7 @@ These are the supported platforms for which wheels are produced using [cibuildwh
 | ManyLinux1 (custom GCC 9.2) | 32 & 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8 |
 | ManyLinux2010 | 32 & 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8 |
 | macOS 10.9+ | 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8 |
-| Windows | 32 & 64-bit | 2.7, 3.6, 3.7, 3.8 |
+| Windows | 32 & 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8 |
 
 
 * manylinux1: Using a custom docker container with GCC 9.2; should work but can't be called directly other compiled extensions unless they do the same thing (think that's the main caveat). Supporting 32 bits because it's there.
@@ -170,7 +175,7 @@ If you are on a Linux system that is not part of the "many" in manylinux, such a
 
 #### Conda-Forge
 
-The boost-histogram package is available on Conda-Forge, as well. All supported versions are available with the exception of Windows + Python 2.7, which cannot built due to the age of the compiler and conda-forge policies. Please use Pip if you *really* need Python 2.7 on Windows. You will also need the VS 2015 distributable, as described above.
+The boost-histogram package is available on Conda-Forge, as well. All supported versions are available with the exception of Python 2.7, which is no longer supported by conda-forge direclty. If you really need boost-histogram + Conda + Python 2.7, please open an issue.
 
 ```bash
 conda install -c conda-forge boost-histogram
@@ -225,9 +230,12 @@ This project follows the [all-contributors](https://github.com/all-contributors/
 
 The [official documentation is here](https://boost-histogram.readthedocs.io/en/latest/index.html), and includes a [quickstart](https://boost-histogram.readthedocs.io/en/latest/usage/quickstart.html).
 
+
 * [2019-4-15 IRIS-HEP Topical meeting](https://indico.cern.ch/event/803122/)
 * [2019-10-17 PyHEP Histogram session](https://indico.cern.ch/event/833895/contributions/3577833/) - [repo with talks and workbook](https://github.com/henryiii/pres-bhandhist)
 * [2019-11-7 CHEP](https://indico.cern.ch/event/773049/contributions/3473265/)
+* [2020-07-07 SciPy](https://www.youtube.com/watch?v=ERraTfHkPd0&list=PLYx7XA2nY5GfY4WWJjG5cQZDc7DIUmn6Z&index=4)
+* [2020-07-17 PyHep](https://indico.cern.ch/event/882824/contributions/3931299/) (UPCOMING)
 
 ---
 
