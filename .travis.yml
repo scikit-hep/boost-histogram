@@ -16,6 +16,7 @@ jobs:
     # beta - Doesn't always work. Wait till Travis fixes.
     #
 install:
+- python3 -m pip install --upgrade twine setuptools pip cryptography
 - python3 -m pip install cibuildwheel==1.5.1
 
 script:
