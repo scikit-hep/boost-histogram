@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 .. image:: _images/BoostHistogramPythonLogo.png
-  :width: 400
+  :width: 70%
   :alt: Boost histogram logo
   :align: center
 
@@ -55,6 +55,7 @@ See :ref:`usage-quickstart` for more.
 
    usage/installation
    usage/quickstart
+   CHANGELOG
    usage/histogram
    usage/axes
    usage/storage

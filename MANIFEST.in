@@ -25,5 +25,5 @@ global-exclude .ipynb_checkpoints
 global-exclude *.py[co]
 global-exclude __pycache__
 
-include CMakeLists.txt LICENSE README.md setup.py dev-requirements.txt setup.cfg pyproject.toml CONTRIBUTING.md CHANGELOG.md
+include CMakeLists.txt LICENSE README.md setup.py dev-requirements.txt setup.cfg pyproject.toml CONTRIBUTING.md
 recursive-include extern *LICENSE*
