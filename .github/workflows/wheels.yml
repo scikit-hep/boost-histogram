@@ -4,12 +4,10 @@ on:
   pull_request:
     branches:
       - master
-  push:
-    branches:
-      - wheels
   release:
     types:
       - published
+  workflow_dispatch:
 
 
 env:
