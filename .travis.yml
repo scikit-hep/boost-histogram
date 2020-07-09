@@ -8,6 +8,10 @@ branches:
 jobs:
   include:
   - services: docker
+    env: CIBW_BUILD="cp35* cp36*" NPY_NUM_BUILD_JOBS=2
+    arch: arm64
+  - services: docker
+    env: CIBW_SKIP="cp35* cp36*" NPY_NUM_BUILD_JOBS=2
     arch: arm64
   - services: docker
     arch: ppc64le
@@ -16,7 +20,9 @@ jobs:
     # beta - Doesn't always work. Wait till Travis fixes.
     #
 install:
-- python3 -m pip install cibuildwheel==1.5.1
+- sudo rm -r $HOME/.cache
+- python3 -m pip install --upgrade twine setuptools setuptools_scm pip cryptography
+- python3 -m pip install cibuildwheel==1.5.2
 
 script:
 - sed -i '/numpy/d' pyproject.toml
