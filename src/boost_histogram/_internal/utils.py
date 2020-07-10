@@ -5,7 +5,6 @@ del absolute_import, division, print_function
 
 # Custom families (other packages can define custom families)
 MAIN_FAMILY = object()  # This family will be used as a fallback
-CPP_FAMILY = object()
 
 # These are not exported because custom user classes do not need to
 # add to the original families, they should make their own.
@@ -56,8 +55,8 @@ def register(cpp_types=None):
         ax = hist._axis(0)
 
     which will get a raw C++ object and need to cast it to a Python
-    wrapped object. There will be at least two candidates (users
-    could add more): MAIN_FAMILY and CPP_FAMILY. Cast will use the
+    wrapped object. There is currently one candidates (users
+    could add more): MAIN_FAMILY. Cast will use the
     parent class's family to return the correct family. If the
     requested family is not found, then the regular family is the
     fallback.

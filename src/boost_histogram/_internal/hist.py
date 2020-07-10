@@ -9,7 +9,7 @@ from .axis import Axis
 from .axistuple import AxesTuple
 from .sig_tools import inject_signature
 from .storage import Double, Storage
-from .utils import cast, register, set_family, MAIN_FAMILY, CPP_FAMILY, set_module
+from .utils import cast, register, set_family, MAIN_FAMILY, set_module
 from .six import string_types
 
 import warnings
@@ -80,6 +80,10 @@ def _expand_ellipsis(indexes, rank):
 
 # We currently do not cast *to* a histogram, but this is consistent
 # and could be used later.
+#
+# We could eventually merge BaseHistogram and Histogram - using BaseHistogram
+# currently should be considered internal and may be removed.
+#
 @register(_histograms)
 class BaseHistogram(object):
     @inject_signature("self, *axes, storage=Double()", locals={"Double": Double})
@@ -342,52 +346,6 @@ class BaseHistogram(object):
 
     def _reduce(self, *args):
         return self.__class__(self._hist.reduce(*args))
-
-
-# C++ version of histogram
-@set_family(CPP_FAMILY)
-@set_module("boost_histogram.cpp")
-class histogram(BaseHistogram):
-    axis = BaseHistogram._axis
-
-    def rank(self):
-        """
-        Number of axes (dimensions) of histogram.
-        """
-        return self._hist.rank()
-
-    def size(self):
-        """
-        Total number of bins in the histogram (including underflow/overflow).
-        """
-        return self._hist.size()
-
-    def at(self, *indexes):
-        """
-        Select a contents given indices. -1 is the underflow bin, N is the overflow bin.
-        """
-        return self._hist.at(*indexes)
-
-    # Call uses fill since it supports strings,
-    # runtime argument list, etc.
-    @inject_signature("self, *args, weight=None, sample=None")
-    def __call__(self, *args, **kwargs):
-        args_gen = (((a,) if isinstance(a, str) else a) for a in args)
-        self._hist.fill(*args_gen, **kwargs)
-        return self
-
-    def _reset(self):
-        self._hist.reset()
-        return self
-
-    def _empty(self, flow=False):
-        return self._hist.empty(flow)
-
-    def _sum(self, flow=False):
-        return self._hist.sum(flow)
-
-    def _project(self, *args):
-        return self.__class__(self._hist.project(*args))
 
 
 @set_family(MAIN_FAMILY)

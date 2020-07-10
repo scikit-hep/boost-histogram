@@ -2,7 +2,7 @@
 from __future__ import absolute_import, division, print_function
 
 from .._core import storage as store
-from .utils import set_family, MAIN_FAMILY, CPP_FAMILY, set_module
+from .utils import set_family, MAIN_FAMILY, set_module
 
 del absolute_import, division, print_function
 
@@ -55,49 +55,4 @@ class Mean(store.mean, Storage):
 @set_family(MAIN_FAMILY)
 @set_module("boost_histogram.storage")
 class WeightedMean(store.weighted_mean, Storage):
-    pass
-
-
-# CPP FAMILY
-
-
-@set_family(CPP_FAMILY)
-@set_module("boost_histogram.cpp.storage")
-class int64(Int64):
-    pass
-
-
-@set_family(CPP_FAMILY)
-@set_module("boost_histogram.cpp.storage")
-class double(Double):
-    pass
-
-
-@set_family(CPP_FAMILY)
-@set_module("boost_histogram.cpp.storage")
-class atomic_int64(AtomicInt64):
-    pass
-
-
-@set_family(CPP_FAMILY)
-@set_module("boost_histogram.cpp.storage")
-class unlimited(Unlimited):
-    pass
-
-
-@set_family(CPP_FAMILY)
-@set_module("boost_histogram.cpp.storage")
-class weight(Weight):
-    pass
-
-
-@set_family(CPP_FAMILY)
-@set_module("boost_histogram.cpp.storage")
-class mean(Mean):
-    pass
-
-
-@set_family(CPP_FAMILY)
-@set_module("boost_histogram.cpp.storage")
-class weighted_mean(WeightedMean):
     pass

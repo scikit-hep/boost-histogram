@@ -8,7 +8,6 @@ boost\_histogram
 
 
 .. include:: boost_histogram.axis.rst
-.. include:: boost_histogram.cpp.rst
 
 
 boost\_histogram.accumulators

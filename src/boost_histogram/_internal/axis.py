@@ -6,7 +6,7 @@ from .._core import axis as ca
 from .kwargs import KWArgs
 from .sig_tools import inject_signature
 from .axis_transform import AxisTransform
-from .utils import cast, register, set_family, MAIN_FAMILY, CPP_FAMILY, set_module
+from .utils import cast, register, set_family, MAIN_FAMILY, set_module
 from .six import string_types
 
 import copy
@@ -203,52 +203,6 @@ class MainAxisMixin(object):
         return self._ax.widths
 
 
-# Contains all common methods for cpp module axes
-class CppAxisMixin(object):
-    __slots__ = ()
-
-    def __repr__(self):
-        return repr(self._ax)
-
-    def options(self):
-        """
-        Return the options.  Fields:
-          .underflow - True if axes captures values that are too small
-          .overflow  - True if axes captures values that are too large
-                       (or non-valid for category axes)
-          .growth    - True if axis can grow
-          .circular  - True if axis wraps around
-        """
-        return self._ax.options
-
-    def size(self):
-        """
-        Return number of bins excluding under- and overflow.
-        """
-        return self._ax.size
-
-    def extent(self):
-        """
-        Return number of bins including under- and overflow.
-        """
-        return self._ax.extent
-
-    def edges(self):
-        return self._ax.edges
-
-    def centers(self):
-        """
-        An array of bin centers.
-        """
-        return self._ax.centers
-
-    def widths(self):
-        """
-        An array of bin widths.
-        """
-        return self._ax.widths
-
-
 # Contains all common methods and properties for Regular axes
 @register(
     {
@@ -367,17 +321,6 @@ class Regular(BaseRegular, MainAxisMixin):
         return None
 
 
-@set_module("boost_histogram.cpp.axis")
-@set_family(CPP_FAMILY)
-class regular(BaseRegular, CppAxisMixin):
-    __slots__ = ()
-
-    def transform(self):
-        if hasattr(self._ax, "transform"):
-            return cast(self, self._ax.transform, AxisTransform)
-        return None
-
-
 @register(
     {
         ca.variable_none,
@@ -458,12 +401,6 @@ class Variable(BaseVariable, MainAxisMixin):
             return "[{}]".format(", ".join(format(v, "g") for v in self.edges))
 
 
-@set_family(CPP_FAMILY)
-@set_module("boost_histogram.cpp.axis")
-class variable(BaseVariable, CppAxisMixin):
-    __slots__ = ()
-
-
 @register(
     {
         ca.integer_none,
@@ -539,12 +476,6 @@ class Integer(BaseInteger, MainAxisMixin):
         "Return inner part of signature for use in repr"
 
         return "{start:g}, {stop:g}".format(start=self.edges[0], stop=self.edges[-1])
-
-
-@set_family(CPP_FAMILY)
-@set_module("boost_histogram.cpp.axis")
-class integer(BaseInteger, CppAxisMixin):
-    __slots__ = ()
 
 
 @register({ca.category_str_growth, ca.category_str})
@@ -675,18 +606,6 @@ class IntCategory(BaseIntCategory, CategoryMixin, MainAxisMixin):
         "Return inner part of signature for use in repr"
 
         return "[{0}]".format(", ".join(format(c, "g") for c in self))
-
-
-@set_family(CPP_FAMILY)
-@set_module("boost_histogram.cpp.axis")
-class int_category(BaseIntCategory, CppAxisMixin):
-    __slots__ = ()
-
-
-@set_family(CPP_FAMILY)
-@set_module("boost_histogram.cpp.axis")
-class str_category(BaseStrCategory, CppAxisMixin):
-    __slots__ = ()
 
 
 # Contains all common methods and properties for the boolean axis
