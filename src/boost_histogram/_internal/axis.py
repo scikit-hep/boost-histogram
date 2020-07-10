@@ -109,12 +109,6 @@ class Axis(object):
 
         return begin, end
 
-
-# Mixin for main style classes
-# Contains common methods and properties to all Main module axes
-class MainAxisMixin(object):
-    __slots__ = ()
-
     def __repr__(self):
         return "{self.__class__.__name__}({args}{kwargs})".format(
             self=self, args=self._repr_args(), kwargs=self._repr_kwargs()
@@ -217,7 +211,9 @@ class MainAxisMixin(object):
         ca.regular_circular,
     }
 )
-class BaseRegular(Axis):
+@set_module("boost_histogram.axis")
+@set_family(MAIN_FAMILY)
+class Regular(Axis):
     __slots__ = ()
 
     @inject_signature(
@@ -293,12 +289,6 @@ class BaseRegular(Axis):
         else:
             raise KeyError("Unsupported collection of options")
 
-
-@set_module("boost_histogram.axis")
-@set_family(MAIN_FAMILY)
-class Regular(BaseRegular, MainAxisMixin):
-    __slots__ = ()
-
     def _repr_args(self):
         "Return inner part of signature for use in repr"
 
@@ -331,7 +321,9 @@ class Regular(BaseRegular, MainAxisMixin):
         ca.variable_circular,
     }
 )
-class BaseVariable(Axis):
+@set_family(MAIN_FAMILY)
+@set_module("boost_histogram.axis")
+class Variable(Axis):
     __slots__ = ()
 
     @inject_signature(
@@ -386,12 +378,6 @@ class BaseVariable(Axis):
         else:
             raise KeyError("Unsupported collection of options")
 
-
-@set_family(MAIN_FAMILY)
-@set_module("boost_histogram.axis")
-class Variable(BaseVariable, MainAxisMixin):
-    __slots__ = ()
-
     def _repr_args(self):
         "Return inner part of signature for use in repr"
 
@@ -411,7 +397,9 @@ class Variable(BaseVariable, MainAxisMixin):
         ca.integer_circular,
     }
 )
-class BaseInteger(Axis):
+@set_family(MAIN_FAMILY)
+@set_module("boost_histogram.axis")
+class Integer(Axis):
     __slots__ = ()
 
     @inject_signature(
@@ -466,20 +454,41 @@ class BaseInteger(Axis):
         else:
             raise KeyError("Unsupported collection of options")
 
-
-@set_family(MAIN_FAMILY)
-@set_module("boost_histogram.axis")
-class Integer(BaseInteger, MainAxisMixin):
-    __slots__ = ()
-
     def _repr_args(self):
         "Return inner part of signature for use in repr"
 
         return "{start:g}, {stop:g}".format(start=self.edges[0], stop=self.edges[-1])
 
 
+class BaseCategory(Axis):
+    __slots__ = ()
+
+    def _repr_kwargs(self):
+        """
+        Return options for use in repr. Metadata is last,
+        just in case it spans multiple lines.
+
+
+        This is specialized for Category axes to avoid repeating
+        the flow arguments unnecessarily.
+        """
+
+        ret = ""
+        if self.options.growth:
+            ret += ", growth=True"
+        elif self.options.circular:
+            ret += ", circular=True"
+
+        if self.metadata is not None:
+            ret += ", metadata={0!r}".format(self.metadata)
+
+        return ret
+
+
+@set_family(MAIN_FAMILY)
+@set_module("boost_histogram.axis")
 @register({ca.category_str_growth, ca.category_str})
-class BaseStrCategory(Axis):
+class StrCategory(BaseCategory):
     __slots__ = ()
 
     @inject_signature("self, categories, *, metadata=None, growth=False")
@@ -526,9 +535,16 @@ class BaseStrCategory(Axis):
                 "index(value) must be a string or iterable of strings for a StrCategory axis"
             )
 
+    def _repr_args(self):
+        "Return inner part of signature for use in repr"
 
+        return "[{0}]".format(", ".join(repr(c) for c in self))
+
+
+@set_family(MAIN_FAMILY)
+@set_module("boost_histogram.axis")
 @register({ca.category_int, ca.category_int_growth})
-class BaseIntCategory(Axis):
+class IntCategory(BaseCategory):
     __slots__ = ()
 
     @inject_signature("self, categories, *, metadata=None, growth=False")
@@ -560,48 +576,6 @@ class BaseIntCategory(Axis):
         else:
             raise KeyError("Unsupported collection of options")
 
-
-class CategoryMixin(object):
-    __slots__ = ()
-
-    def _repr_kwargs(self):
-        """
-        Return options for use in repr. Metadata is last,
-        just in case it spans multiple lines.
-
-
-        This is specialized for Category axes to avoid repeating
-        the flow arguments unnecessarily.
-        """
-
-        ret = ""
-        if self.options.growth:
-            ret += ", growth=True"
-        elif self.options.circular:
-            ret += ", circular=True"
-
-        if self.metadata is not None:
-            ret += ", metadata={0!r}".format(self.metadata)
-
-        return ret
-
-
-@set_family(MAIN_FAMILY)
-@set_module("boost_histogram.axis")
-class StrCategory(BaseStrCategory, CategoryMixin, MainAxisMixin):
-    __slots__ = ()
-
-    def _repr_args(self):
-        "Return inner part of signature for use in repr"
-
-        return "[{0}]".format(", ".join(repr(c) for c in self))
-
-
-@set_family(MAIN_FAMILY)
-@set_module("boost_histogram.axis")
-class IntCategory(BaseIntCategory, CategoryMixin, MainAxisMixin):
-    __slots__ = ()
-
     def _repr_args(self):
         "Return inner part of signature for use in repr"
 
@@ -610,7 +584,9 @@ class IntCategory(BaseIntCategory, CategoryMixin, MainAxisMixin):
 
 # Contains all common methods and properties for the boolean axis
 @register({ca.boolean})
-class BaseBoolean(Axis):
+@set_family(MAIN_FAMILY)
+@set_module("boost_histogram.axis")
+class Boolean(Axis):
     __slots__ = ()
 
     @inject_signature("self, *, metadata=None")
@@ -627,12 +603,6 @@ class BaseBoolean(Axis):
             metadata = k.optional("metadata")
 
         self._ax = ca.boolean(metadata)
-
-
-@set_family(MAIN_FAMILY)
-@set_module("boost_histogram.axis")
-class Boolean(BaseBoolean, MainAxisMixin):
-    __slots__ = ()
 
     def _repr_args(self):
         "Return inner part of signature for use in repr"
