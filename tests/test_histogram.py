@@ -283,6 +283,47 @@ def test_fill_2d(flow):
 
 
 def test_add_2d(flow):
+    h0 = bh.Histogram(
+        bh.axis.Integer(-1, 2, underflow=flow, overflow=flow),
+        bh.axis.Regular(4, -2, 2, underflow=flow, overflow=flow),
+    )
+    assert isinstance(h0, bh.Histogram)
+
+    h0.fill(-1, -2)
+    h0.fill(-1, -1)
+    h0.fill(0, 0)
+    h0.fill(0, 1)
+    h0.fill(1, 0)
+    h0.fill(3, -1)
+    h0.fill(0, -3)
+
+    m = [
+        [1, 1, 0, 0, 0, 0],
+        [0, 0, 1, 1, 0, 1],
+        [0, 0, 1, 0, 0, 0],
+        [0, 1, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0],
+    ]
+
+    h = h0.copy()
+    h += h
+    for i in range(-flow, h.axes[0].size + flow):
+        for j in range(-flow, h.axes[1].size + flow):
+            assert h[bh.tag.at(i), bh.tag.at(j)] == 2 * m[i][j]
+
+    h = sum([h0, h0])
+    for i in range(-flow, h.axes[0].size + flow):
+        for j in range(-flow, h.axes[1].size + flow):
+            assert h[bh.tag.at(i), bh.tag.at(j)] == 2 * m[i][j]
+
+    h = 0 + h0 + h0
+    for i in range(-flow, h.axes[0].size + flow):
+        for j in range(-flow, h.axes[1].size + flow):
+            assert h[bh.tag.at(i), bh.tag.at(j)] == 2 * m[i][j]
+
+
+@pytest.mark.parametrize("flow", [True, False])
+def test_add_2d_fancy(flow):
     h = bh.Histogram(
         bh.axis.Integer(-1, 2, underflow=flow, overflow=flow),
         bh.axis.Regular(4, -2, 2, underflow=flow, overflow=flow),
