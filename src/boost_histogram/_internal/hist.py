@@ -137,6 +137,14 @@ class BaseHistogram(object):
 
         raise TypeError("Unsupported storage")
 
+    def _generate_axes_(self):
+        """
+        This is called to fill in the axes. Subclasses can override it if they need
+        to change the axes tuple.
+        """
+
+        return AxesTuple(self._axis(i) for i in range(self.ndim))
+
     def view(self, flow=False):
         """
         Return a view into the data, optionally with overflow turned on.
@@ -151,7 +159,7 @@ class BaseHistogram(object):
 
     def __iadd__(self, other):
         self._hist.__iadd__(other._hist)
-        self.axes = AxesTuple(self._axis(i) for i in range(self.ndim))
+        self.axes = self._generate_axes_()
         return self
 
     def __eq__(self, other):
@@ -390,19 +398,19 @@ class Histogram(BaseHistogram):
         super(Histogram, self).__init__(*args, **kwargs)
 
         # If this is a property, tab completion in IPython does not work
-        self.axes = AxesTuple(self._axis(i) for i in range(self.ndim))
+        self.axes = self._generate_axes_()
 
     __init__.__doc__ = BaseHistogram.__init__.__doc__
 
     def __copy__(self):
         other = super(Histogram, self).__copy__()
-        other.axes = AxesTuple(other._axis(i) for i in range(other.ndim))
+        other.axes = other._generate_axes_()
         return other
 
     def __deepcopy__(self, memo):
         other = self.__class__.__new__(self.__class__)
         other._hist = copy.deepcopy(self._hist, memo)
-        other.axes = AxesTuple(other._axis(i) for i in range(other.ndim))
+        other.axes = other._generate_axes_()
         return other
 
     def __getstate__(self):
@@ -412,7 +420,7 @@ class Histogram(BaseHistogram):
 
     def __setstate__(self, state):
         self.__dict__.update(state)
-        self.axes = AxesTuple(self._axis(i) for i in range(self.ndim))
+        self.axes = self._generate_axes_()
 
     def __repr__(self):
         newline = "\n  "
