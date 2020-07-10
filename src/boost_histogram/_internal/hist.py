@@ -108,8 +108,14 @@ class Histogram(object):
             return
 
         if not kwargs and len(axes) == 1 and isinstance(axes[0], Histogram):
-            self._hist = copy.copy(axes[0]._hist)
-            self.axes = self._generate_axes_()
+            self.__init__(axes[0]._hist)
+            self.__dict__.update(
+                {
+                    k: v
+                    for k, v in axes[0].__dict__.items()
+                    if "k" not in {"axes", "_hist"}
+                }
+            )
             return
 
         # Keyword only trick (change when Python2 is dropped)
@@ -150,6 +156,25 @@ class Histogram(object):
 
         return AxesTuple(self._axis(i) for i in range(self.ndim))
 
+    def _new_hist(self, _hist):
+        """
+        Return a new histogram given a new _hist, copying metadata.
+        """
+
+        other = self.__class__(_hist)
+        other.__dict__.update(
+            {k: v for k, v in self.__dict__.items() if k not in {"axes", "_hist"}}
+        )
+
+        return other
+
+    @property
+    def ndim(self):
+        """
+        Number of axes (dimensions) of histogram.
+        """
+        return self._hist.rank()
+
     def view(self, flow=False):
         """
         Return a view into the data, optionally with overflow turned on.
@@ -161,7 +186,7 @@ class Histogram(object):
 
     def __add__(self, other):
         if hasattr(other, "_hist"):
-            return self.__class__(self._hist.__add__(other._hist))
+            return self._new_hist(self._hist.__add__(other._hist))
         else:
             retval = self.copy()
             retval += other
@@ -188,7 +213,7 @@ class Histogram(object):
 
     # If these fail, the underlying object throws the correct error
     def __mul__(self, other):
-        return self.__class__(self._hist.__mul__(other))
+        return self._new_hist(self._hist.__mul__(other))
 
     def __rmul__(self, other):
         return self * other
@@ -203,7 +228,7 @@ class Histogram(object):
             result.__itruediv__(other)
             return result
         else:
-            return self.__class__(self._hist.__truediv__(_hist_or_val(other)))
+            return self._new_hist(self._hist.__truediv__(_hist_or_val(other)))
 
     def __div__(self, other):
         if isinstance(other, Histogram):
@@ -211,7 +236,7 @@ class Histogram(object):
             result.__idiv__(other)
             return result
         else:
-            return self.__class__(self._hist.__div__(_hist_or_val(other)))
+            return self._new_hist(self._hist.__div__(_hist_or_val(other)))
 
     def __itruediv__(self, other):
         if isinstance(other, Histogram):
@@ -230,9 +255,7 @@ class Histogram(object):
         return self
 
     def __copy__(self):
-        other = self.__class__.__new__(self.__class__)
-        other._hist = copy.copy(self._hist)
-        other.axes = other._generate_axes_()
+        other = self._new_hist(copy.copy(self._hist))
         return other
 
     # TODO: Marked as too complex by flake8. Should be factored out a bit.
@@ -347,7 +370,7 @@ class Histogram(object):
         return cast(self, self._hist._storage_type, Storage)
 
     def _reduce(self, *args):
-        return self.__class__(self._hist.reduce(*args))
+        return self._new_hist(self._hist.reduce(*args))
 
     def __deepcopy__(self, memo):
         other = self.__class__.__new__(self.__class__)
@@ -490,13 +513,6 @@ class Histogram(object):
         return self._hist.rank()
 
     @property
-    def ndim(self):
-        """
-        Number of axes (dimensions) of histogram.
-        """
-        return self._hist.rank()
-
-    @property
     def size(self):
         """
         Total number of bins in the histogram (including underflow/overflow).
@@ -579,12 +595,12 @@ class Histogram(object):
         reduced = self._hist.reduce(*slices)
 
         if not integrations:
-            return self.__class__(reduced)
+            return self._new_hist(reduced)
         else:
             projections = [i for i in range(self.ndim) if i not in integrations]
 
             return (
-                self.__class__(reduced.project(*projections))
+                self._new_hist(reduced.project(*projections))
                 if projections
                 else reduced.sum(flow=True)
             )
@@ -701,4 +717,4 @@ class Histogram(object):
         those axes only. Flow bins are used if available.
         """
 
-        return self.__class__(self._hist.project(*args))
+        return self._new_hist(self._hist.project(*args))
