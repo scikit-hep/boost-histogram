@@ -106,6 +106,7 @@ extras = {
     "dev": ["ipykernel", "cloudpickle"],
 }
 extras["all"] = sum(extras.values(), [])
+extras["dev"] += extras["test"]
 
 setup(
     ext_modules=ext_modules,
