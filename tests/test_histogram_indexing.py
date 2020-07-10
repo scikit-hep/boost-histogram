@@ -60,7 +60,8 @@ def test_get_1D_histogram():
 def test_get_1D_slice():
     h1 = bh.Histogram(bh.axis.Regular(10, 0, 1))
     h2 = bh.Histogram(bh.axis.Regular(5, 0, 0.5))
-    h1.metadata = "this"
+    h1.metadata = {"that": 3}
+    h1.title = "this"
 
     h1.fill([0.25, 0.25, 0.25, 0.15])
     h2.fill([0.25, 0.25, 0.25, 0.15])
@@ -74,7 +75,8 @@ def test_get_1D_slice():
     assert len(h1[2:4].view()) == 2
     assert len(h1[2 : 4 : bh.rebin(2)].view()) == 1
 
-    assert h1[2:4].metadata == "this"
+    assert h1[2:4].title == "this"
+    assert h1[1:3].that == 3
 
 
 def test_ellipsis():

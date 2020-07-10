@@ -163,10 +163,31 @@ class Histogram(object):
 
         other = self.__class__(_hist)
         other.__dict__.update(
-            {k: v for k, v in self.__dict__.items() if k not in {"axes", "_hist"}}
+            {k: v for k, v in self.__dict__.items() if k not in {"_hist", "axes"}}
         )
 
         return other
+
+    @property
+    def metadata(self):
+        """
+        The metadata, collected from the __dict__.
+        """
+
+        return {k: v for k, v in self.__dict__.items() if k not in {"_hist", "axes"}}
+
+    @metadata.setter
+    def metadata(self, value):
+        if not isinstance(value, dict):
+            raise TypeError("The metadata on a histogram is required to be a dict")
+
+        new_dict = copy.copy(value)
+        new_dict.update({"_hist": self._hist, "axes": self.axes})
+        self.__dict__ = new_dict
+
+    @metadata.deleter
+    def metadata(self):
+        self.__dict__ = {"_hist": self._hist, "axes": self.axes}
 
     @property
     def ndim(self):
