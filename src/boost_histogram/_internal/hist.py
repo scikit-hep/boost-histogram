@@ -80,12 +80,10 @@ def _expand_ellipsis(indexes, rank):
 
 # We currently do not cast *to* a histogram, but this is consistent
 # and could be used later.
-#
-# We could eventually merge BaseHistogram and Histogram - using BaseHistogram
-# currently should be considered internal and may be removed.
-#
 @register(_histograms)
-class BaseHistogram(object):
+@set_family(MAIN_FAMILY)
+@set_module("boost_histogram")
+class Histogram(object):
     @inject_signature("self, *axes, storage=Double()", locals={"Double": Double})
     def __init__(self, *axes, **kwargs):
         """
@@ -106,10 +104,12 @@ class BaseHistogram(object):
         # Allow construction from a raw histogram object (internal)
         if not kwargs and len(axes) == 1 and isinstance(axes[0], _histograms):
             self._hist = axes[0]
+            self.axes = self._generate_axes_()
             return
 
-        if not kwargs and len(axes) == 1 and isinstance(axes[0], BaseHistogram):
+        if not kwargs and len(axes) == 1 and isinstance(axes[0], Histogram):
             self._hist = copy.copy(axes[0]._hist)
+            self.axes = self._generate_axes_()
             return
 
         # Keyword only trick (change when Python2 is dropped)
@@ -137,6 +137,7 @@ class BaseHistogram(object):
         for h in _histograms:
             if isinstance(storage, h._storage_type):
                 self._hist = h(axes, storage)
+                self.axes = self._generate_axes_()
                 return
 
         raise TypeError("Unsupported storage")
@@ -184,7 +185,7 @@ class BaseHistogram(object):
         return self
 
     def __truediv__(self, other):
-        if isinstance(other, BaseHistogram):
+        if isinstance(other, Histogram):
             result = self.copy()
             result.__itruediv__(other)
             return result
@@ -192,7 +193,7 @@ class BaseHistogram(object):
             return self.__class__(self._hist.__truediv__(_hist_or_val(other)))
 
     def __div__(self, other):
-        if isinstance(other, BaseHistogram):
+        if isinstance(other, Histogram):
             result = self.copy()
             result.__idiv__(other)
             return result
@@ -200,7 +201,7 @@ class BaseHistogram(object):
             return self.__class__(self._hist.__div__(_hist_or_val(other)))
 
     def __itruediv__(self, other):
-        if isinstance(other, BaseHistogram):
+        if isinstance(other, Histogram):
             view = self.view(flow=True)
             view.__itruediv__(other.view(flow=True))
         else:
@@ -208,7 +209,7 @@ class BaseHistogram(object):
         return self
 
     def __idiv__(self, other):
-        if isinstance(other, BaseHistogram):
+        if isinstance(other, Histogram):
             view = self.view(flow=True)
             view.__idiv__(other.view(flow=True))
         else:
@@ -218,6 +219,7 @@ class BaseHistogram(object):
     def __copy__(self):
         other = self.__class__.__new__(self.__class__)
         other._hist = copy.copy(self._hist)
+        other.axes = other._generate_axes_()
         return other
 
     # TODO: Marked as too complex by flake8. Should be factored out a bit.
@@ -305,19 +307,6 @@ class BaseHistogram(object):
 
         return self
 
-    def __repr__(self):
-        ret = "{self.__class__.__name__}(\n  ".format(self=self)
-        ret += ",\n  ".join(repr(self._axis(i)) for i in range(self._hist.rank()))
-        ret += ",\n  storage={0}".format(self._storage_type())
-        ret += ")"
-        outer = self._hist.sum(flow=True)
-        if outer:
-            inner = self._hist.sum(flow=False)
-            ret += " # Sum: {0}".format(inner)
-            if inner != outer:
-                ret += " ({0} with flow)".format(outer)
-        return ret
-
     def __str__(self):
         """
         A rendering of the histogram is made using ASCII or unicode characters
@@ -346,24 +335,6 @@ class BaseHistogram(object):
 
     def _reduce(self, *args):
         return self.__class__(self._hist.reduce(*args))
-
-
-@set_family(MAIN_FAMILY)
-@set_module("boost_histogram")
-class Histogram(BaseHistogram):
-    @inject_signature("self, *axes, storage=Double()", locals={"Double": Double})
-    def __init__(self, *args, **kwargs):
-        super(Histogram, self).__init__(*args, **kwargs)
-
-        # If this is a property, tab completion in IPython does not work
-        self.axes = self._generate_axes_()
-
-    __init__.__doc__ = BaseHistogram.__init__.__doc__
-
-    def __copy__(self):
-        other = super(Histogram, self).__copy__()
-        other.axes = other._generate_axes_()
-        return other
 
     def __deepcopy__(self, memo):
         other = self.__class__.__new__(self.__class__)
@@ -630,7 +601,7 @@ class Histogram(BaseHistogram):
         """
         indexes = self._compute_commonindex(index)
 
-        if isinstance(value, BaseHistogram):
+        if isinstance(value, Histogram):
             raise TypeError("Not supported yet")
 
         value = np.asarray(value)
