@@ -9,6 +9,8 @@ from . import storage as _storage
 
 from ._internal.kwargs import KWArgs as _KWArgs
 from ._internal.sig_tools import inject_signature as _inject_signature
+from functools import reduce as _reduce
+from operator import mul as _mul
 
 import numpy as _np
 
@@ -74,7 +76,7 @@ def histogramdd(
     hist = cls(*axs, storage=bh_storage).fill(*a, weight=weights, threads=threads)
 
     if density:
-        areas = np.prod(hist.axes.widths, axis=0)
+        areas = _reduce(_mul, hist.axes.widths)
         density = hist.view() / hist.sum() / areas
         return (density,) + hist.to_numpy()[1:]
 
