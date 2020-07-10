@@ -15,6 +15,9 @@ class KWArgs(object):
         if self.kwargs:
             raise TypeError("Keyword(s) {} not expected".format(", ".join(self.kwargs)))
 
+    def __contains__(self, item):
+        return item in self.kwargs
+
     def required(self, name):
         if name in self.kwargs:
             self.kwargs.pop(name)
