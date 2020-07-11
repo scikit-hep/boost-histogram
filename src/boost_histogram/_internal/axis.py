@@ -80,6 +80,10 @@ class Axis(object):
     def metadata(self, value):
         self._ax.metadata = value
 
+    @metadata.deleter
+    def metadata(self):
+        self._ax.metadata = None
+
     @classmethod
     def _convert_cpp(cls, cpp_object):
         nice_ax = cls.__new__(cls)
