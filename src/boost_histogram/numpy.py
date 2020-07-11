@@ -78,9 +78,9 @@ def histogramdd(
     if density:
         areas = _reduce(_mul, hist.axes.widths)
         density = hist.view() / hist.sum() / areas
-        return (density,) + hist.to_numpy()[1:]
+        return (density, hist.to_numpy()[1:])
 
-    return hist if bh_cls is not None else hist.to_numpy()
+    return hist if bh_cls is not None else hist.to_numpy(dd=True)
 
 
 @_inject_signature(
@@ -89,7 +89,13 @@ def histogramdd(
 def histogram2d(
     x, y, bins=10, range=None, normed=None, weights=None, density=None, **kwargs
 ):
-    return histogramdd((x, y), bins, range, normed, weights, density, **kwargs)
+    result = histogramdd((x, y), bins, range, normed, weights, density, **kwargs)
+
+    if isinstance(result, tuple):
+        data, (edgesx, edgesy) = result
+        return data, edgesx, edgesy
+    else:
+        return result
 
 
 @_inject_signature(
@@ -110,7 +116,13 @@ def histogram(
                 "Upgrade numpy to 1.13+ to use string arguments to boost-histogram's histogram function"
             )
         bins = np.histogram_bin_edges(a, bins, range, weights)
-    return histogramdd((a,), (bins,), (range,), normed, weights, density, **kwargs)
+
+    result = histogramdd((a,), (bins,), (range,), normed, weights, density, **kwargs)
+    if isinstance(result, tuple):
+        data, (edges,) = result
+        return data, edges
+    else:
+        return result
 
 
 # Process docstrings

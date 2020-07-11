@@ -454,9 +454,18 @@ class Histogram(object):
 
         return indexes
 
-    def to_numpy(self, flow=False):
+    @inject_signature("self, flow=False, *, dd=False")
+    def to_numpy(self, flow=False, **kwargs):
         """
         Convert to a Numpy style tuple of return arrays.
+
+        Parameters
+        ----------
+
+        flow : bool = False
+            Include the flow bins.
+        dd : bool = False
+            Use the histogramdd return syntax, where the edges are in a tuple
 
         Return
         ------
@@ -465,7 +474,16 @@ class Histogram(object):
         *edges : Array[float]
             The edges for each dimension
         """
-        return self._hist.to_numpy(flow)
+
+        with KWArgs(kwargs) as kw:
+            dd = kw.optional("dd", False)
+
+        return_tuple = self._hist.to_numpy(flow)
+
+        if dd:
+            return return_tuple[0], return_tuple[1:]
+        else:
+            return return_tuple
 
     @inject_signature("self, *, deep=True")
     def copy(self, **kwargs):

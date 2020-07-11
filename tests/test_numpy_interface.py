@@ -116,4 +116,44 @@ def test_histogram2d_object():
     np.testing.assert_array_equal(h1, h2)
 
     with pytest.raises(KeyError):
-        bh_h2 = bh.numpy.histogram2d(x, y, density=True, histogram=bh.Histogram)
+        bh.numpy.histogram2d(x, y, density=True, histogram=bh.Histogram)
+
+
+def test_histogramdd():
+    x = np.array([0.3, 0.3, 0.1, 0.8, 0.34, 0.03, 0.32, 0.65])
+    y = np.array([0.4, 0.5, 0.22, 0.65, 0.32, 0.01, 0.23, 1.98])
+    z = np.array([0.5, 0.7, 0.0, 0.65, 0.72, 0.01, 0.3, 1.4])
+
+    h1, (e1x, e1y, e1z) = np.histogramdd([x, y, z])
+    h2, (e2x, e2y, e2z) = bh.numpy.histogramdd([x, y, z])
+
+    np.testing.assert_array_almost_equal(e1x, e2x)
+    np.testing.assert_array_almost_equal(e1y, e2y)
+    np.testing.assert_array_almost_equal(e1z, e2z)
+    np.testing.assert_array_equal(h1, h2)
+
+    h1, (e1x, e1y, e1z) = np.histogramdd([x, y, z], density=True)
+    h2, (e2x, e2y, e2z) = bh.numpy.histogramdd([x, y, z], density=True)
+
+    np.testing.assert_array_almost_equal(e1x, e2x)
+    np.testing.assert_array_almost_equal(e1y, e2y)
+    np.testing.assert_array_almost_equal(e1z, e2z)
+    np.testing.assert_array_almost_equal(h1, h2)
+
+
+def test_histogramdd_object():
+    x = np.array([0.3, 0.3, 0.1, 0.8, 0.34, 0.03, 0.32, 0.65])
+    y = np.array([0.4, 0.5, 0.22, 0.65, 0.32, 0.01, 0.23, 1.98])
+    z = np.array([0.5, 0.7, 0.0, 0.65, 0.72, 0.01, 0.3, 1.4])
+
+    h1, (e1x, e1y, e1z) = np.histogramdd([x, y, z])
+    bh_h2 = bh.numpy.histogramdd([x, y, z], histogram=bh.Histogram)
+    h2, (e2x, e2y, e2z) = bh_h2.to_numpy(dd=True)
+
+    np.testing.assert_array_almost_equal(e1x, e2x)
+    np.testing.assert_array_almost_equal(e1y, e2y)
+    np.testing.assert_array_almost_equal(e1z, e2z)
+    np.testing.assert_array_equal(h1, h2)
+
+    with pytest.raises(KeyError):
+        bh.numpy.histogramdd([x, y, z], density=True, histogram=bh.Histogram)
