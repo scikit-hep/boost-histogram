@@ -178,11 +178,10 @@ end
 
 <details><summary>Making a new release (click to expand)</summary>
 
-- Finish merging open PRs that will go into VERSION
-- Add most recent changes to the Changelog
-- Sync master with develop through a PR
-- Make sure the full wheel build runs on master without issues (will happen in
-  previous step)
+- Finish merging open PRs that you want in the new version
+- Add most recent changes to the `docs/CHANGELOG.md`
+- Sync master with develop using `git merge develop --ff-only`
+- Make sure the full wheel build runs on master without issues
 - Make the GitHub release in the GitHub UI. Copy the changelog entries and
   links for that version; this has to be done as part of the release and tag
   procedure for archival tools (Zenodo) to pick them up correctly. Titles
