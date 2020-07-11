@@ -117,6 +117,25 @@ def test_growing_histogram():
     assert hist.size == 17
 
 
+def test_numpy_dd():
+    h = bh.Histogram(
+        bh.axis.Regular(10, 0, 1), bh.axis.Regular(5, 0, 1), storage=bh.storage.Int64()
+    )
+
+    for i in range(10):
+        for j in range(5):
+            x, y = h.axes[0].centers[i], h.axes[1].centers[j]
+            v = i + j * 10 + 1
+            h.fill([x] * v, [y] * v)
+
+    h2, x2, y2 = h.to_numpy()
+    h1, (x1, y1) = h.to_numpy(dd=True)
+
+    assert_array_equal(h1, h2)
+    assert_array_equal(x1, x2)
+    assert_array_equal(y1, y2)
+
+
 def test_numpy_flow():
     h = bh.Histogram(
         bh.axis.Regular(10, 0, 1), bh.axis.Regular(5, 0, 1), storage=bh.storage.Int64()
