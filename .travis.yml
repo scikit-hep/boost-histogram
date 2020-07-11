@@ -32,7 +32,7 @@ deploy:
   provider: pypi
   distributions: "--license" # Trick travis, see https://github.com/travis-ci/dpl/blob/577fb987337b6275f85cc104a38df30d030a860e/lib/dpl/providers/pypi.rb#L36
   username: "__token__"
-  cleanup: false
+  skip_cleanup: false
   on:
     tags: true
   password:
