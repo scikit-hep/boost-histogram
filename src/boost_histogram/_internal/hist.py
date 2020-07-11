@@ -84,7 +84,11 @@ def _expand_ellipsis(indexes, rank):
 @set_family(MAIN_FAMILY)
 @set_module("boost_histogram")
 class Histogram(object):
-    @inject_signature("self, *axes, storage=Double()", locals={"Double": Double})
+    __slots__ = ("_hist", "axes", "metadata")
+
+    @inject_signature(
+        "self, *axes, storage=Double(), metadata=None", locals={"Double": Double}
+    )
     def __init__(self, *axes, **kwargs):
         """
         Construct a new histogram.
@@ -99,28 +103,27 @@ class Histogram(object):
             Provide 1 or more axis instances.
         storage : Storage = bh.storage.Double()
             Select a storage to use in the histogram
+        metadata : Any = None
+            Data that is passed along if a new histogram is created
         """
 
         # Allow construction from a raw histogram object (internal)
         if not kwargs and len(axes) == 1 and isinstance(axes[0], _histograms):
             self._hist = axes[0]
+            self.metadata = None
             self.axes = self._generate_axes_()
             return
 
+        # If we construct with another Histogram, support that too
         if not kwargs and len(axes) == 1 and isinstance(axes[0], Histogram):
             self.__init__(axes[0]._hist)
-            self.__dict__.update(
-                {
-                    k: v
-                    for k, v in axes[0].__dict__.items()
-                    if "k" not in {"axes", "_hist"}
-                }
-            )
+            self.metadata = axes[0].metadata
             return
 
         # Keyword only trick (change when Python2 is dropped)
         with KWArgs(kwargs) as k:
             storage = k.optional("storage", Double())
+            self.metadata = k.optional("metadata")
 
         # Check for missed parenthesis or incorrect types
         if not isinstance(storage, Storage):
@@ -162,32 +165,8 @@ class Histogram(object):
         """
 
         other = self.__class__(_hist)
-        other.__dict__.update(
-            {k: v for k, v in self.__dict__.items() if k not in {"_hist", "axes"}}
-        )
-
+        other.metadata = self.metadata
         return other
-
-    @property
-    def metadata(self):
-        """
-        The metadata, collected from the __dict__.
-        """
-
-        return {k: v for k, v in self.__dict__.items() if k not in {"_hist", "axes"}}
-
-    @metadata.setter
-    def metadata(self, value):
-        if not isinstance(value, dict):
-            raise TypeError("The metadata on a histogram is required to be a dict")
-
-        new_dict = copy.copy(value)
-        new_dict.update({"_hist": self._hist, "axes": self.axes})
-        self.__dict__ = new_dict
-
-    @metadata.deleter
-    def metadata(self):
-        self.__dict__ = {"_hist": self._hist, "axes": self.axes}
 
     @property
     def ndim(self):
@@ -274,10 +253,6 @@ class Histogram(object):
         else:
             self._hist.__idiv__(_hist_or_val(other))
         return self
-
-    def __copy__(self):
-        other = self._new_hist(copy.copy(self._hist))
-        return other
 
     # TODO: Marked as too complex by flake8. Should be factored out a bit.
     @inject_signature("self, *args, weight=None, sample=None, threads=None")
@@ -393,19 +368,24 @@ class Histogram(object):
     def _reduce(self, *args):
         return self._new_hist(self._hist.reduce(*args))
 
+    def __copy__(self):
+        other = self._new_hist(copy.copy(self._hist))
+        return other
+
     def __deepcopy__(self, memo):
         other = self.__class__.__new__(self.__class__)
         other._hist = copy.deepcopy(self._hist, memo)
+        other.metadata = copy.deepcopy(self.metadata, memo)
         other.axes = other._generate_axes_()
         return other
 
     def __getstate__(self):
-        state = self.__dict__.copy()
-        del state["axes"]  # Don't save the cashe
+        state = {"_hist": self._hist, "metadata": self.metadata}
         return state
 
     def __setstate__(self, state):
-        self.__dict__.update(state)
+        self._hist = state["_hist"]
+        self.metadata = state["metadata"]
         self.axes = self._generate_axes_()
 
     def __repr__(self):

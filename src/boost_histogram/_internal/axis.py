@@ -72,10 +72,8 @@ class Axis(object):
     @property
     def metadata(self):
         """
-        The metadata. If None or a dict, this can be set via
-        Python dict access.
+        Get or set the metadata associated with this axis.
         """
-
         return self._ax.metadata
 
     @metadata.setter
@@ -85,46 +83,6 @@ class Axis(object):
     @metadata.deleter
     def metadata(self):
         self._ax.metadata = None
-
-    def __getattr__(self, item):
-        if (
-            item != "_ax"
-            and isinstance(self._ax.metadata, dict)
-            and item in self._ax.metadata
-        ):
-            return self._ax.metadata[item]
-        else:
-            # Throw the normal error
-            return object.__getattribute__(self, item)
-
-    def __setattr__(self, item, value):
-        if item not in dir(self.__class__):
-            if self._ax.metadata is None:
-                self._ax.metadata = {item: value}
-            elif isinstance(self._ax.metadata, dict):
-                self._ax.metadata[item] = value
-            else:
-                raise AttributeError(
-                    "Cannot set metadata[{0!r}], metadata is not a dictionary".format(
-                        item
-                    )
-                )
-        else:
-            super(Axis, self).__setattr__(item, value)
-
-    def __dir__(self):
-        """
-        This helps things like IPython tab completion work correctly"
-        """
-
-        return sorted(
-            dir(self.__class__)
-            + (
-                list(self._ax.metadata.keys())
-                if isinstance(self._ax.metadata, dict)
-                else []
-            )
-        )
 
     @classmethod
     def _convert_cpp(cls, cpp_object):
@@ -396,7 +354,6 @@ class Variable(Axis):
             Allow the axis to grow if a value is encountered out of range.
             Be careful, the axis will grow as large as needed.
         """
-
         with KWArgs(kwargs) as k:
             metadata = k.optional("metadata")
             options = k.options(
@@ -474,7 +431,6 @@ class Integer(Axis):
             Allow the axis to grow if a value is encountered out of range.
             Be careful, the axis will grow as large as needed.
         """
-
         with KWArgs(kwargs) as k:
             metadata = k.optional("metadata")
             options = k.options(
