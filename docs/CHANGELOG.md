@@ -1,5 +1,34 @@
 # What's new in boost-histogram
 
+## Version 0.9
+### Version 0.9.0
+
+This version was released just before PyHEP 2020. Several important fixes were made,
+along with a few new features to better support downstream projects.
+
+#### User changes
+
+* `metadata` supported and propagated on Histograms (slots added) [#403][]
+* Added `dd=True` option in `to_numpy` [#406][]
+* Deprecated `cpp` module removed [#402][]
+
+#### Developer changes
+* Subclasses can override axes generation [#401][]
+* `[dev]` extra now installs `pytest` [#401][]
+
+#### Bug fixes
+* Fix `numpy.histogramdd` return structure [#406][]
+* Travis deploy multi-arch fixes [#399][]
+* Selecting on a bool axes supports 2D+ histograms [#398][]
+* Warnings fixed on NumPy 1.19+ [#404][]
+
+[#398]: https://github.com/scikit-hep/boost-histogram/pull/398
+[#399]: https://github.com/scikit-hep/boost-histogram/pull/399
+[#401]: https://github.com/scikit-hep/boost-histogram/pull/401
+[#402]: https://github.com/scikit-hep/boost-histogram/pull/402
+[#403]: https://github.com/scikit-hep/boost-histogram/pull/403
+[#406]: https://github.com/scikit-hep/boost-histogram/pull/406
+
 ## Version 0.8
 ### Version 0.8.0
 
