@@ -11,6 +11,7 @@
 [![PyPI version](https://badge.fury.io/py/boost-histogram.svg)](https://pypi.org/project/boost-histogram/)
 [![Conda-Forge](https://img.shields.io/conda/vn/conda-forge/boost-histogram)][conda-link]
 [![Scikit-HEP][sk-badge]](https://scikit-hep.org/)
+[![Travis-CI][travis-badge]][travis-link]
 
 Python bindings for [Boost::Histogram][] ([source][Boost::Histogram source]), a
 C++14 library. This is of the [fastest libraries][] for
@@ -251,6 +252,8 @@ Support for this work was provided by the National Science Foundation cooperativ
 [rtd-link]:                https://boost-histogram.readthedocs.io/en/latest/?badge=latest
 [actions-badge]:           https://github.com/scikit-hep/boost-histogram/workflows/Tests/badge.svg
 [actions-link]:            https://github.com/scikit-hep/boost-histogram/actions
+[travis-link]:             https://travis-ci.com/scikit-hep/boost-histogram
+[travis-badge]:            https://travis-ci.com/scikit-hep/boost-histogram.svg?branch=master
 
 [Boost::Histogram]:        https://www.boost.org/doc/libs/release/libs/histogram/doc/html/index.html
 [Boost::Histogram source]: https://github.com/boostorg/histogram
