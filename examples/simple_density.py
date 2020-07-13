@@ -19,11 +19,8 @@ areas = functools.reduce(operator.mul, hist.axes.widths)
 # Compute the density
 density = hist.view() / hist.sum() / areas
 
-# Get the edges
-X, Y = hist.axes.edges
-
 # Make the plot
 fig, ax = plt.subplots()
-mesh = ax.pcolormesh(X.T, Y.T, density.T)
+mesh = ax.pcolormesh(*hist.axes.edges.T, density.T)
 fig.colorbar(mesh)
 plt.savefig("simple_density.png")

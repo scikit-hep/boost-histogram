@@ -29,6 +29,7 @@ def test_axes_all_at_once():
 
     for i in range(3):
         np.testing.assert_allclose(centers[i], answers[i])
+        np.testing.assert_allclose(centers.T[i], answers[i].T)
         np.testing.assert_allclose(h.axes[i].centers, answers[i].ravel())
 
     edges = h.axes.edges
@@ -36,6 +37,7 @@ def test_axes_all_at_once():
 
     for i in range(3):
         np.testing.assert_allclose(edges[i], answers[i])
+        np.testing.assert_allclose(edges.T[i], answers[i].T)
         np.testing.assert_allclose(h.axes[i].edges, answers[i].ravel())
 
     widths = h.axes.widths
@@ -43,4 +45,5 @@ def test_axes_all_at_once():
 
     for i in range(3):
         np.testing.assert_allclose(widths[i], answers[i])
+        np.testing.assert_allclose(widths.T[i], answers[i].T)
         np.testing.assert_allclose(h.axes[i].widths, answers[i].ravel())
