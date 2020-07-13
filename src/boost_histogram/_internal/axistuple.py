@@ -8,12 +8,17 @@ import numpy as np
 del absolute_import, division, print_function
 
 
-class AxesArrayTuple(tuple):
+class ArrayTuple(tuple):
     __slots__ = ()
 
-    @property
-    def T(self):
-        return self.__class__(a.T for a in self)
+    def __getattr__(self, name):
+        return self.__class__(getattr(a, name) for a in self)
+
+    def __dir__(self):
+        return sorted(dir(self.__class__) + dir(np.ndarray))
+
+    def __call__(self, *args, **kwargs):
+        return self.__class__(a(*args, **kwargs) for a in self)
 
 
 class AxesTuple(tuple):
@@ -40,17 +45,17 @@ class AxesTuple(tuple):
     @property
     def centers(self):
         gen = (s.centers for s in self)
-        return AxesArrayTuple(np.meshgrid(*gen, **self._MGRIDOPTS))
+        return ArrayTuple(np.meshgrid(*gen, **self._MGRIDOPTS))
 
     @property
     def edges(self):
         gen = (s.edges for s in self)
-        return AxesArrayTuple(np.meshgrid(*gen, **self._MGRIDOPTS))
+        return ArrayTuple(np.meshgrid(*gen, **self._MGRIDOPTS))
 
     @property
     def widths(self):
         gen = (s.widths for s in self)
-        return AxesArrayTuple(np.meshgrid(*gen, **self._MGRIDOPTS))
+        return ArrayTuple(np.meshgrid(*gen, **self._MGRIDOPTS))
 
     def value(self, *indexes):
         if len(indexes) != len(self):
