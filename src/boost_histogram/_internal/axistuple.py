@@ -20,6 +20,14 @@ class ArrayTuple(tuple):
     def __call__(self, *args, **kwargs):
         return self.__class__(a(*args, **kwargs) for a in self)
 
+    def broadcast(self):
+        """
+        The arrays in this tuple will be compressed if possible to save memory.
+        Use this method to broadcast them out into their full memory
+        representation.
+        """
+        return self.__class__(np.broadcast_arrays(*self))
+
 
 class AxesTuple(tuple):
     __slots__ = ()
