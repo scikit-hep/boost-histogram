@@ -45,7 +45,11 @@ class Axis(object):
         if not _isstr(value):
             return self._ax.index(value)
         else:
-            raise TypeError("index(value) cannot be a string for a numerical axis")
+            raise TypeError(
+                "index({value}) cannot be a string for a numerical axis".format(
+                    value=value
+                )
+            )
 
     def value(self, index):
         """
@@ -536,7 +540,9 @@ class StrCategory(BaseCategory):
             return self._ax.index(value)
         else:
             raise TypeError(
-                "index(value) must be a string or iterable of strings for a StrCategory axis"
+                "index({value}) must be a string or iterable of strings for a StrCategory axis".format(
+                    value=value
+                )
             )
 
     def _repr_args(self):
