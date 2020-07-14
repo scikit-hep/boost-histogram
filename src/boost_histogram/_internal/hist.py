@@ -185,22 +185,18 @@ class Histogram(object):
         return self.view(False)
 
     def __add__(self, other):
-        if hasattr(other, "_hist"):
-            return self._new_hist(self._hist.__add__(other._hist))
-        else:
-            retval = self.copy()
-            retval += other
-            return retval
+        result = self.copy()
+        return result.__iadd__(other)
 
     def __iadd__(self, other):
         if isinstance(other, (int, float)) and other == 0:
             return self
-        if hasattr(other, "_hist"):
-            self._hist.__iadd__(other._hist)
-            # Addition may change category axes
-            self.axes = self._generate_axes_()
-            return self
-        return NotImplemented
+        self._compute_inplace_op("__iadd__", other)
+
+        # Addition may change the axes if they can grow
+        self.axes = self._generate_axes_()
+
+        return self
 
     def __radd__(self, other):
         return self + other
@@ -213,46 +209,46 @@ class Histogram(object):
 
     # If these fail, the underlying object throws the correct error
     def __mul__(self, other):
-        return self._new_hist(self._hist.__mul__(other))
+        result = self.copy()
+        return result._compute_inplace_op("__imul__", other)
 
     def __rmul__(self, other):
         return self * other
 
-    def __imul__(self, other):
-        self._hist.__imul__(_hist_or_val(other))
-        return self
-
     def __truediv__(self, other):
-        if isinstance(other, Histogram):
-            result = self.copy()
-            result.__itruediv__(other)
-            return result
-        else:
-            return self._new_hist(self._hist.__truediv__(_hist_or_val(other)))
+        result = self.copy()
+        return result._compute_inplace_op("__itruediv__", other)
 
     def __div__(self, other):
-        if isinstance(other, Histogram):
-            result = self.copy()
-            result.__idiv__(other)
-            return result
-        else:
-            return self._new_hist(self._hist.__div__(_hist_or_val(other)))
+        result = self.copy()
+        return result._compute_inplace_op("__idiv__", other)
 
-    def __itruediv__(self, other):
+    def _compute_inplace_op(self, name, other):
         if isinstance(other, Histogram):
-            view = self.view(flow=True)
-            view.__itruediv__(other.view(flow=True))
+            getattr(self._hist, name)(other._hist)
+        elif hasattr(other, "shape"):
+            if other.shape == self.axes.extent:
+                view = self.view(flow=True)
+                getattr(view, name)(other)
+            elif other.shape == self.shape:
+                view = self.view(flow=False)
+                getattr(view, name)(other)
+            else:
+                raise ValueError(
+                    "Wrong shape, expected {0} or {1}".format(self.shape, self.extent)
+                )
         else:
-            self._hist.__itruediv__(_hist_or_val(other))
+            getattr(self._hist, name)(_hist_or_val(other))
         return self
 
     def __idiv__(self, other):
-        if isinstance(other, Histogram):
-            view = self.view(flow=True)
-            view.__idiv__(other.view(flow=True))
-        else:
-            self._hist.__idiv__(_hist_or_val(other))
-        return self
+        return self._compute_inplace_op("__idiv__", other)
+
+    def __itruediv__(self, other):
+        return self._compute_inplace_op("__itruediv__", other)
+
+    def __imul__(self, other):
+        return self._compute_inplace_op("__imul__", other)
 
     # TODO: Marked as too complex by flake8. Should be factored out a bit.
     @inject_signature("self, *args, weight=None, sample=None, threads=None")

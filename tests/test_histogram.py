@@ -1078,3 +1078,36 @@ def test_shape():
 def test_empty_shape():
     h = bh.Histogram()
     assert h.shape == ()
+
+
+# issue #416 a
+def test_hist_division():
+    edges = [0, 0.25, 0.5, 0.75, 1, 2, 3, 4, 7, 10]
+    edges = [-x for x in reversed(edges)] + edges[1:]
+
+    h = bh.Histogram(bh.axis.Variable(edges))
+    h[...] = 1
+    h1 = h.copy()
+
+    dens = h.view().copy()
+    dens /= h.axes[0].widths * h.sum()
+
+    h1 /= h.axes[0].widths * h.sum()
+
+    assert_array_equal(h1.view(), dens)
+
+
+# issue #416 b
+# def test_hist_division():
+#     edges = [0, .25, .5, .75, 1, 2, 3, 4, 7, 10]
+#    edges = [-x for x in reversed(edges)] + edges[1:]
+#
+#    h = bh.Histogram(bh.axis.Variable(edges))
+#    h[...] = 1
+#
+#    dens = h.view().copy() / h.axes[0].widths * h.sum()
+#    h1 = h.copy()
+#
+#    h1[:] /=  h.axes[0].widths * h.sum()
+#
+#    assert_allclose(h1.view(), dens)
