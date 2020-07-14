@@ -37,18 +37,18 @@ struct weighted_mean {
         : sum_of_weights(wsum)
         , sum_of_weights_squared(wsum2)
         , value(mean)
-        , sum_of_weighted_deltas_squared(
+        , _sum_of_weighted_deltas_squared(
               variance * (sum_of_weights - sum_of_weights_squared / sum_of_weights)) {}
 
     weighted_mean(const value_type& wsum,
                   const value_type& wsum2,
                   const value_type& mean,
-                  const value_type& sum_of_weighted_deltas_squared,
+                  const value_type& _sum_of_weighted_deltas_squared,
                   bool /* tag to trigger Python internal constructor */)
         : sum_of_weights(wsum)
         , sum_of_weights_squared(wsum2)
         , value(mean)
-        , sum_of_weighted_deltas_squared(sum_of_weighted_deltas_squared) {}
+        , _sum_of_weighted_deltas_squared(_sum_of_weighted_deltas_squared) {}
 
     void operator()(const value_type& x) { operator()(boost::histogram::weight(1), x); }
 
@@ -58,7 +58,7 @@ struct weighted_mean {
         sum_of_weights_squared += w.value * w.value;
         const auto delta = x - value;
         value += w.value * delta / sum_of_weights;
-        sum_of_weighted_deltas_squared += w.value * delta * (x - value);
+        _sum_of_weighted_deltas_squared += w.value * delta * (x - value);
     }
 
     weighted_mean& operator+=(const weighted_mean& rhs) {
@@ -68,13 +68,13 @@ struct weighted_mean {
             sum_of_weights_squared += rhs.sum_of_weights_squared;
             value = tmp / sum_of_weights;
         }
-        sum_of_weighted_deltas_squared += rhs.sum_of_weighted_deltas_squared;
+        _sum_of_weighted_deltas_squared += rhs._sum_of_weighted_deltas_squared;
         return *this;
     }
 
     weighted_mean& operator*=(const value_type& s) {
         value *= s;
-        sum_of_weighted_deltas_squared *= s * s;
+        _sum_of_weighted_deltas_squared *= s * s;
         return *this;
     }
 
@@ -82,13 +82,14 @@ struct weighted_mean {
         return sum_of_weights == rhs.sum_of_weights
                && sum_of_weights_squared == rhs.sum_of_weights_squared
                && value == rhs.value
-               && sum_of_weighted_deltas_squared == rhs.sum_of_weighted_deltas_squared;
+               && _sum_of_weighted_deltas_squared
+                      == rhs._sum_of_weighted_deltas_squared;
     }
 
     bool operator!=(const weighted_mean rhs) const noexcept { return !operator==(rhs); }
 
     value_type variance() const {
-        return sum_of_weighted_deltas_squared
+        return _sum_of_weighted_deltas_squared
                / (sum_of_weights - sum_of_weights_squared / sum_of_weights);
     }
 
@@ -97,14 +98,14 @@ struct weighted_mean {
         ar& boost::make_nvp("sum_of_weights", sum_of_weights);
         ar& boost::make_nvp("sum_of_weights_squared", sum_of_weights_squared);
         ar& boost::make_nvp("value", value);
-        ar& boost::make_nvp("sum_of_weighted_deltas_squared",
-                            sum_of_weighted_deltas_squared);
+        ar& boost::make_nvp("_sum_of_weighted_deltas_squared",
+                            _sum_of_weighted_deltas_squared);
     }
 
     value_type sum_of_weights{};
     value_type sum_of_weights_squared{};
     value_type value{};
-    value_type sum_of_weighted_deltas_squared{};
+    value_type _sum_of_weighted_deltas_squared{};
 };
 
 } // namespace accumulators

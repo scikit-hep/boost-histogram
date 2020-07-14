@@ -125,7 +125,7 @@ class WeightedSumView(View):
     "sum_of_weights",
     "sum_of_weights_squared",
     "value",
-    "sum_of_weighted_deltas_squared",
+    "_sum_of_weighted_deltas_squared",
 )
 class WeightedMeanView(View):
     __slots__ = ()
@@ -133,7 +133,7 @@ class WeightedMeanView(View):
 
     @property
     def variance(self):
-        return self["sum_of_weighted_deltas_squared"] / (
+        return self["_sum_of_weighted_deltas_squared"] / (
             self["sum_of_weights"]
             - self["sum_of_weights_squared"] / self["sum_of_weights"]
         )
