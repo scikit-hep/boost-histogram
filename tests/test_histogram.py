@@ -1133,3 +1133,31 @@ def test_add_hists():
     assert_array_equal(h1, 2)
     assert_array_equal(h2, 3)
     assert_array_equal(h3, 6)
+
+
+def test_add_broadcast():
+    h = bh.Histogram(bh.axis.Regular(10, 0, 1), bh.axis.Regular(20, 0, 1))
+
+    h1 = h.copy()
+    h2 = h.copy()
+
+    h1[...] = 1
+    assert h1.view().sum() == 10 * 20
+    assert h1.view(flow=True).sum() == 10 * 20
+
+    h2 = h + [[1]]
+    assert h2.sum() == 10 * 20
+    assert h2.sum(flow=True) == 10 * 20
+
+    h3 = h + np.ones((10, 20))
+    assert h3.sum() == 10 * 20
+    assert h3.sum(flow=True) == 10 * 20
+
+    h4 = h + np.ones((12, 22))
+    assert h4.view(flow=True).sum() == 12 * 22
+
+    h5 = h + np.ones((10, 1))
+    assert h5.sum(flow=True) == 10 * 20
+
+    h5 = h + np.ones((1, 22))
+    assert h5.sum(flow=True) == 12 * 22

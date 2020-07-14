@@ -225,11 +225,17 @@ class Histogram(object):
         elif isinstance(other, _histograms):
             getattr(self._hist, name)(other)
         elif hasattr(other, "shape"):
-            if other.shape == self.axes.extent:
-                view = self.view(flow=True)
-                getattr(view, name)(other)
-            elif other.shape == self.shape:
+            if len(other.shape) != self.ndim:
+                raise ValueError(
+                    "Number of dimensions {0} must match histogram {1}".format(
+                        len(other.shape), self.ndim
+                    )
+                )
+            elif all((a == b or a == 1) for a, b in zip(other.shape, self.shape)):
                 view = self.view(flow=False)
+                getattr(view, name)(other)
+            elif all((a == b or a == 1) for a, b in zip(other.shape, self.axes.extent)):
+                view = self.view(flow=True)
                 getattr(view, name)(other)
             else:
                 raise ValueError(
