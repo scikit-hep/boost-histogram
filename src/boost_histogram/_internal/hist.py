@@ -577,6 +577,14 @@ class Histogram(object):
                 raise IndexError(
                     "Must be a slice, an integer, or follow the locator protocol."
                 )
+            # If the dictionary brackets are forgotten, it's easy to put a slice
+            # into a slice - adding a nicer error message in that case
+            if any(isinstance(v, slice) for v in (ind.start, ind.stop, ind.step)):
+                raise TypeError(
+                    "You have put a slice in a slice. Did you forget curly braces [{...}]?"
+                )
+
+            # This ensures that callable start/stop are handled
             start, stop = self.axes[i]._process_loc(ind.start, ind.stop)
 
             if ind != slice(None):
