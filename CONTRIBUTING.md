@@ -156,6 +156,19 @@ it yourself (even without installing the hooks) using:
 pre-commit run --all-files
 ```
 
+We do not check `check-manifest` every time locally, since it is slow. You can trigger
+this manual check with:
+
+```
+pre-commit run --all-files --hook-stage manual check-manifest
+```
+
+Developers should update the pre-commit dependencies once in a while, you can
+do this automatically with:
+
+```bash
+pre-commit autoupdate
+```
 
 ## Common tasks
 
@@ -169,7 +182,7 @@ fish shell.
 for f in *
     cd $f
     git fetch
-    git checkout boost-1.72.0 || echo "Not found"
+    git checkout boost-1.74.0 || echo "Not found"
     cd ..
 end
 ```
@@ -180,17 +193,17 @@ end
 
 - Finish merging open PRs that you want in the new version
 - Add most recent changes to the `docs/CHANGELOG.md`
-- Sync master with develop using `git merge develop --ff-only`
-- Make sure the full wheel build runs on master without issues
+- Sync master with develop using `git merge develop --ff-only` and push
+- Make sure the full wheel build runs on master without issues (will happen
+  automatically on push to master)
 - Make the GitHub release in the GitHub UI. Copy the changelog entries and
   links for that version; this has to be done as part of the release and tag
-  procedure for archival tools (Zenodo) to pick them up correctly. Titles
-  should be roughly consistent. I like to give a little descriptive title after
-  the version, though this was a massive release that touched almost every
-  area.
+  procedure for archival tools (Zenodo) to pick them up correctly.
+    - Title should be `"Version <version number>"`
     - Version tag should be `"v" + major + "." + minor + "." + patch`.
 - GHA will build and send to PyPI for you when you release.
-- Conda-forge will automatically make a PR to update a few hours later.
+- Conda-forge will automatically make a PR to update within an hour or so, and
+  it will merge automatically if it passes.
 
 
 </details>
