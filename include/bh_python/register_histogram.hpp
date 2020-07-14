@@ -87,18 +87,6 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
 
         ;
 
-    def_optionally(hist,
-                   bh::detail::has_operator_radd<histogram_t, double>{},
-                   py::self += double());
-
-    // Atomics for example do not support these operations
-    def_optionally(hist,
-                   bh::detail::has_operator_rmul<histogram_t, double>{},
-                   py::self *= double());
-    def_optionally(hist,
-                   bh::detail::has_operator_rdiv<histogram_t, double>{},
-                   py::self /= double());
-
 // Protection against an overzealous warning system
 // https://bugs.llvm.org/show_bug.cgi?id=43124
 #ifdef __clang__

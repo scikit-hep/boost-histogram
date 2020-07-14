@@ -40,10 +40,6 @@ def _fill_cast(value):
         return np.ascontiguousarray(value)
 
 
-def _hist_or_val(other):
-    return other._hist if hasattr(other, "_hist") else other
-
-
 def _arg_shortcut(item):
     msg = "Developer shortcut: will be removed in a future version"
     if isinstance(item, tuple) and len(item) == 3:
@@ -226,6 +222,8 @@ class Histogram(object):
     def _compute_inplace_op(self, name, other):
         if isinstance(other, Histogram):
             getattr(self._hist, name)(other._hist)
+        elif isinstance(other, _histograms):
+            getattr(self._hist, name)(other)
         elif hasattr(other, "shape"):
             if other.shape == self.axes.extent:
                 view = self.view(flow=True)
@@ -238,7 +236,8 @@ class Histogram(object):
                     "Wrong shape, expected {0} or {1}".format(self.shape, self.extent)
                 )
         else:
-            getattr(self._hist, name)(_hist_or_val(other))
+            view = self.view(flow=False)
+            getattr(view, name)(other)
         return self
 
     def __idiv__(self, other):

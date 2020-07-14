@@ -1111,3 +1111,25 @@ def test_hist_division():
 #    h1[:] /=  h.axes[0].widths * h.sum()
 #
 #    assert_allclose(h1.view(), dens)
+
+
+def test_add_hists():
+    edges = [0, 0.25, 0.5, 0.75, 1, 2, 3, 4, 7, 10]
+    edges = [-x for x in reversed(edges)] + edges[1:]
+
+    h = bh.Histogram(bh.axis.Variable(edges))
+    h[...] = 1
+
+    h1 = h.copy()
+    h1 += h.view()
+
+    h2 = h.copy()
+    h2 += h1
+
+    h3 = h.copy()
+    h3 += 5
+
+    assert_array_equal(h, 1)
+    assert_array_equal(h1, 2)
+    assert_array_equal(h2, 3)
+    assert_array_equal(h3, 6)
