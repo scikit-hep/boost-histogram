@@ -2,12 +2,14 @@
 from __future__ import absolute_import, division, print_function
 
 from .axis import Axis
+from .utils import set_module
 
 import numpy as np
 
 del absolute_import, division, print_function
 
 
+@set_module("boost_histogram.axis")
 class ArrayTuple(tuple):
     __slots__ = ()
 
@@ -29,6 +31,7 @@ class ArrayTuple(tuple):
         return self.__class__(np.broadcast_arrays(*self))
 
 
+@set_module("boost_histogram.axis")
 class AxesTuple(tuple):
     __slots__ = ()
     _MGRIDOPTS = {"sparse": True, "indexing": "ij"}

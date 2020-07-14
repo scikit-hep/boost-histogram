@@ -10,6 +10,7 @@ from .._internal.axis import (
     StrCategory,
     Boolean,
 )
+from .._internal.axistuple import ArrayTuple, AxesTuple
 from .._core.axis import options
 from . import transform
 
@@ -25,4 +26,6 @@ __all__ = (
     "Axis",
     "options",
     "transform",
+    "ArrayTuple",
+    "AxesTuple",
 )
