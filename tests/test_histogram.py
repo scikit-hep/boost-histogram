@@ -667,6 +667,14 @@ def test_pickle_1():
     assert a == b
 
 
+def test_fill_bool_not_bool():
+    a = bh.Histogram(bh.axis.Boolean())
+
+    a.fill([0, 1, 1, 7, -3])
+
+    assert_array_equal(a.view(), [1, 2])
+
+
 def test_pick_bool():
     a = bh.Histogram(bh.axis.Boolean(), bh.axis.Boolean(metadata={"one": 1}))
 

@@ -108,7 +108,21 @@ using category_str_growth
 BHP_SPECIALIZE_NAME(category_str)
 BHP_SPECIALIZE_NAME(category_str_growth)
 
-using boolean = bh::axis::boolean<metadata_t>;
+class boolean : public bh::axis::integer<int, metadata_t, option::none_t> {
+  public:
+    explicit boolean(metadata_t meta = {})
+        : integer(0, 2, std::move(meta)) {}
+    boolean(const boolean& other)
+        : integer(other) {}
+    bh::axis::index_type index(int x) const noexcept {
+        return static_cast<bh::axis::index_type>(x < 0 ? -1 : (x > 2 ? 2 : x));
+    }
+    int value(bh::axis::index_type i) const noexcept { return static_cast<int>(i); }
+    bh::axis::index_type size() const noexcept { return 2; }
+};
+
+// Built-in boolean requires bool fill, slower compile
+// using boolean = bh::axis::boolean<metadata_t>;
 BHP_SPECIALIZE_NAME(boolean)
 
 // Axis defined elsewhere
