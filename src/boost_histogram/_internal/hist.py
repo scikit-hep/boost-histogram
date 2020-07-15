@@ -441,14 +441,13 @@ class Histogram(object):
 
         # Allow [bh.loc(...)] to work
         for i in range(len(indexes)):
-            if callable(indexes[i]):
+            # Support sum and rebin directly
+            if indexes[i] is sum or hasattr(indexes[i], "factor"):
+                indexes[i] = slice(None, None, indexes[i])
+            # General locators
+            elif callable(indexes[i]):
                 indexes[i] = indexes[i](self.axes[i])
-            elif hasattr(indexes[i], "flow"):
-                if indexes[i].flow == 1:
-                    indexes[i] = hist.axis(i).size
-                elif indexes[i].flow == -1:
-                    indexes[i] = -1
-            elif isinstance(indexes[i], int):
+            elif hasattr(indexes[i], "__index__"):
                 if abs(indexes[i]) >= hist.axis(i).size:
                     raise IndexError("histogram index is out of range")
                 indexes[i] %= hist.axis(i).size
