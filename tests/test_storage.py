@@ -153,7 +153,9 @@ def test_setting_weighted_profile():
     assert b["value"][0] == h[0].value
     assert b["sum_of_weights"][0] == h[0].sum_of_weights
     assert b["sum_of_weights_squared"][0] == h[0].sum_of_weights_squared
-    assert b["sum_of_weighted_deltas_squared"][0] == h[0].sum_of_weighted_deltas_squared
+    assert (
+        b["_sum_of_weighted_deltas_squared"][0] == h[0]._sum_of_weighted_deltas_squared
+    )
 
     h[0] = bh.accumulators.WeightedMean(
         sum_of_weights=6, sum_of_weights_squared=12, value=3, variance=2
@@ -165,25 +167,29 @@ def test_setting_weighted_profile():
     assert h[0].variance == 2
     assert h[0].sum_of_weights == 6
     assert h[0].sum_of_weights_squared == 12
-    assert h[0].sum_of_weighted_deltas_squared == 8
+    assert h[0]._sum_of_weighted_deltas_squared == 8
 
     assert b["value"][0] == h[0].value
     assert b["sum_of_weights"][0] == h[0].sum_of_weights
     assert b["sum_of_weights_squared"][0] == h[0].sum_of_weights_squared
-    assert b["sum_of_weighted_deltas_squared"][0] == h[0].sum_of_weighted_deltas_squared
+    assert (
+        b["_sum_of_weighted_deltas_squared"][0] == h[0]._sum_of_weighted_deltas_squared
+    )
 
     assert b[0]["value"] == a[0]["value"]
     assert b[0]["sum_of_weights"] == a[0]["sum_of_weights"]
     assert b[0]["sum_of_weights_squared"] == a[0]["sum_of_weights_squared"]
     assert (
-        b[0]["sum_of_weighted_deltas_squared"] == a[0]["sum_of_weighted_deltas_squared"]
+        b[0]["_sum_of_weighted_deltas_squared"]
+        == a[0]["_sum_of_weighted_deltas_squared"]
     )
 
     assert b[0]["value"] == a["value"][0]
     assert b[0]["sum_of_weights"] == a["sum_of_weights"][0]
     assert b[0]["sum_of_weights_squared"] == a["sum_of_weights_squared"][0]
     assert (
-        b[0]["sum_of_weighted_deltas_squared"] == a["sum_of_weighted_deltas_squared"][0]
+        b[0]["_sum_of_weighted_deltas_squared"]
+        == a["_sum_of_weighted_deltas_squared"][0]
     )
 
     assert_array_equal(a.view().value, b.view()["value"])
@@ -192,6 +198,6 @@ def test_setting_weighted_profile():
         a.view().sum_of_weights_squared, b.view()["sum_of_weights_squared"]
     )
     assert_array_equal(
-        a.view().sum_of_weighted_deltas_squared,
-        b.view()["sum_of_weighted_deltas_squared"],
+        a.view()._sum_of_weighted_deltas_squared,
+        b.view()["_sum_of_weighted_deltas_squared"],
     )

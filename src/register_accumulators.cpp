@@ -167,8 +167,8 @@ void register_accumulators(py::module& accumulators) {
             "value"_a,
             "Run over an array with the accumulator")
 
-        .def_property_readonly("small", &sum::small)
-        .def_property_readonly("large", &sum::large)
+        .def_property_readonly("_small", &sum::small)
+        .def_property_readonly("_large", &sum::large)
 
         ;
 
@@ -177,7 +177,7 @@ void register_accumulators(py::module& accumulators) {
                          sum_of_weights,
                          sum_of_weights_squared,
                          value,
-                         sum_of_weighted_deltas_squared);
+                         _sum_of_weighted_deltas_squared);
 
     register_accumulator<weighted_mean>(
         accumulators, "WeightedMean", py::buffer_protocol())
@@ -193,8 +193,8 @@ void register_accumulators(py::module& accumulators) {
         .def_readonly("sum_of_weights", &weighted_mean::sum_of_weights)
         .def_readonly("sum_of_weights_squared", &weighted_mean::sum_of_weights_squared)
         .def_readonly("value", &weighted_mean::value)
-        .def_readonly("sum_of_weighted_deltas_squared",
-                      &weighted_mean::sum_of_weighted_deltas_squared)
+        .def_readonly("_sum_of_weighted_deltas_squared",
+                      &weighted_mean::_sum_of_weighted_deltas_squared)
 
         .def_property_readonly("variance", &weighted_mean::variance)
 
@@ -223,13 +223,13 @@ void register_accumulators(py::module& accumulators) {
                      return self.sum_of_weights;
                  else if(key.equal(py::str("sum_of_weights_squared")))
                      return self.sum_of_weights_squared;
-                 else if(key.equal(py::str("sum_of_weighted_deltas_squared")))
-                     return self.sum_of_weighted_deltas_squared;
+                 else if(key.equal(py::str("_sum_of_weighted_deltas_squared")))
+                     return self._sum_of_weighted_deltas_squared;
                  else
                      throw py::key_error(
                          py::str(
                              "{0} not one of value, sum_of_weights, "
-                             "sum_of_weights_squared, sum_of_weighted_deltas_squared")
+                             "sum_of_weights_squared, _sum_of_weighted_deltas_squared")
                              .format(key));
              })
         .def("__setitem__",
@@ -240,13 +240,13 @@ void register_accumulators(py::module& accumulators) {
                      self.sum_of_weights = value;
                  else if(key.equal(py::str("sum_of_weights_squared")))
                      self.sum_of_weights_squared = value;
-                 else if(key.equal(py::str("sum_of_weighted_deltas_squared")))
-                     self.sum_of_weighted_deltas_squared = value;
+                 else if(key.equal(py::str("_sum_of_weighted_deltas_squared")))
+                     self._sum_of_weighted_deltas_squared = value;
                  else
                      throw py::key_error(
                          py::str(
                              "{0} not one of value, sum_of_weights, "
-                             "sum_of_weights_squared, sum_of_weighted_deltas_squared")
+                             "sum_of_weights_squared, _sum_of_weighted_deltas_squared")
                              .format(key));
              })
 
@@ -255,7 +255,7 @@ void register_accumulators(py::module& accumulators) {
                  return py::make_tuple("value",
                                        "sum_of_weights",
                                        "sum_of_weights_squared",
-                                       "sum_of_weighted_deltas_squared");
+                                       "_sum_of_weighted_deltas_squared");
              })
 
         ;
