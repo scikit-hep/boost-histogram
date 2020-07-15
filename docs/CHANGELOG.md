@@ -1,5 +1,32 @@
 # What's new in boost-histogram
 
+## Version 0.10
+### Version 0.10.0
+
+This version was released during PyHEP 2020. Several improvements were made to
+usability when plotting and indexing.
+
+#### User changes
+
+* AxesTuple array now support operations via ArrayTuple [#414][]
+* Support `sum` and `bh.rebin` without slice [#424][]
+* Nicer error messages in some cases [#415][]
+* Made a few properties hidden for accumulators that were not public [#418][]
+* Boolean now supports reduction, faster compile [#422][]
+* AxesTuple now available publicly for subprojects [#419][]
+
+#### Bug fixes
+* Histograms support operations with arrays, no longer take the first element only [#417][]
+
+[#414]: https://github.com/scikit-hep/boost-histogram/pull/414
+[#414]: https://github.com/scikit-hep/boost-histogram/pull/414
+[#415]: https://github.com/scikit-hep/boost-histogram/pull/415
+[#417]: https://github.com/scikit-hep/boost-histogram/pull/417
+[#418]: https://github.com/scikit-hep/boost-histogram/pull/418
+[#419]: https://github.com/scikit-hep/boost-histogram/pull/419
+[#422]: https://github.com/scikit-hep/boost-histogram/pull/422
+[#424]: https://github.com/scikit-hep/boost-histogram/pull/424
+
 ## Version 0.9
 ### Version 0.9.0
 
