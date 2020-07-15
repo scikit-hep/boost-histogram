@@ -569,7 +569,11 @@ def test_shrink_1d():
 def test_rebin_1d():
     h = bh.Histogram(bh.axis.Regular(20, 1, 5))
     h.fill(1.1)
+
     hs = h[{0: slice(None, None, bh.rebin(4))}]
+    assert_array_equal(hs.view(), [1, 0, 0, 0, 0])
+
+    hs = h[{0: bh.rebin(4)}]
     assert_array_equal(hs.view(), [1, 0, 0, 0, 0])
 
 
@@ -594,6 +598,7 @@ def test_rebin_nd():
     assert h[{0: s[:: bh.rebin(2)], 2: s[:: bh.rebin(2)]}].axes.size == (10, 30, 20)
 
     assert h[{1: s[:: bh.sum]}].axes.size == (20, 40)
+    assert h[{1: bh.sum}].axes.size == (20, 40)
 
 
 # CLASSIC: This used to have metadata too, but that does not compare equal

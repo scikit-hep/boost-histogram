@@ -73,6 +73,10 @@ def test_get_1D_slice():
 
     assert len(h1[2:4].view()) == 2
     assert len(h1[2 : 4 : bh.rebin(2)].view()) == 1
+    assert len(h1[:: bh.rebin(2)].view()) == 5
+
+    # Shortcut
+    assert len(h1[bh.rebin(2)].view()) == 5
 
     assert h1[2:4].metadata == {"that": 3}
 
@@ -122,6 +126,11 @@ def test_basic_projection():
     assert h1 == h2[:, ::sum, ::sum]
     assert h1 == h2[..., ::sum, ::sum]
     assert h2.sum(flow=True) == h2[::sum, ::sum, ::sum]
+
+    # Shortcut
+    assert h1 == h2[:, sum, sum]
+    assert h1 == h2[..., sum, sum]
+    assert h2.sum(flow=True) == h2[sum, sum, sum]
 
 
 def test_slicing_projection():
@@ -191,6 +200,9 @@ def test_mix_value_with_slice_2():
 
     assert_array_equal(h[:, :, True].view(), vals)
     assert_array_equal(h[:, :, False].view(), 0)
+
+    h2 = h[bh.rebin(2), bh.rebin(5), :]
+    assert_array_equal(h2.shape, (5, 2, 2))
 
 
 def test_repr():
