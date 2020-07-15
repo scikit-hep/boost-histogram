@@ -115,7 +115,7 @@ class boolean : public bh::axis::integer<int, metadata_t, option::none_t> {
     boolean(const boolean& other)
         : integer(other) {}
     bh::axis::index_type index(int x) const noexcept {
-        return static_cast<bh::axis::index_type>(x < 0 ? -1 : (x > 2 ? 2 : x));
+        return static_cast<bh::axis::index_type>(x != 0);
     }
     int value(bh::axis::index_type i) const noexcept { return static_cast<int>(i); }
     bh::axis::index_type size() const noexcept { return 2; }

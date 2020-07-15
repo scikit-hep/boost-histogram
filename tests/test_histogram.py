@@ -672,7 +672,7 @@ def test_fill_bool_not_bool():
 
     a.fill([0, 1, 1, 7, -3])
 
-    assert_array_equal(a.view(), [1, 2])
+    assert_array_equal(a.view(), [1, 4])
 
 
 def test_pick_bool():
