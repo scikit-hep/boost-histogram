@@ -551,9 +551,6 @@ class Histogram(object):
 
         indexes = self._compute_commonindex(index)
 
-        # Workaround for missing "pick" and no reduction on bool axes
-        pick_bool = {}
-
         # If this is (now) all integers, return the bin contents
         # But don't try *dict!
         if not hasattr(indexes, "items"):
@@ -568,11 +565,7 @@ class Histogram(object):
         # Compute needed slices and projections
         for i, ind in enumerate(indexes):
             if hasattr(ind, "__index__"):
-                if isinstance(self.axes[i]._ax, _core.axis.boolean):
-                    pick_bool[i] = ind
-                    ind = slice(None, None, sum)
-                else:
-                    ind = slice(ind.__index__(), ind.__index__() + 1, sum)
+                ind = slice(ind.__index__(), ind.__index__() + 1, sum)
 
             elif not isinstance(ind, slice):
                 raise IndexError(
@@ -612,13 +605,6 @@ class Histogram(object):
                         )
 
                 slices.append(_core.algorithm.slice_and_rebin(i, start, stop, merge))
-
-        for i, select in pick_bool.items():
-            self = self.copy()
-            view = self.view(flow=True)
-            view[
-                tuple(~select if j == i else slice(None) for j in range(self.ndim))
-            ] = 0
 
         reduced = self._hist.reduce(*slices)
 
