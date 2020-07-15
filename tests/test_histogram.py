@@ -668,23 +668,35 @@ def test_pickle_1():
 
 
 def test_fill_bool_not_bool():
-    a = bh.Histogram(bh.axis.Boolean())
+    h = bh.Histogram(bh.axis.Boolean())
 
-    a.fill([0, 1, 1, 7, -3])
+    h.fill([0, 1, 1, 7, -3])
 
-    assert_array_equal(a.view(), [1, 4])
+    assert_array_equal(h.view(), [1, 4])
 
 
 def test_pick_bool():
-    a = bh.Histogram(bh.axis.Boolean(), bh.axis.Boolean(metadata={"one": 1}))
+    h = bh.Histogram(bh.axis.Boolean(), bh.axis.Boolean(metadata={"one": 1}))
 
-    a.fill([True, True, False, False], [True, False, True, True])
-    a.fill([True, True, True], True)
+    h.fill([True, True, False, False], [True, False, True, True])
+    h.fill([True, True, True], True)
 
-    assert_array_equal(a[True, :].view(), [1, 4])
-    assert_array_equal(a[False, :].view(), [0, 2])
-    assert_array_equal(a[:, False].view(), [0, 1])
-    assert_array_equal(a[:, True].view(), [2, 4])
+    assert_array_equal(h[True, :].view(), [1, 4])
+    assert_array_equal(h[False, :].view(), [0, 2])
+    assert_array_equal(h[:, False].view(), [0, 1])
+    assert_array_equal(h[:, True].view(), [2, 4])
+
+
+def test_slice_bool():
+    h = bh.Histogram(bh.axis.Boolean())
+    h.fill([0, 0, 0, 1, 3, 4, -2])
+
+    assert_array_equal(h.view(), [3, 4])
+    assert_array_equal(h[1:].view(), [4])
+    assert_array_equal(h[:1].view(), [3])
+
+    assert_array_equal(h[:1].axes[0].centers, [0.5])
+    assert_array_equal(h[1:].axes[0].centers, [1.5])
 
 
 def test_pickle_bool():

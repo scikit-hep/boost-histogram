@@ -616,7 +616,17 @@ class Boolean(Axis):
 
     def _repr_args(self):
         "Return inner part of signature for use in repr"
-        return ""
+        if self.size == 2:
+            return ""
+        elif self.size == 0:
+            return "<empty>"
+        elif self.size == 1 and self.centers[0] < 0.75:
+            return "<False>"
+        elif self.size == 1:
+            return "<True>"
+        else:
+            # Shouldn't be possible, can't grow
+            "<unknown>"
 
     def _repr_kwargs(self):
         """

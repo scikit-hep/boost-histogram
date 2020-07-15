@@ -112,16 +112,22 @@ class boolean : public bh::axis::integer<int, metadata_t, option::none_t> {
   public:
     explicit boolean(metadata_t meta = {})
         : integer(0, 2, std::move(meta)) {}
+    explicit boolean(const boolean& src,
+                     bh::axis::index_type begin,
+                     bh::axis::index_type end,
+                     unsigned merge)
+        : integer(src, begin, end, merge) {}
     boolean(const boolean& other)
         : integer(other) {}
+
     bh::axis::index_type index(int x) const noexcept {
-        return static_cast<bh::axis::index_type>(x != 0);
+        return integer::index(x == 0 ? 0 : 1);
     }
-    int value(bh::axis::index_type i) const noexcept { return static_cast<int>(i); }
-    bh::axis::index_type size() const noexcept { return 2; }
+
+    // We can't specify inclusive, since this could be sliced
 };
 
-// Built-in boolean requires bool fill, slower compile
+// Built-in boolean requires bool fill, slower compile, not reducible
 // using boolean = bh::axis::boolean<metadata_t>;
 BHP_SPECIALIZE_NAME(boolean)
 
@@ -166,6 +172,11 @@ template <class Continuous, class Discrete, class Integer, class... Ts>
 decltype(auto)
 select(Continuous&&, Discrete&&, Integer&& i, const bh::axis::integer<int, Ts...>& ax) {
     return std::forward<Integer>(i)(ax);
+}
+
+template <class Continuous, class Discrete, class Boolean, class... Ts>
+decltype(auto) select(Continuous&&, Discrete&&, Boolean&& i, const boolean& ax) {
+    return std::forward<Boolean>(i)(ax);
 }
 
 /// Return bin center for continuous axis and bin value for discrete axis
