@@ -1078,3 +1078,86 @@ def test_shape():
 def test_empty_shape():
     h = bh.Histogram()
     assert h.shape == ()
+
+
+# issue #416 a
+def test_hist_division():
+    edges = [0, 0.25, 0.5, 0.75, 1, 2, 3, 4, 7, 10]
+    edges = [-x for x in reversed(edges)] + edges[1:]
+
+    h = bh.Histogram(bh.axis.Variable(edges))
+    h[...] = 1
+    h1 = h.copy()
+
+    dens = h.view().copy()
+    dens /= h.axes[0].widths * h.sum()
+
+    h1 /= h.axes[0].widths * h.sum()
+
+    assert_array_equal(h1.view(), dens)
+
+
+# issue #416 b
+# def test_hist_division():
+#     edges = [0, .25, .5, .75, 1, 2, 3, 4, 7, 10]
+#    edges = [-x for x in reversed(edges)] + edges[1:]
+#
+#    h = bh.Histogram(bh.axis.Variable(edges))
+#    h[...] = 1
+#
+#    dens = h.view().copy() / h.axes[0].widths * h.sum()
+#    h1 = h.copy()
+#
+#    h1[:] /=  h.axes[0].widths * h.sum()
+#
+#    assert_allclose(h1.view(), dens)
+
+
+def test_add_hists():
+    edges = [0, 0.25, 0.5, 0.75, 1, 2, 3, 4, 7, 10]
+    edges = [-x for x in reversed(edges)] + edges[1:]
+
+    h = bh.Histogram(bh.axis.Variable(edges))
+    h[...] = 1
+
+    h1 = h.copy()
+    h1 += h.view()
+
+    h2 = h.copy()
+    h2 += h1
+
+    h3 = h.copy()
+    h3 += 5
+
+    assert_array_equal(h, 1)
+    assert_array_equal(h1, 2)
+    assert_array_equal(h2, 3)
+    assert_array_equal(h3, 6)
+
+
+def test_add_broadcast():
+    h = bh.Histogram(bh.axis.Regular(10, 0, 1), bh.axis.Regular(20, 0, 1))
+
+    h1 = h.copy()
+    h2 = h.copy()
+
+    h1[...] = 1
+    assert h1.view().sum() == 10 * 20
+    assert h1.view(flow=True).sum() == 10 * 20
+
+    h2 = h + [[1]]
+    assert h2.sum() == 10 * 20
+    assert h2.sum(flow=True) == 10 * 20
+
+    h3 = h + np.ones((10, 20))
+    assert h3.sum() == 10 * 20
+    assert h3.sum(flow=True) == 10 * 20
+
+    h4 = h + np.ones((12, 22))
+    assert h4.view(flow=True).sum() == 12 * 22
+
+    h5 = h + np.ones((10, 1))
+    assert h5.sum(flow=True) == 10 * 20
+
+    h5 = h + np.ones((1, 22))
+    assert h5.sum(flow=True) == 12 * 22
