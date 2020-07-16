@@ -90,6 +90,7 @@ def test_make_any_hist_storage():
     assert isinstance(
         bh.Histogram(bh.axis.Regular(5, 1, 2), storage=bh.storage.Double())[0], float
     )
+    assert isinstance(bh.Histogram(bh.axis.Regular(5, 1, 2), storage=None)[0], float)
 
 
 def test_issue_axis_bin_swan():
