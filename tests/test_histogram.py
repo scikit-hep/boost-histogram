@@ -8,6 +8,8 @@ import numpy as np
 from numpy.testing import assert_array_equal
 from io import BytesIO
 import sys
+import operator
+import functools
 
 try:
     import cPickle as pickle
@@ -1201,3 +1203,12 @@ def test_mul_shallow():
 
     assert h.metadata is h2.metadata
     assert h.axes[0].metadata is h2.axes[0].metadata
+
+
+def test_reductions():
+    h = bh.Histogram(bh.axis.Variable([1, 2, 4, 7, 9, 9.5, 10]))
+
+    widths_1 = functools.reduce(operator.mul, h.axes.widths)
+    widths_2 = np.prod(h.axes.widths, axis=0)
+
+    assert_array_equal(widths_1, widths_2)

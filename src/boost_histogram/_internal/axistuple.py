@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function
 
 from .axis import Axis
 from .utils import set_module
+from functools import partial
 
 import numpy as np
 
@@ -12,12 +13,20 @@ del absolute_import, division, print_function
 @set_module("boost_histogram.axis")
 class ArrayTuple(tuple):
     __slots__ = ()
+    # This is an exhaustive list as of NumPy 1.19
+    _REDUCTIONS = {"sum", "any", "all", "min", "max", "prod"}
 
     def __getattr__(self, name):
-        return self.__class__(getattr(a, name) for a in self)
+        if name.startswith("_"):
+            return super().__getattr__(name)
+        elif name in self._REDUCTIONS:
+            return partial(getattr(np, name), np.asarray(tuple(self), dtype=object))
+        else:
+            return self.__class__(getattr(a, name) for a in self)
 
     def __dir__(self):
-        return sorted(dir(self.__class__) + dir(np.ndarray))
+        names = dir(self.__class__) + dir(np.ndarray)
+        return sorted(n for n in names if not n.starswith("_"))
 
     def __call__(self, *args, **kwargs):
         return self.__class__(a(*args, **kwargs) for a in self)
