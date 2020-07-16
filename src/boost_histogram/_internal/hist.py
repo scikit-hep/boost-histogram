@@ -91,7 +91,7 @@ class Histogram(object):
 
         If you pass in a single argument, this will be treated as a
         histogram and this will convert the histogram to this type of
-        histogram (DensityHistogram, Histogram, BoostHistogram).
+        histogram.
 
         Parameters
         ----------
@@ -104,21 +104,23 @@ class Histogram(object):
         """
 
         # Allow construction from a raw histogram object (internal)
-        if not kwargs and len(axes) == 1 and isinstance(axes[0], _histograms):
+        if len(axes) == 1 and isinstance(axes[0], _histograms):
             self._hist = axes[0]
-            self.metadata = None
+            self.metadata = kwargs.get("metadata")
             self.axes = self._generate_axes_()
             return
 
         # If we construct with another Histogram, support that too
-        if not kwargs and len(axes) == 1 and isinstance(axes[0], Histogram):
+        if len(axes) == 1 and isinstance(axes[0], Histogram):
             self.__init__(axes[0]._hist)
             self.metadata = axes[0].metadata
             return
 
         # Keyword only trick (change when Python2 is dropped)
         with KWArgs(kwargs) as k:
-            storage = k.optional("storage", Double())
+            storage = k.optional("storage")
+            if storage is None:
+                storage = Double()
             self.metadata = k.optional("metadata")
 
         # Check for missed parenthesis or incorrect types
@@ -160,8 +162,7 @@ class Histogram(object):
         Return a new histogram given a new _hist, copying metadata.
         """
 
-        other = self.__class__(_hist)
-        other.metadata = self.metadata
+        other = self.__class__(_hist, metadata=self.metadata)
         return other
 
     @property
