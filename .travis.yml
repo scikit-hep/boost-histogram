@@ -6,6 +6,7 @@ git:
 branches:
   only:
   - master
+  - travisci
   - "/^v\\d+\\.\\d+(\\.\\d+)?(-\\S*)?$/"
 
 jobs:
@@ -28,9 +29,8 @@ install:
 - python3 -m pip install cibuildwheel==1.5.2
 
 script:
-- git fetch --unshallow
 - sed -i '/numpy/d' pyproject.toml
-- python3 -m cibuildwheel --output-dir dist
+- CIBW_ENVIRONMENT="SETUPTOOLS_SCM_PRETEND_VERSION=\"$TRAVIS_TAG\"" python3 -m cibuildwheel --output-dir dist
 
 deploy:
   provider: pypi
