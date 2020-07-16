@@ -193,7 +193,7 @@ end
 
 - Finish merging open PRs that you want in the new version
 - Add most recent changes to the `docs/CHANGELOG.md`
-- Sync master with develop using `git merge develop --ff-only` and push
+- Sync master with develop using `git checkout master; git merge develop --ff-only` and push
 - Make sure the full wheel build runs on master without issues (will happen
   automatically on push to master)
 - Make the GitHub release in the GitHub UI. Copy the changelog entries and
