@@ -32,8 +32,8 @@ namespace variant = boost::variant2;
 static_assert(
     mp11::mp_empty<mp11::mp_set_difference<
         mp11::mp_unique<mp11::mp_transform<bh::axis::traits::value_type, axis_variant>>,
-        mp11::mp_list<double, int, std::string, bool>>>::value,
-    "supported value types are double, int, std::string, bool; "
+        mp11::mp_list<double, int, std::string>>>::value,
+    "supported value types are double, int, std::string; "
     "new axis was added with different value type");
 
 template <class T>
@@ -60,7 +60,7 @@ struct c_array_t<std::string> : std::vector<std::string> {
     }
 };
 
-// for int, double, bool
+// for int, double
 template <class T>
 bool is_value(py::handle h) {
     if(py::isinstance<py::array>(h) && py::cast<py::array>(h).ndim() > 0)
@@ -99,8 +99,6 @@ using arg_t = variant::variant<c_array_t<double>,
                                double,
                                c_array_t<int>,
                                int,
-                               c_array_t<bool>,
-                               bool,
                                c_array_t<std::string>,
                                std::string>;
 
@@ -116,7 +114,7 @@ inline auto get_vargs(const vector_axis_variant& axes, const py::args& args) {
         axes,
         [args_it = args.begin(), vargs_it = vargs.begin()](const auto& ax) mutable {
             using T = bh::axis::traits::value_type<std::decay_t<decltype(ax)>>;
-            // T is one of: int, double, std::string, bool
+            // T is one of: int, double, std::string
 
             const auto& x = *args_it++;
             auto& v       = *vargs_it++;
