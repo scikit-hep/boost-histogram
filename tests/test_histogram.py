@@ -78,9 +78,9 @@ def test_fill_int_1d():
         h.fill()
     with pytest.raises(ValueError):
         h.fill(1, 2)
-    with pytest.raises(KeyError) as k:
+    with pytest.raises(TypeError) as k:
         h.fill(1, fiddlesticks=2)
-    assert k.value.args[0] == "Unidentified keyword(s) found: fiddlesticks"
+    assert k.value.args[0] == "Keyword(s) fiddlesticks not expected"
 
     h.fill(-3)
     assert h.empty()
@@ -963,13 +963,13 @@ def test_fill_with_sequence_1():
     assert a[1].value == 8
     assert a[2].value == 6
 
-    with pytest.raises(KeyError):
+    with pytest.raises(TypeError):
         a.fill((1, 2), foo=(1, 1))
     with pytest.raises(ValueError):
         a.fill((1, 2, 3), weight=(1, 2))
     with pytest.raises(ValueError):
         a.fill((1, 2), weight="ab")
-    with pytest.raises(KeyError):
+    with pytest.raises(TypeError):
         a.fill((1, 2), weight=(1, 1), foo=1)
     with pytest.raises(ValueError):
         a.fill((1, 2), weight=([1, 1], [2, 2]))

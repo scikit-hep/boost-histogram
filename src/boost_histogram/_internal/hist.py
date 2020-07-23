@@ -30,14 +30,19 @@ _histograms = (
 )
 
 
-def _fill_cast(value):
+def _fill_cast(value, inner=False):
     """
     Convert to NumPy arrays. Some buffer objects do not get converted by forcecast.
+    If not called by itself (inner=False), then will work through one level of tuple/list.
     """
-    if isinstance(value, string_types + (bytes,)) or not hasattr(value, "__iter__"):
+    if value is None or isinstance(value, string_types + (bytes,)):
         return value
-    else:
+    elif not inner and isinstance(value, (tuple, list)):
+        return tuple(_fill_cast(a, inner=True) for a in value)
+    elif hasattr(value, "__iter__") or hasattr(value, "__array__"):
         return np.ascontiguousarray(value)
+    else:
+        return value
 
 
 def _arg_shortcut(item):
@@ -276,68 +281,67 @@ class Histogram(object):
             available threads (usually two per core).
         """
 
-        # Convert to NumPy arrays
-        args = (_fill_cast(a) for a in args)
+        with KWArgs(kwargs) as kw:
+            weight = kw.optional("weight")
+            sample = kw.optional("sample")
+            threads = kw.optional("threads")
 
-        threads = kwargs.pop("threads", None)
+        # Convert to NumPy arrays
+        args = _fill_cast(args)
+        weight = _fill_cast(weight)
+        sample = _fill_cast(sample)
+        print(args, weight, sample)
 
         if threads is None or threads == 1:
-            self._hist.fill(*args, **kwargs)
+            self._hist.fill(*args, weight=weight, sample=sample)
+            return self
+
+        if threads == 0:
+            threads = os.cpu_count()
+
+        if (
+            self._hist._storage_type is _core.storage.mean
+            or self._hist._storage_type is _core.storage.weighted_mean
+        ):
+            raise RuntimeError("Mean histograms do not support threaded filling")
+
+        data = [np.array_split(a, threads) for a in args]
+
+        if weight is None or np.isscalar(weight):
+            weights = [weight] * threads
         else:
-            if threads == 0:
-                threads = os.cpu_count()
+            weights = np.array_split(weight, threads)
 
-            if (
-                self._hist._storage_type is _core.storage.mean
-                or self._hist._storage_type is _core.storage.weighted_mean
-            ):
-                raise RuntimeError("Mean histograms do not support threaded filling")
+        if sample is None or np.isscalar(sample):
+            samples = [sample] * threads
+        else:
+            samples = np.array_split(sample, threads)
 
-            weight = kwargs.pop("weight", None)
-            sample = kwargs.pop("sample", None)
+        if self._hist._storage_type is _core.storage.atomic_int64:
 
-            data = [np.array_split(a, threads) for a in args]
+            def fun(weight, sample, *args):
+                self._hist.fill(*args, weight=weight, sample=sample)
 
-            if weight is None or np.isscalar(weight):
-                weights = [weight] * threads
-            else:
-                weights = np.array_split(weight, threads)
+        else:
+            sum_lock = threading.Lock()
 
-            if sample is None or np.isscalar(sample):
-                samples = [sample] * threads
-            else:
-                samples = np.array_split(sample, threads)
+            def fun(weight, sample, *args):
+                local_hist = self._hist.__copy__()
+                local_hist.reset()
+                local_hist.fill(*args, weight=weight, sample=sample)
+                with sum_lock:
+                    self._hist += local_hist
 
-            if self._hist._storage_type is _core.storage.atomic_int64:
+        thread_list = [
+            threading.Thread(target=fun, args=arrays)
+            for arrays in zip(weights, samples, *data)
+        ]
 
-                def fun(weight, sample, *args):
-                    self._hist.fill(*args, weight=weight, sample=sample)
+        for thread in thread_list:
+            thread.start()
 
-            else:
-                sum_lock = threading.Lock()
-
-                def fun(weight, sample, *args):
-                    local_hist = self._hist.__copy__()
-                    local_hist.reset()
-                    kw = {}
-                    if weight is not None:
-                        kw["weight"] = weight
-                    if sample is not None:
-                        kw["sample"] = sample
-                    local_hist.fill(*args, **kw)
-                    with sum_lock:
-                        self._hist += local_hist
-
-            thread_list = [
-                threading.Thread(target=fun, args=arrays)
-                for arrays in zip(weights, samples, *data)
-            ]
-
-            for thread in thread_list:
-                thread.start()
-
-            for thread in thread_list:
-                thread.join()
+        for thread in thread_list:
+            thread.join()
 
         return self
 
