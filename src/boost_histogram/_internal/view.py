@@ -90,28 +90,59 @@ class WeightedSumView(View):
         if ufunc is np.equal and method == "__call__" and len(inputs) == 2:
             return ufunc(np.asarray(inputs[0]), np.asarray(inputs[1]), **kwargs)
 
-        # ufuncts that are allowed to simply combine
-        simple_pairs = (np.add,)
+        # Support unary + and -
+        if method == "__call__" and len(inputs) == 1:
+            if ufunc in {np.negative, np.positive}:
+                (result,) = kwargs.pop("out", [np.empty(self.shape, self.dtype)])
 
-        if (
-            ufunc in simple_pairs
-            and method == "__call__"
-            and len(inputs) == 2
-            and isinstance(inputs[1], self.__class__)
-        ):
-            (result,) = (
-                kwargs.pop("out")
-                if "out" in kwargs
-                else [np.empty(self.shape, self.dtype)]
-            )
-            for field in self._FIELDS:
-                ufunc(inputs[0][field], inputs[1][field], out=result[field], **kwargs)
-            return result.view(self.__class__)
+                ufunc(inputs[0]["value"], out=result["value"], **kwargs)
+                result["variance"] = inputs[0]["variance"]
+                return result.view(self.__class__)
+
+        if method == "__call__" and len(inputs) == 2:
+            (result,) = kwargs.pop("out", [np.empty(self.shape, self.dtype)])
+
+            # Addition of two views
+            if isinstance(inputs[1], self.__class__):
+                if ufunc in {np.add}:
+                    ufunc(
+                        inputs[0]["value"],
+                        inputs[1]["value"],
+                        out=result["value"],
+                        **kwargs
+                    )
+                    ufunc(
+                        inputs[0]["variance"],
+                        inputs[1]["variance"],
+                        out=result["variance"],
+                        **kwargs
+                    )
+                    return result.view(self.__class__)
+
+            # View with normal value or array
+            elif not isinstance(inputs[1], self.__class__):
+                if ufunc in {np.add, np.subtract}:
+                    ufunc(inputs[0]["value"], inputs[1], out=result["value"], **kwargs)
+                    np.add(
+                        inputs[0]["variance"],
+                        inputs[1] ** 2,
+                        out=result["variance"],
+                        **kwargs
+                    )
+                    return result.view(self.__class__)
+
+                elif ufunc in {np.multiply, np.divide, np.true_divide, np.floor_divide}:
+                    ufunc(inputs[0]["value"], inputs[1], out=result["value"], **kwargs)
+                    ufunc(
+                        inputs[0]["variance"],
+                        np.abs(inputs[1]),
+                        out=result["variance"],
+                        **kwargs
+                    )
+                    return result.view(self.__class__)
 
         # ufuncs that are allowed to reduce
-        simple_reduces = (np.add,)
-
-        if ufunc in simple_reduces and method == "reduce" and len(inputs) == 1:
+        if ufunc in {np.add} and method == "reduce" and len(inputs) == 1:
             results = (ufunc.reduce(self[field], **kwargs) for field in self._FIELDS)
             return self._PARENT._make(*results)
 
