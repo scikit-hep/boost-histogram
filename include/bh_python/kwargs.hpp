@@ -49,6 +49,6 @@ inline void none_only_arg(py::kwargs& kwargs, const char* name) {
 inline void finalize_args(const py::kwargs& kwargs) {
     if(kwargs.size() > 0) {
         auto keys = py::str(", ").attr("join")(kwargs.attr("keys")());
-        throw py::key_error(py::str("Unidentified keyword(s) found: {0}").format(keys));
+        throw py::type_error(py::str("Keyword(s) {0} not expected").format(keys));
     }
 }
