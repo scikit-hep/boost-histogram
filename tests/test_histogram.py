@@ -1186,3 +1186,18 @@ def test_add_broadcast():
 
     h5 = h + np.ones((1, 22))
     assert h5.sum(flow=True) == 12 * 22
+
+
+# Issue #431
+def test_mul_shallow():
+    import threading
+
+    my_lock = threading.Lock()
+
+    h = bh.Histogram(bh.axis.Integer(0, 3, metadata=my_lock), metadata=my_lock)
+    h.fill([0, 0, 0, 1])
+
+    h2 = h * 2
+
+    assert h.metadata is h2.metadata
+    assert h.axes[0].metadata is h2.axes[0].metadata

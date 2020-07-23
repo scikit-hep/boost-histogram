@@ -187,7 +187,7 @@ class Histogram(object):
         return self.view(False)
 
     def __add__(self, other):
-        result = self.copy()
+        result = self.copy(deep=False)
         return result.__iadd__(other)
 
     def __iadd__(self, other):
@@ -211,18 +211,18 @@ class Histogram(object):
 
     # If these fail, the underlying object throws the correct error
     def __mul__(self, other):
-        result = self.copy()
+        result = self.copy(deep=False)
         return result._compute_inplace_op("__imul__", other)
 
     def __rmul__(self, other):
         return self * other
 
     def __truediv__(self, other):
-        result = self.copy()
+        result = self.copy(deep=False)
         return result._compute_inplace_op("__itruediv__", other)
 
     def __div__(self, other):
-        result = self.copy()
+        result = self.copy(deep=False)
         return result._compute_inplace_op("__idiv__", other)
 
     def _compute_inplace_op(self, name, other):
