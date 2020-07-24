@@ -80,3 +80,21 @@ def test_view_unary(v):
     v2 = -v
     assert_allclose(-v.value, v2.value)
     assert_allclose(v.variance, v2.variance)
+
+
+def test_view_add_same(v):
+    v2 = v + v
+
+    assert_allclose(v.value * 2, v2.value)
+    assert_allclose(v.variance * 2, v2.variance)
+
+    v2 = v + v[1]
+    assert_allclose(v.value + 3, v2.value)
+    assert_allclose(v.variance + 3, v2.variance)
+
+    v2 = v + bh.accumulators.WeightedSum(5, 6)
+    assert_allclose(v.value + 5, v2.value)
+    assert_allclose(v.variance + 6, v2.variance)
+
+    with pytest.raises(TypeError):
+        v2 = v + bh.accumulators.WeightedMean(1, 2, 5, 6)
