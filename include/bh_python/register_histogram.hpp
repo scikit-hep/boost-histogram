@@ -80,9 +80,7 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
         .def_property_readonly_static(
             "_storage_type",
             [](py::object) {
-                return py::detail::get_type_handle(
-                    typeid(typename histogram_t::storage_type), true);
-                // Change to py::type<T>() if added to pybind11
+                return py::type::of<typename histogram_t::storage_type>();
             })
 
         ;

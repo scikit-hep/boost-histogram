@@ -17,9 +17,7 @@
 /// The mean fill can be implemented once. (sum fill varies slightly)
 template <class T>
 decltype(auto) make_mean_fill() {
-    return [](T& self, py::object value, py::kwargs kwargs) {
-        py::object weight = optional_arg(kwargs, "weight");
-        finalize_args(kwargs);
+    return [](T& self, py::object value, py::object weight) {
         if(weight.is_none()) {
             py::vectorize([](T& self, double val) {
                 self(val);
@@ -38,10 +36,7 @@ decltype(auto) make_mean_fill() {
 /// The mean call can be implemented once. (sum uses +=)
 template <class T>
 decltype(auto) make_mean_call() {
-    return [](T& self, double value, py::kwargs kwargs) {
-        py::object weight = optional_arg(kwargs, "weight");
-        finalize_args(kwargs);
-
+    return [](T& self, double value, py::object weight) {
         if(weight.is_none())
             self(value);
         else
@@ -96,9 +91,7 @@ void register_accumulators(py::module& accumulators) {
 
         .def(
             "fill",
-            [](weighted_sum& self, py::object value, py::kwargs kwargs) {
-                py::object variance = optional_arg(kwargs, "variance");
-                finalize_args(kwargs);
+            [](weighted_sum& self, py::object value, py::object variance) {
                 if(variance.is_none()) {
                     py::vectorize([](weighted_sum& self, double val) {
                         self += bh::weight(val);
@@ -113,6 +106,8 @@ void register_accumulators(py::module& accumulators) {
                 return self;
             },
             "value"_a,
+            py::kw_only(),
+            "variance"_a = py::none(),
             "Fill the accumulator with values. Optional variance parameter.")
 
         .def_static("_make", py::vectorize([](const double& a, const double& b) {
@@ -201,11 +196,15 @@ void register_accumulators(py::module& accumulators) {
         .def("__call__",
              make_mean_call<weighted_mean>(),
              "value"_a,
+             py::kw_only(),
+             "weight"_a = py::none(),
              "Fill with value and optional keyword-only weight")
 
         .def("fill",
              make_mean_fill<weighted_mean>(),
              "value"_a,
+             py::kw_only(),
+             "weight"_a = py::none(),
              "Fill the accumulator with values. Optional weight parameter.")
 
         .def_static(
@@ -280,11 +279,15 @@ void register_accumulators(py::module& accumulators) {
         .def("__call__",
              make_mean_call<mean>(),
              "value"_a,
+             py::kw_only(),
+             "weight"_a = py::none(),
              "Fill with value and optional keyword-only weight")
 
         .def("fill",
              make_mean_fill<mean>(),
              "value"_a,
+             py::kw_only(),
+             "weight"_a = py::none(),
              "Fill the accumulator with values. Optional weight parameter.")
 
         .def_static(

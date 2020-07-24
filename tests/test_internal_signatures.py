@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
+import inspect
+
 import pytest
 
 import boost_histogram as bh
 from boost_histogram._internal.sig_tools import make_signature_params
 
-import inspect
+import env
 
-pytestmark = pytest.mark.skipif(
-    not hasattr(inspect, "Parameter"), reason="Python 3 only"
-)
+
+pytestmark = pytest.mark.skipif(env.PY2, reason="Python 2 does not have signatures")
 
 
 def test_simple_sigs():

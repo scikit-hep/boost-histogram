@@ -18,6 +18,8 @@ except ImportError:
 
 from collections import OrderedDict
 
+import env
+
 
 def test_init():
     bh.Histogram()
@@ -1074,9 +1076,10 @@ def test_axes_lifetime():
 
     ax = h.axes[0]
 
-    # 2 is the minimum refcount, so the *python* object should be deleted
-    # after the del; hopefully the C++ object lives through the axis instance.
-    assert sys.getrefcount(h) == 2
+    if env.CPYTHON:
+        # 2 is the minimum refcount, so the *python* object should be deleted
+        # after the del; hopefully the C++ object lives through the axis instance.
+        assert sys.getrefcount(h) == 2
 
     del h
 

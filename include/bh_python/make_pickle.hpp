@@ -197,7 +197,7 @@ class tuple_oarchive {
     std::enable_if_t<std::is_arithmetic<T>::value == true, tuple_oarchive&>
     operator<<(const std::vector<T>& v) {
         // fast version for vector of arithmetic types
-        py::array_t<T> a(v.size(), v.data());
+        py::array_t<T> a(static_cast<py::ssize_t>(v.size()), v.data());
         this->operator<<(static_cast<const py::object&>(a));
         return *this;
     }
@@ -216,7 +216,7 @@ class tuple_oarchive {
     std::enable_if_t<std::is_arithmetic<T>::value == true, tuple_oarchive&>
     operator<<(const bh::detail::array_wrapper<T>& w) {
         // fast version
-        py::array_t<T> a(w.size, w.ptr);
+        py::array_t<T> a(static_cast<py::ssize_t>(w.size), w.ptr);
         this->operator<<(static_cast<const py::object&>(a));
         return *this;
     }

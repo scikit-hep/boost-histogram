@@ -11,7 +11,6 @@ from setup_helpers import Pybind11Extension, ParallelCompile  # noqa: E402
 
 del sys.path[-1]
 
-
 # Use the environment variable NPY_NUM_BUILD_JOBS
 ParallelCompile("NPY_NUM_BUILD_JOBS").install()
 
