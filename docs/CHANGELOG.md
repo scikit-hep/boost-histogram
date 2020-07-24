@@ -1,6 +1,24 @@
 # What's new in boost-histogram
 
 ## Version 0.10
+### Version 0.10.1
+
+Several fixes were made, mostly related to Weight storage histograms from Uproot 4.
+
+#### Bug fixes
+
+* Reduction on `h.axes.widths` supported again [#428][]
+* Operations shallow copy (non-copyable metadata supported) [#433][]
+* Pandas Series as samples/weights supported [#434][]
+* WeightedSumView supports standard array operations [#432][]
+
+
+[#428]: https://github.com/scikit-hep/boost-histogram/pull/428
+[#433]: https://github.com/scikit-hep/boost-histogram/pull/433
+[#434]: https://github.com/scikit-hep/boost-histogram/pull/434
+[#432]: https://github.com/scikit-hep/boost-histogram/pull/432
+
+
 ### Version 0.10.0
 
 This version was released during PyHEP 2020. Several improvements were made to
@@ -16,6 +34,7 @@ usability when plotting and indexing.
 * AxesTuple now available publicly for subprojects [#419][]
 
 #### Bug fixes
+
 * Histograms support operations with arrays, no longer take the first element only [#417][]
 
 [#414]: https://github.com/scikit-hep/boost-histogram/pull/414
@@ -40,10 +59,12 @@ along with a few new features to better support downstream projects.
 * Deprecated `cpp` module removed [#402][]
 
 #### Developer changes
+
 * Subclasses can override axes generation [#401][]
 * `[dev]` extra now installs `pytest` [#401][]
 
 #### Bug fixes
+
 * Fix `numpy.histogramdd` return structure [#406][]
 * Travis deploy multi-arch fixes [#399][]
 * Selecting on a bool axes supports 2D+ histograms [#398][]
