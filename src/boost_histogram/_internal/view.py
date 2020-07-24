@@ -100,42 +100,45 @@ class WeightedSumView(View):
                 return result.view(self.__class__)
 
         if method == "__call__" and len(inputs) == 2:
+            input_0 = inputs[0]
+            input_1 = np.asarray(inputs[1])
+
             (result,) = kwargs.pop("out", [np.empty(self.shape, self.dtype)])
 
             # Addition of two views
-            if isinstance(inputs[1], self.__class__):
+            if input_0.dtype == input_1.dtype:
                 if ufunc in {np.add}:
                     ufunc(
-                        inputs[0]["value"],
-                        inputs[1]["value"],
+                        input_0["value"],
+                        input_1["value"],
                         out=result["value"],
                         **kwargs
                     )
                     ufunc(
-                        inputs[0]["variance"],
-                        inputs[1]["variance"],
+                        input_0["variance"],
+                        input_1["variance"],
                         out=result["variance"],
                         **kwargs
                     )
                     return result.view(self.__class__)
 
             # View with normal value or array
-            elif not isinstance(inputs[1], self.__class__):
+            else:
                 if ufunc in {np.add, np.subtract}:
-                    ufunc(inputs[0]["value"], inputs[1], out=result["value"], **kwargs)
+                    ufunc(input_0["value"], input_1, out=result["value"], **kwargs)
                     np.add(
-                        inputs[0]["variance"],
-                        inputs[1] ** 2,
+                        input_0["variance"],
+                        input_1 ** 2,
                         out=result["variance"],
                         **kwargs
                     )
                     return result.view(self.__class__)
 
                 elif ufunc in {np.multiply, np.divide, np.true_divide, np.floor_divide}:
-                    ufunc(inputs[0]["value"], inputs[1], out=result["value"], **kwargs)
+                    ufunc(input_0["value"], input_1, out=result["value"], **kwargs)
                     ufunc(
-                        inputs[0]["variance"],
-                        np.abs(inputs[1]),
+                        input_0["variance"],
+                        np.abs(input_1),
                         out=result["variance"],
                         **kwargs
                     )
