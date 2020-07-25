@@ -100,7 +100,7 @@ class WeightedSumView(View):
                 return result.view(self.__class__)
 
         if method == "__call__" and len(inputs) == 2:
-            input_0 = inputs[0]
+            input_0 = np.asarray(inputs[0])
             input_1 = np.asarray(inputs[1])
 
             (result,) = kwargs.pop("out", [np.empty(self.shape, self.dtype)])
@@ -125,23 +125,42 @@ class WeightedSumView(View):
             # View with normal value or array
             else:
                 if ufunc in {np.add, np.subtract}:
-                    ufunc(input_0["value"], input_1, out=result["value"], **kwargs)
-                    np.add(
-                        input_0["variance"],
-                        input_1 ** 2,
-                        out=result["variance"],
-                        **kwargs
-                    )
+                    if self.dtype == input_0.dtype:
+                        ufunc(input_0["value"], input_1, out=result["value"], **kwargs)
+                        np.add(
+                            input_0["variance"],
+                            input_1 ** 2,
+                            out=result["variance"],
+                            **kwargs
+                        )
+                    else:
+                        ufunc(input_0, input_1["value"], out=result["value"], **kwargs)
+                        np.add(
+                            input_0 ** 2,
+                            input_1["variance"],
+                            out=result["variance"],
+                            **kwargs
+                        )
                     return result.view(self.__class__)
 
                 elif ufunc in {np.multiply, np.divide, np.true_divide, np.floor_divide}:
-                    ufunc(input_0["value"], input_1, out=result["value"], **kwargs)
-                    ufunc(
-                        input_0["variance"],
-                        np.abs(input_1),
-                        out=result["variance"],
-                        **kwargs
-                    )
+                    if self.dtype == input_0.dtype:
+                        ufunc(input_0["value"], input_1, out=result["value"], **kwargs)
+                        ufunc(
+                            input_0["variance"],
+                            np.abs(input_1),
+                            out=result["variance"],
+                            **kwargs
+                        )
+                    else:
+                        ufunc(input_0, input_1["value"], out=result["value"], **kwargs)
+                        ufunc(
+                            np.abs(input_0),
+                            input_1["variance"],
+                            out=result["variance"],
+                            **kwargs
+                        )
+
                     return result.view(self.__class__)
 
         # ufuncs that are allowed to reduce
