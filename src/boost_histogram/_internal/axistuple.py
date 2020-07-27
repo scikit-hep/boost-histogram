@@ -20,7 +20,7 @@ class ArrayTuple(tuple):
         if name.startswith("_"):
             return super().__getattr__(name)
         elif name in self._REDUCTIONS:
-            return partial(getattr(np, name), np.asarray(tuple(self), dtype=object))
+            return partial(getattr(np, name), np.broadcast_arrays(*self))
         else:
             return self.__class__(getattr(a, name) for a in self)
 
