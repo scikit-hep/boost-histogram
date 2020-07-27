@@ -1212,3 +1212,21 @@ def test_reductions():
     widths_2 = np.prod(h.axes.widths, axis=0)
 
     assert_array_equal(widths_1, widths_2)
+
+
+# Issue 435
+def test_np_scalars():
+    hist = bh.Histogram(bh.axis.Regular(30, 1, 500, transform=bh.axis.transform.log))
+    hist.fill([7, 7])
+
+    hist2 = hist / np.float64(2.0)
+    assert hist2[bh.loc(7)] == 1.0
+
+    hist2 = hist / hist.axes.widths.prod(axis=0)
+    assert hist2[bh.loc(7)] == approx(1.3467513416439476)
+
+    with pytest.raises(ValueError):
+        hist / np.array([1, 2, 3])
+
+    hist /= np.float64(2.0)
+    assert hist[bh.loc(7)] == 1.0

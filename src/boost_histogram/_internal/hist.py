@@ -230,7 +230,7 @@ class Histogram(object):
             getattr(self._hist, name)(other._hist)
         elif isinstance(other, _histograms):
             getattr(self._hist, name)(other)
-        elif hasattr(other, "shape"):
+        elif hasattr(other, "shape") and other.shape:
             if len(other.shape) != self.ndim:
                 raise ValueError(
                     "Number of dimensions {0} must match histogram {1}".format(
