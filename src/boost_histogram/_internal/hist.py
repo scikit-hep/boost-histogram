@@ -245,7 +245,9 @@ class Histogram(object):
                 getattr(view, name)(other)
             else:
                 raise ValueError(
-                    "Wrong shape, expected {0} or {1}".format(self.shape, self.extent)
+                    "Wrong shape {0}, expected {1} or {2}".format(
+                        other.shape, self.shape, self.axes.extent
+                    )
                 )
         else:
             view = self.view(flow=False)
