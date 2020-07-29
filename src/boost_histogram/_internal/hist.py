@@ -292,7 +292,6 @@ class Histogram(object):
         args = _fill_cast(args)
         weight = _fill_cast(weight)
         sample = _fill_cast(sample)
-        print(args, weight, sample)
 
         if threads is None or threads == 1:
             self._hist.fill(*args, weight=weight, sample=sample)
