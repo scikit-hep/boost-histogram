@@ -176,7 +176,7 @@ If you are on a Linux system that is not part of the "many" in manylinux, such a
 
 #### Conda-Forge
 
-The boost-histogram package is available on Conda-Forge, as well. All supported versions are available with the exception of Python 2.7, which is no longer supported by conda-forge direclty. If you really need boost-histogram + Conda + Python 2.7, please open an issue.
+The boost-histogram package is available on Conda-Forge, as well. All supported versions are available with the exception of Python 2.7, which is no longer supported by conda-forge directly. If you really need boost-histogram + Conda + Python 2.7, please open an issue.
 
 ```bash
 conda install -c conda-forge boost-histogram
