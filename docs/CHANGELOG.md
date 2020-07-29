@@ -8,18 +8,16 @@ Several fixes were made, mostly related to Weight storage histograms from Uproot
 #### Bug fixes
 
 * Reduction on `h.axes.widths` supported again [#428][]
+* WeightedSumView supports standard array operations [#432][]
 * Operations shallow copy (non-copyable metadata supported) [#433][]
 * Pandas Series as samples/weights supported [#434][]
-* WeightedSumView supports standard array operations [#432][]
 * Support NumPy scalars in operations [#436][]
 
-
 [#428]: https://github.com/scikit-hep/boost-histogram/pull/428
+[#432]: https://github.com/scikit-hep/boost-histogram/pull/432
 [#433]: https://github.com/scikit-hep/boost-histogram/pull/433
 [#434]: https://github.com/scikit-hep/boost-histogram/pull/434
-[#432]: https://github.com/scikit-hep/boost-histogram/pull/432
 [#436]: https://github.com/scikit-hep/boost-histogram/pull/436
-
 
 ### Version 0.10.0
 
