@@ -1,6 +1,21 @@
 # What's new in boost-histogram
 
 ## Version 0.10
+### Version 0.10.2
+
+Quick fix for extra print statement in fill.
+
+#### Bug fixes
+
+* Fixed debugging print statement in fill. [#438]
+
+#### Developer changes
+
+* Added CI/pre-commit check for print statements [#438]
+
+[#438]: https://github.com/scikit-hep/boost-histogram/pull/438
+
+
 ### Version 0.10.1
 
 Several fixes were made, mostly related to Weight storage histograms from Uproot 4.
