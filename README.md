@@ -218,6 +218,10 @@ We would like to acknowledge the contributors that made this project possible ([
   <tr>
     <td align="center"><a href="https://ddavis.io/"><img src="https://avatars2.githubusercontent.com/u/3202090?v=4" width="100px;" alt=""/><br /><sub><b>Doug Davis</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/issues?q=author%3Adouglasdavis" title="Bug reports">🐛</a></td>
     <td align="center"><a href="https://github.com/pgrimaud"><img src="https://avatars1.githubusercontent.com/u/1866496?v=4" width="100px;" alt=""/><br /><sub><b>Pierre Grimaud</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/commits?author=pgrimaud" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/beojan"><img src="https://avatars0.githubusercontent.com/u/3727925?v=4" width="100px;" alt=""/><br /><sub><b>Beojan Stanislaus</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/issues?q=author%3Abeojan" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://github.com/Popinaodude"><img src="https://avatars2.githubusercontent.com/u/20911987?v=4" width="100px;" alt=""/><br /><sub><b>Popinaodude</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/issues?q=author%3APopinaodude" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://github.com/colizz"><img src="https://avatars2.githubusercontent.com/u/44885400?v=4" width="100px;" alt=""/><br /><sub><b>Congqiao Li</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/issues?q=author%3Acolizz" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://github.com/alexander-held"><img src="https://avatars0.githubusercontent.com/u/45009355?v=4" width="100px;" alt=""/><br /><sub><b>alexander-held</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/issues?q=author%3Aalexander-held" title="Bug reports">🐛</a></td>
   </tr>
 </table>
 
