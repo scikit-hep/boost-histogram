@@ -7,14 +7,15 @@ Quick fix for extra print statement in fill.
 
 #### Bug fixes
 
-* Fixed debugging print statement in fill. [#438]
+* Fixed debugging print statement in fill. [#438][]
 
 #### Developer changes
 
-* Added CI/pre-commit check for print statements [#438]
+* Added CI/pre-commit check for print statements [#438][]
+* Formatting CMakeLists now too [#339][]
 
 [#438]: https://github.com/scikit-hep/boost-histogram/pull/438
-
+[#439]: https://github.com/scikit-hep/boost-histogram/pull/439
 
 ### Version 0.10.1
 
