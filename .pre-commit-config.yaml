@@ -19,6 +19,12 @@ repos:
   - id: requirements-txt-fixer
   - id: trailing-whitespace
 
+- repo: https://github.com/cheshirekow/cmake-format-precommit
+  rev: v0.6.10
+  hooks:
+  - id: cmake-format
+    additional_dependencies: [pyyaml]
+
 - repo: https://github.com/pycqa/flake8
   rev: 3.8.3
   hooks:
