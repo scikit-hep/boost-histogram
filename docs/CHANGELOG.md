@@ -12,7 +12,7 @@ Quick fix for extra print statement in fill.
 #### Developer changes
 
 * Added CI/pre-commit check for print statements [#438][]
-* Formatting CMakeLists now too [#339][]
+* Formatting CMakeLists now too [#439][]
 
 [#438]: https://github.com/scikit-hep/boost-histogram/pull/438
 [#439]: https://github.com/scikit-hep/boost-histogram/pull/439
