@@ -94,6 +94,42 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "beojan",
+      "name": "Beojan Stanislaus",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/3727925?v=4",
+      "profile": "https://github.com/beojan",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "Popinaodude",
+      "name": "Popinaodude",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/20911987?v=4",
+      "profile": "https://github.com/Popinaodude",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "colizz",
+      "name": "Congqiao Li",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/44885400?v=4",
+      "profile": "https://github.com/colizz",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "alexander-held",
+      "name": "alexander-held",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/45009355?v=4",
+      "profile": "https://github.com/alexander-held",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7
