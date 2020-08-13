@@ -70,7 +70,7 @@ jobs:
     - uses: actions/setup-python@v2
 
     - name: Install cibuildwheel
-      run: python -m pip install cibuildwheel==1.5.2
+      run: python -m pip install cibuildwheel==1.5.5
 
     - name: Build wheel
       run: python -m cibuildwheel --output-dir wheelhouse
@@ -81,6 +81,10 @@ jobs:
 
     - name: Show files
       run: ls -lh wheelhouse
+      shell: bash
+
+    - name: Verify clean directory
+      run: git diff --exit-code
       shell: bash
 
     - name: Upload wheels
@@ -102,7 +106,7 @@ jobs:
     - uses: actions/setup-python@v2
 
     - name: Install cibuildwheel
-      run: python -m pip install cibuildwheel==1.5.2
+      run: python -m pip install cibuildwheel==1.5.5
 
     - uses: ilammy/msvc-dev-cmd@v1
 
@@ -126,6 +130,10 @@ jobs:
 
     - name: Show files
       run: ls -lh wheelhouse
+      shell: bash
+
+    - name: Verify clean directory
+      run: git diff --exit-code
       shell: bash
 
     - uses: actions/upload-artifact@v2
