@@ -182,7 +182,7 @@ fish shell.
 for f in *
     cd $f
     git fetch
-    git checkout boost-1.74.0 || echo "Not found"
+    git checkout boost-1.75.0 || echo "Not found"
     cd ..
 end
 ```
