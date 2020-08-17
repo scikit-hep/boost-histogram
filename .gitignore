@@ -38,7 +38,10 @@
 
 # Outputs
 /examples/*.png
-*.pkl
+/examples/*.pkl
+/tests/*.pkl
+/*.pkl
+/notebooks/*.pkl
 
 # Python binary files
 *.pyc
