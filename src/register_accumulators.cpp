@@ -18,7 +18,7 @@
 template <class T>
 decltype(auto) make_mean_fill() {
     return [](T& self, py::object value, py::kwargs kwargs) {
-        py::object weight = optional_arg(kwargs, "weight", py::none());
+        py::object weight = optional_arg(kwargs, "weight");
         finalize_args(kwargs);
         if(weight.is_none()) {
             py::vectorize([](T& self, double val) {
@@ -39,7 +39,7 @@ decltype(auto) make_mean_fill() {
 template <class T>
 decltype(auto) make_mean_call() {
     return [](T& self, double value, py::kwargs kwargs) {
-        py::object weight = optional_arg(kwargs, "weight", py::none());
+        py::object weight = optional_arg(kwargs, "weight");
         finalize_args(kwargs);
 
         if(weight.is_none())
@@ -97,7 +97,7 @@ void register_accumulators(py::module& accumulators) {
         .def(
             "fill",
             [](weighted_sum& self, py::object value, py::kwargs kwargs) {
-                py::object variance = optional_arg(kwargs, "variance", py::none());
+                py::object variance = optional_arg(kwargs, "variance");
                 finalize_args(kwargs);
                 if(variance.is_none()) {
                     py::vectorize([](weighted_sum& self, double val) {
