@@ -1,5 +1,13 @@
 # What's new in boost-histogram
 
+## DEVELOP
+
+* Fixed reading pickles from boost-histogram 0.6-0.8 [#445][]
+
+
+[#445]: https://github.com/scikit-hep/boost-histogram/pull/445
+
+
 ## Version 0.10
 ### Version 0.10.2
 
