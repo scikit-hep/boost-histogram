@@ -392,7 +392,7 @@ class Histogram(object):
 
     def __setstate__(self, state):
         self._hist = state["_hist"]
-        self.metadata = state["metadata"]
+        self.metadata = state.get("metadata", None)
         self.axes = self._generate_axes_()
 
     def __repr__(self):
