@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import pytest
 
+import boost_histogram  # noqa: F401
+
 
 @pytest.fixture(params=(False, True), ids=("no_growth", "growth"))
 def growth(request):
