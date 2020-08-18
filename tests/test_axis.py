@@ -141,6 +141,8 @@ class TestRegular(Axis):
             bh.axis.Regular(1, 1.0, 2.0, transform=bh.axis.transform.Pow)
         # TODO: These errors could be better
 
+        assert 1 == 2
+
         ax = bh.axis.Regular(1, 2, 3)
         assert isinstance(ax, bh.axis.Regular)
         assert ax.options == bh.axis.options(underflow=True, overflow=True)
