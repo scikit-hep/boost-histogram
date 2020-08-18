@@ -5,6 +5,10 @@ from pytest import approx
 import boost_histogram as bh
 
 
+def new_test_fails():
+    assert 1 == 2
+
+
 @pytest.mark.parametrize("opt,extent", (("uo", 2), ("", 0)))
 def test_make_regular_1D(opt, extent):
     hist = bh.Histogram(

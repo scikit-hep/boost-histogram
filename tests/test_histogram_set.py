@@ -20,6 +20,8 @@ def test_1D_set_bin():
     h[bh.overflow] = 4
     assert h[bh.overflow] == 4.0
 
+    assert 1 == 2
+
 
 def test_2d_set_bin():
 

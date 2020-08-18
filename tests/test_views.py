@@ -17,6 +17,8 @@ def test_basic_view(v):
     assert_allclose(v.value, [0, 3, 2, 1])
     assert_allclose(v.variance, [0, 3, 2, 1])
 
+    assert 1 == 2
+
 
 def test_view_mul(v):
     v2 = v * 2
