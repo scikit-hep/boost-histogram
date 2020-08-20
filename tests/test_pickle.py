@@ -137,7 +137,13 @@ def test_example():
 
 @pytest.mark.parametrize("x", [1, 2, 3])
 def test_param(x):
+    # This
+    # is
+    # very
+    # long
+
     y = 2
+
     assert pow(y, 2) == x + 1
 
 
