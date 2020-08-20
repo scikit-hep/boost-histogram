@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["2.7", "3.5", "3.8"] # Waiting on CPython or PyBind11 fix: , "3.9-dev"]
+        python-version: ["3.8"]
 
     name: CMake Python ${{ matrix.python-version }}
 
