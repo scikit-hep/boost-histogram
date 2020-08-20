@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10...3.16)
+cmake_minimum_required(VERSION 3.10...3.18)
 
 project(BOOST_HISTOGRAM LANGUAGES CXX)
 # Version is added later
@@ -160,6 +160,8 @@ endif()
 
 # Support installing
 install(DIRECTORY "src/boost_histogram" DESTINATION ".")
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/boost_histogram/version.py"
+        DESTINATION "boost_histogram")
 install(TARGETS _core DESTINATION "boost_histogram")
 
 # Tests (Requires pytest to be available to run)
@@ -196,7 +198,7 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/boost_histogram/version.py")
   # Pick out just the version
   string(REGEX MATCH [=[[0-9]+\.[0-9]+\.[0-9]+]=] VERSION_STRING "${VERSION_STRING}")
 else()
-  python_import(setuptools_scm)
+  python_import(setuptools_scm toml)
 
   execute_process(
     COMMAND
