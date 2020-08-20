@@ -128,7 +128,17 @@ def test_compare_copy_hist(metadata):
     if metadata is not copy.copy(metadata):
         assert orig.axes[0].metadata is not dnew.axes[0].metadata
 
-    assert 1 == 2
+
+def test_example():
+    x = 1
+    y = 2
+    assert pow(y, 2) == x + 1
+
+
+@pytest.mark.parametrize("x", [1, 2, 3])
+def test_param(x):
+    y = 2
+    assert pow(y, 2) == x + 1
 
 
 @pytest.mark.parametrize("axis,args,opts", axes_creations)
