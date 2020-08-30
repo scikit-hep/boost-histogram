@@ -1,19 +1,99 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
-from setuptools import setup, Extension
-from setuptools.command.build_ext import build_ext
-import setuptools
+
+from setuptools import setup
+
 import sys
+import os
+import distutils.ccompiler
 
 
-# Use -j N or set the environment variable NPY_NUM_BUILD_JOBS
-try:
-    from numpy.distutils.ccompiler import CCompiler_compile
-    import distutils.ccompiler
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+from setup_helpers import CppExtension  # noqa: E402
 
-    distutils.ccompiler.CCompiler.compile = CCompiler_compile
-except ImportError:
-    print("Numpy not found, parallel compile not available")
+del sys.path[-1]
+
+
+# Optional parallel compile utility
+# inspired by: http://stackoverflow.com/questions/11013851/speeding-up-build-process-with-distutils
+# and: https://github.com/tbenthompson/cppimport/blob/stable/cppimport/build_module.py
+# and NumPy's parallel distutils module: https://github.com/numpy/numpy/blob/master/numpy/distutils/ccompiler.py
+def make_parallel_compile(envvar=None, default=0, max=0):
+    """
+    Make a parallel compile function.
+
+    envvar: Set an environment variable to control the compilation threads, like NPY_NUM_BUILD_JOBS
+    default: 0 will automatically multithread, or 1 will only multithread if the envvar is set.
+    max: The limit for automatic multithreading if non-zero
+
+    To use:
+
+        import distutils.ccompiler
+        distutils.ccompiler.CCompiler.compile = make_parallel_compile("NPY_NUM_BUILD_JOBS")
+
+    """
+
+    def parallel_compile(
+        self,
+        sources,
+        output_dir=None,
+        macros=None,
+        include_dirs=None,
+        debug=0,
+        extra_preargs=None,
+        extra_postargs=None,
+        depends=None,
+    ):
+
+        # These lines are copied directly from distutils.ccompiler.CCompiler
+        macros, objects, extra_postargs, pp_opts, build = self._setup_compile(
+            output_dir, macros, include_dirs, sources, depends, extra_postargs
+        )
+        cc_args = self._get_cc_args(pp_opts, debug, extra_preargs)
+
+        N = default
+
+        # Determine the number of compilation threads, unless set by an environment variable.
+        if envvar is not None:
+            N = int(os.environ.get(envvar, default))
+
+        def _single_compile(obj):
+            try:
+                src, ext = build[obj]
+            except KeyError:
+                return
+            self._compile(obj, src, ext, cc_args, extra_postargs, pp_opts)
+
+        try:
+            import multiprocessing
+            import multiprocessing.pool
+        except ImportError:
+            N = 1
+
+        if N == 0:
+            try:
+                N = multiprocessing.cpu_count()
+                N = max if max and max < N else N
+            except NotImplementedError:
+                N = 1
+
+        # imap is evaluated on demand, converting to list() forces execution
+        if N > 1:
+            list(
+                multiprocessing.pool.ThreadPool(N).imap_unordered(
+                    _single_compile, objects
+                )
+            )
+        else:
+            for ob in objects:
+                _single_compile(ob)
+
+        return objects
+
+    return parallel_compile
+
+
+# Use the environment variable NPY_NUM_BUILD_JOBS
 
 SRC_FILES = [
     "src/module.cpp",
@@ -38,59 +118,10 @@ INCLUDE_DIRS = [
 ]
 
 ext_modules = [
-    Extension(
-        "boost_histogram._core", SRC_FILES, include_dirs=INCLUDE_DIRS, language="c++"
+    CppExtension(
+        "boost_histogram._core", SRC_FILES, include_dirs=INCLUDE_DIRS, cxx_std=14
     )
 ]
-
-
-# As of Python 3.6, CCompiler has a `has_flag` method.
-# cf http://bugs.python.org/issue26689
-def has_flag(compiler, flagname):
-    """Return a boolean indicating whether a flag name is supported on
-    the specified compiler.
-    """
-    import tempfile
-
-    with tempfile.NamedTemporaryFile("w", suffix=".cpp") as f:
-        f.write("int main (int argc, char **argv) { return 0; }")
-        try:
-            compiler.compile([f.name], extra_postargs=[flagname])
-        except setuptools.distutils.errors.CompileError:
-            return False
-    return True
-
-
-def cpp_flag(compiler):
-    """Return the -std=c++14 compiler flag.
-    """
-    if has_flag(compiler, "-std=c++14"):
-        return "-std=c++14"
-    else:
-        raise RuntimeError("Unsupported compiler -- at least C++14 support is needed!")
-
-
-class BuildExt(build_ext):
-    """A custom build extension for adding compiler-specific options."""
-
-    c_opts = {"msvc": ["/EHsc", "/bigobj"], "unix": ["-g0"]}
-
-    if sys.platform == "darwin":
-        c_opts["unix"] += ["-stdlib=libc++", "-mmacosx-version-min=10.9"]
-
-    def build_extensions(self):
-        ct = self.compiler.compiler_type
-        opts = self.c_opts.get(ct, [])
-        if ct == "unix":
-            opts.append('-DVERSION_INFO="%s"' % self.distribution.get_version())
-            opts.append(cpp_flag(self.compiler))
-            if has_flag(self.compiler, "-fvisibility=hidden"):
-                opts.append("-fvisibility=hidden")
-        elif ct == "msvc":
-            opts.append('/DVERSION_INFO=\\"%s\\"' % self.distribution.get_version())
-        for ext in self.extensions:
-            ext.extra_compile_args = opts
-        build_ext.build_extensions(self)
 
 
 extras = {
@@ -108,9 +139,8 @@ extras = {
 extras["all"] = sum(extras.values(), [])
 extras["dev"] += extras["test"]
 
+distutils.ccompiler.CCompiler.compile = make_parallel_compile("NPY_NUM_BUILD_JOBS")
+
 setup(
-    ext_modules=ext_modules,
-    cmdclass={"build_ext": BuildExt},
-    install_requires=["numpy"],
-    extras_require=extras,
+    ext_modules=ext_modules, extras_require=extras,
 )
