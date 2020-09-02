@@ -49,10 +49,7 @@ def _arg_shortcut(item):
     msg = "Developer shortcut: will be removed in a future version"
     if isinstance(item, tuple) and len(item) == 3:
         warnings.warn(msg, FutureWarning)
-        return _core.axis.regular_uoflow(item[0], item[1], item[2], None)
-    elif isinstance(item, tuple) and len(item) == 4:
-        warnings.warn(msg, FutureWarning)
-        return _core.axis.regular_uoflow(*item)
+        return _core.axis.regular_uoflow(item[0], item[1], item[2])
     elif isinstance(item, Axis):
         return item._ax
     else:
@@ -377,6 +374,8 @@ class Histogram(object):
 
     def __copy__(self):
         other = self._new_hist(copy.copy(self._hist))
+        for ax in other.axes:
+            ax._ax.metadata = copy.copy(ax._ax.metadata)
         return other
 
     def __deepcopy__(self, memo):
@@ -387,13 +386,16 @@ class Histogram(object):
         return other
 
     def __getstate__(self):
-        state = {"_hist": self._hist, "metadata": self.metadata}
+        state = {"_hist": self._hist, "metadata": self.metadata, "version": 0}
         return state
 
     def __setstate__(self, state):
         self._hist = state["_hist"]
         self.metadata = state.get("metadata", None)
         self.axes = self._generate_axes_()
+        if "version" not in state:
+            for ax in self.axes:
+                ax._ax.metadata = {"metadata": ax._ax.metadata}
 
     def __repr__(self):
         newline = "\n  "

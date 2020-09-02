@@ -33,8 +33,8 @@ class AxisTransform(object):
         else:
             return self.__class__.__name__ + "() # Missing _this, broken class"
 
-    def _produce(self, bins, start, stop, metadata):
-        return self.__class__._type(bins, start, stop, metadata)
+    def _produce(self, bins, start, stop):
+        return self.__class__._type(bins, start, stop)
 
     def __init__(self):
         "Create a new transform instance"
@@ -71,8 +71,8 @@ class Pow(AxisTransform):
         return self._this.power
 
     # This one does need to be a normal method
-    def _produce(self, bins, start, stop, metadata):
-        return self.__class__._type(bins, start, stop, self.power, metadata)
+    def _produce(self, bins, start, stop):
+        return self.__class__._type(bins, start, stop, self.power)
 
 
 @set_family(MAIN_FAMILY)
@@ -138,14 +138,9 @@ class Function(AxisTransform):
         self._this = cpp_class(forward, inverse, convert, name)
 
     # This one does need to be a normal method
-    def _produce(self, bins, start, stop, metadata):
-        return self.__class__._type(bins, start, stop, self._this, metadata)
+    def _produce(self, bins, start, stop):
+        return self.__class__._type(bins, start, stop, self._this)
 
 
 def _internal_conversion(value):
     return getattr(ca.transform, value)
-
-
-# CPP FAMILY
-
-# Not currently included, uses normal family for now.

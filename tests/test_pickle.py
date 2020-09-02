@@ -88,7 +88,7 @@ axes_creations = (
 @pytest.mark.parametrize("axis,args,opts", axes_creations)
 @pytest.mark.parametrize("copy_fn", copy_fns)
 def test_axes(axis, args, opts, copy_fn):
-    orig = axis(*args, metadata=None, **opts)
+    orig = axis(*args, **opts)
     new = copy_fn(orig)
     assert new == orig
     np.testing.assert_array_equal(new.centers, orig.centers)
@@ -97,7 +97,8 @@ def test_axes(axis, args, opts, copy_fn):
 @pytest.mark.parametrize("axis,args,opts", axes_creations)
 @pytest.mark.parametrize("copy_fn", copy_fns)
 def test_metadata_str(axis, args, opts, copy_fn):
-    orig = axis(*args, metadata="foo", **opts)
+    orig = axis(*args, **opts)
+    orig.metadata = "foo"
     new = copy_fn(orig)
     assert new.metadata == orig.metadata
     new.metadata = orig.metadata
@@ -132,7 +133,8 @@ def test_compare_copy_hist(metadata):
 @pytest.mark.parametrize("axis,args,opts", axes_creations)
 @pytest.mark.parametrize("copy_fn", copy_fns)
 def test_metadata_any(axis, args, opts, copy_fn):
-    orig = axis(*args, metadata=(1, 2, 3), **opts)
+    orig = axis(*args, **opts)
+    orig.metadata = (1, 2, 3)
     new = copy_fn(orig)
     assert new.metadata == orig.metadata
     new.metadata = orig.metadata
@@ -198,7 +200,7 @@ def test_histogram_metadata(copy_fn, metadata):
 
 @pytest.mark.parametrize("copy_fn", copy_fns)
 def test_numpy_edge(copy_fn):
-    ax1 = bh._core.axis.regular_numpy(10, 0, 1, None)
+    ax1 = bh._core.axis.regular_numpy(10, 0, 1)
     ax2 = copy_fn(ax1)
 
     # stop defaults to 0, so this fails if the copy fails
@@ -229,8 +231,6 @@ def test_hist_axes_reference(copy_fn):
     h = bh.Histogram(bh.axis.Regular(10, 0, 1, metadata=1))
     h.axes[0].metadata = 2
 
-    # Note: copy does not copy the metadata, but we are *replacing*
-    # the metadata here, so it should be distinct even after a shallow copy.
     h2 = copy_fn(h)
 
     assert h2._hist is not h._hist
