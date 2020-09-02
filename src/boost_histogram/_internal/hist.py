@@ -1,23 +1,25 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 
-from .kwargs import KWArgs
-
-from .. import _core
-from .view import _to_view
-from .axis import Axis
-from .axistuple import AxesTuple
-from .sig_tools import inject_signature
-from .storage import Double, Storage
-from .utils import cast, register, set_family, MAIN_FAMILY, set_module
-from .six import string_types
-
-import warnings
 import copy
-import numpy as np
-
 import os
 import threading
+import warnings
+
+import numpy as np
+
+from .. import _core
+from .axis import Axis
+from .axistuple import AxesTuple
+from .kwargs import KWArgs
+from .sig_tools import inject_signature
+from .six import string_types
+from .storage import Double, Storage
+from .utils import cast, register, set_family, MAIN_FAMILY, set_module
+from .view import _to_view
+
+
+NOTHING = object()
 
 _histograms = (
     _core.hist.any_double,
@@ -82,8 +84,6 @@ def _expand_ellipsis(indexes, rank):
 @set_family(MAIN_FAMILY)
 @set_module("boost_histogram")
 class Histogram(object):
-    __slots__ = ("_hist", "axes", "metadata")
-
     @inject_signature(
         "self, *axes, storage=Double(), metadata=None", locals={"Double": Double}
     )
@@ -159,12 +159,24 @@ class Histogram(object):
 
         return AxesTuple(self._axis(i) for i in range(self.ndim))
 
-    def _new_hist(self, _hist):
+    def _new_hist(self, _hist, memo=NOTHING):
         """
         Return a new histogram given a new _hist, copying metadata.
         """
 
-        other = self.__class__(_hist, metadata=self.metadata)
+        other = self.__class__(_hist)
+        for item in self.__dict__:
+            if item not in ["axes", "_hist"]:
+                if memo is NOTHING:
+                    other.__dict__[item] = self.__dict__[item]
+                else:
+                    other.__dict__[item] = copy.deepcopy(self.__dict__[item], memo)
+        other.axes = other._generate_axes_()
+        for ax in other.axes:
+            if memo is NOTHING:
+                ax._ax.metadata = copy.copy(ax._ax.metadata)
+            else:
+                ax._ax.metadata = copy.deepcopy(ax._ax.metadata, memo)
         return other
 
     @property
@@ -373,29 +385,38 @@ class Histogram(object):
         return self._new_hist(self._hist.reduce(*args))
 
     def __copy__(self):
-        other = self._new_hist(copy.copy(self._hist))
-        for ax in other.axes:
-            ax._ax.metadata = copy.copy(ax._ax.metadata)
-        return other
+        return self._new_hist(copy.copy(self._hist))
 
     def __deepcopy__(self, memo):
-        other = self.__class__.__new__(self.__class__)
-        other._hist = copy.deepcopy(self._hist, memo)
-        other.metadata = copy.deepcopy(self.metadata, memo)
-        other.axes = other._generate_axes_()
-        return other
+        return self._new_hist(copy.deepcopy(self._hist), memo=memo)
 
     def __getstate__(self):
-        state = {"_hist": self._hist, "metadata": self.metadata, "version": 0}
+        """
+        Version 0.8: metadata added
+        Version 0.11: version added and set to 0. metadata/_hist replaced with dict.
+
+        ``dict`` contains __dict__ without "axes" and "_hist"
+        """
+        local_dict = copy.copy(self.__dict__)
+        del local_dict["axes"]
+        state = {"dict": local_dict, "version": 0}
         return state
 
     def __setstate__(self, state):
-        self._hist = state["_hist"]
-        self.metadata = state.get("metadata", None)
-        self.axes = self._generate_axes_()
         if "version" not in state:
+            self._hist = state["_hist"]
+            self.metadata = state.get("metadata", None)
+            self.axes = self._generate_axes_()
             for ax in self.axes:
                 ax._ax.metadata = {"metadata": ax._ax.metadata}
+        elif state["version"] == 0:
+            for key, value in state["dict"].items():
+                self.__dict__[key] = value
+            self.axes = self._generate_axes_()
+        else:
+            raise RuntimeError(
+                "Cannot open boost-histogram pickle v{}".format(state["version"])
+            )
 
     def __repr__(self):
         newline = "\n  "
