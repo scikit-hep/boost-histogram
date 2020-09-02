@@ -2,7 +2,6 @@
 requires = [
     "setuptools>=42",
     "wheel",
-    "numpy",
     "toml",
     "setuptools_scm>=4.1.2"
 ]
