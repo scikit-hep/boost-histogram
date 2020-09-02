@@ -240,7 +240,7 @@ The [official documentation is here](https://boost-histogram.readthedocs.io/en/l
 * [2019-10-17 PyHEP Histogram session](https://indico.cern.ch/event/833895/contributions/3577833/) - [repo with talks and workbook](https://github.com/henryiii/pres-bhandhist)
 * [2019-11-7 CHEP](https://indico.cern.ch/event/773049/contributions/3473265/)
 * [2020-07-07 SciPy](https://www.youtube.com/watch?v=ERraTfHkPd0&list=PLYx7XA2nY5GfY4WWJjG5cQZDc7DIUmn6Z&index=4)
-* [2020-07-17 PyHep](https://indico.cern.ch/event/882824/contributions/3931299/) (UPCOMING)
+* [2020-07-17 PyHEP](https://indico.cern.ch/event/882824/contributions/3931299/)
 
 ---
 

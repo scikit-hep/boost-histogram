@@ -233,23 +233,5 @@ project(
 message(STATUS "boost-histogram ${BOOST_HISTOGRAM_VERSION}")
 
 if(BUILD_TESTING)
-
-  python_import(numpy pytest pytest-benchmark typing)
-
-  # Support for running from build directory
-  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/pytest.ini"
-       "[pytest]\n" "addopts = --benchmark-disable\n" "testpaths = . ../tests\n")
-
-  # Support plain "pytest" in addition to "python -m pytest"
-  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/conftest.py"
-       "import os, sys\n" "sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))\n")
-
-  # Look for all the tests
-  file(GLOB BOOST_HIST_PY_TESTS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_*.py")
-
-  # Add each test
-  foreach(TEST_FILE IN LISTS BOOST_HIST_PY_TESTS)
-    get_filename_component(TEST_NAME "${TEST_FILE}" NAME_WE)
-    add_test(${TEST_NAME} ${PYTHON_EXECUTABLE} -m pytest "${TEST_FILE}")
-  endforeach()
+  add_subdirectory(tests)
 endif()
