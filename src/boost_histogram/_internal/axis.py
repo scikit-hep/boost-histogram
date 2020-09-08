@@ -40,7 +40,7 @@ class Axis(object):
     def __getattr__(self, item):
         if item == "_ax":
             return Axis.__dict__[item].__get__(self)
-        elif self._ax.metadata is not None and item in self._ax.metadata:
+        elif item in self._ax.metadata:
             return self._ax.metadata[item]
         elif item == "metadata":
             return None
@@ -53,13 +53,11 @@ class Axis(object):
         if item == "_ax":
             Axis.__dict__[item].__set__(self, value)
             return
-        elif self._ax.metadata is None:
-            self._ax.metadata = {}
 
         self._ax.metadata[item] = value
 
     def __dir__(self):
-        metadata = list(self._ax.metadata) if self.ax.metadata is not None else []
+        metadata = list(self._ax.metadata)
         return sorted(dir(type(self)) + metadata)
 
     def index(self, value):

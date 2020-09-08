@@ -74,7 +74,6 @@ axes_creations = (
     (bh.axis.Regular, (4, 2, 4), {"transform": bh.axis.transform.log}),
     (bh.axis.Regular, (4, 2, 4), {"transform": bh.axis.transform.sqrt}),
     (bh.axis.Regular, (4, 2, 4), {"transform": bh.axis.transform.Pow(0.5)}),
-    (bh._core.axis.regular_numpy, (4, 2, 4), {}),
     (bh.axis.Regular, (4, 2, 4), {"circular": True}),
     (bh.axis.Variable, ([1, 2, 3, 4],), {}),
     (bh.axis.Variable, ([1, 2, 3, 4],), {"circular": True}),
@@ -85,9 +84,10 @@ axes_creations = (
     (bh.axis.StrCategory, (["1", "2", "3"],), {}),
     (bh.axis.StrCategory, (["1", "2", "3"],), {"growth": True}),
 )
+raw_axes_creations = ((bh._core.axis.regular_numpy, (4, 2, 4), {}),)
 
 
-@pytest.mark.parametrize("axis,args,opts", axes_creations)
+@pytest.mark.parametrize("axis,args,opts", axes_creations + raw_axes_creations)
 def test_axes(axis, args, opts, copy_fn):
     orig = axis(*args, **opts)
     new = copy_fn(orig)
