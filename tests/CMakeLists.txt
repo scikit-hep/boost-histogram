@@ -14,7 +14,10 @@ file(GLOB BOOST_HIST_PY_TESTS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/tes
 # Add each test
 foreach(TEST_FILE IN LISTS BOOST_HIST_PY_TESTS)
   get_filename_component(TEST_NAME "${TEST_FILE}" NAME_WE)
-  add_test(${TEST_NAME} ${PYTHON_EXECUTABLE} -m pytest "${TEST_FILE}")
+  add_test(
+    NAME ${TEST_NAME}
+    COMMAND ${PYTHON_EXECUTABLE} -m pytest "${TEST_FILE}" --rootdir=.
+    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}")
 endforeach()
 
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --verbose)
