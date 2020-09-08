@@ -399,24 +399,26 @@ class Histogram(object):
         """
         local_dict = copy.copy(self.__dict__)
         del local_dict["axes"]
-        state = {"dict": local_dict, "version": 0}
-        return state
+        # Version 0 of boost-histogram pickle state
+        return (0, local_dict)
 
     def __setstate__(self, state):
-        if "version" not in state:
+        if isinstance(state, tuple):
+            if state[0] == 0:
+                for key, value in state[1].items():
+                    self.__dict__[key] = value
+            else:
+                msg = "Cannot open boost-histogram pickle v{}".format(state[0])
+                raise RuntimeError(msg)
+
+            self.axes = self._generate_axes_()
+
+        else:  # Classic (0.10 and before) state
             self._hist = state["_hist"]
             self.metadata = state.get("metadata", None)
             self.axes = self._generate_axes_()
             for ax in self.axes:
                 ax._ax.metadata = {"metadata": ax._ax.metadata}
-        elif state["version"] == 0:
-            for key, value in state["dict"].items():
-                self.__dict__[key] = value
-            self.axes = self._generate_axes_()
-        else:
-            raise RuntimeError(
-                "Cannot open boost-histogram pickle v{}".format(state["version"])
-            )
 
     def __repr__(self):
         newline = "\n  "
