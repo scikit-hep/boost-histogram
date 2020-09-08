@@ -150,7 +150,7 @@ on Boost.Histogram's C++ tools for actions like cropping.
 
 #### Developer changes
 
-* Update Boost to 1.73 [#359][], PyBind11 to 2.5.0 [#351][], Boost.Histogram to pre-1.74 [#388][]
+* Update Boost to 1.73 [#359][], pybind11 to 2.5.0 [#351][], Boost.Histogram to pre-1.74 [#388][]
 * Cropping no longer uses workaround [#373][]
 * Many more checks added to [`pre-commit`][] [#366][]
 * Deprecating `cpp` interface [#391][]
@@ -359,7 +359,7 @@ transition existing 0.5.x code to the new API.
 #### Bug fixes:
 
 * Use relative paths in setup.py to avoid resolving WSL paths on Windows [#162][], [#163][]
-* Better Pybind11 support for Python 3.8 [#168][]
+* Better pybind11 support for Python 3.8 [#168][]
 
 #### Developer changes:
 

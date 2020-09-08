@@ -94,7 +94,7 @@ cmake --install build-debug # Option 3 only
 Note that option 3 will require reinstalling if the python files change, while
 options 1-2 will not if you have a recent version of CMake (symlinks are made).
 
-This could be simplified if PyBind11 supported the new CMake FindPython tools.
+This could be simplified if pybind11 supported the new CMake FindPython tools.
 
 ## Testing
 

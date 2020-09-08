@@ -167,7 +167,7 @@ These are the supported platforms for which wheels are produced using [cibuildwh
 
 * manylinux1: Using a custom docker container with GCC 9.2; should work but can't be called directly other compiled extensions unless they do the same thing (think that's the main caveat). Supporting 32 bits because it's there.
 * manylinux2010: Requires pip 10+ and a version of Linux newer than 2010.
-* Windows: PyBind11 requires compilation with a newer copy of Visual Studio than Python 2.7's Visual Studio 2008; you need to have the [Visual Studio 2015 distributable][msvc2015] installed (the dll is included in 2017 and 2019, as well).
+* Windows: pybind11 requires compilation with a newer copy of Visual Studio than Python 2.7's Visual Studio 2008; you need to have the [Visual Studio 2015 distributable][msvc2015] installed (the dll is included in 2017 and 2019, as well).
 
 [msvc2015]: https://www.microsoft.com/en-us/download/details.aspx?id=48145
 
@@ -186,7 +186,7 @@ conda install -c conda-forge boost-histogram
 
 For a source build, for example from an "sdist" package, the only requirements are a C++14 compatible compiler. The compiler requirements are dictated by Boost.Histogram's C++ requirements: gcc >= 5.5, clang >= 3.8, msvc >= 14.1. You should have a version of pip less than 2-3 years old (10+).
 
-If you are using Python 2.7 on Windows, you will need to use a recent version of Visual studio and force distutils to use it, or just upgrade to Python 3.6 or newer. Check the PyBind11 documentation for [more help](https://pybind11.readthedocs.io/en/stable/faq.html#working-with-ancient-visual-studio-2009-builds-on-windows). On some Linux systems, you may need to use a newer compiler than the one your distribution ships with.
+If you are using Python 2.7 on Windows, you will need to use a recent version of Visual studio and force distutils to use it, or just upgrade to Python 3.6 or newer. Check the pybind11 documentation for [more help](https://pybind11.readthedocs.io/en/stable/faq.html#working-with-ancient-visual-studio-2009-builds-on-windows). On some Linux systems, you may need to use a newer compiler than the one your distribution ships with.
 
 Numpy is downloaded during the build (enables multithreaded builds). Boost is not required or needed (this only depends on included header-only dependencies).This library is under active development; you can install directly from GitHub if you would like.
 

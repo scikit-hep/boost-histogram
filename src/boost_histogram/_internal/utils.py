@@ -97,7 +97,7 @@ def _cast_make_object(canidate_class, cpp_object, is_class):
     elif hasattr(canidate_class, "_convert_cpp"):
         return canidate_class._convert_cpp(cpp_object)
 
-    # Casting down does not work in PyBind11,
+    # Casting down does not work in pybind11,
     # see https://github.com/pybind/pybind11/issues/1640
     # so for now, all non-copy classes must have a
     # _convert_cpp method.

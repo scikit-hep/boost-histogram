@@ -51,8 +51,8 @@ endif()
 # Display versions
 message(STATUS "CMake ${CMAKE_VERSION}")
 
-# Adding PyBind11 and setting up Python
-# Will display PyBind11 version
+# Adding pybind11 and setting up Python
+# Will display pybind11 version
 add_subdirectory(extern/pybind11)
 
 message(STATUS "Python ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
@@ -100,7 +100,7 @@ source_group(
   PREFIX "Source Files"
   FILES ${BOOST_HIST_PY_SRC})
 
-# Cause warnings to be errors (not recommended for MSVC, since PyBind11 might cause a few there)
+# Cause warnings to be errors (not recommended for MSVC, since pybind11 might cause a few there)
 option(BOOST_HISTOGRAM_ERRORS "Make warnings errors (for CI mostly)")
 
 # Adding warnings

@@ -45,7 +45,7 @@ handle_nonzero_width(std::basic_ostream<CharT, Traits>& os, const T& x) {
     return os;
 }
 
-// Note that the names are *not* included here, so they can be added in Pybind11.
+// Note that the names are *not* included here, so they can be added in pybind11.
 
 namespace accumulators {
 

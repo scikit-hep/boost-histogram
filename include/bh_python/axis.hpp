@@ -314,7 +314,7 @@ using vector_axis_variant = std::vector<axis_variant>;
 namespace pybind11 {
 namespace detail {
 
-/// Register axis_variant as a variant for PyBind11
+/// Register axis_variant as a variant for pybind11
 template <>
 struct type_caster<axis_variant> : variant_caster<axis_variant> {};
 

@@ -51,7 +51,7 @@ Windows                     64 & 32-bit 2.7, 3.5, 3.6, 3.7, 3.8
    because it’s there.
 -  manylinux2010: Requires pip 10+ and a version of Linux newer than
    2010.
--  Windows: PyBind11 requires compilation with a newer copy of Visual
+-  Windows: pybind11 requires compilation with a newer copy of Visual
    Studio than Python 2.7’s Visual Studio 2008; you need to have the
    `Visual Studio 2015
    distributable <https://www.microsoft.com/en-us/download/details.aspx?id=48145>`__
@@ -87,7 +87,7 @@ old (10+).
 
 If you are using Python 2.7 on Windows, you will need to use a recent
 version of Visual studio and force distutils to use it, or just upgrade
-to Python 3.6 or newer. Check the PyBind11 documentation for `more
+to Python 3.6 or newer. Check the pybind11 documentation for `more
 help <https://pybind11.readthedocs.io/en/stable/faq.html#working-with-ancient-visual-studio-2009-builds-on-windows>`__.
 On some Linux systems, you may need to use a newer compiler than the one
 your distribution ships with.
