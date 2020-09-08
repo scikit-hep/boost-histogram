@@ -12,8 +12,11 @@
 struct metadata_t : py::dict {
     PYBIND11_OBJECT(metadata_t, dict, PyDict_Check);
 
-    // default initialize to empty dict
     using dict::dict;
+
+    // default initialize to empty dict (must not be explicit)
+    metadata_t()
+        : dict() {}
 
     bool operator==(const metadata_t& other) const { return py::dict::equal(other); }
     bool operator!=(const metadata_t& other) const {
