@@ -94,7 +94,7 @@ cmake --install build-debug # Option 3 only
 Note that option 3 will require reinstalling if the python files change, while
 options 1-2 will not if you have a recent version of CMake (symlinks are made).
 
-This could be simplified if PyBind11 supported the new CMake FindPython tools.
+This could be simplified if pybind11 supported the new CMake FindPython tools.
 
 ## Testing
 
@@ -145,8 +145,7 @@ Just [install pre-commit](https://pre-commit.com/#install), probably using brew
 on macOS or pip on other platforms, then run:
 
 ```bash
-pre-commit install # If you have Docker
-pre-commit install --config=.pre-commit-nodocker.yaml # If you have clang-format 8
+pre-commit install
 ```
 
 Now all changed files will be checked every time you git commit. You can check
@@ -169,6 +168,13 @@ do this automatically with:
 ```bash
 pre-commit autoupdate
 ```
+
+> #### Note about skipping Docker
+>
+> Pre-commit uses docker to ensure a consistent run of clang-format. If you do
+> not want to install/run Docker, you should use `SKIP=docker-clang-format`
+> when running pre-commit, and instead run `clang-format -style=file -i
+> <files>` yourself.
 
 ## Common tasks
 

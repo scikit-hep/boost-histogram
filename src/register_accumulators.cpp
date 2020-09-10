@@ -159,7 +159,7 @@ void register_accumulators(py::module& accumulators) {
             [](sum& self, py::object value) {
                 py::vectorize([](sum& self, double v) {
                     self += v;
-                    return false; // Required in PyBind11 2.4.2,
+                    return false; // Required in pybind11 2.4.2,
                                   // requirement may be removed
                 })(self, value);
                 return self;

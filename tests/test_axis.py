@@ -60,9 +60,7 @@ def test_metadata(axis, args, opt, kwargs):
         assert axis(*args, **kwargs).metadata == mcopy
         assert axis(*args, **kwargs).metadata != "bar"
         assert axis(*args, **kwargs) == axis(*args, **kwargs)
-        assert axis(*args, **kwargs) != axis(
-            *args, metadata="bar"
-        )  # TODO: Add original args
+        assert axis(*args, **kwargs) != axis(*args, metadata="bar")
 
 
 class Axis(ABC):

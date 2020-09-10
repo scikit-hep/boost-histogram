@@ -28,12 +28,14 @@ def test_shortcuts():
 
 @pytest.mark.filterwarnings("ignore")
 def test_shortcuts_with_metadata():
-    bh.Histogram((1, 2, 3, "this"))
-    bh.Histogram((1, 2, 3, 4))
+    with pytest.raises(TypeError):
+        bh.Histogram((1, 2, 3, 4))
     with pytest.raises(TypeError):
         bh.Histogram((1, 2))
     with pytest.raises(TypeError):
         bh.Histogram((1, 2, 3, 4, 5))
+    with pytest.raises(TypeError):
+        bh.Histogram((1, 2, 3, "this"))
 
 
 @pytest.mark.parametrize("opt,extent", (("uo", 2), ("", 0)))

@@ -37,6 +37,29 @@ class Axis(object):
         other._ax = copy.copy(self._ax)
         return other
 
+    def __getattr__(self, item):
+        if item == "_ax":
+            return Axis.__dict__[item].__get__(self)
+        elif item in self._ax.metadata:
+            return self._ax.metadata[item]
+        elif item == "metadata":
+            return None
+        else:
+            raise AttributeError(
+                "'{}' object has no attribute '{}'".format(type(self).__name__, item)
+            )
+
+    def __setattr__(self, item, value):
+        if item == "_ax":
+            Axis.__dict__[item].__set__(self, value)
+            return
+
+        self._ax.metadata[item] = value
+
+    def __dir__(self):
+        metadata = list(self._ax.metadata)
+        return sorted(dir(type(self)) + metadata)
+
     def index(self, value):
         """
         Return the fractional index(es) given a value (or values) on the axis.
@@ -72,21 +95,6 @@ class Axis(object):
 
     def __ne__(self, other):
         return self._ax != other._ax
-
-    @property
-    def metadata(self):
-        """
-        Get or set the metadata associated with this axis.
-        """
-        return self._ax.metadata
-
-    @metadata.setter
-    def metadata(self, value):
-        self._ax.metadata = value
-
-    @metadata.deleter
-    def metadata(self):
-        self._ax.metadata = None
 
     @classmethod
     def _convert_cpp(cls, cpp_object):
@@ -139,8 +147,11 @@ class Axis(object):
             if not self.options.overflow:
                 ret += ", overflow=False"
 
-        if self.metadata is not None:
-            ret += ", metadata={0!r}".format(self.metadata)
+        if self.metadata is not None and isinstance(self.metadata, str):
+            if len(self.metadata) < 12:
+                ret += ", metadata={!r}".format(self.metadata)
+            else:
+                ret += ", metadata={!r}...".format(self.metadata[:9])
 
         return ret
 
@@ -241,7 +252,7 @@ class Regular(Axis):
         stop : float
             The ending value for the axis
         metadata : Any
-            Any Python object to attach to the axis, like a label.
+            Any Python object to attach to the axis.
         underflow : bool = True
             Enable the underflow bin
         overflow : bool = True
@@ -272,30 +283,29 @@ class Regular(Axis):
             ):
                 raise TypeError("You must pass an instance, use {}()".format(transform))
 
-            self._ax = transform._produce(bins, start, stop, metadata)
+            self._ax = transform._produce(bins, start, stop)
 
         elif options == {"growth", "underflow", "overflow"}:
-            self._ax = ca.regular_uoflow_growth(bins, start, stop, metadata)
+            self._ax = ca.regular_uoflow_growth(bins, start, stop)
         elif options == {"underflow", "overflow"}:
-            self._ax = ca.regular_uoflow(bins, start, stop, metadata)
+            self._ax = ca.regular_uoflow(bins, start, stop)
         elif options == {"underflow"}:
-            self._ax = ca.regular_uflow(bins, start, stop, metadata)
+            self._ax = ca.regular_uflow(bins, start, stop)
         elif options == {"overflow"}:
-            self._ax = ca.regular_oflow(bins, start, stop, metadata)
-        elif options == {
-            "circular",
-            "underflow",
-            "overflow",
-        } or options == {  # growth=True should work
+            self._ax = ca.regular_oflow(bins, start, stop)
+        elif options == {"circular", "underflow", "overflow"} or options == {
             "circular",
             "overflow",
-        }:  # growth=True, underflow=False is also correct
-            self._ax = ca.regular_circular(bins, start, stop, metadata)
+        }:
+            # growth=True, underflow=False is also correct
+            self._ax = ca.regular_circular(bins, start, stop)
 
         elif options == set():
-            self._ax = ca.regular_none(bins, start, stop, metadata)
+            self._ax = ca.regular_none(bins, start, stop)
         else:
             raise KeyError("Unsupported collection of options")
+
+        self.metadata = metadata
 
     def _repr_args(self):
         "Return inner part of signature for use in repr"
@@ -365,26 +375,25 @@ class Variable(Axis):
             )
 
         if options == {"growth", "underflow", "overflow"}:
-            self._ax = ca.variable_uoflow_growth(edges, metadata)
+            self._ax = ca.variable_uoflow_growth(edges)
         elif options == {"underflow", "overflow"}:
-            self._ax = ca.variable_uoflow(edges, metadata)
+            self._ax = ca.variable_uoflow(edges)
         elif options == {"underflow"}:
-            self._ax = ca.variable_uflow(edges, metadata)
+            self._ax = ca.variable_uflow(edges)
         elif options == {"overflow"}:
-            self._ax = ca.variable_oflow(edges, metadata)
-        elif options == {
-            "circular",
-            "underflow",
-            "overflow",
-        } or options == {  # growth=True should work
+            self._ax = ca.variable_oflow(edges,)
+        elif options == {"circular", "underflow", "overflow",} or options == {
             "circular",
             "overflow",
-        }:  # growth=True, underflow=False is also correct
-            self._ax = ca.variable_circular(edges, metadata)
+        }:
+            # growth=True, underflow=False is also correct
+            self._ax = ca.variable_circular(edges)
         elif options == set():
-            self._ax = ca.variable_none(edges, metadata)
+            self._ax = ca.variable_none(edges)
         else:
             raise KeyError("Unsupported collection of options")
+
+        self.metadata = metadata
 
     def _repr_args(self):
         "Return inner part of signature for use in repr"
@@ -444,23 +453,21 @@ class Integer(Axis):
         # underflow and overflow settings are ignored, integers are always
         # finite and thus cannot end up in a flow bin when growth is on
         if "growth" in options and "circular" not in options:
-            self._ax = ca.integer_growth(start, stop, metadata)
+            self._ax = ca.integer_growth(start, stop)
         elif options == {"underflow", "overflow"}:
-            self._ax = ca.integer_uoflow(start, stop, metadata)
+            self._ax = ca.integer_uoflow(start, stop)
         elif options == {"underflow"}:
-            self._ax = ca.integer_uflow(start, stop, metadata)
+            self._ax = ca.integer_uflow(start, stop)
         elif options == {"overflow"}:
-            self._ax = ca.integer_oflow(start, stop, metadata)
-        elif (
-            "circular" in options and "growth" not in options
-        ):  # growth=True should work
-            self._ax = ca.integer_circular(
-                start, stop, metadata
-            )  # flow bins do no matter
+            self._ax = ca.integer_oflow(start, stop)
+        elif "circular" in options and "growth" not in options:
+            self._ax = ca.integer_circular(start, stop)
         elif options == set():
-            self._ax = ca.integer_none(start, stop, metadata)
+            self._ax = ca.integer_none(start, stop)
         else:
             raise KeyError("Unsupported collection of options")
+
+        self.metadata = metadata
 
     def _repr_args(self):
         "Return inner part of signature for use in repr"
@@ -497,8 +504,6 @@ class BaseCategory(Axis):
 @set_module("boost_histogram.axis")
 @register({ca.category_str_growth, ca.category_str})
 class StrCategory(BaseCategory):
-    __slots__ = ()
-
     @inject_signature("self, categories, *, metadata=None, growth=False")
     def __init__(self, categories, **kwargs):
         """
@@ -525,11 +530,13 @@ class StrCategory(BaseCategory):
         # Python interfaces protect against that
 
         if options == {"growth"}:
-            self._ax = ca.category_str_growth(tuple(categories), metadata)
+            self._ax = ca.category_str_growth(tuple(categories))
         elif options == set():
-            self._ax = ca.category_str(tuple(categories), metadata)
+            self._ax = ca.category_str(tuple(categories))
         else:
             raise KeyError("Unsupported collection of options")
+
+        self.metadata = metadata
 
     def index(self, value):
         """
@@ -555,8 +562,6 @@ class StrCategory(BaseCategory):
 @set_module("boost_histogram.axis")
 @register({ca.category_int, ca.category_int_growth})
 class IntCategory(BaseCategory):
-    __slots__ = ()
-
     @inject_signature("self, categories, *, metadata=None, growth=False")
     def __init__(self, categories, **kwargs):
         """
@@ -580,11 +585,13 @@ class IntCategory(BaseCategory):
             options = k.options(growth=False)
 
         if options == {"growth"}:
-            self._ax = ca.category_int_growth(tuple(categories), metadata)
+            self._ax = ca.category_int_growth(tuple(categories))
         elif options == set():
-            self._ax = ca.category_int(tuple(categories), metadata)
+            self._ax = ca.category_int(tuple(categories))
         else:
             raise KeyError("Unsupported collection of options")
+
+        self.metadata = metadata
 
     def _repr_args(self):
         "Return inner part of signature for use in repr"
@@ -612,7 +619,8 @@ class Boolean(Axis):
         with KWArgs(kwargs) as k:
             metadata = k.optional("metadata")
 
-        self._ax = ca.boolean(metadata)
+        self._ax = ca.boolean()
+        self.metadata = metadata
 
     def _repr_args(self):
         "Return inner part of signature for use in repr"

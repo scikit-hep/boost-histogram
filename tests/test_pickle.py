@@ -31,15 +31,18 @@ def pickle_roundtrip_protocol_highest(x):
     return loads(dumps(x, -1))
 
 
-copy_fns = (
-    pickle_roundtrip_protocol_2,
-    pickle_roundtrip_protocol_highest,
-    copy.copy,
-    copy.deepcopy,
+@pytest.fixture(
+    params=(
+        pickle_roundtrip_protocol_2,
+        pickle_roundtrip_protocol_highest,
+        copy.copy,
+        copy.deepcopy,
+    )
 )
+def copy_fn(request):
+    return request.param
 
 
-@pytest.mark.parametrize("copy_fn", copy_fns)
 @pytest.mark.parametrize(
     "opts", ({}, {"growth": True}, {"underflow": True, "overflow": True})
 )
@@ -58,7 +61,6 @@ def test_options(copy_fn, opts):
         (bh.accumulators.WeightedMean, (1.5, 2.5, 3.5, 4.5)),
     ),
 )
-@pytest.mark.parametrize("copy_fn", copy_fns)
 def test_accumulators(accum, args, copy_fn):
     orig = accum(*args)
     new = copy_fn(orig)
@@ -72,7 +74,6 @@ axes_creations = (
     (bh.axis.Regular, (4, 2, 4), {"transform": bh.axis.transform.log}),
     (bh.axis.Regular, (4, 2, 4), {"transform": bh.axis.transform.sqrt}),
     (bh.axis.Regular, (4, 2, 4), {"transform": bh.axis.transform.Pow(0.5)}),
-    (bh._core.axis.regular_numpy, (4, 2, 4), {}),
     (bh.axis.Regular, (4, 2, 4), {"circular": True}),
     (bh.axis.Variable, ([1, 2, 3, 4],), {}),
     (bh.axis.Variable, ([1, 2, 3, 4],), {"circular": True}),
@@ -83,21 +84,21 @@ axes_creations = (
     (bh.axis.StrCategory, (["1", "2", "3"],), {}),
     (bh.axis.StrCategory, (["1", "2", "3"],), {"growth": True}),
 )
+raw_axes_creations = ((bh._core.axis.regular_numpy, (4, 2, 4), {}),)
 
 
-@pytest.mark.parametrize("axis,args,opts", axes_creations)
-@pytest.mark.parametrize("copy_fn", copy_fns)
+@pytest.mark.parametrize("axis,args,opts", axes_creations + raw_axes_creations)
 def test_axes(axis, args, opts, copy_fn):
-    orig = axis(*args, metadata=None, **opts)
+    orig = axis(*args, **opts)
     new = copy_fn(orig)
     assert new == orig
     np.testing.assert_array_equal(new.centers, orig.centers)
 
 
 @pytest.mark.parametrize("axis,args,opts", axes_creations)
-@pytest.mark.parametrize("copy_fn", copy_fns)
 def test_metadata_str(axis, args, opts, copy_fn):
-    orig = axis(*args, metadata="foo", **opts)
+    orig = axis(*args, **opts)
+    orig.metadata = "foo"
     new = copy_fn(orig)
     assert new.metadata == orig.metadata
     new.metadata = orig.metadata
@@ -130,9 +131,9 @@ def test_compare_copy_hist(metadata):
 
 
 @pytest.mark.parametrize("axis,args,opts", axes_creations)
-@pytest.mark.parametrize("copy_fn", copy_fns)
 def test_metadata_any(axis, args, opts, copy_fn):
-    orig = axis(*args, metadata=(1, 2, 3), **opts)
+    orig = axis(*args, **opts)
+    orig.metadata = (1, 2, 3)
     new = copy_fn(orig)
     assert new.metadata == orig.metadata
     new.metadata = orig.metadata
@@ -140,7 +141,6 @@ def test_metadata_any(axis, args, opts, copy_fn):
 
 
 @pytest.mark.benchmark(group="histogram-pickling")
-@pytest.mark.parametrize("copy_fn", copy_fns)
 @pytest.mark.parametrize(
     "storage, extra",
     (
@@ -172,7 +172,6 @@ def test_storage(benchmark, copy_fn, storage, extra):
     assert new == hist
 
 
-@pytest.mark.parametrize("copy_fn", copy_fns)
 def test_histogram_regular(copy_fn):
     hist = bh.Histogram(bh.axis.Regular(4, 1, 2), bh.axis.Regular(8, 3, 6))
 
@@ -180,7 +179,6 @@ def test_histogram_regular(copy_fn):
     assert hist == new
 
 
-@pytest.mark.parametrize("copy_fn", copy_fns)
 def test_histogram_fancy(copy_fn):
     hist = bh.Histogram(bh.axis.Regular(4, 1, 2), bh.axis.Integer(0, 6))
 
@@ -188,7 +186,6 @@ def test_histogram_fancy(copy_fn):
     assert hist == new
 
 
-@pytest.mark.parametrize("copy_fn", copy_fns)
 def test_histogram_metadata(copy_fn, metadata):
 
     hist = bh.Histogram(bh.axis.Regular(4, 1, 2, metadata=metadata))
@@ -196,9 +193,8 @@ def test_histogram_metadata(copy_fn, metadata):
     assert hist == new
 
 
-@pytest.mark.parametrize("copy_fn", copy_fns)
 def test_numpy_edge(copy_fn):
-    ax1 = bh._core.axis.regular_numpy(10, 0, 1, None)
+    ax1 = bh._core.axis.regular_numpy(10, 0, 1)
     ax2 = copy_fn(ax1)
 
     # stop defaults to 0, so this fails if the copy fails
@@ -208,7 +204,6 @@ def test_numpy_edge(copy_fn):
 
 
 @pytest.mark.parametrize("mod", (np, math))
-@pytest.mark.parametrize("copy_fn", copy_fns)
 def test_pickle_transforms(mod, copy_fn):
     ax1 = bh.axis.Regular(
         100,
@@ -224,13 +219,10 @@ def test_pickle_transforms(mod, copy_fn):
     assert_almost_equal(ax2.centers, ax3.centers, decimal=10)
 
 
-@pytest.mark.parametrize("copy_fn", copy_fns)
 def test_hist_axes_reference(copy_fn):
     h = bh.Histogram(bh.axis.Regular(10, 0, 1, metadata=1))
     h.axes[0].metadata = 2
 
-    # Note: copy does not copy the metadata, but we are *replacing*
-    # the metadata here, so it should be distinct even after a shallow copy.
     h2 = copy_fn(h)
 
     assert h2._hist is not h._hist
@@ -243,7 +235,36 @@ def test_hist_axes_reference(copy_fn):
     assert h2.axes[0].metadata == 2
 
 
-@pytest.mark.parametrize("copy_fn", copy_fns)
+def test_hist_axes_reference_arbitrary(copy_fn):
+    h = bh.Histogram(bh.axis.Regular(10, 0, 1))
+    h.other = 2
+
+    h2 = copy_fn(h)
+
+    assert h2._hist is not h._hist
+
+    assert h2.other == 2
+
+    h.other = 3
+    assert h2.other == 2
+
+
+def test_hist_reference_arbitrary(copy_fn):
+    h = bh.Histogram(bh.axis.Regular(10, 0, 1))
+    h.axes[0].other = 2
+
+    h2 = copy_fn(h)
+
+    assert h2._hist is not h._hist
+    assert h2.axes[0] is not h.axes[0]
+
+    assert h2.axes[0].other == 2
+
+    h.axes[0].other = 3
+    assert h2._axis(0).other == 2
+    assert h2.axes[0].other == 2
+
+
 def test_axis_wrapped(copy_fn):
     ax = bh.axis.Regular(10, 0, 2)
     ax2 = copy_fn(ax)
@@ -251,7 +272,6 @@ def test_axis_wrapped(copy_fn):
     assert ax._ax is not ax2._ax
 
 
-@pytest.mark.parametrize("copy_fn", copy_fns)
 def test_trans_wrapped(copy_fn):
     tr = bh.axis.transform.Pow(2)
     tr2 = copy_fn(tr)

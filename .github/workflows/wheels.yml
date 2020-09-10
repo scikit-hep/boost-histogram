@@ -92,7 +92,7 @@ jobs:
         path: wheelhouse/*.whl
 
 
-  # Windows 2.7 (requires PyBind11 workaround)
+  # Windows 2.7 (requires pybind11 workaround)
   build_win27_wheels:
     name: Py 2.7 wheels on Windows
     runs-on: windows-latest

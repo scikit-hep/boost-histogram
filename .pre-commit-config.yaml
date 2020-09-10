@@ -46,6 +46,14 @@ repos:
 
 - repo: local
   hooks:
+  - id: disallow-pybind
+    name: Disallow PyBind (dual caps)
+    language: pygrep
+    entry: PyBind
+    exclude: .pre-commit.*.yaml
+
+- repo: local
+  hooks:
   - id: docker-clang-format
     name: Docker Clang Format
     language: docker_image

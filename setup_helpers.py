@@ -41,15 +41,20 @@ import tempfile
 import threading
 import warnings
 
+try:
+    from setuptools.command.build_ext import build_ext as _build_ext
+    from setuptools import Extension as _Extension
+except ImportError:
+    from distutils.command.build_ext import build_ext as _build_ext
+    from distutils.extension import Extension as _Extension
+
 import distutils.errors
-import distutils.command.build_ext
-import distutils.extension
 
 
 WIN = sys.platform.startswith("win32")
 PY2 = sys.version_info[0] < 3
 MACOS = sys.platform.startswith("darwin")
-STD_TMPL = "/std:cxx{}" if WIN else "-std=c++{}"
+STD_TMPL = "/std:c++{}" if WIN else "-std=c++{}"
 
 
 # It is recommended to use PEP 518 builds if using this module. However, this
@@ -80,7 +85,7 @@ def tmp_chdir():
             shutil.rmtree(tmpdir)
 
 
-class CppExtension(distutils.extension.Extension):
+class CppExtension(_Extension):
     """
     Build a C++11+ Extension module. This automatically adds the recommended
     flags when you init the extension and assumes C++ sources - you can further
@@ -124,10 +129,10 @@ class CppExtension(distutils.extension.Extension):
 
         # Can't use super here because distutils has old-style classes in
         # Python 2!
-        distutils.extension.Extension.__init__(self, *args, **kwargs)
+        _Extension.__init__(self, *args, **kwargs)
 
         # Have to use the accessor manually to support Python 2 distutils
-        Pybind11Extension.cxx_std.__set__(self, cxx_std)
+        CppExtension.cxx_std.__set__(self, cxx_std)
 
         if WIN:
             self._add_cflags("/EHsc", "/bigobj")
@@ -154,9 +159,13 @@ class CppExtension(distutils.extension.Extension):
         if self._cxx_level:
             warnings.warn("You cannot safely change the cxx_level after setting it!")
 
+        # MSVC 2015 Update 3 and later only have 14 (and later 17) modes
+        if WIN and level == 11:
+            level = 14
+
         self._cxx_level = level
 
-        if not level or (WIN and level == 11):
+        if not level:
             return
 
         self.extra_compile_args.append(STD_TMPL.format(level))
@@ -224,8 +233,7 @@ cpp_flag_cache = None
 
 def auto_cpp_level(compiler):
     """
-    Return the max supported C++ std level (17, 14, or 11). If neither 17 or 14
-    is supported on Windows, "11" is returned. Caches result.
+    Return the max supported C++ std level (17, 14, or 11).
     """
 
     global cpp_flag_cache
@@ -243,16 +251,11 @@ def auto_cpp_level(compiler):
                 cpp_flag_cache = level
             return level
 
-    if WIN:
-        with cpp_cache_lock:
-            cpp_flag_cache = 11
-        return 11
-
     msg = "Unsupported compiler -- at least C++11 support is needed!"
     raise RuntimeError(msg)
 
 
-class build_ext(distutils.command.build_ext.build_ext):  # noqa: N801
+class build_ext(_build_ext):  # noqa: N801
     """
     Customized build_ext that allows an auto-search for the highest supported
     C++ level for Pybind11Extension.
@@ -270,4 +273,4 @@ class build_ext(distutils.command.build_ext.build_ext):  # noqa: N801
 
         # Python 2 doesn't allow super here, since distutils uses old-style
         # classes!
-        distutils.command.build_ext.build_ext.build_extensions(self)
+        _build_ext.build_extensions(self)

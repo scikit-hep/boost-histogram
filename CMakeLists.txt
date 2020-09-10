@@ -51,8 +51,8 @@ endif()
 # Display versions
 message(STATUS "CMake ${CMAKE_VERSION}")
 
-# Adding PyBind11 and setting up Python
-# Will display PyBind11 version
+# Adding pybind11 and setting up Python
+# Will display pybind11 version
 add_subdirectory(extern/pybind11)
 
 message(STATUS "Python ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
@@ -100,7 +100,7 @@ source_group(
   PREFIX "Source Files"
   FILES ${BOOST_HIST_PY_SRC})
 
-# Cause warnings to be errors (not recommended for MSVC, since PyBind11 might cause a few there)
+# Cause warnings to be errors (not recommended for MSVC, since pybind11 might cause a few there)
 option(BOOST_HISTOGRAM_ERRORS "Make warnings errors (for CI mostly)")
 
 # Adding warnings
@@ -233,23 +233,5 @@ project(
 message(STATUS "boost-histogram ${BOOST_HISTOGRAM_VERSION}")
 
 if(BUILD_TESTING)
-
-  python_import(numpy pytest pytest-benchmark typing)
-
-  # Support for running from build directory
-  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/pytest.ini"
-       "[pytest]\n" "addopts = --benchmark-disable\n" "testpaths = . ../tests\n")
-
-  # Support plain "pytest" in addition to "python -m pytest"
-  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/conftest.py"
-       "import os, sys\n" "sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))\n")
-
-  # Look for all the tests
-  file(GLOB BOOST_HIST_PY_TESTS CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_*.py")
-
-  # Add each test
-  foreach(TEST_FILE IN LISTS BOOST_HIST_PY_TESTS)
-    get_filename_component(TEST_NAME "${TEST_FILE}" NAME_WE)
-    add_test(${TEST_NAME} ${PYTHON_EXECUTABLE} -m pytest "${TEST_FILE}")
-  endforeach()
+  add_subdirectory(tests)
 endif()

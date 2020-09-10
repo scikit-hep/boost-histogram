@@ -28,7 +28,7 @@ struct func_transform {
     py::str _name;          // Optional name (uses repr from objects otherwise)
 
     /// Convert an object into a std::function. Can handle ctypes
-    /// function pointers and PyBind11 C++ functions, or anything
+    /// function pointers and pybind11 C++ functions, or anything
     /// else with a defined convert function
     std::tuple<raw_t*, py::object> compute(py::object& input) {
         // Run the conversion function on the input (unless conversion is None)
@@ -57,7 +57,7 @@ struct func_transform {
             return std::make_tuple(ptr, src);
         }
 
-        // If we made it to this point, we probably have a C++ PyBind object or an
+        // If we made it to this point, we probably have a C++ pybind object or an
         // invalid object. The following is based on the std::function conversion in
         // pybind11/functional.hpp
         if(!py::isinstance<py::function>(src))

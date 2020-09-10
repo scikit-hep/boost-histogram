@@ -82,7 +82,7 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
             [](py::object) {
                 return py::detail::get_type_handle(
                     typeid(typename histogram_t::storage_type), true);
-                // Change to py::type<T>() if added to PyBind11
+                // Change to py::type<T>() if added to pybind11
             })
 
         ;
@@ -128,7 +128,7 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
                 return py::array(
                     pybind11::dtype(info), info.shape, info.strides, info.ptr, self);
                 // Note that, due to the missing signature py::array(info, self), we
-                // have to write this out fully here. TODO: Make PR to PyBind11
+                // have to write this out fully here. TODO: Make PR to pybind11
             },
             "flow"_a = false)
 
