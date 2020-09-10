@@ -147,10 +147,11 @@ class Axis(object):
             if not self.options.overflow:
                 ret += ", overflow=False"
 
-        if self.metadata is not None:
-            ret += ", metadata={}".format(
-                repr(self.metadata) if isinstance(self.metadata, str) else "..."
-            )
+        if self.metadata is not None and isinstance(self.metadata, str):
+            if len(self.metadata) < 12:
+                ret += ", metadata={!r}".format(self.metadata)
+            else:
+                ret += ", metadata={!r}...".format(self.metadata[:9])
 
         return ret
 
