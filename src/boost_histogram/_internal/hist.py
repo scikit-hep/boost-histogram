@@ -42,7 +42,7 @@ def _fill_cast(value, inner=False):
     elif not inner and isinstance(value, (tuple, list)):
         return tuple(_fill_cast(a, inner=True) for a in value)
     elif hasattr(value, "__iter__") or hasattr(value, "__array__"):
-        return np.ascontiguousarray(value)
+        return np.asarray(value)
     else:
         return value
 

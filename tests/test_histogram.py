@@ -283,6 +283,9 @@ def test_fill_2d(flow):
             for j in range(-flow, h.axes[1].size + flow):
                 assert get(h, i, j) == m[i][j]
 
+    h.fill(1, [1, 2])
+    h.fill(np.float64(1), [1, 2])
+
 
 def test_add_2d(flow):
     h0 = bh.Histogram(
