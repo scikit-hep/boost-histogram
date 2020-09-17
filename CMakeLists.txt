@@ -105,8 +105,15 @@ option(BOOST_HISTOGRAM_ERRORS "Make warnings errors (for CI mostly)")
 
 # Adding warnings
 if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang" OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-  target_compile_options(_core PRIVATE -Wall -Wextra -pedantic-errors -Wconversion
-                                       -Wsign-conversion -Wsign-compare)
+  target_compile_options(
+    _core
+    PRIVATE -Wall
+            -Wextra
+            -pedantic-errors
+            -Wconversion
+            -Wsign-conversion
+            -Wsign-compare
+            -Wno-unused-value)
   if(BOOST_HISTOGRAM_ERRORS)
     target_compile_options(_core PRIVATE -Werror)
   endif()
@@ -182,7 +189,7 @@ function(python_import)
   if(FAILED_NAMES)
     list(JOIN FAILED_NAMES " " FAILED_NAMES)
     message(
-      FATAL_ERROR
+      WARNING
         "Dependencies missing, try installing:\n  ${PYTHON_EXECUTABLE} -m pip install ${FAILED_NAMES}\n"
     )
   endif()

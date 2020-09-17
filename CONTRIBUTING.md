@@ -176,6 +176,30 @@ pre-commit autoupdate
 > when running pre-commit, and instead run `clang-format -style=file -i
 > <files>` yourself.
 
+## Clang-Tidy
+
+To run Clang tidy, the following recipe should work. Files will be modified in
+place, so you can use git to monitor the changes.
+
+```bash
+docker run --rm -v $PWD:/pybind11 -it silkeh/clang:10
+apt-get update && apt-get install python3-dev
+cmake -S pybind11/ -B build -DCMAKE_CXX_CLANG_TIDY="$(which clang-tidy);-fix"
+cmake --build build
+```
+
+Remember to build single-threaded if applying fixes!
+
+## Include what you use
+
+To run include what you use, install (`brew install include-what-you-use` on
+macOS), then run:
+
+```bash
+cmake -S . -B build-iwyu -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE=$(which include-what-you-use)
+cmake --build build
+```
+
 ## Common tasks
 
 
