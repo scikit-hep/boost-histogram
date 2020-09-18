@@ -135,7 +135,8 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
         .def(
             "axis",
             [](const histogram_t& self, int i) -> py::object {
-                unsigned ii = i < 0 ? self.rank() - (unsigned)std::abs(i) : (unsigned)i;
+                unsigned ii = i < 0 ? self.rank() - static_cast<unsigned>(std::abs(i))
+                                    : static_cast<unsigned>(i);
 
                 if(ii < self.rank()) {
                     const axis_variant& var = self.axis(ii);

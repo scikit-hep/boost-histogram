@@ -6,6 +6,7 @@ modernize-*,
 -modernize-avoid-c-arrays,
 llvm-namespace-comment,
 readability-container-size-empty,
+google-readability-casting,
 '
 
 HeaderFilterRegex: 'bh_python/.*hpp'

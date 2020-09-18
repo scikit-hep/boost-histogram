@@ -70,7 +70,9 @@ struct func_transform {
         if(auto cfunc = func.cpp_function()) {
             auto c = py::reinterpret_borrow<py::capsule>(
                 PyCFunction_GET_SELF(cfunc.ptr()));
-            auto rec = (py::detail::function_record*)c;
+
+            // NOLINTNEXTLINE(google-readability-casting)
+            auto rec = (py::detail::function_record*)(c);
 
             if(rec && rec->is_stateless
                && py::detail::same_type(
@@ -79,7 +81,8 @@ struct func_transform {
                 struct capture {
                     raw_t* f;
                 };
-                return std::make_tuple(((capture*)&rec->data)->f, src);
+                return std::make_tuple((reinterpret_cast<capture*>(&rec->data))->f,
+                                       src);
             }
 
             // Note that each error is slighly different just to help with debugging
