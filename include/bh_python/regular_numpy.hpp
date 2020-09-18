@@ -17,7 +17,7 @@ namespace axis {
 /// Mimics the numpy behavoir exactly.
 class regular_numpy : public bh::axis::regular<double, bh::use_default, metadata_t> {
     using value_type = double;
-    double stop_;
+    double stop_{0};
 
   public:
     regular_numpy(unsigned n, value_type start, value_type stop, metadata_t meta = {})
@@ -25,8 +25,7 @@ class regular_numpy : public bh::axis::regular<double, bh::use_default, metadata
         , stop_(stop) {}
 
     regular_numpy()
-        : regular()
-        , stop_(0) {}
+        : regular() {}
 
     bh::axis::index_type index(value_type v) const {
         return v <= stop_ ? std::min(regular::index(v), size() - 1) : regular::index(v);

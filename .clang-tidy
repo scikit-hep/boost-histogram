@@ -1,0 +1,12 @@
+FormatStyle: file
+
+Checks: '
+modernize-*,
+-modernize-use-trailing-return-type,
+-modernize-avoid-c-arrays,
+llvm-namespace-comment,
+readability-container-size-empty,
+google-readability-casting,
+'
+
+HeaderFilterRegex: 'bh_python/.*hpp'

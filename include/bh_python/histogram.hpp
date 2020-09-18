@@ -101,7 +101,7 @@ py::buffer_info make_buffer(bh::histogram<A, bh::unlimited_storage<Allocator>>& 
 template <class F, int Opt>
 const F& pyarray_at(const py::array_t<F, Opt>& input,
                     std::vector<py::ssize_t> indexes) {
-    const py::ssize_t rank = static_cast<py::ssize_t>(indexes.size());
+    const auto rank = static_cast<py::ssize_t>(indexes.size());
     if(input.ndim() != rank)
         throw py::value_error(
             "The input array dimensions must match the index dimensions");

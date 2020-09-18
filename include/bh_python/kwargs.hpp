@@ -47,7 +47,7 @@ inline void none_only_arg(py::kwargs& kwargs, const char* name) {
 
 /// Run this last; it will provide an error if other keyword are still present
 inline void finalize_args(const py::kwargs& kwargs) {
-    if(kwargs.size() > 0) {
+    if(!kwargs.empty()) {
         auto keys = py::str(", ").attr("join")(kwargs.attr("keys")());
         throw py::type_error(py::str("Keyword(s) {0} not expected").format(keys));
     }

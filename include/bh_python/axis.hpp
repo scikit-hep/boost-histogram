@@ -117,8 +117,7 @@ class boolean : public bh::axis::integer<int, metadata_t, option::none_t> {
                      bh::axis::index_type end,
                      unsigned merge)
         : integer(src, begin, end, merge) {}
-    boolean(const boolean& other)
-        : integer(other) {}
+    boolean(const boolean& other) = default;
 
     bh::axis::index_type index(int x) const noexcept {
         return integer::index(x == 0 ? 0 : 1);
@@ -206,11 +205,9 @@ decltype(auto) unchecked_bin(const A& ax, bh::axis::index_type i) {
 template <class A>
 py::array_t<double> edges(const A& ax, bool flow = false, bool numpy_upper = false) {
     auto continuous = [flow, numpy_upper](const auto& ax) {
-        using AX = std::decay_t<decltype(ax)>;
-        using index_type
-            = std::conditional_t<bh::axis::traits::is_continuous<AX>::value,
-                                 bh::axis::real_index_type,
-                                 bh::axis::index_type>;
+        using AX         = std::decay_t<decltype(ax)>;
+        using index_type = bh::axis::index_type;
+
         const index_type underflow
             = flow && (bh::axis::traits::get_options<AX>::test(option::underflow));
         const index_type overflow

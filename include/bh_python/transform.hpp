@@ -9,6 +9,7 @@
 
 #include <boost/core/nvp.hpp>
 #include <boost/histogram/axis/regular.hpp>
+#include <utility>
 
 #include <pybind11/functional.h>
 
@@ -69,7 +70,9 @@ struct func_transform {
         if(auto cfunc = func.cpp_function()) {
             auto c = py::reinterpret_borrow<py::capsule>(
                 PyCFunction_GET_SELF(cfunc.ptr()));
-            auto rec = (py::detail::function_record*)c;
+
+            // NOLINTNEXTLINE(google-readability-casting)
+            auto rec = (py::detail::function_record*)(c);
 
             if(rec && rec->is_stateless
                && py::detail::same_type(
@@ -78,7 +81,8 @@ struct func_transform {
                 struct capture {
                     raw_t* f;
                 };
-                return std::make_tuple(((capture*)&rec->data)->f, src);
+                return std::make_tuple((reinterpret_cast<capture*>(&rec->data))->f,
+                                       src);
             }
 
             // Note that each error is slighly different just to help with debugging
@@ -93,8 +97,8 @@ struct func_transform {
     func_transform(py::object f, py::object i, py::object c, py::str n)
         : _forward_ob(f)
         , _inverse_ob(i)
-        , _convert_ob(c)
-        , _name(n) {
+        , _convert_ob(std::move(c))
+        , _name(std::move(n)) {
         std::tie(_forward, _forward_converted) = compute(f);
         std::tie(_inverse, _inverse_converted) = compute(i);
     }

@@ -49,7 +49,7 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
         .def("__copy__", [](const histogram_t& self) { return histogram_t(self); })
         .def("__deepcopy__",
              [](const histogram_t& self, py::object memo) {
-                 histogram_t* a  = new histogram_t(self);
+                 auto* a         = new histogram_t(self);
                  py::module copy = py::module::import("copy");
                  for(unsigned i = 0; i < a->rank(); i++) {
                      bh::unsafe_access::axis(*a, i).metadata()
@@ -135,7 +135,8 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
         .def(
             "axis",
             [](const histogram_t& self, int i) -> py::object {
-                unsigned ii = i < 0 ? self.rank() - (unsigned)std::abs(i) : (unsigned)i;
+                unsigned ii = i < 0 ? self.rank() - static_cast<unsigned>(std::abs(i))
+                                    : static_cast<unsigned>(i);
 
                 if(ii < self.rank()) {
                     const axis_variant& var = self.axis(ii);
