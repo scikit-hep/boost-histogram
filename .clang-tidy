@@ -1,13 +1,11 @@
 FormatStyle: file
 
 Checks: '
+modernize-*,
+-modernize-use-trailing-return-type,
+-modernize-avoid-c-arrays,
 llvm-namespace-comment,
-modernize-use-override,
 readability-container-size-empty,
-modernize-use-using,
-modernize-use-equals-default,
-modernize-use-auto,
-modernize-use-emplace,
 '
 
 HeaderFilterRegex: 'bh_python/.*hpp'

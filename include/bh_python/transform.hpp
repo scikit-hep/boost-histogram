@@ -9,6 +9,7 @@
 
 #include <boost/core/nvp.hpp>
 #include <boost/histogram/axis/regular.hpp>
+#include <utility>
 
 #include <pybind11/functional.h>
 
@@ -93,8 +94,8 @@ struct func_transform {
     func_transform(py::object f, py::object i, py::object c, py::str n)
         : _forward_ob(f)
         , _inverse_ob(i)
-        , _convert_ob(c)
-        , _name(n) {
+        , _convert_ob(std::move(c))
+        , _name(std::move(n)) {
         std::tie(_forward, _forward_converted) = compute(f);
         std::tie(_inverse, _inverse_converted) = compute(i);
     }
