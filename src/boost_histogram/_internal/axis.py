@@ -147,12 +147,6 @@ class Axis(object):
             if not self.options.overflow:
                 ret += ", overflow=False"
 
-        if self.metadata is not None and isinstance(self.metadata, str):
-            if len(self.metadata) < 12:
-                ret += ", metadata={!r}".format(self.metadata)
-            else:
-                ret += ", metadata={!r}...".format(self.metadata[:9])
-
         return ret
 
     @property
@@ -252,7 +246,7 @@ class Regular(Axis):
         stop : float
             The ending value for the axis
         metadata : Any
-            Any Python object to attach to the axis.
+            Fills .metadata on the axis.
         underflow : bool = True
             Enable the underflow bin
         overflow : bool = True
@@ -494,9 +488,6 @@ class BaseCategory(Axis):
         elif self.options.circular:
             ret += ", circular=True"
 
-        if self.metadata is not None:
-            ret += ", metadata={0!r}".format(self.metadata)
-
         return ret
 
 
@@ -642,7 +633,4 @@ class Boolean(Axis):
         just in case it spans multiple lines.
         """
 
-        if self.metadata is not None:
-            return "metadata={0!r}".format(self.metadata)
-        else:
-            return ""
+        return ""

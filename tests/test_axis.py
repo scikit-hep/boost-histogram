@@ -188,16 +188,16 @@ class TestRegular(Axis):
         assert repr(ax) == "Regular(4, 1.1, 2.2)"
 
         ax = bh.axis.Regular(4, 1.1, 2.2, metadata="ra")
-        assert repr(ax) == "Regular(4, 1.1, 2.2, metadata='ra')"
+        assert repr(ax) == "Regular(4, 1.1, 2.2)"
 
         ax = bh.axis.Regular(4, 1.1, 2.2, underflow=False)
         assert repr(ax) == "Regular(4, 1.1, 2.2, underflow=False)"
 
         ax = bh.axis.Regular(4, 1.1, 2.2, metadata="ra", overflow=False)
-        assert repr(ax) == "Regular(4, 1.1, 2.2, overflow=False, metadata='ra')"
+        assert repr(ax) == "Regular(4, 1.1, 2.2, overflow=False)"
 
         ax = bh.axis.Regular(4, 1.1, 2.2, metadata="ra", circular=True)
-        assert repr(ax) == "Regular(4, 1.1, 2.2, circular=True, metadata='ra')"
+        assert repr(ax) == "Regular(4, 1.1, 2.2, circular=True)"
 
         ax = bh.axis.Regular(4, 1.1, 2.2, transform=bh.axis.transform.log)
         assert repr(ax) == "Regular(4, 1.1, 2.2, transform=log)"
@@ -365,7 +365,7 @@ class TestCircular(Axis):
         assert repr(ax) == "Regular(4, 1.1, 2.2, circular=True)"
 
         ax = bh.axis.Regular(4, 1.1, 2.2, metadata="hi", circular=True)
-        assert repr(ax) == "Regular(4, 1.1, 2.2, circular=True, metadata='hi')"
+        assert repr(ax) == "Regular(4, 1.1, 2.2, circular=True)"
 
     def test_getitem(self):
         a = bh.axis.Regular(2, 1, 1 + np.pi * 2, circular=True)
@@ -475,7 +475,7 @@ class TestVariable(Axis):
         assert repr(a) == "Variable([-0.1, 0.2])"
 
         a = bh.axis.Variable([-0.1, 0.2], metadata="hi")
-        assert repr(a) == "Variable([-0.1, 0.2], metadata='hi')"
+        assert repr(a) == "Variable([-0.1, 0.2])"
 
     def test_getitem(self):
         ref = [-0.1, 0.2, 0.3]
@@ -589,7 +589,7 @@ class TestInteger:
         assert repr(a) == "Integer(-1, 1)"
 
         a = bh.axis.Integer(-1, 1, metadata="hi")
-        assert repr(a) == "Integer(-1, 1, metadata='hi')"
+        assert repr(a) == "Integer(-1, 1)"
 
         a = bh.axis.Integer(-1, 1, underflow=False)
         assert repr(a) == "Integer(-1, 1, underflow=False)"
@@ -708,14 +708,14 @@ class TestCategory(Axis):
         assert repr(ax) == "IntCategory([1, 2, 3])"
 
         ax = bh.axis.IntCategory([1, 2, 3], metadata="foo")
-        assert repr(ax) == "IntCategory([1, 2, 3], metadata='foo')"
+        assert repr(ax) == "IntCategory([1, 2, 3])"
 
         ax = bh.axis.StrCategory("ABC", metadata="foo")
         # If unicode is the default (Python 3, generally)
         if type("") == type(u""):  # noqa: E721
-            assert repr(ax) == "StrCategory(['A', 'B', 'C'], metadata='foo')"
+            assert repr(ax) == "StrCategory(['A', 'B', 'C'])"
         else:
-            assert repr(ax) == "StrCategory([u'A', u'B', u'C'], metadata='foo')"
+            assert repr(ax) == "StrCategory([u'A', u'B', u'C'])"
 
     @pytest.mark.parametrize("ref", ([1, 2, 3], "ABC"))
     def test_getitem(self, ref, growth):
@@ -811,7 +811,7 @@ class TestBoolean:
         assert repr(a) == "Boolean()"
 
         a = bh.axis.Boolean(metadata="hi")
-        assert repr(a) == "Boolean(metadata='hi')"
+        assert repr(a) == "Boolean()"
 
     def test_label(self):
         a = bh.axis.Boolean(metadata="foo")
