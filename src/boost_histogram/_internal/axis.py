@@ -375,7 +375,7 @@ class Variable(Axis):
         elif options == {"underflow"}:
             self._ax = ca.variable_uflow(edges)
         elif options == {"overflow"}:
-            self._ax = ca.variable_oflow(edges,)
+            self._ax = ca.variable_oflow(edges)
         elif options == {"circular", "underflow", "overflow",} or options == {
             "circular",
             "overflow",

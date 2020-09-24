@@ -63,6 +63,4 @@ extras = {
 extras["all"] = sum(extras.values(), [])
 extras["dev"] += extras["test"]
 
-setup(
-    ext_modules=ext_modules, extras_require=extras,
-)
+setup(ext_modules=ext_modules, extras_require=extras)
