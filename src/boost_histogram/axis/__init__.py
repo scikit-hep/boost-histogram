@@ -10,7 +10,7 @@ from .._internal.axis import (
     StrCategory,
     Boolean,
 )
-from .._internal.axistuple import ArrayTuple, AxesTuple
+from .._internal.axestuple import ArrayTuple, AxesTuple
 from .._core.axis import options
 from . import transform
 
