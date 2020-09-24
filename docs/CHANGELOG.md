@@ -1,7 +1,9 @@
 # What's new in boost-histogram
 
-## DEVELOP
+## Version 0.11
+## Version 0.11.0
 
+A release focused on preparing for the upcoming Hist 2.0 release.
 
 #### User changes
 
@@ -34,6 +36,7 @@
 
 
 ## Version 0.10
+
 ### Version 0.10.2
 
 Quick fix for extra print statement in fill.
