@@ -1,11 +1,11 @@
 repos:
 - repo: https://github.com/psf/black
-  rev: 19.10b0
+  rev: 20.8b1
   hooks:
   - id: black
 
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v3.1.0
+  rev: v3.2.0
   hooks:
   - id: check-added-large-files
   - id: check-case-conflict
@@ -20,7 +20,7 @@ repos:
   - id: trailing-whitespace
 
 - repo: https://github.com/cheshirekow/cmake-format-precommit
-  rev: v0.6.10
+  rev: v0.6.13
   hooks:
   - id: cmake-format
     additional_dependencies: [pyyaml]
@@ -39,7 +39,7 @@ repos:
     files: src
 
 - repo: https://github.com/mgedmin/check-manifest
-  rev: "0.42"
+  rev: "0.43"
   hooks:
   - id: check-manifest
     stages: [manual]

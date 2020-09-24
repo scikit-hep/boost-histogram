@@ -64,13 +64,9 @@ class AxesMixin(object):
 class Regular(bh.axis.Regular, AxesMixin):
     __slots__ = ()
 
-    def __init__(
-        self, bins, start, stop, name,
-    ):
+    def __init__(self, bins, start, stop, name):
 
-        super(Regular, self).__init__(
-            bins, start, stop,
-        )
+        super(Regular, self).__init__(bins, start, stop)
 
         self._ax.metadata["name"] = name
 
