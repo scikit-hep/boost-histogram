@@ -112,10 +112,11 @@ class Histogram(object):
             self.axes = self._generate_axes_()
             return
 
-        # If we construct with another Histogram, support that too
+        # If we construct with another Histogram as the only positional argument,
+        # support that too
         if len(axes) == 1 and isinstance(axes[0], Histogram):
             self.__init__(axes[0]._hist)
-            self.metadata = axes[0].metadata
+            self._from_histogram_object(axes[0])
             return
 
         # Keyword only trick (change when Python2 is dropped)
@@ -150,6 +151,31 @@ class Histogram(object):
                 return
 
         raise TypeError("Unsupported storage")
+
+    def _from_histogram_object(self, h):
+        self.__dict__ = copy.copy(h.__dict__)
+        self.axes = self._generate_axes_()
+        for ax in self.axes:
+            ax._ax.metadata = copy.copy(ax._ax.metadata)
+
+        # Allow custom behavior on either "from" or "to"
+        h._export_bh_(self)
+        self._import_bh_()
+
+    def _import_bh_(self):
+        """
+        If any post-processing is needed to pass a histogram between libraries, a
+        subclass can implement it here. self is the new instance in the current
+        (converted-to) class.
+        """
+
+    @classmethod
+    def _export_bh_(cls, self):
+        """
+        If any preparation is needed to pass a histogram between libraries, a subclass can
+        implement it here. cls is the current class being converted from, and self is the
+        instance in the class being converted to.
+        """
 
     def _generate_axes_(self):
         """

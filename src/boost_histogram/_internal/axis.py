@@ -45,16 +45,16 @@ class Axis(object):
         elif item == "metadata":
             return None
         else:
-            raise AttributeError(
-                "'{}' object has no attribute '{}'".format(type(self).__name__, item)
+            msg = "'{}' object has no attribute '{}' in {}".format(
+                type(self).__name__, item, set(self._ax.metadata)
             )
+            raise AttributeError(msg)
 
     def __setattr__(self, item, value):
         if item == "_ax":
             Axis.__dict__[item].__set__(self, value)
-            return
-
-        self._ax.metadata[item] = value
+        else:
+            self._ax.metadata[item] = value
 
     def __dir__(self):
         metadata = list(self._ax.metadata)

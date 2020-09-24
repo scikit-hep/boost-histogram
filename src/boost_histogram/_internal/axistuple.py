@@ -50,15 +50,6 @@ class AxesTuple(tuple):
         return tuple(s.size for s in self)
 
     @property
-    def metadata(self):
-        return tuple(s.metadata for s in self)
-
-    @metadata.setter
-    def metadata(self, values):
-        for s, v in zip(self, values):
-            s.metadata = v
-
-    @property
     def extent(self):
         return tuple(s.extent for s in self)
 
@@ -101,6 +92,12 @@ class AxesTuple(tuple):
     def __getitem__(self, item):
         result = super(AxesTuple, self).__getitem__(item)
         return self.__class__(result) if isinstance(result, tuple) else result
+
+    def __getattr__(self, attr):
+        return self.__class__(s.__getattr__(attr) for s in self)
+
+    def __setattr__(self, attr, values):
+        return self.__class__(s.__setattr__(attr, v) for s, v in zip(self, values))
 
     # Python 2 support - remove after 1.0
     def __getslice__(self, start, stop):
