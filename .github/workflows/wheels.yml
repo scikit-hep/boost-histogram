@@ -2,6 +2,9 @@ name: Wheels
 
 on:
   workflow_dispatch:
+    inputs:
+      overrideVersion:
+        description: Manually force a version
   pull_request:
     branches:
       - master
@@ -16,6 +19,7 @@ on:
 env:
   CIBW_TEST_EXTRAS: test
   CIBW_TEST_COMMAND: pytest {project}/tests
+  SETUPTOOLS_SCM_PRETEND_VERSION: ${{ github.event.inputs.overrideVersion }}
 
 
 jobs:
