@@ -10,7 +10,7 @@ import numpy as np
 
 from .. import _core
 from .axis import Axis
-from .axistuple import AxesTuple
+from .axestuple import AxesTuple
 from .kwargs import KWArgs
 from .sig_tools import inject_signature
 from .six import string_types
