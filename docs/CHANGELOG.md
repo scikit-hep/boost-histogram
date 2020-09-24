@@ -5,18 +5,21 @@
 
 #### User changes
 
-* Arbitrary items can be set on an axis or histogram. [#450][]
+* Arbitrary items can be set on an axis or histogram. [#450][], [#456][]
+* Subclasses can customize the conversion procedure. [#456][]
 
 #### Bug fixes
 
 * Fixed reading pickles from boost-histogram 0.6-0.8 [#445][]
 * Minor correctness fix [#446][]
 * Accidental install of typing on Python 3.5+ fixed
+* Scalar ND fill fixed [#453][]
 
 #### Developer changes
 * Updated to Boost 1.74 [#442][]
 * CMake installs version.py now too [#449][]
 * Updated setuptools infrastructure no longer requires NumPy [#451][]
+* Some basic clang-tidy checks are now being run [#455][]
 
 
 [#442]: https://github.com/scikit-hep/boost-histogram/pull/442
@@ -25,6 +28,9 @@
 [#449]: https://github.com/scikit-hep/boost-histogram/pull/449
 [#450]: https://github.com/scikit-hep/boost-histogram/pull/450
 [#451]: https://github.com/scikit-hep/boost-histogram/pull/451
+[#453]: https://github.com/scikit-hep/boost-histogram/pull/453
+[#455]: https://github.com/scikit-hep/boost-histogram/pull/455
+[#456]: https://github.com/scikit-hep/boost-histogram/pull/456
 
 
 ## Version 0.10
