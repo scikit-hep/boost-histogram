@@ -15,7 +15,7 @@
 
 Python bindings for [Boost::Histogram][] ([source][Boost::Histogram source]), a
 C++14 library. This is of the [fastest libraries][] for
-histogramming, while still providing the power of a full histogram object. See [what's new](./docs/CHANGELOG.md).
+histogramming, while still providing the power of a full histogram object. See [what's new](./docs/CHANGELOG.md). Powers [Hist][], an analyst-friendly histogram library.
 
 ## Installation
 
@@ -261,6 +261,7 @@ Support for this work was provided by the National Science Foundation cooperativ
 
 [Boost::Histogram]:        https://www.boost.org/doc/libs/release/libs/histogram/doc/html/index.html
 [Boost::Histogram source]: https://github.com/boostorg/histogram
+[Hist]:                    https://github.com/scikit-hep/hist
 [fastest libraries]:       https://iscinumpy.gitlab.io/post/histogram-speeds-in-python/
 [conda-link]:              https://github.com/conda-forge/boost-histogram-feedstock
 [sk-badge]:                https://scikit-hep.org/assets/images/Scikit--HEP-Project-blue.svg
