@@ -62,7 +62,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Install python tools
-      run: python -m pip install -r dev-requirements.txt pytest-github-actions-annotate-failures
+      run: python -m pip install -r dev-requirements.txt
 
     - name: Configure
       run: mkdir -p build && cd build && cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_HISTOGRAM_ERRORS=ON -DPYTHON_EXECUTABLE="$(which python)"
