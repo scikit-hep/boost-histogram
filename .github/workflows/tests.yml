@@ -47,6 +47,7 @@ jobs:
   cmake:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python-version: ["2.7", "3.5", "3.8"] # Waiting on CPython or pybind11 fix: , "3.9-dev"]
 
