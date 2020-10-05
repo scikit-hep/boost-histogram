@@ -71,8 +71,8 @@ struct func_transform {
             auto c = py::reinterpret_borrow<py::capsule>(
                 PyCFunction_GET_SELF(cfunc.ptr()));
 
-            // NOLINTNEXTLINE(google-readability-casting)
-            auto rec = (py::detail::function_record*)(c);
+            // This calls operator T* (PyCapsule_SetPointer)
+            auto rec = static_cast<py::detail::function_record*>(c);
 
             if(rec && rec->is_stateless
                && py::detail::same_type(
