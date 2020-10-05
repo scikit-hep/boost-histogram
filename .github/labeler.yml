@@ -1,0 +1,4 @@
+# Add 'needs changelog` label to any change to code files as long as the `CHANGELOG` hasn't changed
+needs changelog:
+- any: ['src/**/*.py', 'src/**/*.cpp', 'include/**/*.hpp']
+  all: ['!docs/CHANGELOG.md']
