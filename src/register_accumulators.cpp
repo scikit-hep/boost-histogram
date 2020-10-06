@@ -19,14 +19,10 @@ template <class T>
 decltype(auto) make_mean_fill() {
     return [](T& self, py::object value, py::object weight) {
         if(weight.is_none()) {
-            py::vectorize([](T& self, double val) {
-                self(val);
-                return false;
-            })(self, value);
+            py::vectorize([](T& self, double val) { self(val); })(self, value);
         } else {
             py::vectorize([](T& self, double wei, double val) {
                 self(bh::weight(wei), val);
-                return false;
             })(self, weight, value);
         }
         return self;
@@ -95,12 +91,10 @@ void register_accumulators(py::module& accumulators) {
                 if(variance.is_none()) {
                     py::vectorize([](weighted_sum& self, double val) {
                         self += bh::weight(val);
-                        return false;
                     })(self, value);
                 } else {
                     py::vectorize([](weighted_sum& self, double val, double var) {
                         self += weighted_sum(val, var);
-                        return false;
                     })(self, value, variance);
                 }
                 return self;
@@ -152,11 +146,7 @@ void register_accumulators(py::module& accumulators) {
         .def(
             "fill",
             [](sum& self, py::object value) {
-                py::vectorize([](sum& self, double v) {
-                    self += v;
-                    return false; // Required in pybind11 2.4.2,
-                                  // requirement may be removed
-                })(self, value);
+                py::vectorize([](sum& self, double v) { self += v; })(self, value);
                 return self;
             },
             "value"_a,
