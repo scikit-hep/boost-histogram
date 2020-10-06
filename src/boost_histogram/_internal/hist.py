@@ -56,8 +56,6 @@ def _arg_shortcut(item):
         return item._ax
     else:
         raise TypeError("Only axes supported in histogram constructor")
-        # TODO: Currently segfaults if we pass in a non-axis to the C++ code
-        # Using the public interface above, this should never be possible.
 
 
 def _expand_ellipsis(indexes, rank):
