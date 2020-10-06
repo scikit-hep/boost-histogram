@@ -1,6 +1,21 @@
 # What's new in boost-histogram
 
 ## Version 0.11
+
+### Version 0.11.1
+
+Updating pybind11 to 2.6.0. Features:
+
+* Python 3.9 support
+* PyPy support
+* Warnings on latest AppleClang fixed
+* 40% faster accumulator fills, simpler implementation
+* Segfaults when passing an object with a throwing repr fixed
+* kwargs replaced older workarounds (partially at the moment)
+* Using new `py::type` instead of `pybind11::detail` usage
+* Enhanced CMake support, finds conda and venv now, uses `pybind11_find_import`
+* Using setuptools support from pybind11 (previously vendored, so benefits have been available since 0.11.0)
+
 ### Version 0.11.0
 
 A release focused on preparing for the upcoming Hist 2.0 release.
