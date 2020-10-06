@@ -6,8 +6,10 @@ from setuptools import setup
 import sys
 import os
 
-sys.path.append(os.path.abspath(os.path.dirname(__file__)))
-from setup_helpers import Pybind11Extension, ParallelCompile  # noqa: E402
+DIR = os.path.abspath(os.path.dirname(__file__))
+
+sys.path.append(os.path.join(DIR, "extern", "pybind11"))
+from pybind11.setup_helpers import Pybind11Extension, ParallelCompile  # noqa: E402
 
 del sys.path[-1]
 
@@ -31,7 +33,6 @@ INCLUDE_DIRS = [
     "extern/core/include",
     "extern/histogram/include",
     "extern/mp11/include",
-    "extern/pybind11/include",
     "extern/throw_exception/include",
     "extern/variant2/include",
 ]
@@ -42,7 +43,6 @@ ext_modules = [
         SRC_FILES,
         include_dirs=INCLUDE_DIRS,
         cxx_std=14,
-        include_pybind11=False,
     )
 ]
 

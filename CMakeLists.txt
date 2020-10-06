@@ -174,27 +174,6 @@ install(TARGETS _core DESTINATION "boost_histogram")
 # Tests (Requires pytest to be available to run)
 include(CTest)
 
-# Check to see if modules are importable.
-function(python_import)
-  foreach(PACKAGE_NAME IN LISTS ARGN)
-    string(REPLACE "-" "_" PYTHON_PACKAGE_NAME "${PACKAGE_NAME}")
-    execute_process(
-      COMMAND ${PYTHON_EXECUTABLE} -c "import ${PYTHON_PACKAGE_NAME}"
-      RESULT_VARIABLE RESULT_PRESENT
-      OUTPUT_QUIET ERROR_QUIET)
-    if(RESULT_PRESENT)
-      list(APPEND FAILED_NAMES "${PACKAGE_NAME}")
-    endif()
-  endforeach()
-  if(FAILED_NAMES)
-    list(JOIN FAILED_NAMES " " FAILED_NAMES)
-    message(
-      WARNING
-        "Dependencies missing, try installing:\n  ${PYTHON_EXECUTABLE} -m pip install ${FAILED_NAMES}\n"
-    )
-  endif()
-endfunction()
-
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/boost_histogram/version.py")
   set(VERSION_REGEX [=[version[ \t]*=[ \t]*["']([0-9]+\.[0-9]+\.[0-9]+)]=])
 
@@ -205,7 +184,8 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/boost_histogram/version.py")
   # Pick out just the version
   string(REGEX MATCH [=[[0-9]+\.[0-9]+\.[0-9]+]=] VERSION_STRING "${VERSION_STRING}")
 else()
-  python_import(setuptools_scm toml)
+  pybind11_find_import(setuptools_scm REQUIRED)
+  pybind11_find_import(toml REQUIRED)
 
   execute_process(
     COMMAND
