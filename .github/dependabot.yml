@@ -5,6 +5,5 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-    ignored_updates:
-      - match:
-          dependency_name: "actions/*"
+    ignore:
+      - dependency_name: "actions/*"
