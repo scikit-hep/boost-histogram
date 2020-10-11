@@ -6,4 +6,4 @@ updates:
     schedule:
       interval: "daily"
     ignore:
-      - dependency_name: "actions/*"
+      - dependency-name: "actions/*"
