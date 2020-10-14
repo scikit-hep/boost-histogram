@@ -50,9 +50,9 @@ ext_modules = [
 extras = {
     "test": ["pytest", "pytest-benchmark"],
     "docs": [
-        "Sphinx>=2.0.0",
+        "Sphinx~=3.0",
         "recommonmark>=0.5.0",
-        "sphinx_book_theme==0.30.0",
+        "sphinx_book_theme==0.38.0",
         "nbsphinx",
         "sphinx_copybutton",
     ],
