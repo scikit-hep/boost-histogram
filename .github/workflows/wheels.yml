@@ -58,7 +58,8 @@ jobs:
         type: [Standard]
 
         include:
-          - type: Standard
+          - os: ubuntu-18.04
+            type: Standard
             CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
             CIBW_MANYLINUX_I686_IMAGE: manylinux2010
 
@@ -80,7 +81,7 @@ jobs:
     - name: Build wheel
       run: python -m cibuildwheel --output-dir wheelhouse
       env:
-        CIBW_SKIP: cp27-win*
+        CIBW_SKIP: cp27-win* pp27-win32
         CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.CIBW_MANYLINUX_I686_IMAGE }}
         CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.CIBW_MANYLINUX_X86_64_IMAGE }}
 
@@ -129,7 +130,7 @@ jobs:
     - name: Build 32-bit wheel
       run: python -m cibuildwheel --output-dir wheelhouse
       env:
-        CIBW_BUILD: cp27-win32
+        CIBW_BUILD: cp27-win32 pp27-win32
         DISTUTILS_USE_SDK: 1
         MSSdk: 1
 

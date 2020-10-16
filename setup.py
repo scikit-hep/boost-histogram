@@ -43,6 +43,7 @@ ext_modules = [
         SRC_FILES,
         include_dirs=INCLUDE_DIRS,
         cxx_std=14,
+        extra_compile_args=["/d2FH4-"] if sys.platform.startswith("win32") else [],
     )
 ]
 
