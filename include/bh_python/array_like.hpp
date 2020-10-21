@@ -23,13 +23,13 @@ py::array_t<T> array_like(py::object obj) {
         return py::array_t<T>(shape);
     }
     auto arr = py::cast<py::array>(obj);
-    std::vector<ssize_t> strides;
+    std::vector<py::ssize_t> strides;
     strides.reserve(static_cast<std::size_t>(arr.ndim()));
     for(int i = 0; i < arr.ndim(); ++i) {
         strides.emplace_back(arr.strides()[i] / arr.itemsize()
-                             * static_cast<ssize_t>(sizeof(T)));
+                             * static_cast<py::ssize_t>(sizeof(T)));
     }
-    return py::array_t<T>(bh::detail::span<const ssize_t>(
-                              arr.shape(), static_cast<std::size_t>(arr.ndim())),
-                          strides);
+    return py::array_t<T>{bh::detail::span<const py::ssize_t>{
+                              arr.shape(), static_cast<std::size_t>(arr.ndim())},
+                          strides};
 }

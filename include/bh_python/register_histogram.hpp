@@ -80,9 +80,7 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
         .def_property_readonly_static(
             "_storage_type",
             [](py::object) {
-                return py::detail::get_type_handle(
-                    typeid(typename histogram_t::storage_type), true);
-                // Change to py::type<T>() if added to pybind11
+                return py::type::of<typename histogram_t::storage_type>();
             })
 
         ;
@@ -123,12 +121,8 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
         .def(
             "view",
             [](py::object self, bool flow) {
-                auto& h   = py::cast<histogram_t&>(self);
-                auto info = make_buffer(h, flow);
-                return py::array(
-                    pybind11::dtype(info), info.shape, info.strides, info.ptr, self);
-                // Note that, due to the missing signature py::array(info, self), we
-                // have to write this out fully here. TODO: Make PR to pybind11
+                auto& h = py::cast<histogram_t&>(self);
+                return py::array(make_buffer(h, flow), self);
             },
             "flow"_a = false)
 

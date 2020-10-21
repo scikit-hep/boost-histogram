@@ -214,7 +214,7 @@ py::array_t<double> edges(const A& ax, bool flow = false, bool numpy_upper = fal
             = flow && (bh::axis::traits::get_options<AX>::test(option::overflow));
 
         py::array_t<double> edges(
-            static_cast<std::size_t>(ax.size() + 1 + overflow + underflow));
+            static_cast<py::ssize_t>(ax.size() + 1 + overflow + underflow));
 
         for(index_type i = -underflow; i <= ax.size() + overflow; ++i)
             edges.mutable_at(i + underflow) = ax.value(i);
@@ -238,7 +238,7 @@ py::array_t<double> edges(const A& ax, bool flow = false, bool numpy_upper = fal
                 = flow && bh::axis::traits::get_options<AX>::test(option::overflow);
 
             py::array_t<double> edges(
-                static_cast<std::size_t>(ax.size() + 1 + overflow));
+                static_cast<py::ssize_t>(ax.size() + 1 + overflow));
 
             for(bh::axis::index_type i = 0; i <= ax.size() + overflow; ++i)
                 edges.mutable_at(i) = i;
@@ -251,7 +251,7 @@ py::array_t<double> edges(const A& ax, bool flow = false, bool numpy_upper = fal
 
 template <class A>
 py::array_t<double> centers(const A& ax) {
-    py::array_t<double> result(static_cast<std::size_t>(ax.size()));
+    py::array_t<double> result(ax.size());
     for(bh::axis::index_type i = 0; i < ax.size(); ++i)
         result.mutable_data()[i] = unchecked_center(ax, i);
     return result;
@@ -259,7 +259,7 @@ py::array_t<double> centers(const A& ax) {
 
 template <class A>
 py::array_t<double> widths(const A& ax) {
-    py::array_t<double> result(static_cast<std::size_t>(ax.size()));
+    py::array_t<double> result(ax.size());
     bh::detail::static_if<bh::axis::traits::is_continuous<A>>(
         [](py::array_t<double>& result, const auto& ax) {
             std::transform(ax.begin(),

@@ -80,7 +80,7 @@ template <class Archive>
 void save(Archive& ar, const storage::atomic_int64& s, unsigned /* version */) {
     // We cannot view the memory as a numpy array, because the internal layout of
     // std::atomic is undefined. So no reinterpret_casts are allowed.
-    py::array_t<std::int64_t> a(s.size());
+    py::array_t<std::int64_t> a(static_cast<py::ssize_t>(s.size()));
     std::copy(s.begin(), s.end(), a.mutable_data());
     ar << a;
 }
@@ -105,7 +105,8 @@ void save(Archive& ar,
                       && sizeof(T) == 2 * sizeof(double),
                   "weighted_sum cannot be fast serialized");
     // view storage buffer as flat numpy array
-    py::array_t<double> a(s.size() * 2, reinterpret_cast<const double*>(s.data()));
+    py::array_t<double> a(static_cast<py::ssize_t>(s.size()) * 2,
+                          reinterpret_cast<const double*>(s.data()));
     ar << a;
 }
 
@@ -131,7 +132,8 @@ void save(Archive& ar,
                       && sizeof(T) == 3 * sizeof(double),
                   "mean cannot be fast serialized");
     // view storage buffer as flat numpy array
-    py::array_t<double> a(s.size() * 3, reinterpret_cast<const double*>(s.data()));
+    py::array_t<double> a(static_cast<py::ssize_t>(s.size()) * 3,
+                          reinterpret_cast<const double*>(s.data()));
     ar << a;
 }
 
@@ -157,7 +159,8 @@ void save(Archive& ar,
                       && sizeof(T) == 4 * sizeof(double),
                   "weighted_mean cannot be fast serialized");
     // view storage buffer as flat numpy array
-    py::array_t<double> a(s.size() * 4, reinterpret_cast<const double*>(s.data()));
+    py::array_t<double> a(static_cast<py::ssize_t>(s.size()) * 4,
+                          reinterpret_cast<const double*>(s.data()));
     ar << a;
 }
 

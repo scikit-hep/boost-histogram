@@ -85,7 +85,6 @@ source ./env_cmake/bin/activate
 pip install -r dev-requirements.txt
 cmake -S . -B build-debug \
     -GNinja \
-    -DPYTHON_EXECUTABLE=$(which python) \
     -DCMAKE_INSTALL_PREFIX=$(python -c "import distutils.sysconfig; print(distutils.sysconfig.get_python_lib(plat_specific=False,standard_lib=False))")
 cmake --build build-debug -j4
 cmake --install build-debug # Option 3 only

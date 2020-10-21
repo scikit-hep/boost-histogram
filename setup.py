@@ -6,11 +6,12 @@ from setuptools import setup
 import sys
 import os
 
-sys.path.append(os.path.abspath(os.path.dirname(__file__)))
-from setup_helpers import Pybind11Extension, ParallelCompile  # noqa: E402
+DIR = os.path.abspath(os.path.dirname(__file__))
+
+sys.path.append(os.path.join(DIR, "extern", "pybind11"))
+from pybind11.setup_helpers import Pybind11Extension, ParallelCompile  # noqa: E402
 
 del sys.path[-1]
-
 
 # Use the environment variable NPY_NUM_BUILD_JOBS
 ParallelCompile("NPY_NUM_BUILD_JOBS").install()
@@ -32,7 +33,6 @@ INCLUDE_DIRS = [
     "extern/core/include",
     "extern/histogram/include",
     "extern/mp11/include",
-    "extern/pybind11/include",
     "extern/throw_exception/include",
     "extern/variant2/include",
 ]
@@ -43,7 +43,7 @@ ext_modules = [
         SRC_FILES,
         include_dirs=INCLUDE_DIRS,
         cxx_std=14,
-        include_pybind11=False,
+        extra_compile_args=["/d2FH4-"] if sys.platform.startswith("win32") else [],
     )
 ]
 
@@ -51,9 +51,9 @@ ext_modules = [
 extras = {
     "test": ["pytest", "pytest-benchmark"],
     "docs": [
-        "Sphinx>=2.0.0",
+        "Sphinx~=3.0",
         "recommonmark>=0.5.0",
-        "sphinx_book_theme==0.30.0",
+        "sphinx_book_theme==0.38.0",
         "nbsphinx",
         "sphinx_copybutton",
     ],
