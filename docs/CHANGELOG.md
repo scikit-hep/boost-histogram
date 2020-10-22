@@ -4,10 +4,10 @@
 
 ### Version 0.11.1
 
-Updating pybind11 to 2.6.0. Features:
+Updating pybind11 to 2.6.0. [#443][] Features:
 
 * Python 3.9 support
-* PyPy support
+* PyPy2 / PyPy3.6 / PyPy3.7 support
 * Warnings on latest AppleClang fixed
 * 40% faster accumulator fills, simpler implementation
 * Segfaults when passing an object with a throwing repr fixed
@@ -15,6 +15,12 @@ Updating pybind11 to 2.6.0. Features:
 * Using new `py::type` instead of `pybind11::detail` usage
 * Enhanced CMake support, finds conda and venv now, uses `pybind11_find_import`
 * Using setuptools support from pybind11 (previously vendored, so benefits have been available since 0.11.0)
+
+Also cleans up SDists a bit. [#467][]
+
+[#443]: https://github.com/scikit-hep/boost-histogram/pull/443
+[#467]: https://github.com/scikit-hep/boost-histogram/pull/467
+
 
 ### Version 0.11.0
 
