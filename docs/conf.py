@@ -17,11 +17,16 @@
 import os
 import re
 
+# Docs require Python 3.6+ to generate
+from pathlib import Path
+
+import shutil
 import sys
 
-DIR = os.path.abspath(os.path.dirname(__file__))
-BASEDIR = os.path.abspath(os.path.dirname(DIR))
-sys.path.append(os.path.join(BASEDIR, "src"))
+DIR = Path(__file__).parent.resolve()
+BASEDIR = DIR.parent
+
+sys.path.append(str(BASEDIR / "src"))
 
 # -- Project information -----------------------------------------------------
 
@@ -112,3 +117,27 @@ html_static_path = []  # _static
 # Simpler docs (no build required)
 
 autodoc_mock_imports = ["boost_histogram._core"]
+
+
+def prepare(app):
+    outer = BASEDIR / "notebooks"
+    inner = DIR / "notebooks"
+    notebooks = outer.glob("*.ipynb")
+
+    for notebook in notebooks:
+        shutil.copy(notebook, inner / notebook.name)
+
+
+def clean_up(app, exception):
+    inner = DIR / "notebooks"
+    for notebook in inner.glob("*.ipynb"):
+        notebook.unlink()
+
+
+def setup(app):
+
+    # Copy the notebooks in
+    app.connect("builder-inited", prepare)
+
+    # Clean up the generated notebooks
+    app.connect("build-finished", clean_up)
