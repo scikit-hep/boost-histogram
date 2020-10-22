@@ -155,19 +155,21 @@ The easiest way to get boost-histogram is to use a binary wheel, which happens w
 python -m pip install boost-histogram
 ```
 
-These are the supported platforms for which wheels are produced using [cibuildwheel](https://cibuildwheel.readthedocs.io/en/stable/):
+Wheels are produced using [cibuildwheel](https://cibuildwheel.readthedocs.io/en/stable/); all platforms supported by cibuildwheel are provided in boost-histogram:
 
 | System | Arch | Python versions |
 |---------|-----|------------------|
-| ManyLinux1 (custom GCC 9.2) | 32 & 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8 |
-| ManyLinux2010 | 32 & 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8 |
-| macOS 10.9+ | 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8 |
-| Windows | 32 & 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8 |
+| ManyLinux1 (custom GCC 9.2) | 32 & 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8, 3.9 |
+| ManyLinux2010 | 32 & 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8, 3.9 |
+| macOS 10.9+ | 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8, 3.9 |
+| Windows | 32 & 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8, 3.9 |
 
 
-* manylinux1: Using a custom docker container with GCC 9.2; should work but can't be called directly other compiled extensions unless they do the same thing (think that's the main caveat). Supporting 32 bits because it's there.
+* manylinux1: Using a custom docker container with GCC 9; should work but can't be called directly other compiled extensions unless they do the same thing (think that's the main caveat). Supporting 32 bits because it's there.
 * manylinux2010: Requires pip 10+ and a version of Linux newer than 2010.
 * Windows: pybind11 requires compilation with a newer copy of Visual Studio than Python 2.7's Visual Studio 2008; you need to have the [Visual Studio 2015 distributable][msvc2015] installed (the dll is included in 2017 and 2019, as well).
+* PyPy: Supported on all platforms that `cibuildwheel` supports, in pypy2, pypy3.6, and pypy3.7 variants.
+* ARM and PowerPC on Linux is supported for newer Python versions via manylinux2014.
 
 [msvc2015]: https://www.microsoft.com/en-us/download/details.aspx?id=48145
 
@@ -188,7 +190,7 @@ For a source build, for example from an "sdist" package, the only requirements a
 
 If you are using Python 2.7 on Windows, you will need to use a recent version of Visual studio and force distutils to use it, or just upgrade to Python 3.6 or newer. Check the pybind11 documentation for [more help](https://pybind11.readthedocs.io/en/stable/faq.html#working-with-ancient-visual-studio-2009-builds-on-windows). On some Linux systems, you may need to use a newer compiler than the one your distribution ships with.
 
-Numpy is downloaded during the build (enables multithreaded builds). Boost is not required or needed (this only depends on included header-only dependencies).This library is under active development; you can install directly from GitHub if you would like.
+Boost is not required or needed (this only depends on included header-only dependencies). This library is under active development; you can install directly from GitHub if you would like.
 
 ```bash
 python -m pip install git+https://github.com/scikit-hep/boost-histogram.git@develop
