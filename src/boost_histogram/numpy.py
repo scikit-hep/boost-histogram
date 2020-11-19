@@ -107,7 +107,7 @@ def histogram(
     np = _np
 
     # numpy 1d histogram returns integers in some cases
-    if "storage" not in kwargs and not (weights or normed or density):
+    if "storage" not in kwargs and not (weights is not None or normed or density):
         kwargs["storage"] = _storage.Int64()
 
     if isinstance(bins, str):
