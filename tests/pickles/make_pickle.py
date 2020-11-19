@@ -9,8 +9,6 @@ import boost_histogram as bh
 
 from pathlib import Path
 
-VER = tuple(map(int, bh.__version__.split(".")))
-
 
 def make_pickle(
     output: Path = typer.Argument(..., exists=False), *, protocol: int = 2  # noqa: B008
@@ -18,6 +16,8 @@ def make_pickle(
     """
     Make a pickle file with the current boost-histogram for use in tests.
     """
+
+    VER = tuple(map(int, bh.__version__.split(".")))
 
     h1 = bh.Histogram(bh.axis.Regular(31, -15, 15))
     h2 = bh.Histogram(
