@@ -15,7 +15,9 @@ DIR = os.path.abspath(os.path.dirname(__file__))
 
 
 @pytest.mark.xfail(
-    env.PY2, raises=TypeError, reason="Python3 pickle can't be read in Python 2"
+    env.PY2 and env.CPYTHON,
+    raises=TypeError,
+    reason="Python 3 pickle can't be read in CPython 2",
 )
 @pytest.mark.parametrize("version", ["0.10.2", "0.6.2"])
 def test_read_pickle(version):
