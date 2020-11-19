@@ -19,7 +19,7 @@ DIR = os.path.abspath(os.path.dirname(__file__))
     raises=TypeError,
     reason="Python 3 pickle can't be read in CPython 2",
 )
-@pytest.mark.parametrize("version", ["0.10.2", "0.6.2"])
+@pytest.mark.parametrize("version", ["0.10.2", "0.6.2", "0.11.1"])
 def test_read_pickle(version):
 
     filename = os.path.join(DIR, "pickles", "bh_{}.pkl".format(version))
