@@ -786,3 +786,79 @@ class Histogram(object):
         """
 
         return self._new_hist(self._hist.project(*args))
+
+    # Implementation of PlottableHistogram
+
+    @property
+    def weighted(self):
+        """
+        Returns true if the storage has weight information.
+
+        :return: bool
+        """
+        view = self.view()
+        return view.dtype > 0 and hasattr(view, "variance")
+
+    @property
+    def implementation(self):
+        """
+        Returns "count" if this is a normal summing histogram, and "mean" if this is a
+        mean histogram.
+
+        :return: "mean" or "count"
+        """
+        if self._storage_type in {_core.storage.mean, _core.storage.weighted_mean}:
+            return "mean"
+        else:
+            return "count"
+
+    def values(self, flow=False):
+        """
+        Return the histogram values (weighed count or samples) for any storage. Avoids a
+        copy when possible. Is identical to counts for summing histogram, and is the mean
+        for mean histograms.
+
+        :param flow: Enable flow bins. Not part of PlottableHistogram, but included for consitancy and flexibilty.
+        :return: np.ndarray[np.float64]
+        """
+
+        view = self.view(flow)
+        if len(view.dtype) == 0:
+            return view
+        else:
+            return view.value
+
+    def variances(self, flow=False):
+        """
+        Return the histogram variance of the value if the storage supports it. Avoids a
+        copy when possible. Returns values when a storage does not have an explicit variance.
+
+        :param flow: Enable flow bins. Not part of PlottableHistogram, but included for
+        consitancy and flexibilty.
+        :return: np.ndarray[np.float64]
+        """
+
+        view = self.view(flow)
+        if len(view.dtype) == 0:
+            return view
+        else:
+            return view.variance
+
+    def counts(self, flow=False):
+        """
+        Return the histogram number of counts. Avoids a copy when possible.
+
+        :param flow: Enable flow bins. Not part of PlottableHistogram, but included for
+        consitancy and flexibilty.
+        :return: np.ndarray[np.float64]
+        """
+
+        view = self.view(flow)
+        if len(view.dtype) == 0:
+            return view
+        elif hasattr(view, "sum_of_weights"):
+            return view.sum_of_weights
+        elif hasattr(view, "count"):
+            return view.count
+        else:
+            return view.value
