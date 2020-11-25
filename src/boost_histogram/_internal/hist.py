@@ -708,26 +708,26 @@ class Histogram(object):
         value = np.asarray(value)
         view = self.view(flow=True)
 
-        # Shortcut: allow raw arrays for WeightedSum
-        weighted_dtype = np.dtype([("value", "<f8"), ("variance", "<f8")])
+        # Support raw arrays for accumulators, the final dimension is the constructor values
         if (
-            view.dtype == weighted_dtype != value.dtype
-            and len(value.dtype) != 2
-            and value.ndim > 0
-            and value.shape[-1] == 2
+            value.ndim > 0
+            and len(view.dtype) > 0
+            and len(value.dtype) == 0
+            and len(view.dtype) == value.shape[-1]
         ):
-            value = value.astype(np.double).view(weighted_dtype)[..., 0]
-        # Disallow mismatched data types
-        elif len(value.dtype) != len(view.dtype):
-            raise ValueError("Mismatched data types; matching types required")
+            value_shape = value.shape[:-1]
+            value_ndim = value.ndim - 1
+        else:
+            value_shape = value.shape
+            value_ndim = value.ndim
 
         # Numpy does not broadcast partial slices, but we would need
         # to allow it (because we do allow broadcasting up dimensions)
         # Instead, we simply require matching dimensions.
-        if value.ndim > 0 and value.ndim != sum(isinstance(i, slice) for i in indexes):
+        if value_ndim > 0 and value_ndim != sum(isinstance(i, slice) for i in indexes):
             raise ValueError(
                 "Setting a {0}D histogram with a {1}D array must have a matching number of dimensions".format(
-                    len(indexes), value.ndim
+                    len(indexes), value_ndim
                 )
             )
 
@@ -748,28 +748,28 @@ class Histogram(object):
                 request_len = stop - start
 
                 # If set to a scalar, then treat it like broadcasting without flow bins
-                if value.ndim == 0:
+                if value_ndim == 0:
                     start = 0 + has_overflow
                     stop = len(self.axes[n]) + has_underflow
 
                 # Normal setting
-                elif request_len == value.shape[value_n]:
+                elif request_len == value_shape[value_n]:
                     start += has_underflow
                     stop += has_underflow
 
                 # Expanded setting
-                elif request_len + use_underflow + use_overflow == value.shape[value_n]:
+                elif request_len + use_underflow + use_overflow == value_shape[value_n]:
                     start += has_underflow and not use_underflow
                     stop += has_underflow + (has_overflow and use_overflow)
 
                 # Single element broadcasting
-                elif value.shape[value_n] == 1:
+                elif value_shape[value_n] == 1:
                     start += has_underflow
                     stop += has_underflow
 
                 else:
                     msg = "Mismatched shapes in dimension {0}".format(n)
-                    msg += ", {0} != {1}".format(value.shape[n], request_len)
+                    msg += ", {0} != {1}".format(value_shape[n], request_len)
                     if use_underflow or use_overflow:
                         msg += " or {0}".format(
                             request_len + use_underflow + use_overflow
