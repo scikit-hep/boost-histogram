@@ -10,6 +10,7 @@ from .utils import cast, register, set_family, MAIN_FAMILY, set_module
 from .six import string_types
 
 import copy
+
 from typing import Dict, Any, TYPE_CHECKING
 
 del absolute_import, division, print_function
@@ -52,6 +53,12 @@ class Axis(object):
         other = self.__class__.__new__(self.__class__)
         other._ax = copy.copy(self._ax)
         return other
+
+    def __setstate__(self, state):
+        self._ax = state["_ax"]
+
+    def __getstate__(self):
+        return {"_ax": self._ax}
 
     def __getattr__(self, item):
         if item == "_ax":
