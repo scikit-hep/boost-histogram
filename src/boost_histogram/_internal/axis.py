@@ -10,6 +10,7 @@ from .utils import cast, register, set_family, MAIN_FAMILY, set_module
 from .six import string_types
 
 import copy
+from typing import Dict, Any, TYPE_CHECKING
 
 del absolute_import, division, print_function
 
@@ -31,6 +32,21 @@ def _isstr(value):
 @set_module("boost_histogram.axis")
 class Axis(object):
     __slots__ = ("_ax",)
+
+    # Workaround for bug https://github.com/python/mypy/issues/6523 in mypy
+    if TYPE_CHECKING:
+        __dict__ = Dict[str, Any]()
+    else:
+
+        @property
+        def __dict__(self):
+            # type: () -> Dict[str, Any]
+            return self._ax.metadata
+
+        @__dict__.setter
+        def __dict__(self, value):
+            # type: (Dict[str, Any]) -> None
+            self._ax.metadata = value
 
     def __copy__(self):
         other = self.__class__.__new__(self.__class__)
@@ -230,7 +246,7 @@ class Regular(Axis):
     __slots__ = ()
 
     @inject_signature(
-        "self, bins, start, stop, *, metadata=None, underflow=True, overflow=True, growth=False, circular=False, transform=None"
+        "self, bins, start, stop, *, metadata=None, underflow=True, overflow=True, growth=False, circular=False, transform=None, __dict__=None"
     )
     def __init__(self, bins, start, stop, **kwargs):
         """
@@ -258,14 +274,24 @@ class Regular(Axis):
             Filling wraps around.
         transform : Optional[AxisTransform] = None
             Transform the regular bins (Log, Sqrt, and Pow(v))
+        __dict__: Optional[Dict[str, Any]] = None
+            The full metadata dictionary
         """
 
         with KWArgs(kwargs) as k:
             metadata = k.optional("metadata")
             transform = k.optional("transform")
+            __dict__ = k.optional("__dict__")
             options = k.options(
                 underflow=True, overflow=True, growth=False, circular=False
             )
+
+        if __dict__ is None:
+            __dict__ = {}
+
+        if "metadata" in __dict__ and metadata is not None:
+            raise KeyError("Cannot provide metadata by keyword and in __dict__")
+        __dict__["metadata"] = metadata
 
         if transform is not None:
             if options != {"underflow", "overflow"}:
