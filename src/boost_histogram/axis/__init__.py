@@ -11,7 +11,7 @@ from .._internal.axis import (
     Boolean,
 )
 from .._internal.axestuple import ArrayTuple, AxesTuple
-from .._core.axis import options
+from .._internal.options import Options as options
 from . import transform
 
 del absolute_import, division, print_function

@@ -11,7 +11,6 @@
 #include <bh_python/axis.hpp>
 #include <bh_python/fill.hpp>
 #include <bh_python/make_pickle.hpp>
-#include <bh_python/options.hpp>
 
 #include <boost/histogram/axis/ostream.hpp>
 #include <boost/histogram/axis/traits.hpp>
@@ -114,10 +113,38 @@ py::class_<A> register_axis(py::module& m, Args&&... args) {
                  }
              })
 
+        .def_property_readonly("underflow",
+                               [](const A& self) {
+                                   return static_cast<bool>(
+                                       bh::axis::traits::options(self)
+                                       & bh::axis::option::underflow);
+                               })
+        .def_property_readonly("overflow",
+                               [](const A& self) {
+                                   return static_cast<bool>(
+                                       bh::axis::traits::options(self)
+                                       & bh::axis::option::overflow);
+                               })
+        .def_property_readonly("circular",
+                               [](const A& self) {
+                                   return static_cast<bool>(
+                                       bh::axis::traits::options(self)
+                                       & bh::axis::option::circular);
+                               })
+        .def_property_readonly("growth",
+                               [](const A& self) {
+                                   return static_cast<bool>(
+                                       bh::axis::traits::options(self)
+                                       & bh::axis::option::growth);
+                               })
         .def_property_readonly(
-            "options",
-            [](const A&) { return options{bh::axis::traits::get_options<A>::value}; },
-            "Return the options associated to the axis")
+            "continuous",
+            [](const A& self) { return bh::axis::traits::continuous(self); })
+        .def_property_readonly(
+            "inclusive",
+            [](const A& self) { return bh::axis::traits::inclusive(self); })
+        .def_property_readonly(
+            "ordered", [](const A& self) { return bh::axis::traits::ordered(self); })
 
         .def_property(
             "metadata",

@@ -4,6 +4,7 @@ from __future__ import absolute_import, division, print_function
 from .._core import axis as ca
 
 from .kwargs import KWArgs
+from .options import Options
 from .sig_tools import inject_signature
 from .axis_transform import AxisTransform
 from .utils import cast, register, set_family, MAIN_FAMILY, set_module
@@ -136,10 +137,8 @@ class Axis(object):
         def _process_internal(item, default):
             return default if item is None else item(self) if callable(item) else item
 
-        begin = _process_internal(start, -1 if self._ax.options.underflow else 0)
-        end = _process_internal(
-            stop, len(self) + (1 if self._ax.options.overflow else 0)
-        )
+        begin = _process_internal(start, -1 if self._ax.underflow else 0)
+        end = _process_internal(stop, len(self) + (1 if self._ax.overflow else 0))
 
         return begin, end
 
@@ -176,8 +175,17 @@ class Axis(object):
                        (or non-valid for category axes)
           .growth    - True if axis can grow
           .circular  - True if axis wraps around
+          .discrete  - True if axis is not continuous
         """
-        return self._ax.options
+        return Options(
+            self._ax.underflow,
+            self._ax.overflow,
+            self._ax.circular,
+            self._ax.growth,
+            self._ax.continuous,
+            self._ax.inclusive,
+            self._ax.ordered,
+        )
 
     @property
     def size(self):
