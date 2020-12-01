@@ -32,6 +32,50 @@ void validate_axis_options(bool underflow, bool overflow, bool growth) {
 }
 
 void register_axes(py::module& mod) {
+    py::class_<options>(mod, "options")
+        .def(py::init<bool, bool, bool, bool>(),
+             "underflow"_a = false,
+             "overflow"_a  = false,
+             "circular"_a  = false,
+             "growth"_a    = false)
+        .def("__eq__",
+             [](const options& self, const py::object& other) {
+                 try {
+                     return self == py::cast<options>(other);
+                 } catch(const py::cast_error&) {
+                     return false;
+                 }
+             })
+        .def("__ne__",
+             [](const options& self, const py::object& other) {
+                 try {
+                     return self != py::cast<options>(other);
+                 } catch(const py::cast_error&) {
+                     return true;
+                 }
+             })
+        .def(py::pickle([](const options& op) { return py::make_tuple(op.option); },
+                        [](py::tuple t) {
+                            if(t.size() != 1)
+                                throw std::runtime_error("Invalid state");
+                            return options{py::cast<unsigned>(t[0])};
+                        }))
+
+        .def("__copy__", [](const options& self) { return options(self); })
+        .def("__deepcopy__",
+             [](const options& self, py::object) { return options{self}; })
+
+        .def_property_readonly("underflow", &options::underflow)
+        .def_property_readonly("overflow", &options::overflow)
+        .def_property_readonly("circular", &options::circular)
+        .def_property_readonly("growth", &options::growth)
+
+        .def("__repr__", [](const options& self) {
+            return py::str("options(underflow={}, overflow={}, circular={}, growth={})")
+                .format(
+                    self.underflow(), self.overflow(), self.circular(), self.growth());
+        });
+
     register_axis_each<axis::regular_none,
                        axis::regular_uflow,
                        axis::regular_oflow,

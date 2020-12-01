@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # This is basically a dataclass from Python 3.7, with frozen=True
 
-_options = (
+_traits = (
     "underflow",
     "overflow",
     "circular",
@@ -12,8 +12,11 @@ _options = (
 )
 
 
-class Options(object):
-    __slots__ = _options
+# This can be converted to a immutable dataclass once Python < 3.7 is dropped.
+
+
+class Traits(object):
+    __slots__ = _traits
 
     def __init__(
         self,
@@ -25,11 +28,11 @@ class Options(object):
         inclusive=False,
         ordered=False,
     ):
-        for name in _options:
+        for name in _traits:
             object.__setattr__(self, name, locals()[name])
 
     def __eq__(self, other):
-        return all(getattr(self, name) == getattr(other, name) for name in _options)
+        return all(getattr(self, name) == getattr(other, name) for name in _traits)
 
     def __ne__(self, other):
         return not self == other
@@ -40,5 +43,5 @@ class Options(object):
         return not self.continuous
 
     def __repr__(self):
-        args = ("{}={}".format(name, getattr(self, name)) for name in _options)
+        args = ("{}={}".format(name, getattr(self, name)) for name in _traits)
         return "{}({})".format(self.__class__.__name__, ", ".join(args))
