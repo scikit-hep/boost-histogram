@@ -2,7 +2,7 @@ from typing import Any
 
 
 class Traits:
-    underflow
+    underflow: bool
     overflow: bool
     circular: bool
     growth: bool

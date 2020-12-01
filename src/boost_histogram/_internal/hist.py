@@ -17,6 +17,7 @@ from .six import string_types
 from .storage import Double, Storage
 from .utils import cast, register, set_family, MAIN_FAMILY, set_module
 from .view import _to_view
+from .enum import Implementation
 
 
 NOTHING = object()
@@ -790,27 +791,17 @@ class Histogram(object):
     # Implementation of PlottableHistogram
 
     @property
-    def weighted(self):
-        """
-        Returns true if the storage has weight information.
-
-        :return: bool
-        """
-        view = self.view()
-        return view.dtype > 0 and hasattr(view, "variance")
-
-    @property
     def implementation(self):
         """
         Returns "count" if this is a normal summing histogram, and "mean" if this is a
         mean histogram.
 
-        :return: "mean" or "count"
+        :return: Implementation
         """
         if self._storage_type in {_core.storage.mean, _core.storage.weighted_mean}:
-            return "mean"
+            return Implementation.mean
         else:
-            return "count"
+            return Implementation.sum
 
     def values(self, flow=False):
         """
@@ -840,7 +831,7 @@ class Histogram(object):
 
         view = self.view(flow)
         if len(view.dtype) == 0:
-            return view
+            return None
         else:
             return view.variance
 
