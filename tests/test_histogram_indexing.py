@@ -205,6 +205,29 @@ def test_mix_value_with_slice_2():
     assert_array_equal(h2.shape, (5, 2, 2))
 
 
+def test_one_sided_slice():
+    h = bh.Histogram(bh.axis.Regular(4, 1, 5))
+    h.view(True)[:] = 1
+
+    assert h[sum] == 6  # 4 (internal bins) + 2 (flow bins)
+    assert h[-1:5:sum] == 6  # keeps underflow, keeps overflow
+
+    # check that slicing without bh.sum adds removed counts to flow bins
+    assert_array_equal(h[1:3].view(True), [2, 1, 1, 2])
+
+    assert h[0::sum] == 5  # removes underflow, keeps overflow
+    assert h[:4:sum] == 5  # removes overflow, keeps underflow
+    assert h[0:4:sum] == 4  # removes underflow and overflow
+
+    assert h[bh.loc(1) :: sum] == 5  # remove underflow
+    assert h[: bh.loc(5) : sum] == 5  # remove overflow
+    assert h[bh.loc(1) : bh.loc(5) : sum] == 4  # removes underflow and overflow
+
+    assert h[bh.loc(0) :: sum] == 6  # keep underflow
+    assert h[: bh.loc(10) : sum] == 6  # keep overflow
+    assert h[bh.loc(0) : bh.loc(10) : sum] == 6
+
+
 def test_repr():
     assert repr(bh.loc(2)) == "loc(2)"
     assert repr(bh.loc(3) + 1) == "loc(3) + 1"
