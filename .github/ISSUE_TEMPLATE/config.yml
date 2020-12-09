@@ -1,0 +1,8 @@
+blank_issues_enabled: True
+contact_links:
+  - name: Start a discussion
+    url: https://github.com/scikit-hep/boost-histogram/discussions/new
+    about: Please ask and answer questions here, or propose new ideas.
+  - name: Chat on Gitter
+    url: https://gitter.im/HSF/PyHEP-histogramming
+    about: Ask a very simple question or just say hi.
