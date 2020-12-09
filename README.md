@@ -2,16 +2,20 @@
 
 # boost-histogram for Python
 
-[![Gitter][gitter-badge]][gitter-link]
-[![Stack Overflow][stack-overflow-badge]][stack-overflow-link]
 [![Actions Status][actions-badge]][actions-link]
-[![Documentation Status][rtd-badge]][rtd-link]
-[![DOI](https://zenodo.org/badge/148885351.svg)](https://zenodo.org/badge/latestdoi/148885351)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
-[![PyPI version](https://badge.fury.io/py/boost-histogram.svg)](https://pypi.org/project/boost-histogram/)
-[![Conda-Forge](https://img.shields.io/conda/vn/conda-forge/boost-histogram)][conda-link]
-[![Scikit-HEP][sk-badge]](https://scikit-hep.org/)
 [![Travis-CI][travis-badge]][travis-link]
+[![Documentation Status][rtd-badge]][rtd-link]
+[![Code style: black][black-badge]][black-link]
+
+[![PyPI version][pypi-version]][pypi-link]
+[![Conda-Forge][conda-badge]][conda-link]
+[![PyPI platforms][pypi-platforms]][pypi-link]
+[![DOI](https://zenodo.org/badge/148885351.svg)](https://zenodo.org/badge/latestdoi/148885351)
+
+[![GitHub Discussion][github-discussions-badge]][github-discussions-link]
+[![Gitter][gitter-badge]][gitter-link]
+[![Scikit-HEP][sk-badge]](https://scikit-hep.org/)
+
 
 Python bindings for [Boost::Histogram][] ([source][Boost::Histogram source]), a
 C++14 library. This is of the [fastest libraries][] for
@@ -104,7 +108,7 @@ counts = hist.view()
   * `/=`: Divide by a scaler (not all storages) (`hist / scalar` supported too)
   * `.sum(flow=False)`: The total count of all bins
   * `.project(ax1, ax2, ...)`: Project down to listed axis (numbers)
-  * `.to_numpy(flow=False)`: Convert to a Numpy style tuple (with or without under/overflow bins)
+  * `.to_numpy(flow=False)`: Convert to a NumPy style tuple (with or without under/overflow bins)
   * `.view(flow=False)`: Get a view on the bin contents (with or without under/overflow bins)
   * `.reset()`: Set counters to 0
   * `.empty(flow=False)`: Check to see if the histogram is empty (can check flow bins too if asked)
@@ -161,6 +165,7 @@ Wheels are produced using [cibuildwheel](https://cibuildwheel.readthedocs.io/en/
 |---------|-----|------------------|
 | ManyLinux1 (custom GCC 9.2) | 32 & 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8, 3.9 |
 | ManyLinux2010 | 32 & 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8, 3.9 |
+| ManyLinux2014 | ARM64 & PowerPC | 3.5, 3.6, 3.7, 3.8, 3.9 |
 | macOS 10.9+ | 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8, 3.9 |
 | Windows | 32 & 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8, 3.9 |
 
@@ -252,20 +257,24 @@ This library was primarily developed by Henry Schreiner and Hans Dembinski.
 
 Support for this work was provided by the National Science Foundation cooperative agreement OAC-1836650 (IRIS-HEP) and OAC-1450377 (DIANA/HEP). Any opinions, findings, conclusions or recommendations expressed in this material are those of the authors and do not necessarily reflect the views of the National Science Foundation.
 
-[gitter-badge]:            https://badges.gitter.im/HSF/PyHEP-histogramming.svg
-[gitter-link]:             https://gitter.im/HSF/PyHEP-histogramming?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
-[rtd-badge]:               https://readthedocs.org/projects/boost-histogram/badge/?version=latest
-[rtd-link]:                https://boost-histogram.readthedocs.io/en/latest/?badge=latest
-[actions-badge]:           https://github.com/scikit-hep/boost-histogram/workflows/Tests/badge.svg
-[actions-link]:            https://github.com/scikit-hep/boost-histogram/actions
-[travis-link]:             https://travis-ci.com/scikit-hep/boost-histogram
-[travis-badge]:            https://travis-ci.com/scikit-hep/boost-histogram.svg?branch=master
+[actions-badge]:            https://github.com/scikit-hep/boost-histogram/workflows/Tests/badge.svg
+[actions-link]:             https://github.com/scikit-hep/boost-histogram/actions
+[conda-badge]:              https://img.shields.io/conda/vn/conda-forge/boost-histogram
+[conda-link]:               https://github.com/conda-forge/boost-histogram-feedstock
+[github-discussions-badge]: https://img.shields.io/static/v1?label=Discussions&message=Ask&color=blue&logo=github
+[github-discussions-link]:  https://github.com/scikit-hep/boost-histogram/discussions
+[gitter-badge]:             https://badges.gitter.im/HSF/PyHEP-histogramming.svg
+[gitter-link]:              https://gitter.im/HSF/PyHEP-histogramming?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
+[pypi-link]:                https://pypi.org/project/boost-histogram/
+[pypi-platforms]:           https://img.shields.io/pypi/pyversions/boost-histogram
+[pypi-version]:             https://badge.fury.io/py/boost-histogram.svg
+[rtd-badge]:                https://readthedocs.org/projects/boost-histogram/badge/?version=latest
+[rtd-link]:                 https://boost-histogram.readthedocs.io/en/latest/?badge=latest
+[sk-badge]:                 https://scikit-hep.org/assets/images/Scikit--HEP-Project-blue.svg
+[travis-badge]:             https://travis-ci.com/scikit-hep/boost-histogram.svg?branch=master
+[travis-link]:              https://travis-ci.com/scikit-hep/boost-histogram
 
-[Boost::Histogram]:        https://www.boost.org/doc/libs/release/libs/histogram/doc/html/index.html
-[Boost::Histogram source]: https://github.com/boostorg/histogram
-[Hist]:                    https://github.com/scikit-hep/hist
-[fastest libraries]:       https://iscinumpy.gitlab.io/post/histogram-speeds-in-python/
-[conda-link]:              https://github.com/conda-forge/boost-histogram-feedstock
-[sk-badge]:                https://scikit-hep.org/assets/images/Scikit--HEP-Project-blue.svg
-[stack-overflow-badge]:    https://img.shields.io/badge/stack-overflow-orange
-[stack-overflow-link]:     https://stackoverflow.com/questions/tagged/boost-histogram
+[Boost::Histogram]:         https://www.boost.org/doc/libs/release/libs/histogram/doc/html/index.html
+[Boost::Histogram source]:  https://github.com/boostorg/histogram
+[Hist]:                     https://github.com/scikit-hep/hist
+[fastest libraries]:        https://iscinumpy.gitlab.io/post/histogram-speeds-in-python/
