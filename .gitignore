@@ -74,3 +74,6 @@ compile_commands.json
 
 # PyCharm
 .idea
+
+# All-contributors
+package-lock.json
