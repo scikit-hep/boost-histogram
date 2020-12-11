@@ -2,16 +2,20 @@
 
 # boost-histogram for Python
 
-[![Gitter][gitter-badge]][gitter-link]
-[![Stack Overflow][stack-overflow-badge]][stack-overflow-link]
 [![Actions Status][actions-badge]][actions-link]
-[![Documentation Status][rtd-badge]][rtd-link]
-[![DOI](https://zenodo.org/badge/148885351.svg)](https://zenodo.org/badge/latestdoi/148885351)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
-[![PyPI version](https://badge.fury.io/py/boost-histogram.svg)](https://pypi.org/project/boost-histogram/)
-[![Conda-Forge](https://img.shields.io/conda/vn/conda-forge/boost-histogram)][conda-link]
-[![Scikit-HEP][sk-badge]](https://scikit-hep.org/)
 [![Travis-CI][travis-badge]][travis-link]
+[![Documentation Status][rtd-badge]][rtd-link]
+[![Code style: black][black-badge]][black-link]
+
+[![PyPI version][pypi-version]][pypi-link]
+[![Conda-Forge][conda-badge]][conda-link]
+[![PyPI platforms][pypi-platforms]][pypi-link]
+[![DOI](https://zenodo.org/badge/148885351.svg)](https://zenodo.org/badge/latestdoi/148885351)
+
+[![GitHub Discussion][github-discussions-badge]][github-discussions-link]
+[![Gitter][gitter-badge]][gitter-link]
+[![Scikit-HEP][sk-badge]](https://scikit-hep.org/)
+
 
 Python bindings for [Boost::Histogram][] ([source][Boost::Histogram source]), a
 C++14 library. This is of the [fastest libraries][] for
@@ -104,7 +108,7 @@ counts = hist.view()
   * `/=`: Divide by a scaler (not all storages) (`hist / scalar` supported too)
   * `.sum(flow=False)`: The total count of all bins
   * `.project(ax1, ax2, ...)`: Project down to listed axis (numbers)
-  * `.to_numpy(flow=False)`: Convert to a Numpy style tuple (with or without under/overflow bins)
+  * `.to_numpy(flow=False)`: Convert to a NumPy style tuple (with or without under/overflow bins)
   * `.view(flow=False)`: Get a view on the bin contents (with or without under/overflow bins)
   * `.reset()`: Set counters to 0
   * `.empty(flow=False)`: Check to see if the histogram is empty (can check flow bins too if asked)
@@ -161,6 +165,7 @@ Wheels are produced using [cibuildwheel](https://cibuildwheel.readthedocs.io/en/
 |---------|-----|------------------|
 | ManyLinux1 (custom GCC 9.2) | 32 & 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8, 3.9 |
 | ManyLinux2010 | 32 & 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8, 3.9 |
+| ManyLinux2014 | ARM64 & PowerPC | 3.5, 3.6, 3.7, 3.8, 3.9 |
 | macOS 10.9+ | 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8, 3.9 |
 | Windows | 32 & 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8, 3.9 |
 
@@ -209,26 +214,28 @@ We would like to acknowledge the contributors that made this project possible ([
 <!-- markdownlint-disable -->
 <table>
   <tr>
-    <td align="center"><a href="http://iscinumpy.gitlab.io"><img src="https://avatars1.githubusercontent.com/u/4616906?v=4" width="100px;" alt=""/><br /><sub><b>Henry Schreiner</b></sub></a><br /><a href="#maintenance-henryiii" title="Maintenance">🚧</a> <a href="https://github.com/scikit-hep/boost-histogram/commits?author=henryiii" title="Code">💻</a> <a href="https://github.com/scikit-hep/boost-histogram/commits?author=henryiii" title="Documentation">📖</a></td>
-    <td align="center"><a href="https://github.com/HDembinski"><img src="https://avatars0.githubusercontent.com/u/2631586?v=4" width="100px;" alt=""/><br /><sub><b>Hans Dembinski</b></sub></a><br /><a href="#maintenance-HDembinski" title="Maintenance">🚧</a> <a href="https://github.com/scikit-hep/boost-histogram/commits?author=HDembinski" title="Code">💻</a></td>
-    <td align="center"><a href="http://lovelybuggies.github.io"><img src="https://avatars3.githubusercontent.com/u/29083689?v=4" width="100px;" alt=""/><br /><sub><b>N!no</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/commits?author=LovelyBuggies" title="Tests">⚠️</a> <a href="https://github.com/scikit-hep/boost-histogram/commits?author=LovelyBuggies" title="Documentation">📖</a></td>
-    <td align="center"><a href="https://github.com/jpivarski"><img src="https://avatars0.githubusercontent.com/u/1852447?v=4" width="100px;" alt=""/><br /><sub><b>Jim Pivarski</b></sub></a><br /><a href="#ideas-jpivarski" title="Ideas, Planning, & Feedback">🤔</a></td>
-    <td align="center"><a href="https://github.com/nsmith-"><img src="https://avatars3.githubusercontent.com/u/6587412?v=4" width="100px;" alt=""/><br /><sub><b>Nicholas Smith</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/issues?q=author%3Ansmith-" title="Bug reports">🐛</a></td>
-    <td align="center"><a href="http://www-pnp.physics.ox.ac.uk/~huffman/"><img src="https://avatars3.githubusercontent.com/u/45843291?v=4" width="100px;" alt=""/><br /><sub><b>physicscitizen</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/issues?q=author%3Aphysicscitizen" title="Bug reports">🐛</a></td>
-    <td align="center"><a href="https://www.linkedin.com/in/chanchal-kumar-maji-9230a9145/"><img src="https://avatars1.githubusercontent.com/u/31502077?v=4" width="100px;" alt=""/><br /><sub><b>Chanchal Kumar Maji</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/commits?author=ChanchalKumarMaji" title="Documentation">📖</a></td>
+    <td align="center"><a href="http://iscinumpy.gitlab.io"><img src="https://avatars1.githubusercontent.com/u/4616906?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Henry Schreiner</b></sub></a><br /><a href="#maintenance-henryiii" title="Maintenance">🚧</a> <a href="https://github.com/scikit-hep/boost-histogram/commits?author=henryiii" title="Code">💻</a> <a href="https://github.com/scikit-hep/boost-histogram/commits?author=henryiii" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/HDembinski"><img src="https://avatars0.githubusercontent.com/u/2631586?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Hans Dembinski</b></sub></a><br /><a href="#maintenance-HDembinski" title="Maintenance">🚧</a> <a href="https://github.com/scikit-hep/boost-histogram/commits?author=HDembinski" title="Code">💻</a></td>
+    <td align="center"><a href="http://lovelybuggies.github.io"><img src="https://avatars3.githubusercontent.com/u/29083689?v=4?s=100" width="100px;" alt=""/><br /><sub><b>N!no</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/commits?author=LovelyBuggies" title="Tests">⚠️</a> <a href="https://github.com/scikit-hep/boost-histogram/commits?author=LovelyBuggies" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/jpivarski"><img src="https://avatars0.githubusercontent.com/u/1852447?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Jim Pivarski</b></sub></a><br /><a href="#ideas-jpivarski" title="Ideas, Planning, & Feedback">🤔</a></td>
+    <td align="center"><a href="https://github.com/nsmith-"><img src="https://avatars3.githubusercontent.com/u/6587412?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Nicholas Smith</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/issues?q=author%3Ansmith-" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="http://www-pnp.physics.ox.ac.uk/~huffman/"><img src="https://avatars3.githubusercontent.com/u/45843291?v=4?s=100" width="100px;" alt=""/><br /><sub><b>physicscitizen</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/issues?q=author%3Aphysicscitizen" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://www.linkedin.com/in/chanchal-kumar-maji-9230a9145/"><img src="https://avatars1.githubusercontent.com/u/31502077?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Chanchal Kumar Maji</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/commits?author=ChanchalKumarMaji" title="Documentation">📖</a></td>
   </tr>
   <tr>
-    <td align="center"><a href="https://ddavis.io/"><img src="https://avatars2.githubusercontent.com/u/3202090?v=4" width="100px;" alt=""/><br /><sub><b>Doug Davis</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/issues?q=author%3Adouglasdavis" title="Bug reports">🐛</a></td>
-    <td align="center"><a href="https://github.com/pgrimaud"><img src="https://avatars1.githubusercontent.com/u/1866496?v=4" width="100px;" alt=""/><br /><sub><b>Pierre Grimaud</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/commits?author=pgrimaud" title="Documentation">📖</a></td>
-    <td align="center"><a href="https://github.com/beojan"><img src="https://avatars0.githubusercontent.com/u/3727925?v=4" width="100px;" alt=""/><br /><sub><b>Beojan Stanislaus</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/issues?q=author%3Abeojan" title="Bug reports">🐛</a></td>
-    <td align="center"><a href="https://github.com/Popinaodude"><img src="https://avatars2.githubusercontent.com/u/20911987?v=4" width="100px;" alt=""/><br /><sub><b>Popinaodude</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/issues?q=author%3APopinaodude" title="Bug reports">🐛</a></td>
-    <td align="center"><a href="https://github.com/colizz"><img src="https://avatars2.githubusercontent.com/u/44885400?v=4" width="100px;" alt=""/><br /><sub><b>Congqiao Li</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/issues?q=author%3Acolizz" title="Bug reports">🐛</a></td>
-    <td align="center"><a href="https://github.com/alexander-held"><img src="https://avatars0.githubusercontent.com/u/45009355?v=4" width="100px;" alt=""/><br /><sub><b>alexander-held</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/issues?q=author%3Aalexander-held" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://ddavis.io/"><img src="https://avatars2.githubusercontent.com/u/3202090?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Doug Davis</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/issues?q=author%3Adouglasdavis" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://github.com/pgrimaud"><img src="https://avatars1.githubusercontent.com/u/1866496?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Pierre Grimaud</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/commits?author=pgrimaud" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/beojan"><img src="https://avatars0.githubusercontent.com/u/3727925?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Beojan Stanislaus</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/issues?q=author%3Abeojan" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://github.com/Popinaodude"><img src="https://avatars2.githubusercontent.com/u/20911987?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Popinaodude</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/issues?q=author%3APopinaodude" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://github.com/colizz"><img src="https://avatars2.githubusercontent.com/u/44885400?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Congqiao Li</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/issues?q=author%3Acolizz" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://github.com/alexander-held"><img src="https://avatars0.githubusercontent.com/u/45009355?v=4?s=100" width="100px;" alt=""/><br /><sub><b>alexander-held</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/issues?q=author%3Aalexander-held" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://github.com/chrisburr"><img src="https://avatars3.githubusercontent.com/u/5220533?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Chris Burr</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/commits?author=chrisburr" title="Documentation">📖</a></td>
   </tr>
 </table>
 
-<!-- markdownlint-enable -->
+<!-- markdownlint-restore -->
 <!-- prettier-ignore-end -->
+
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification.
@@ -252,20 +259,24 @@ This library was primarily developed by Henry Schreiner and Hans Dembinski.
 
 Support for this work was provided by the National Science Foundation cooperative agreement OAC-1836650 (IRIS-HEP) and OAC-1450377 (DIANA/HEP). Any opinions, findings, conclusions or recommendations expressed in this material are those of the authors and do not necessarily reflect the views of the National Science Foundation.
 
-[gitter-badge]:            https://badges.gitter.im/HSF/PyHEP-histogramming.svg
-[gitter-link]:             https://gitter.im/HSF/PyHEP-histogramming?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
-[rtd-badge]:               https://readthedocs.org/projects/boost-histogram/badge/?version=latest
-[rtd-link]:                https://boost-histogram.readthedocs.io/en/latest/?badge=latest
-[actions-badge]:           https://github.com/scikit-hep/boost-histogram/workflows/Tests/badge.svg
-[actions-link]:            https://github.com/scikit-hep/boost-histogram/actions
-[travis-link]:             https://travis-ci.com/scikit-hep/boost-histogram
-[travis-badge]:            https://travis-ci.com/scikit-hep/boost-histogram.svg?branch=master
+[actions-badge]:            https://github.com/scikit-hep/boost-histogram/workflows/Tests/badge.svg
+[actions-link]:             https://github.com/scikit-hep/boost-histogram/actions
+[conda-badge]:              https://img.shields.io/conda/vn/conda-forge/boost-histogram
+[conda-link]:               https://github.com/conda-forge/boost-histogram-feedstock
+[github-discussions-badge]: https://img.shields.io/static/v1?label=Discussions&message=Ask&color=blue&logo=github
+[github-discussions-link]:  https://github.com/scikit-hep/boost-histogram/discussions
+[gitter-badge]:             https://badges.gitter.im/HSF/PyHEP-histogramming.svg
+[gitter-link]:              https://gitter.im/HSF/PyHEP-histogramming?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
+[pypi-link]:                https://pypi.org/project/boost-histogram/
+[pypi-platforms]:           https://img.shields.io/pypi/pyversions/boost-histogram
+[pypi-version]:             https://badge.fury.io/py/boost-histogram.svg
+[rtd-badge]:                https://readthedocs.org/projects/boost-histogram/badge/?version=latest
+[rtd-link]:                 https://boost-histogram.readthedocs.io/en/latest/?badge=latest
+[sk-badge]:                 https://scikit-hep.org/assets/images/Scikit--HEP-Project-blue.svg
+[travis-badge]:             https://travis-ci.com/scikit-hep/boost-histogram.svg?branch=master
+[travis-link]:              https://travis-ci.com/scikit-hep/boost-histogram
 
-[Boost::Histogram]:        https://www.boost.org/doc/libs/release/libs/histogram/doc/html/index.html
-[Boost::Histogram source]: https://github.com/boostorg/histogram
-[Hist]:                    https://github.com/scikit-hep/hist
-[fastest libraries]:       https://iscinumpy.gitlab.io/post/histogram-speeds-in-python/
-[conda-link]:              https://github.com/conda-forge/boost-histogram-feedstock
-[sk-badge]:                https://scikit-hep.org/assets/images/Scikit--HEP-Project-blue.svg
-[stack-overflow-badge]:    https://img.shields.io/badge/stack-overflow-orange
-[stack-overflow-link]:     https://stackoverflow.com/questions/tagged/boost-histogram
+[Boost::Histogram]:         https://www.boost.org/doc/libs/release/libs/histogram/doc/html/index.html
+[Boost::Histogram source]:  https://github.com/boostorg/histogram
+[Hist]:                     https://github.com/scikit-hep/hist
+[fastest libraries]:        https://iscinumpy.gitlab.io/post/histogram-speeds-in-python/
