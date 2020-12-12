@@ -261,6 +261,8 @@ Support for this work was provided by the National Science Foundation cooperativ
 
 [actions-badge]:            https://github.com/scikit-hep/boost-histogram/workflows/Tests/badge.svg
 [actions-link]:             https://github.com/scikit-hep/boost-histogram/actions
+[black-badge]:              https://img.shields.io/badge/code%20style-black-000000.svg
+[black-link]:               https://github.com/psf/black
 [conda-badge]:              https://img.shields.io/conda/vn/conda-forge/boost-histogram
 [conda-link]:               https://github.com/conda-forge/boost-histogram-feedstock
 [github-discussions-badge]: https://img.shields.io/static/v1?label=Discussions&message=Ask&color=blue&logo=github
