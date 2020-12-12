@@ -161,13 +161,13 @@ python -m pip install boost-histogram
 
 Wheels are produced using [cibuildwheel](https://cibuildwheel.readthedocs.io/en/stable/); all platforms supported by cibuildwheel are provided in boost-histogram:
 
-| System | Arch | Python versions |
-|---------|-----|------------------|
-| ManyLinux1 (custom GCC 9.2) | 32 & 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8, 3.9 |
-| ManyLinux2010 | 32 & 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8, 3.9 |
-| ManyLinux2014 | ARM64 & PowerPC | 3.5, 3.6, 3.7, 3.8, 3.9 |
-| macOS 10.9+ | 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8, 3.9 |
-| Windows | 32 & 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8, 3.9 |
+| System | Arch | Python versions | PyPy versions |
+|---------|-----|------------------|--------------|
+| ManyLinux1 (custom GCC 9.2) | 32 & 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8, 3.9 | |
+| ManyLinux2010 | 32 & 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8, 3.9 | 7.3: 2.7, 3.6, 3.7 |
+| ManyLinux2014 | ARM64 & PowerPC | 3.5, 3.6, 3.7, 3.8, 3.9 | |
+| macOS 10.9+ | 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8, 3.9 | 7.3: 2.7, 3.6, 3.7 |
+| Windows | 32 & 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8, 3.9 | (32 bit) 7.3: 2.7, 3.6, 3.7 |
 
 
 * manylinux1: Using a custom docker container with GCC 9; should work but can't be called directly other compiled extensions unless they do the same thing (think that's the main caveat). Supporting 32 bits because it's there.
