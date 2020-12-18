@@ -136,6 +136,11 @@ class Histogram(object):
             self._from_histogram_object(axes[0])
             return
 
+        # Support objects that provide a to_boost method, like Uproot
+        elif len(axes) == 1 and hasattr(axes[0], "to_boost"):
+            self.__init__(axes[0].to_boost())
+            return
+
         # Keyword only trick (change when Python2 is dropped)
         with KWArgs(kwargs) as k:
             storage = k.optional("storage")
