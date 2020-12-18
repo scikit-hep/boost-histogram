@@ -36,6 +36,18 @@ class View(np.ndarray):
             self=self, fields=fields, arr=self.view(np.ndarray)
         )
 
+    def __setitem__(self, ind, value):
+        array = np.asarray(value)
+        if (
+            array.ndim == super(View, self).__getitem__(ind).ndim + 1
+            and len(self._FIELDS) == array.shape[-1]
+        ):
+            self.__setitem__(ind, self._PARENT._array(*np.moveaxis(array, -1, 0)))
+        elif self.dtype == array.dtype:
+            super(View, self).__setitem__(ind, array)
+        else:
+            raise ValueError("Needs matching ndarray or n+1 dim array")
+
 
 def make_getitem_property(name):
     def fget(self):

@@ -1,5 +1,31 @@
 # What's new in boost-histogram
 
+# Version 0.12
+
+### Version 0.12.0 (WIP)
+
+Pressing forward to 1.0.
+
+
+#### User changes
+
+* You can now set all complex storages, either on a Histogram or a View with an (N+1)D array [#475][]
+
+#### Bug fixes
+
+* Fixed issue if final bin of Variable histogram was infinite by updating to Boost 1.75 [#470][]
+* NumPy arrays can be used for weights in `bh.numpy` [#472][]
+
+#### Developer changes
+
+* Bumped to pybind11 2.6.1 [#470][]
+* Black formatting used in notebooks too [#470][]
+
+[#470]: https://github.com/scikit-hep/boost-histogram/pull/470
+[#472]: https://github.com/scikit-hep/boost-histogram/pull/472
+[#475]: https://github.com/scikit-hep/boost-histogram/pull/475
+
+
 ## Version 0.11
 
 ### Version 0.11.1

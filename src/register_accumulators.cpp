@@ -104,7 +104,13 @@ void register_accumulators(py::module& accumulators) {
             "variance"_a = py::none(),
             "Fill the accumulator with values. Optional variance parameter.")
 
+        // This adapts existing memory to an accumulator
         .def_static("_make", py::vectorize([](const double& a, const double& b) {
+                        return weighted_sum(a, b);
+                    }))
+
+        // This creates a array of accumulators using the normal constructor arguments
+        .def_static("_array", py::vectorize([](const double& a, const double& b) {
                         return weighted_sum(a, b);
                     }))
 
@@ -200,8 +206,15 @@ void register_accumulators(py::module& accumulators) {
         .def_static(
             "_make",
             py::vectorize(
-                [](const double& a, const double& b, const double& c, double& d) {
+                [](const double& a, const double& b, const double& c, const double& d) {
                     return weighted_mean(a, b, c, d, true);
+                }))
+
+        .def_static(
+            "_array",
+            py::vectorize(
+                [](const double& a, const double& b, const double& c, const double& d) {
+                    return weighted_mean(a, b, c, d);
                 }))
 
         .def("__getitem__",
@@ -284,6 +297,12 @@ void register_accumulators(py::module& accumulators) {
             "_make",
             py::vectorize([](const double& a, const double& b, const double& c) {
                 return mean(a, b, c, true);
+            }))
+
+        .def_static(
+            "_array",
+            py::vectorize([](const double& a, const double& b, const double& c) {
+                return mean(a, b, c);
             }))
 
         .def("__getitem__",
