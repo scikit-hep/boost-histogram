@@ -6,6 +6,8 @@ import os
 import threading
 import warnings
 
+from typing import Optional, Any, Tuple
+
 import numpy as np
 
 from .. import _core
@@ -17,7 +19,10 @@ from .six import string_types
 from .storage import Double, Storage
 from .utils import cast, register, set_family, MAIN_FAMILY, set_module
 from .view import _to_view
-from .enum import Implementation
+from .enum import Kind
+
+
+ArrayLike = Any
 
 
 NOTHING = object()
@@ -207,7 +212,7 @@ class Histogram(object):
     @property
     def ndim(self):
         """
-        Number of axes (dimensions) of histogram.
+        Number of axes (dimensions) of the histogram.
         """
         return self._hist.rank()
 
@@ -566,6 +571,7 @@ class Histogram(object):
         return self
 
     def empty(self, flow=False):
+        # type: (bool) -> bool
         """
         Check to see if the histogram has any non-default values.
         You can use flow=True to check flow bins too.
@@ -580,6 +586,7 @@ class Histogram(object):
 
     @property
     def rank(self):
+        # type: () -> int
         """
         Number of axes (dimensions) of histogram. DEPRECATED, use ndim.
         """
@@ -589,6 +596,7 @@ class Histogram(object):
 
     @property
     def size(self):
+        # type: () -> int
         """
         Total number of bins in the histogram (including underflow/overflow).
         """
@@ -596,6 +604,7 @@ class Histogram(object):
 
     @property
     def shape(self):
+        # type: () -> Tuple[int, ...]
         """
         Tuple of axis sizes (not including underflow/overflow).
         """
@@ -780,8 +789,9 @@ class Histogram(object):
         view[tuple(indexes)] = value
 
     def project(self, *args):
+        # type: (Axis) -> Histogram
         """
-        Project to a single axis or several axes on a multidiminsional histogram.
+        Project to a single axis or several axes on a multidimensional histogram.
         Provided a list of axis numbers, this will produce the histogram over
         those axes only. Flow bins are used if available.
         """
@@ -791,25 +801,31 @@ class Histogram(object):
     # Implementation of PlottableHistogram
 
     @property
-    def implementation(self):
+    def kind(self):
+        # type: () -> Kind
         """
-        Returns "count" if this is a normal summing histogram, and "mean" if this is a
+        Returns Kind.COUNT if this is a normal summing histogram, and Kind.MEAN if this is a
         mean histogram.
 
-        :return: Implementation
+        :return: Kind
         """
         if self._storage_type in {_core.storage.mean, _core.storage.weighted_mean}:
-            return Implementation.mean
+            return Kind.MEAN
         else:
-            return Implementation.sum
+            return Kind.COUNT
 
     def values(self, flow=False):
+        # type: (bool) -> ArrayLike
         """
-        Return the histogram values (weighed count or samples) for any storage. Avoids a
-        copy when possible. Is identical to counts for summing histogram, and is the mean
-        for mean histograms.
+        Returns the accumulated values. The counts for simple histograms, the
+        sum of weights for weighted histograms, the mean for profiles, etc.
 
-        :param flow: Enable flow bins. Not part of PlottableHistogram, but included for consitancy and flexibilty.
+        If counts is equal to 0, the value in that cell is undefined if
+        kind == "MEAN".
+
+        :param flow: Enable flow bins. Not part of PlottableHistogram, but
+        included for consistency with other methods and flexibility.
+
         :return: np.ndarray[np.float64]
         """
 
@@ -820,35 +836,71 @@ class Histogram(object):
             return view.value
 
     def variances(self, flow=False):
+        # type: (bool) -> Optional[ArrayLike]
         """
-        Return the histogram variance of the value if the storage supports it. Avoids a
-        copy when possible. Returns values when a storage does not have an explicit variance.
+        Returns the estimated variance of the accumulated values. The sum of squared
+        weights for weighted histograms, the variance of samples for profiles, etc.
+        For an unweighed histogram where kind == "COUNT", this should return the same
+        as values if the histogram was not filled with weights, and None otherwise.
+        If counts is equal to 1 or less, the variance in that cell is undefined if
+        kind == "MEAN".
 
-        :param flow: Enable flow bins. Not part of PlottableHistogram, but included for
-        consitancy and flexibilty.
+        If kind == "MEAN", the counts can be used to compute the error on the mean
+        as sqrt(variances / counts), this works whether or not the entries are
+        weighted if the weight variance was tracked by the implementation.
+
+        Currently, this always returns - but in the future, it will return None
+        if a weighted fill is made on a unweighed storage.
+
+        :param flow: Enable flow bins. Not part of PlottableHistogram, but
+        included for consistency with other methods and flexibility.
+
         :return: np.ndarray[np.float64]
         """
 
-        view = self.view(flow)
-        if len(view.dtype) == 0:
-            return None
-        else:
-            return view.variance
-
-    def counts(self, flow=False):
-        """
-        Return the histogram number of counts. Avoids a copy when possible.
-
-        :param flow: Enable flow bins. Not part of PlottableHistogram, but included for
-        consitancy and flexibilty.
-        :return: np.ndarray[np.float64]
-        """
+        # TODO: return None if a weighed fill is made on a simple storage.
 
         view = self.view(flow)
         if len(view.dtype) == 0:
             return view
+        else:
+            return view.variance
+
+    def counts(self, flow=False):
+        # type: (bool) -> Optional[ArrayLike]
+        """
+        Returns the number of entries in each bin for an unweighted
+        histogram or profile and an effective number of entries (defined below)
+        for a weighted histogram or profile. An exotic generalized histogram could
+        have no sensible .counts, so this is Optional and should be checked by
+        Consumers.
+
+        For a weighted histogram, counts is defined as sum_of_weights ** 2 /
+        sum_of_weights_squared. It is equal or less than the number of times
+        the bin was filled, the equality holds when all filled weights are equal.
+        The larger the spread in weights, the smaller it is, but it is always 0
+        if filled 0 times, and 1 if filled once, and more than 1 otherwise.
+
+        If kind == "MEAN", counts (effective or not) can and should be used to
+        determine whether the mean value and its variance should be displayed
+        (see documentation of values and variances, respectively). The counts
+        should also be used to compute the error on the mean (see documentation
+        of variances).
+
+        :return: np.ndarray[np.float64]
+        """
+
+        view = self.view(flow)
+
+        if len(view.dtype) == 0:
+            return view
         elif hasattr(view, "sum_of_weights"):
-            return view.sum_of_weights
+            return np.divide(
+                view.sum_of_weights ** 2,
+                view.sum_of_weights_squared,
+                out=np.zeros_like(view.sum_of_weights, dtype=np.float64),
+                where=view.sum_of_weights_squared != 0,
+            )
         elif hasattr(view, "count"):
             return view.count
         else:

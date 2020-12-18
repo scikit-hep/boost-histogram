@@ -10,6 +10,6 @@ except ImportError:
         Enum = object  # type: ignore
 
 
-class Implementation(str, Enum):
-    sum = "sum"
-    mean = "mean"
+class Kind(str, Enum):
+    COUNT = "COUNT"
+    MEAN = "MEAN"
