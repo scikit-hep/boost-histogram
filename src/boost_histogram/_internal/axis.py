@@ -11,9 +11,24 @@ from .six import string_types
 
 import copy
 
-from typing import Dict, Any, TYPE_CHECKING
+from typing import Dict, Any, TYPE_CHECKING, Optional
 
 del absolute_import, division, print_function
+
+
+def _process_metadata_dict(metadata, __dict__):
+    # type: (Optional[Any], Optional[Dict[str, Any]]) -> Dict[str, Any]
+    """
+    Provide standardized handling for keywords related to metadata.
+    """
+    if __dict__ is None:
+        __dict__ = {}
+
+    if "metadata" in __dict__ and metadata is not None:
+        raise KeyError("Cannot provide metadata by keyword and in __dict__")
+
+    __dict__["metadata"] = metadata
+    return __dict__
 
 
 def _isstr(value):
@@ -54,6 +69,7 @@ class Axis(object):
         other._ax = copy.copy(self._ax)
         return other
 
+    # Required for Python 2 + __dict__
     def __setstate__(self, state):
         self._ax = state["_ax"]
 
@@ -293,12 +309,7 @@ class Regular(Axis):
                 underflow=True, overflow=True, growth=False, circular=False
             )
 
-        if __dict__ is None:
-            __dict__ = {}
-
-        if "metadata" in __dict__ and metadata is not None:
-            raise KeyError("Cannot provide metadata by keyword and in __dict__")
-        __dict__["metadata"] = metadata
+        __dict__ = _process_metadata_dict(metadata, __dict__)
 
         if transform is not None:
             if options != {"underflow", "overflow"}:
@@ -372,7 +383,7 @@ class Variable(Axis):
     __slots__ = ()
 
     @inject_signature(
-        "self, edges, *, metadata=None, underflow=True, overflow=True, growth=False"
+        "self, edges, *, metadata=None, underflow=True, overflow=True, growth=False, __dict__=None"
     )
     def __init__(self, edges, **kwargs):
         """
@@ -394,12 +405,17 @@ class Variable(Axis):
         growth : bool = False
             Allow the axis to grow if a value is encountered out of range.
             Be careful, the axis will grow as large as needed.
+        __dict__: Optional[Dict[str, Any]] = None
+            The full metadata dictionary
         """
         with KWArgs(kwargs) as k:
             metadata = k.optional("metadata")
+            __dict__ = k.optional("__dict__")
             options = k.options(
                 underflow=True, overflow=True, circular=False, growth=False
             )
+
+        __dict__ = _process_metadata_dict(metadata, __dict__)
 
         if options == {"growth", "underflow", "overflow"}:
             self._ax = ca.variable_uoflow_growth(edges)
@@ -447,7 +463,7 @@ class Integer(Axis):
     __slots__ = ()
 
     @inject_signature(
-        "self, start, stop, *, metadata=None, underflow=True, overflow=True, growth=False"
+        "self, start, stop, *, metadata=None, underflow=True, overflow=True, growth=False, __dict__=None"
     )
     def __init__(self, start, stop, **kwargs):
         """
@@ -470,12 +486,17 @@ class Integer(Axis):
         growth : bool = False
             Allow the axis to grow if a value is encountered out of range.
             Be careful, the axis will grow as large as needed.
+        __dict__: Optional[Dict[str, Any]] = None
+            The full metadata dictionary
         """
         with KWArgs(kwargs) as k:
             metadata = k.optional("metadata")
+            __dict__ = k.optional("__dict__")
             options = k.options(
                 underflow=True, overflow=True, circular=False, growth=False
             )
+
+        __dict__ = _process_metadata_dict(metadata, __dict__)
 
         # underflow and overflow settings are ignored, integers are always
         # finite and thus cannot end up in a flow bin when growth is on
@@ -528,7 +549,7 @@ class BaseCategory(Axis):
 @set_module("boost_histogram.axis")
 @register({ca.category_str_growth, ca.category_str})
 class StrCategory(BaseCategory):
-    @inject_signature("self, categories, *, metadata=None, growth=False")
+    @inject_signature("self, categories, *, metadata=None, growth=False, __dict__=None")
     def __init__(self, categories, **kwargs):
         """
         Make a category axis with strings; items will
@@ -545,10 +566,15 @@ class StrCategory(BaseCategory):
         growth : bool = False
             Allow the axis to grow if a value is encountered out of range.
             Be careful, the axis will grow as large as needed.
+        __dict__: Optional[Dict[str, Any]] = None
+            The full metadata dictionary
         """
         with KWArgs(kwargs) as k:
             metadata = k.optional("metadata")
+            __dict__ = k.optional("__dict__")
             options = k.options(growth=False)
+
+        __dict__ = _process_metadata_dict(metadata, __dict__)
 
         # henryiii: We currently expand "abc" to "a", "b", "c" - some
         # Python interfaces protect against that
@@ -586,7 +612,7 @@ class StrCategory(BaseCategory):
 @set_module("boost_histogram.axis")
 @register({ca.category_int, ca.category_int_growth})
 class IntCategory(BaseCategory):
-    @inject_signature("self, categories, *, metadata=None, growth=False")
+    @inject_signature("self, categories, *, metadata=None, growth=False, __dict__=None")
     def __init__(self, categories, **kwargs):
         """
         Make a category axis with ints; items will
@@ -603,10 +629,15 @@ class IntCategory(BaseCategory):
         growth : bool = False
             Allow the axis to grow if a value is encountered out of range.
             Be careful, the axis will grow as large as needed.
+        __dict__: Optional[Dict[str, Any]] = None
+            The full metadata dictionary
         """
         with KWArgs(kwargs) as k:
             metadata = k.optional("metadata")
+            __dict__ = k.optional("__dict__")
             options = k.options(growth=False)
+
+        __dict__ = _process_metadata_dict(metadata, __dict__)
 
         if options == {"growth"}:
             self._ax = ca.category_int_growth(tuple(categories))
@@ -630,7 +661,7 @@ class IntCategory(BaseCategory):
 class Boolean(Axis):
     __slots__ = ()
 
-    @inject_signature("self, *, metadata=None")
+    @inject_signature("self, *, metadata=None, __dict__=None")
     def __init__(self, **kwargs):
         """
         Make an axis for boolean values.
@@ -639,9 +670,14 @@ class Boolean(Axis):
         ----------
         metadata : object
             Any Python object to attach to the axis, like a label.
+        __dict__: Optional[Dict[str, Any]] = None
+            The full metadata dictionary
         """
         with KWArgs(kwargs) as k:
             metadata = k.optional("metadata")
+            __dict__ = k.optional("__dict__")
+
+        __dict__ = _process_metadata_dict(metadata, __dict__)
 
         self._ax = ca.boolean()
         self.metadata = metadata

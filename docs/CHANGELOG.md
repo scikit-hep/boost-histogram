@@ -10,11 +10,13 @@ Pressing forward to 1.0.
 #### User changes
 
 * You can now set all complex storages, either on a Histogram or a View with an (N+1)D array [#475][]
+* Classes provide a `__dict__` attribute that can be set and deleted. [#477][]
 
 #### Bug fixes
 
 * Fixed issue if final bin of Variable histogram was infinite by updating to Boost 1.75 [#470][]
 * NumPy arrays can be used for weights in `bh.numpy` [#472][]
+* Vectorization for WeightedMean accumulators was broken [#475][]
 
 #### Developer changes
 
@@ -24,6 +26,7 @@ Pressing forward to 1.0.
 [#470]: https://github.com/scikit-hep/boost-histogram/pull/470
 [#472]: https://github.com/scikit-hep/boost-histogram/pull/472
 [#475]: https://github.com/scikit-hep/boost-histogram/pull/475
+[#477]: https://github.com/scikit-hep/boost-histogram/pull/477
 
 
 ## Version 0.11
