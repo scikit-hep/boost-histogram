@@ -169,3 +169,9 @@ def test_view_assign_wmean():
     assert_allclose(w.value, [3, 7, 11, 15])
     assert_allclose(w.variance, [4, 8, 12, 16])
     # Note: if sum_of_weights <= 1, variance is undefined
+
+    w[0] = [9, 1, 2, 3]
+    assert w.sum_of_weights[0] == 9
+    assert w[0].sum_of_weights_squared == 1
+    assert w.value[0] == 2
+    assert w[0].variance == 3
