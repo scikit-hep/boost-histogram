@@ -116,3 +116,56 @@ def test_view_add_same(v):
 
     with pytest.raises(TypeError):
         v2 = v + bh.accumulators.WeightedMean(1, 2, 5, 6)
+
+
+def test_view_assign(v):
+    v[...] = [[4, 1], [5, 2], [6, 1], [7, 2]]
+
+    assert_allclose(v.value, [4, 5, 6, 7])
+    assert_allclose(v.variance, [1, 2, 1, 2])
+
+
+def test_view_assign_mean():
+    h = bh.Histogram(bh.axis.Integer(0, 4), storage=bh.storage.Mean())
+    m = h.copy().view()
+
+    h[...] = [[10, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]]
+    assert_allclose(h.view().count, [10, 4, 7, 10])
+    assert_allclose(h.view().value, [2, 5, 8, 11])
+    assert_allclose(h.view().variance, [3, 6, 9, 12])
+
+    # Make sure this really was a copy
+    assert m.count[0] != 10
+
+    # Assign directly on view
+    m[...] = [[10, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]]
+
+    assert_allclose(m.count, [10, 4, 7, 10])
+    assert_allclose(m.value, [2, 5, 8, 11])
+    assert_allclose(m.variance, [3, 6, 9, 12])
+    # Note: if counts <= 1, variance is undefined
+
+
+def test_view_assign_wmean():
+    h = bh.Histogram(bh.axis.Integer(0, 4), storage=bh.storage.WeightedMean())
+
+    w = h.copy().view()
+
+    h[...] = [[10, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]
+
+    assert_allclose(h.view().sum_of_weights, [10, 5, 9, 13])
+    assert_allclose(h.view().sum_of_weights_squared, [2, 6, 10, 14])
+    assert_allclose(h.view().value, [3, 7, 11, 15])
+    assert_allclose(h.view().variance, [4, 8, 12, 16])
+
+    # Make sure this really was a copy
+    assert w.sum_of_weights[0] != 10
+
+    # Assign directly on view
+    w[...] = [[10, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]
+
+    assert_allclose(w.sum_of_weights, [10, 5, 9, 13])
+    assert_allclose(w.sum_of_weights_squared, [2, 6, 10, 14])
+    assert_allclose(w.value, [3, 7, 11, 15])
+    assert_allclose(w.variance, [4, 8, 12, 16])
+    # Note: if sum_of_weights <= 1, variance is undefined
