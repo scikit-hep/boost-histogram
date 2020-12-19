@@ -24,10 +24,11 @@ def _process_metadata_dict(metadata, __dict__):
     if __dict__ is None:
         __dict__ = {}
 
-    if "metadata" in __dict__ and metadata is not None:
-        raise KeyError("Cannot provide metadata by keyword and in __dict__")
+    if metadata is not None:
+        if "metadata" in __dict__:
+            raise KeyError("Cannot provide metadata by keyword and in __dict__")
+        __dict__["metadata"] = metadata
 
-    __dict__["metadata"] = metadata
     return __dict__
 
 
@@ -59,15 +60,10 @@ class Axis(object):
             # type: () -> Dict[str, Any]
             return self._ax.metadata
 
-        @__dict__.setter
-        def __dict__(self, value):
+        @__dict__.deleter
+        def __dict__(self):
             # type: (Dict[str, Any]) -> None
-            self._ax.metadata = value
-
-    def __copy__(self):
-        other = self.__class__.__new__(self.__class__)
-        other._ax = copy.copy(self._ax)
-        return other
+            self._ax.metadata = {}
 
     # Required for Python 2 + __dict__
     def __setstate__(self, state):
@@ -92,8 +88,15 @@ class Axis(object):
     def __setattr__(self, item, value):
         if item == "_ax":
             Axis.__dict__[item].__set__(self, value)
+        elif item == "__dict__":
+            self._ax.metadata = value
         else:
             self._ax.metadata[item] = value
+
+    def __copy__(self):
+        other = self.__class__.__new__(self.__class__)
+        other._ax = copy.copy(self._ax)
+        return other
 
     def __dir__(self):
         metadata = list(self._ax.metadata)
@@ -343,7 +346,7 @@ class Regular(Axis):
         else:
             raise KeyError("Unsupported collection of options")
 
-        self.metadata = metadata
+        self._ax.metadata = __dict__
 
     def _repr_args(self):
         "Return inner part of signature for use in repr"
@@ -436,7 +439,7 @@ class Variable(Axis):
         else:
             raise KeyError("Unsupported collection of options")
 
-        self.metadata = metadata
+        self._ax.metadata = __dict__
 
     def _repr_args(self):
         "Return inner part of signature for use in repr"
@@ -515,7 +518,7 @@ class Integer(Axis):
         else:
             raise KeyError("Unsupported collection of options")
 
-        self.metadata = metadata
+        self._ax.metadata = __dict__
 
     def _repr_args(self):
         "Return inner part of signature for use in repr"
@@ -549,6 +552,8 @@ class BaseCategory(Axis):
 @set_module("boost_histogram.axis")
 @register({ca.category_str_growth, ca.category_str})
 class StrCategory(BaseCategory):
+    __slots__ = ()
+
     @inject_signature("self, categories, *, metadata=None, growth=False, __dict__=None")
     def __init__(self, categories, **kwargs):
         """
@@ -569,6 +574,7 @@ class StrCategory(BaseCategory):
         __dict__: Optional[Dict[str, Any]] = None
             The full metadata dictionary
         """
+
         with KWArgs(kwargs) as k:
             metadata = k.optional("metadata")
             __dict__ = k.optional("__dict__")
@@ -586,7 +592,7 @@ class StrCategory(BaseCategory):
         else:
             raise KeyError("Unsupported collection of options")
 
-        self.metadata = metadata
+        self._ax.metadata = __dict__
 
     def index(self, value):
         """
@@ -612,6 +618,8 @@ class StrCategory(BaseCategory):
 @set_module("boost_histogram.axis")
 @register({ca.category_int, ca.category_int_growth})
 class IntCategory(BaseCategory):
+    __slots__ = ()
+
     @inject_signature("self, categories, *, metadata=None, growth=False, __dict__=None")
     def __init__(self, categories, **kwargs):
         """
@@ -646,7 +654,7 @@ class IntCategory(BaseCategory):
         else:
             raise KeyError("Unsupported collection of options")
 
-        self.metadata = metadata
+        self._ax.metadata = __dict__
 
     def _repr_args(self):
         "Return inner part of signature for use in repr"
@@ -680,7 +688,7 @@ class Boolean(Axis):
         __dict__ = _process_metadata_dict(metadata, __dict__)
 
         self._ax = ca.boolean()
-        self.metadata = metadata
+        self._ax.metadata = __dict__
 
     def _repr_args(self):
         "Return inner part of signature for use in repr"

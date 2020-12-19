@@ -10,7 +10,7 @@ Pressing forward to 1.0.
 #### User changes
 
 * You can now set all complex storages, either on a Histogram or a View with an (N+1)D array [#475][]
-* Classes provide a `__dict__` attribute that can be set and deleted. [#477][]
+* Axes provide a `__dict__` attribute that can be set and deleted. [#477][]
 
 #### Bug fixes
 

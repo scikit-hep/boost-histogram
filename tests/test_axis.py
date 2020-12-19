@@ -62,7 +62,29 @@ def test_metadata(axis, args, opt, kwargs):
         assert axis(*args, **kwargs) == axis(*args, **kwargs)
         assert axis(*args, **kwargs) != axis(*args, metadata="bar")
 
+    del kwargs["metadata"]
 
+    ax = axis(*args, __dict__={"metadata": 3, "other": 2})
+    assert ax.metadata == 3
+    assert ax.other == 2
+
+    del ax.__dict__
+    assert ax.__dict__ == {}
+    assert ax.metadata is None
+
+    ax.__dict__ = {"metadata": 5}
+    assert ax.__dict__ == {"metadata": 5}
+    assert ax.metadata == 5
+
+    ax = axis(*args, **kwargs, __dict__={"something": 2}, metadata=3)
+    assert ax.__dict__ == {"something": 2, "metadata": 3}
+
+    with pytest.raises(KeyError):
+        axis(*args, **kwargs, __dict__={"metadata": 2}, metadata=3)
+
+
+# The point of this ABC is to force all the tests listed here to be
+# implemented for each axis type.
 class Axis(ABC):
     @abc.abstractmethod
     def test_init(self):
