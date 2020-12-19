@@ -107,9 +107,6 @@ class at(object):
         self.value = value
 
     def __call__(self, axis):
-        if self.value < -2:
-            raise IndexError("Index cannot be less than -1")
-
         return self.value
 
 

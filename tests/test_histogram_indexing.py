@@ -210,7 +210,7 @@ def test_one_sided_slice():
     h.view(True)[:] = 1
 
     assert h[sum] == 6  # 4 (internal bins) + 2 (flow bins)
-    assert h[-1:5:sum] == 6  # keeps underflow, keeps overflow
+    assert h[bh.tag.at(-1) : bh.tag.at(5) : sum] == 6  # keeps underflow, keeps overflow
 
     # check that slicing without bh.sum adds removed counts to flow bins
     assert_array_equal(h[1:3].view(True), [2, 1, 1, 2])
@@ -224,8 +224,8 @@ def test_one_sided_slice():
     assert h[bh.loc(1) : bh.loc(5) : sum] == 4  # removes underflow and overflow
 
     assert h[bh.loc(0) :: sum] == 6  # keep underflow
-    assert h[: bh.loc(10) : sum] == 6  # keep overflow
-    assert h[bh.loc(0) : bh.loc(10) : sum] == 6
+    assert h[: bh.loc(10) + 1 : sum] == 6  # keep overflow
+    assert h[bh.loc(0) : bh.loc(10) + 1 : sum] == 6
 
 
 def test_repr():
