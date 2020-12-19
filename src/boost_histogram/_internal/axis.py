@@ -58,17 +58,15 @@ class Axis(object):
                 "Cannot provide metadata by keyword and __dict__, use __dict__ only"
             )
         elif __dict__ is not None:
-            self.__dict__ = __dict__
+            self._ax.metadata = __dict__
         elif metadata is not None:
-            self.__dict__["metadata"] = metadata
+            self._ax.metadata["metadata"] = metadata
 
-        self._ax.metadata = self.__dict__
-        assert self.__dict__ is self._ax.metadata
+        self.__dict__ = self._ax.metadata
 
     def __setstate__(self, state):
         self._ax = state["_ax"]
         self.__dict__ = self._ax.metadata
-        assert self.__dict__ is self._ax.metadata
 
     def __getstate__(self):
         return {"_ax": self._ax}
@@ -77,7 +75,6 @@ class Axis(object):
         other = self.__class__.__new__(self.__class__)
         other._ax = copy.copy(self._ax)
         other.__dict__ = other._ax.metadata
-        assert other.__dict__ is other._ax.metadata
         return other
 
     def index(self, value):
@@ -121,7 +118,6 @@ class Axis(object):
         nice_ax = cls.__new__(cls)
         nice_ax._ax = cpp_object
         nice_ax.__dict__ = cpp_object.metadata
-        assert nice_ax._ax.metadata == nice_ax.__dict__
         return nice_ax
 
     def __len__(self):
