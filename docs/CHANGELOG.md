@@ -9,8 +9,11 @@ Pressing forward to 1.0.
 
 #### User changes
 
-* You can now set all complex storages, either on a Histogram or a View with an (N+1)D array [#475][]
-* Axes provide a `__dict__` attribute that can be set and deleted. [#477][]
+* You can now set all complex storages, either on a Histogram or a View with an
+  (N+1)D array [#475][]
+* Axes are now normal `__dict__` classes, you can manipulate the `__dict__` as
+  normal. Axes construction now lets you either use the old metadata shortcut
+  or the `__dict__` inline. [#477][]
 
 #### Bug fixes
 

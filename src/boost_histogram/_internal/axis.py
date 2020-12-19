@@ -11,25 +11,7 @@ from .six import string_types
 
 import copy
 
-from typing import Dict, Any, TYPE_CHECKING, Optional
-
 del absolute_import, division, print_function
-
-
-def _process_metadata_dict(metadata, __dict__):
-    # type: (Optional[Any], Optional[Dict[str, Any]]) -> Dict[str, Any]
-    """
-    Provide standardized handling for keywords related to metadata.
-    """
-    if __dict__ is None:
-        __dict__ = {}
-
-    if metadata is not None:
-        if "metadata" in __dict__:
-            raise KeyError("Cannot provide metadata by keyword and in __dict__")
-        __dict__["metadata"] = metadata
-
-    return __dict__
 
 
 def _isstr(value):
@@ -48,59 +30,55 @@ def _isstr(value):
 # Contains common methods and properties to all axes
 @set_module("boost_histogram.axis")
 class Axis(object):
-    __slots__ = ("_ax",)
+    __slots__ = ("_ax", "__dict__")
 
-    # Workaround for bug https://github.com/python/mypy/issues/6523 in mypy
-    if TYPE_CHECKING:
-        __dict__ = Dict[str, Any]()
-    else:
+    def __setattr__(self, attr, value):
+        if attr == "__dict__":
+            self._ax.metadata = value
+        object.__setattr__(self, attr, value)
 
-        @property
-        def __dict__(self):
-            # type: () -> Dict[str, Any]
-            return self._ax.metadata
+    def __getattr__(self, attr):
+        if attr == "metadata":
+            return None
+        raise AttributeError(
+            "object {0} has not attribute {1}".format(self.__class__.__name__, attr)
+        )
 
-        @__dict__.deleter
-        def __dict__(self):
-            # type: (Dict[str, Any]) -> None
-            self._ax.metadata = {}
+    def __init__(self, ax, metadata, __dict__):
+        """
+        ax: the C++ object
+        metadata: the metadata keyword contents
+        __dict__: the __dict__ keyword contents
+        """
 
-    # Required for Python 2 + __dict__
+        self._ax = ax
+
+        if __dict__ is not None and metadata is not None:
+            raise KeyError(
+                "Cannot provide metadata by keyword and __dict__, use __dict__ only"
+            )
+        elif __dict__ is not None:
+            self.__dict__ = __dict__
+        elif metadata is not None:
+            self.__dict__["metadata"] = metadata
+
+        self._ax.metadata = self.__dict__
+        assert self.__dict__ is self._ax.metadata
+
     def __setstate__(self, state):
         self._ax = state["_ax"]
+        self.__dict__ = self._ax.metadata
+        assert self.__dict__ is self._ax.metadata
 
     def __getstate__(self):
         return {"_ax": self._ax}
 
-    def __getattr__(self, item):
-        if item == "_ax":
-            return Axis.__dict__[item].__get__(self)
-        elif item in self._ax.metadata:
-            return self._ax.metadata[item]
-        elif item == "metadata":
-            return None
-        else:
-            msg = "'{}' object has no attribute '{}' in {}".format(
-                type(self).__name__, item, set(self._ax.metadata)
-            )
-            raise AttributeError(msg)
-
-    def __setattr__(self, item, value):
-        if item == "_ax":
-            Axis.__dict__[item].__set__(self, value)
-        elif item == "__dict__":
-            self._ax.metadata = value
-        else:
-            self._ax.metadata[item] = value
-
     def __copy__(self):
         other = self.__class__.__new__(self.__class__)
         other._ax = copy.copy(self._ax)
+        other.__dict__ = other._ax.metadata
+        assert other.__dict__ is other._ax.metadata
         return other
-
-    def __dir__(self):
-        metadata = list(self._ax.metadata)
-        return sorted(dir(type(self)) + metadata)
 
     def index(self, value):
         """
@@ -142,6 +120,8 @@ class Axis(object):
     def _convert_cpp(cls, cpp_object):
         nice_ax = cls.__new__(cls)
         nice_ax._ax = cpp_object
+        nice_ax.__dict__ = cpp_object.metadata
+        assert nice_ax._ax.metadata == nice_ax.__dict__
         return nice_ax
 
     def __len__(self):
@@ -304,9 +284,6 @@ class Regular(Axis):
             The full metadata dictionary
         """
 
-        # Inheriting an axis and forgetting to add __slots__ should be an error
-        assert not hasattr(self, "__weakref__"), "Axis subclasses must have __slots__!"
-
         with KWArgs(kwargs) as k:
             metadata = k.optional("metadata")
             transform = k.optional("transform")
@@ -314,8 +291,6 @@ class Regular(Axis):
             options = k.options(
                 underflow=True, overflow=True, growth=False, circular=False
             )
-
-        __dict__ = _process_metadata_dict(metadata, __dict__)
 
         if transform is not None:
             if options != {"underflow", "overflow"}:
@@ -327,29 +302,29 @@ class Regular(Axis):
             ):
                 raise TypeError("You must pass an instance, use {}()".format(transform))
 
-            self._ax = transform._produce(bins, start, stop)
+            ax = transform._produce(bins, start, stop)
 
         elif options == {"growth", "underflow", "overflow"}:
-            self._ax = ca.regular_uoflow_growth(bins, start, stop)
+            ax = ca.regular_uoflow_growth(bins, start, stop)
         elif options == {"underflow", "overflow"}:
-            self._ax = ca.regular_uoflow(bins, start, stop)
+            ax = ca.regular_uoflow(bins, start, stop)
         elif options == {"underflow"}:
-            self._ax = ca.regular_uflow(bins, start, stop)
+            ax = ca.regular_uflow(bins, start, stop)
         elif options == {"overflow"}:
-            self._ax = ca.regular_oflow(bins, start, stop)
+            ax = ca.regular_oflow(bins, start, stop)
         elif options == {"circular", "underflow", "overflow"} or options == {
             "circular",
             "overflow",
         }:
             # growth=True, underflow=False is also correct
-            self._ax = ca.regular_circular(bins, start, stop)
+            ax = ca.regular_circular(bins, start, stop)
 
         elif options == set():
-            self._ax = ca.regular_none(bins, start, stop)
+            ax = ca.regular_none(bins, start, stop)
         else:
             raise KeyError("Unsupported collection of options")
 
-        self._ax.metadata = __dict__
+        super(Regular, self).__init__(ax, metadata, __dict__)
 
     def _repr_args(self):
         "Return inner part of signature for use in repr"
@@ -415,9 +390,6 @@ class Variable(Axis):
             The full metadata dictionary
         """
 
-        # Inheriting an axis and forgetting to add __slots__ should be an error
-        assert not hasattr(self, "__weakref__"), "Axis subclasses must have __slots__!"
-
         with KWArgs(kwargs) as k:
             metadata = k.optional("metadata")
             __dict__ = k.optional("__dict__")
@@ -425,28 +397,26 @@ class Variable(Axis):
                 underflow=True, overflow=True, circular=False, growth=False
             )
 
-        __dict__ = _process_metadata_dict(metadata, __dict__)
-
         if options == {"growth", "underflow", "overflow"}:
-            self._ax = ca.variable_uoflow_growth(edges)
+            ax = ca.variable_uoflow_growth(edges)
         elif options == {"underflow", "overflow"}:
-            self._ax = ca.variable_uoflow(edges)
+            ax = ca.variable_uoflow(edges)
         elif options == {"underflow"}:
-            self._ax = ca.variable_uflow(edges)
+            ax = ca.variable_uflow(edges)
         elif options == {"overflow"}:
-            self._ax = ca.variable_oflow(edges)
+            ax = ca.variable_oflow(edges)
         elif options == {"circular", "underflow", "overflow",} or options == {
             "circular",
             "overflow",
         }:
             # growth=True, underflow=False is also correct
-            self._ax = ca.variable_circular(edges)
+            ax = ca.variable_circular(edges)
         elif options == set():
-            self._ax = ca.variable_none(edges)
+            ax = ca.variable_none(edges)
         else:
             raise KeyError("Unsupported collection of options")
 
-        self._ax.metadata = __dict__
+        super(Variable, self).__init__(ax, metadata, __dict__)
 
     def _repr_args(self):
         "Return inner part of signature for use in repr"
@@ -500,9 +470,6 @@ class Integer(Axis):
             The full metadata dictionary
         """
 
-        # Inheriting an axis and forgetting to add __slots__ should be an error
-        assert not hasattr(self, "__weakref__"), "Axis subclasses must have __slots__!"
-
         with KWArgs(kwargs) as k:
             metadata = k.optional("metadata")
             __dict__ = k.optional("__dict__")
@@ -510,26 +477,24 @@ class Integer(Axis):
                 underflow=True, overflow=True, circular=False, growth=False
             )
 
-        __dict__ = _process_metadata_dict(metadata, __dict__)
-
         # underflow and overflow settings are ignored, integers are always
         # finite and thus cannot end up in a flow bin when growth is on
         if "growth" in options and "circular" not in options:
-            self._ax = ca.integer_growth(start, stop)
+            ax = ca.integer_growth(start, stop)
         elif options == {"underflow", "overflow"}:
-            self._ax = ca.integer_uoflow(start, stop)
+            ax = ca.integer_uoflow(start, stop)
         elif options == {"underflow"}:
-            self._ax = ca.integer_uflow(start, stop)
+            ax = ca.integer_uflow(start, stop)
         elif options == {"overflow"}:
-            self._ax = ca.integer_oflow(start, stop)
+            ax = ca.integer_oflow(start, stop)
         elif "circular" in options and "growth" not in options:
-            self._ax = ca.integer_circular(start, stop)
+            ax = ca.integer_circular(start, stop)
         elif options == set():
-            self._ax = ca.integer_none(start, stop)
+            ax = ca.integer_none(start, stop)
         else:
             raise KeyError("Unsupported collection of options")
 
-        self._ax.metadata = __dict__
+        super(Integer, self).__init__(ax, metadata, __dict__)
 
     def _repr_args(self):
         "Return inner part of signature for use in repr"
@@ -586,27 +551,22 @@ class StrCategory(BaseCategory):
             The full metadata dictionary
         """
 
-        # Inheriting an axis and forgetting to add __slots__ should be an error
-        assert not hasattr(self, "__weakref__"), "Axis subclasses must have __slots__!"
-
         with KWArgs(kwargs) as k:
             metadata = k.optional("metadata")
             __dict__ = k.optional("__dict__")
             options = k.options(growth=False)
 
-        __dict__ = _process_metadata_dict(metadata, __dict__)
-
         # henryiii: We currently expand "abc" to "a", "b", "c" - some
         # Python interfaces protect against that
 
         if options == {"growth"}:
-            self._ax = ca.category_str_growth(tuple(categories))
+            ax = ca.category_str_growth(tuple(categories))
         elif options == set():
-            self._ax = ca.category_str(tuple(categories))
+            ax = ca.category_str(tuple(categories))
         else:
             raise KeyError("Unsupported collection of options")
 
-        self._ax.metadata = __dict__
+        super(StrCategory, self).__init__(ax, metadata, __dict__)
 
     def index(self, value):
         """
@@ -655,24 +615,19 @@ class IntCategory(BaseCategory):
             The full metadata dictionary
         """
 
-        # Inheriting an axis and forgetting to add __slots__ should be an error
-        assert not hasattr(self, "__weakref__"), "Axis subclasses must have __slots__!"
-
         with KWArgs(kwargs) as k:
             metadata = k.optional("metadata")
             __dict__ = k.optional("__dict__")
             options = k.options(growth=False)
 
-        __dict__ = _process_metadata_dict(metadata, __dict__)
-
         if options == {"growth"}:
-            self._ax = ca.category_int_growth(tuple(categories))
+            ax = ca.category_int_growth(tuple(categories))
         elif options == set():
-            self._ax = ca.category_int(tuple(categories))
+            ax = ca.category_int(tuple(categories))
         else:
             raise KeyError("Unsupported collection of options")
 
-        self._ax.metadata = __dict__
+        super(IntCategory, self).__init__(ax, metadata, __dict__)
 
     def _repr_args(self):
         "Return inner part of signature for use in repr"
@@ -700,17 +655,13 @@ class Boolean(Axis):
             The full metadata dictionary
         """
 
-        # Inheriting an axis and forgetting to add __slots__ should be an error
-        assert not hasattr(self, "__weakref__"), "Axis subclasses must have __slots__!"
-
         with KWArgs(kwargs) as k:
             metadata = k.optional("metadata")
             __dict__ = k.optional("__dict__")
 
-        __dict__ = _process_metadata_dict(metadata, __dict__)
+        ax = ca.boolean()
 
-        self._ax = ca.boolean()
-        self._ax.metadata = __dict__
+        super(Boolean, self).__init__(ax, metadata, __dict__)
 
     def _repr_args(self):
         "Return inner part of signature for use in repr"
