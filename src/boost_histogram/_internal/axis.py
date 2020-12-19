@@ -304,6 +304,9 @@ class Regular(Axis):
             The full metadata dictionary
         """
 
+        # Inheriting an axis and forgetting to add __slots__ should be an error
+        assert not hasattr(self, "__weakref__"), "Axis subclasses must have __slots__!"
+
         with KWArgs(kwargs) as k:
             metadata = k.optional("metadata")
             transform = k.optional("transform")
@@ -411,6 +414,10 @@ class Variable(Axis):
         __dict__: Optional[Dict[str, Any]] = None
             The full metadata dictionary
         """
+
+        # Inheriting an axis and forgetting to add __slots__ should be an error
+        assert not hasattr(self, "__weakref__"), "Axis subclasses must have __slots__!"
+
         with KWArgs(kwargs) as k:
             metadata = k.optional("metadata")
             __dict__ = k.optional("__dict__")
@@ -492,6 +499,10 @@ class Integer(Axis):
         __dict__: Optional[Dict[str, Any]] = None
             The full metadata dictionary
         """
+
+        # Inheriting an axis and forgetting to add __slots__ should be an error
+        assert not hasattr(self, "__weakref__"), "Axis subclasses must have __slots__!"
+
         with KWArgs(kwargs) as k:
             metadata = k.optional("metadata")
             __dict__ = k.optional("__dict__")
@@ -575,6 +586,9 @@ class StrCategory(BaseCategory):
             The full metadata dictionary
         """
 
+        # Inheriting an axis and forgetting to add __slots__ should be an error
+        assert not hasattr(self, "__weakref__"), "Axis subclasses must have __slots__!"
+
         with KWArgs(kwargs) as k:
             metadata = k.optional("metadata")
             __dict__ = k.optional("__dict__")
@@ -640,6 +654,10 @@ class IntCategory(BaseCategory):
         __dict__: Optional[Dict[str, Any]] = None
             The full metadata dictionary
         """
+
+        # Inheriting an axis and forgetting to add __slots__ should be an error
+        assert not hasattr(self, "__weakref__"), "Axis subclasses must have __slots__!"
+
         with KWArgs(kwargs) as k:
             metadata = k.optional("metadata")
             __dict__ = k.optional("__dict__")
@@ -681,6 +699,10 @@ class Boolean(Axis):
         __dict__: Optional[Dict[str, Any]] = None
             The full metadata dictionary
         """
+
+        # Inheriting an axis and forgetting to add __slots__ should be an error
+        assert not hasattr(self, "__weakref__"), "Axis subclasses must have __slots__!"
+
         with KWArgs(kwargs) as k:
             metadata = k.optional("metadata")
             __dict__ = k.optional("__dict__")

@@ -3,6 +3,7 @@ import pytest
 from pytest import approx
 
 import boost_histogram as bh
+import boost_histogram.utils
 
 import numpy as np
 from numpy.testing import assert_array_equal, assert_allclose
@@ -76,11 +77,26 @@ def test_metadata(axis, args, opt, kwargs):
     assert ax.__dict__ == {"metadata": 5}
     assert ax.metadata == 5
 
-    ax = axis(*args, **kwargs, __dict__={"something": 2}, metadata=3)
+    # Python 2 does not allow mixing ** and kw
+    new_kwargs = copy.copy(kwargs)
+    new_kwargs["__dict__"] = {"something": 2}
+    new_kwargs["metadata"] = 3
+    ax = axis(*args, **new_kwargs)
     assert ax.__dict__ == {"something": 2, "metadata": 3}
 
+    new_kwargs = copy.copy(kwargs)
+    new_kwargs["__dict__"] = {"metadata": 2}
+    new_kwargs["metadata"] = 3
     with pytest.raises(KeyError):
-        axis(*args, **kwargs, __dict__={"metadata": 2}, metadata=3)
+        axis(*args, **new_kwargs)
+
+    # An assertion failure should occur if you forget to set slots!
+    @boost_histogram.utils.set_family(object())
+    class TmpAxis(axis):
+        pass
+
+    with pytest.raises(AssertionError):
+        TmpAxis(*args, **kwargs)
 
 
 # The point of this ABC is to force all the tests listed here to be

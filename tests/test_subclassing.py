@@ -11,7 +11,7 @@ def test_subclass():
 
     @bh.utils.set_family(NEW_FAMILY)
     class MyRegular(bh.axis.Regular):
-        pass
+        __slots__ = ()
 
     @bh.utils.set_family(NEW_FAMILY)
     class MyIntStorage(bh.storage.Int64):
