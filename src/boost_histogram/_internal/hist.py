@@ -154,7 +154,7 @@ class Histogram(object):
         self.__dict__ = copy.copy(h.__dict__)
         self.axes = self._generate_axes_()
         for ax in self.axes:
-            ax._ax.metadata = copy.copy(ax._ax.metadata)
+            ax.__dict__ = copy.copy(ax._ax.metadata)
 
         # Allow custom behavior on either "from" or "to"
         h._export_bh_(self)
@@ -198,9 +198,9 @@ class Histogram(object):
         other.axes = other._generate_axes_()
         for ax in other.axes:
             if memo is NOTHING:
-                ax._ax.metadata = copy.copy(ax._ax.metadata)
+                ax.__dict__ = copy.copy(ax._ax.metadata)
             else:
-                ax._ax.metadata = copy.deepcopy(ax._ax.metadata, memo)
+                ax.__dict__ = copy.deepcopy(ax._ax.metadata, memo)
         return other
 
     @property
@@ -440,9 +440,9 @@ class Histogram(object):
         else:  # Classic (0.10 and before) state
             self._hist = state["_hist"]
             self.metadata = state.get("metadata", None)
+            for i in range(self._hist.rank()):
+                self._hist.axis(i).metadata = {"metadata": self._hist.axis(i).metadata}
             self.axes = self._generate_axes_()
-            for ax in self.axes:
-                ax._ax.metadata = {"metadata": ax._ax.metadata}
 
     def __repr__(self):
         newline = "\n  "

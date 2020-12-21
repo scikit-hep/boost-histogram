@@ -3,6 +3,7 @@ import pytest
 from pytest import approx
 
 import boost_histogram as bh
+import boost_histogram.utils
 
 import numpy as np
 from numpy.testing import assert_array_equal, assert_allclose
@@ -62,7 +63,36 @@ def test_metadata(axis, args, opt, kwargs):
         assert axis(*args, **kwargs) == axis(*args, **kwargs)
         assert axis(*args, **kwargs) != axis(*args, metadata="bar")
 
+    del kwargs["metadata"]
 
+    ax = axis(*args, __dict__={"metadata": 3, "other": 2})
+    assert ax.metadata == 3
+    assert ax.other == 2
+
+    del ax.__dict__
+    assert ax.__dict__ == {}
+    assert ax.metadata is None
+
+    ax.__dict__ = {"metadata": 5}
+    assert ax.__dict__ == {"metadata": 5}
+    assert ax.metadata == 5
+
+    # Python 2 does not allow mixing ** and kw
+    new_kwargs = copy.copy(kwargs)
+    new_kwargs["__dict__"] = {"something": 2}
+    new_kwargs["metadata"] = 3
+    with pytest.raises(KeyError):
+        axis(*args, **new_kwargs)
+
+    new_kwargs = copy.copy(kwargs)
+    new_kwargs["__dict__"] = {"metadata": 2}
+    new_kwargs["metadata"] = 3
+    with pytest.raises(KeyError):
+        axis(*args, **new_kwargs)
+
+
+# The point of this ABC is to force all the tests listed here to be
+# implemented for each axis type.
 class Axis(ABC):
     @abc.abstractmethod
     def test_init(self):

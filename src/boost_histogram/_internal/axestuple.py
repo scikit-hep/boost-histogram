@@ -94,7 +94,7 @@ class AxesTuple(tuple):
         return self.__class__(result) if isinstance(result, tuple) else result
 
     def __getattr__(self, attr):
-        return self.__class__(s.__getattr__(attr) for s in self)
+        return self.__class__(getattr(s, attr) for s in self)
 
     def __setattr__(self, attr, values):
         return self.__class__(s.__setattr__(attr, v) for s, v in zip(self, values))
