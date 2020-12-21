@@ -339,10 +339,10 @@ class Histogram(object):
         if threads == 0:
             threads = os.cpu_count()
 
-        if (
-            self._hist._storage_type is _core.storage.mean
-            or self._hist._storage_type is _core.storage.weighted_mean
-        ):
+        if self._hist._storage_type in {
+            _core.storage.mean,
+            _core.storage.weighted_mean,
+        }:
             raise RuntimeError("Mean histograms do not support threaded filling")
 
         data = [np.array_split(a, threads) for a in args]
@@ -809,7 +809,10 @@ class Histogram(object):
 
         :return: Kind
         """
-        if self._storage_type in {_core.storage.mean, _core.storage.weighted_mean}:
+        if self._hist._storage_type in {
+            _core.storage.mean,
+            _core.storage.weighted_mean,
+        }:
             return Kind.MEAN
         else:
             return Kind.COUNT
