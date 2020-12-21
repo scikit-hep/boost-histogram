@@ -62,6 +62,7 @@ See :ref:`usage-quickstart` for more.
    usage/accumulators
    usage/transforms
    usage/indexing
+   usage/plotting
    usage/analyses
    usage/numpy
    usage/comparison
