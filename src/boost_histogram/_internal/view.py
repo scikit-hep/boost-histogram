@@ -37,6 +37,11 @@ class View(np.ndarray):
         )
 
     def __setitem__(self, ind, value):
+        # `.value` really is ["value"] for an record array
+        if isinstance(ind, str):
+            super(View, self).__setitem__(ind, value)
+            return
+
         array = np.asarray(value)
         if (
             array.ndim == super(View, self).__getitem__(ind).ndim + 1

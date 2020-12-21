@@ -201,3 +201,17 @@ def test_setting_weighted_profile():
         a.view()._sum_of_weighted_deltas_squared,
         b.view()["_sum_of_weighted_deltas_squared"],
     )
+
+
+# Issue #486
+def test_modify_weights_by_view():
+    bins = [0, 1, 2]
+    hist = bh.Histogram(bh.axis.Variable(bins), storage=bh.storage.Weight())
+    yields = [3, 4]
+    var = [0.1, 0.2]
+    hist[...] = np.stack([yields, var], axis=-1)
+
+    hist.view().value /= 2
+
+    assert hist.view().value[0] == pytest.approx(1.5)
+    assert hist.view().value[1] == pytest.approx(2)
