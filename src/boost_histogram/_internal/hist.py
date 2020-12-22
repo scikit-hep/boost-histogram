@@ -88,6 +88,14 @@ def _expand_ellipsis(indexes, rank):
 @set_family(MAIN_FAMILY)
 @set_module("boost_histogram")
 class Histogram(object):
+    # Note this is a __slots__ __dict__ class!
+    __slots__ = (
+        "_hist",
+        "axes",
+        "__dict__",
+    )
+    # .metadata and ._variance_known are part of the dict
+
     @inject_signature(
         "self, *axes, storage=Double(), metadata=None", locals={"Double": Double}
     )
@@ -108,6 +116,7 @@ class Histogram(object):
         metadata : Any = None
             Data that is passed along if a new histogram is created
         """
+        self._variance_known = True
 
         # Allow construction from a raw histogram object (internal)
         if len(axes) == 1 and isinstance(axes[0], _histograms):
@@ -156,14 +165,18 @@ class Histogram(object):
 
         raise TypeError("Unsupported storage")
 
-    def _from_histogram_object(self, h):
-        self.__dict__ = copy.copy(h.__dict__)
+    def _from_histogram_object(self, other):
+        """
+        Return a new histogram object, possibly converting from a different subclass.
+        """
+        self._hist = other._hist
+        self.__dict__ = copy.copy(other.__dict__)
         self.axes = self._generate_axes_()
         for ax in self.axes:
             ax.__dict__ = copy.copy(ax._ax.metadata)
 
         # Allow custom behavior on either "from" or "to"
-        h._export_bh_(self)
+        other._export_bh_(self)
         self._import_bh_()
 
     def _import_bh_(self):
@@ -195,18 +208,18 @@ class Histogram(object):
         """
 
         other = self.__class__(_hist)
-        for item in self.__dict__:
-            if item not in ["axes", "_hist"]:
-                if memo is NOTHING:
-                    other.__dict__[item] = self.__dict__[item]
-                else:
-                    other.__dict__[item] = copy.deepcopy(self.__dict__[item], memo)
+        if memo is NOTHING:
+            other.__dict__ = copy.copy(self.__dict__)
+        else:
+            other.__dict__ = copy.deepcopy(self.__dict__, memo)
         other.axes = other._generate_axes_()
+
         for ax in other.axes:
             if memo is NOTHING:
                 ax.__dict__ = copy.copy(ax._ax.metadata)
             else:
                 ax.__dict__ = copy.deepcopy(ax._ax.metadata, memo)
+
         return other
 
     @property
@@ -327,6 +340,17 @@ class Histogram(object):
             sample = kw.optional("sample")
             threads = kw.optional("threads")
 
+        if (
+            self._hist._storage_type
+            not in {
+                _core.storage.weight,
+                _core.storage.mean,
+                _core.storage.weighted_mean,
+            }
+            and weight is not None
+        ):
+            self._variance_known = False
+
         # Convert to NumPy arrays
         args = _fill_cast(args)
         weight = _fill_cast(weight)
@@ -424,11 +448,12 @@ class Histogram(object):
         """
         Version 0.8: metadata added
         Version 0.11: version added and set to 0. metadata/_hist replaced with dict.
+        Version 0.12: _variance_known is now in the dict (no format change)
 
-        ``dict`` contains __dict__ without "axes" and "_hist"
+        ``dict`` contains __dict__ with added "_hist"
         """
         local_dict = copy.copy(self.__dict__)
-        del local_dict["axes"]
+        local_dict["_hist"] = self._hist
         # Version 0 of boost-histogram pickle state
         return (0, local_dict)
 
@@ -436,7 +461,11 @@ class Histogram(object):
         if isinstance(state, tuple):
             if state[0] == 0:
                 for key, value in state[1].items():
-                    self.__dict__[key] = value
+                    setattr(self, key, value)
+
+                # Added in 0.12
+                if "_variance_known" not in state[1]:
+                    self._variance_known = True
             else:
                 msg = "Cannot open boost-histogram pickle v{}".format(state[0])
                 raise RuntimeError(msg)
@@ -445,6 +474,7 @@ class Histogram(object):
 
         else:  # Classic (0.10 and before) state
             self._hist = state["_hist"]
+            self._variance_known = True
             self.metadata = state.get("metadata", None)
             for i in range(self._hist.rank()):
                 self._hist.axis(i).metadata = {"metadata": self._hist.axis(i).metadata}
@@ -861,11 +891,12 @@ class Histogram(object):
         :return: np.ndarray[np.float64]
         """
 
-        # TODO: return None if a weighed fill is made on a simple storage.
-
         view = self.view(flow)
         if len(view.dtype) == 0:
-            return view
+            if self._variance_known:
+                return view
+            else:
+                return None
         else:
             return view.variance
 

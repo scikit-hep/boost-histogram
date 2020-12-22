@@ -85,3 +85,9 @@ def test_plottible_histogram_simple_var():
 
     assert not h.axes[0].traits.discrete
     assert not h.axes[0].traits.circular
+
+    h.fill([1], weight=0)
+
+    assert_allclose(VALUES, h.counts())
+    assert_allclose(VALUES, h.values())
+    assert h.variances() is None
