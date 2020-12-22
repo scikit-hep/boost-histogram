@@ -56,8 +56,7 @@ hist.fill(
 )
 
 # Numpy array view into histogram counts, no overflow bins
-counts = hist.view()
-
+values = hist.values()
 ```
 
 ## Features
@@ -75,7 +74,7 @@ counts = hist.view()
     * `bh.axis.Integer(start, stop, underflow=True, overflow=True, growth=False)`: Special high-speed version of `regular` for evenly spaced bins of width 1
     * `bh.axis.Variable([start, edge1, edge2, ..., stop], underflow=True, overflow=True)`: Uneven bin spacing
     * `bh.axis.Category([...], growth=False)`: Integer or string categories
-    * `bh.axis.Boolean()`: A True/False axis [(known issue with slicing/selection in 0.8.0)]()
+    * `bh.axis.Boolean()`: A True/False axis
 * Axis features:
     * `.index(value)`: The index at a point (or points) on the axis
     * `.value(index)`: The value for a fractional bin (or bins) in the axis
@@ -84,7 +83,7 @@ counts = hist.view()
     * `.edges`: The N+1 bin edges (if continuous)
     * `.extent`: The number of bins (including under/overflow)
     * `.metadata`: Anything a user wants to store
-    * `.options`: The options set on the axis (`bh.axis.options`)
+    * `.traits`: The options set on the axis (`bh.axis.options`)
     * `.size`: The number of bins (not including under/overflow)
     * `.widths`: The N bin widths
 * Many storage types
@@ -106,10 +105,14 @@ counts = hist.view()
   * `+`: Add two histograms (storages must match types currently)
   * `*=`: Multiply by a scaler (not all storages) (`hist * scalar` and `scalar * hist` supported too)
   * `/=`: Divide by a scaler (not all storages) (`hist / scalar` supported too)
+  * `.kind`: Either `bh.Kind.COUNT` or `bh.Kind.MEAN`, depending on storage
   * `.sum(flow=False)`: The total count of all bins
   * `.project(ax1, ax2, ...)`: Project down to listed axis (numbers)
   * `.to_numpy(flow=False)`: Convert to a NumPy style tuple (with or without under/overflow bins)
   * `.view(flow=False)`: Get a view on the bin contents (with or without under/overflow bins)
+  * `.values(flow=False)`: Get a view on the values (counts or means, depending on storage)
+  * `.variances(flow=False)`: Get the variances if available
+  * `.counts(flow=False)`: Get the effective counts for all storage types
   * `.reset()`: Set counters to 0
   * `.empty(flow=False)`: Check to see if the histogram is empty (can check flow bins too if asked)
   * `.copy(deep=False)`: Make a copy of a histogram

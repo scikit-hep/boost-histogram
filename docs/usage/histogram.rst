@@ -16,10 +16,15 @@ All storages support a ``weight=`` parameter, and some storages support a ``samp
 
 The summing accumulators (not ``Mean()`` and ``WeightedMean())``) support threaded filling. Pass ``threads=N`` to the fill parameter to fill with ``N`` threads (and using 0 will select the number of virtual cores on your system). This is helpful only if you have a large number of entries compared to your number of bins, as all non-atomic storages will make copies for each thread, and then will recombine after the fill is complete.
 
+Data
+^^^^
+
+The primary value from a histogram is always available as ``.value()``. The variance is available as ``.variances()``, unless you fill an unweighed histogram with weights, which will cause this to be return None, since the variance is no longer computable (use a weighted storage instead if you need the variances). The effective counts are available as ``.counts()``; this
+
 Views
 ^^^^^
 
-While Histograms do conform to the Python buffer protocol, the best way to get access to the contents of a histogram as a Numpy array is with ``.view()``. This way you can optionally pass ``flow=True`` to get the flow bins, and if you have an accumulator storage, you will get a View, which is a slightly augmented ndarrray subclass (see :ref:`usage-accumulators`).
+While Histograms do conform to the Python buffer protocol, the best way to get access to the raw contents of a histogram as a Numpy array is with ``.view()``. This way you can optionally pass ``flow=True`` to get the flow bins, and if you have an accumulator storage, you will get a View, which is a slightly augmented ndarrray subclass (see :ref:`usage-accumulators`).
 
 
 Operations
@@ -35,7 +40,7 @@ Operations
 
 * ``.sum(flow=False)``: The total count of all bins
 * ``.project(ax1, ax2, ...)``: Project down to listed axis (numbers)
-* ``.to_numpy(flow=False)``: Convert to a Numpy style tuple (with or without under/overflow bins)
+* ``.to_numpy(flow=False)``: Convert to a NumPy style tuple (with or without under/overflow bins)
 * ``.view(flow=False)``: Get a view on the bin contents (with or without under/overflow bins)
 * ``.reset()``: Set counters to 0
 * ``.empty(flow=False)``: Check to see if the histogram is empty (can check flow bins too if asked)
@@ -49,6 +54,7 @@ Operations
     * ``.axes.centers``: The centers of the bins broadcasting-ready array
     * ``.axes.widths``: The bin widths as a broadcasting-ready array
     * ``.axes.metadata``: A tuple of the axes metadata
+    * ``.axes.traits``: A tuple of the axes traits
 
     * ``.axes.size``: A tuple of the axes sizes (size without flow)
     * ``.axes.extent``: A tuple of the axes extents (size with flow)
