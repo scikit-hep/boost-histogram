@@ -740,8 +740,8 @@ class Histogram(object):
         # Here, value_n does not increment with n if this is not a slice
         value_n = 0
         for n, request in enumerate(indexes):
-            has_underflow = self.axes[n].options.underflow
-            has_overflow = self.axes[n].options.overflow
+            has_underflow = self.axes[n].traits.underflow
+            has_overflow = self.axes[n].traits.overflow
 
             if isinstance(request, slice):
                 # Only consider underflow/overflow if the endpoints are not given

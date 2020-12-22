@@ -157,14 +157,14 @@ class Axis(object):
         """
 
         ret = ""
-        if self.options.growth:
+        if self.traits.growth:
             ret += ", growth=True"
-        elif self.options.circular:
+        elif self.traits.circular:
             ret += ", circular=True"
         else:
-            if not self.options.underflow:
+            if not self.traits.underflow:
                 ret += ", underflow=False"
-            if not self.options.overflow:
+            if not self.traits.overflow:
                 ret += ", overflow=False"
 
         return ret
@@ -531,9 +531,9 @@ class BaseCategory(Axis):
         """
 
         ret = ""
-        if self.options.growth:
+        if self.traits.growth:
             ret += ", growth=True"
-        elif self.options.circular:
+        elif self.traits.circular:
             ret += ", circular=True"
 
         return ret

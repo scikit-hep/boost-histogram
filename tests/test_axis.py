@@ -91,11 +91,16 @@ def test_metadata(axis, args, opt, kwargs):
         axis(*args, **new_kwargs)
 
 
-# The point of this ABC is to force all the tests listed here to be
-# implemented for each axis type.
+# The point of this ABC is to force all the tests listed here to be implemented
+# for each axis type. PyTest instantiates these test classes for us, so missing
+# one really does fail the test.
 class Axis(ABC):
     @abc.abstractmethod
     def test_init(self):
+        pass
+
+    @abc.abstractmethod
+    def test_traits(self):
         pass
 
     @abc.abstractmethod
@@ -122,10 +127,6 @@ class Axis(ABC):
     def test_index(self):
         pass
 
-    # @abc.abstractmethod
-    # def test_value(self):
-    #     pass
-    #
     @abc.abstractmethod
     def test_edges_centers_widths(self):
         pass
@@ -169,25 +170,32 @@ class TestRegular(Axis):
             bh.axis.Regular(1, 1.0, 2.0, transform=bh.axis.transform.Pow)
         # TODO: These errors could be better
 
+    def test_traits(self):
+        STD_TRAITS = dict(continuous=True, ordered=True)
+
         ax = bh.axis.Regular(1, 2, 3)
         assert isinstance(ax, bh.axis.Regular)
-        assert ax.options == bh.axis.options(underflow=True, overflow=True)
+        assert ax.traits == bh.axis.Traits(
+            underflow=True, overflow=True, inclusive=True, **STD_TRAITS
+        )
 
         ax = bh.axis.Regular(1, 2, 3, overflow=False)
         assert isinstance(ax, bh.axis.Regular)
-        assert ax.options == bh.axis.options(underflow=True)
+        assert ax.traits == bh.axis.Traits(underflow=True, **STD_TRAITS)
 
         ax = bh.axis.Regular(1, 2, 3, underflow=False)
         assert isinstance(ax, bh.axis.Regular)
-        assert ax.options == bh.axis.options(overflow=True)
+        assert ax.traits == bh.axis.Traits(overflow=True, **STD_TRAITS)
 
         ax = bh.axis.Regular(1, 2, 3, underflow=False, overflow=False)
         assert isinstance(ax, bh.axis.Regular)
-        assert ax.options == bh.axis.options()
+        assert ax.traits == bh.axis.Traits(**STD_TRAITS)
 
         ax = bh.axis.Regular(1, 2, 3, growth=True)
         assert isinstance(ax, bh.axis.Regular)
-        assert ax.options == bh.axis.options(underflow=True, overflow=True, growth=True)
+        assert ax.traits == bh.axis.Traits(
+            underflow=True, overflow=True, growth=True, inclusive=True, **STD_TRAITS
+        )
 
     def test_equal(self):
         a = bh.axis.Regular(4, 1.0, 2.0)
@@ -379,6 +387,13 @@ class TestCircular(Axis):
         with pytest.raises(TypeError):
             bh.axis.Regular("1", circular=True)
 
+    def test_traits(self):
+        ax = bh.axis.Regular(1, 2, 3, circular=True)
+        assert isinstance(ax, bh.axis.Regular)
+        assert ax.traits == bh.axis.Traits(
+            overflow=True, circular=True, continuous=True, ordered=True
+        )
+
     def test_equal(self):
         a = bh.axis.Regular(4, 0.0, 1.0, circular=True)
         assert a == bh.axis.Regular(4, 0, 1, circular=True)
@@ -471,21 +486,26 @@ class TestVariable(Axis):
         with pytest.raises(TypeError):
             bh.axis.Variable([0.0, 1.0, 2.0], bad_keyword="ra")
 
+    def test_traits(self):
+        STD_TRAITS = dict(continuous=True, ordered=True)
+
         ax = bh.axis.Variable([1, 2, 3])
         assert isinstance(ax, bh.axis.Variable)
-        assert ax.options == bh.axis.options(underflow=True, overflow=True)
+        assert ax.traits == bh.axis.Traits(
+            underflow=True, overflow=True, inclusive=True, **STD_TRAITS
+        )
 
         ax = bh.axis.Variable([1, 2, 3], overflow=False)
         assert isinstance(ax, bh.axis.Variable)
-        assert ax.options == bh.axis.options(underflow=True)
+        assert ax.traits == bh.axis.Traits(underflow=True, **STD_TRAITS)
 
         ax = bh.axis.Variable([1, 2, 3], underflow=False)
         assert isinstance(ax, bh.axis.Variable)
-        assert ax.options == bh.axis.options(overflow=True)
+        assert ax.traits == bh.axis.Traits(overflow=True, **STD_TRAITS)
 
         ax = bh.axis.Variable([1, 2, 3], underflow=False, overflow=False)
         assert isinstance(ax, bh.axis.Variable)
-        assert ax.options == bh.axis.options()
+        assert ax.traits == bh.axis.Traits(**STD_TRAITS)
 
     def test_equal(self):
         a = bh.axis.Variable([-0.1, 0.2, 0.3])
@@ -581,25 +601,32 @@ class TestInteger:
         with pytest.raises(TypeError):
             bh.axis.Integer(20, 30, 40)
 
+    def test_traits(self):
+        STD_TRAITS = dict(ordered=True)
+
         ax = bh.axis.Integer(1, 3)
         assert isinstance(ax, bh.axis.Integer)
-        assert ax.options == bh.axis.options(underflow=True, overflow=True)
+        assert ax.traits == bh.axis.Traits(
+            underflow=True, overflow=True, inclusive=True, **STD_TRAITS
+        )
 
+        # See https://github.com/boostorg/histogram/issues/305
         ax = bh.axis.Integer(1, 3, overflow=False)
         assert isinstance(ax, bh.axis.Integer)
-        assert ax.options == bh.axis.options(underflow=True)
+        assert ax.traits == bh.axis.Traits(underflow=True, inclusive=True, **STD_TRAITS)
 
+        # See https://github.com/boostorg/histogram/issues/305
         ax = bh.axis.Integer(1, 3, underflow=False)
         assert isinstance(ax, bh.axis.Integer)
-        assert ax.options == bh.axis.options(overflow=True)
+        assert ax.traits == bh.axis.Traits(overflow=True, inclusive=True, **STD_TRAITS)
 
         ax = bh.axis.Integer(1, 3, underflow=False, overflow=False)
         assert isinstance(ax, bh.axis.Integer)
-        assert ax.options == bh.axis.options()
+        assert ax.traits == bh.axis.Traits(**STD_TRAITS)
 
         ax = bh.axis.Integer(1, 3, growth=True)
         assert isinstance(ax, bh.axis.Integer)
-        assert ax.options == bh.axis.options(growth=True)
+        assert ax.traits == bh.axis.Traits(growth=True, inclusive=True, **STD_TRAITS)
 
     def test_equal(self):
         assert bh.axis.Integer(-1, 2) == bh.axis.Integer(-1, 2)
@@ -703,21 +730,23 @@ class TestCategory(Axis):
         with pytest.raises(TypeError):
             bh.axis.IntCategory([1, 2, 3], underflow=True)
 
+    def test_traits(self):
+
         ax = bh.axis.IntCategory([1, 2, 3])
         assert isinstance(ax, bh.axis.IntCategory)
-        assert ax.options == bh.axis.options(overflow=True)
+        assert ax.traits == bh.axis.Traits(overflow=True, inclusive=True)
 
         ax = bh.axis.IntCategory([1, 2, 3], growth=True)
         assert isinstance(ax, bh.axis.IntCategory)
-        assert ax.options == bh.axis.options(growth=True)
+        assert ax.traits == bh.axis.Traits(growth=True, inclusive=True)
 
         ax = bh.axis.StrCategory(["1", "2", "3"])
         assert isinstance(ax, bh.axis.StrCategory)
-        assert ax.options == bh.axis.options(overflow=True)
+        assert ax.traits == bh.axis.Traits(overflow=True, inclusive=True)
 
         ax = bh.axis.StrCategory(["1", "2", "3"], growth=True)
         assert isinstance(ax, bh.axis.StrCategory)
-        assert ax.options == bh.axis.options(growth=True)
+        assert ax.traits == bh.axis.Traits(growth=True, inclusive=True)
 
     def test_equal(self):
         assert bh.axis.IntCategory([1, 2, 3]) == bh.axis.IntCategory([1, 2, 3])
@@ -820,9 +849,13 @@ class TestBoolean:
         with pytest.raises(TypeError):
             bh.axis.Boolean(1)
 
+    def test_traits(self):
         ax = bh.axis.Boolean()
         assert isinstance(ax, bh.axis.Boolean)
-        assert ax.options == bh.axis.options()
+
+        # Note: this axis not inclusive, since we don't have a dedicated bool
+        # fill and we can slice it, unlike in Boost.Histogram.
+        assert ax.traits == bh.axis.Traits(ordered=True)
 
     def test_equal(self):
         assert bh.axis.Boolean() == bh.axis.Boolean()
