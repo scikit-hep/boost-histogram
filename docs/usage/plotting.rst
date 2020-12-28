@@ -16,7 +16,7 @@ Plotters should only depend on the methods and attributes listed below. In short
 * ``h.kind``: The bh.Kind of the histogram (COUNT or MEAN)
 * ``h.values()``: The value (as given by the kind)
 * ``h.variances()``: The variance in the value (None if an unweighed histogram was filled with weights)
-* ``h.counts()``: The effective counts
+* ``h.counts()``: How many fills the bin received or the effective number of fills if the histogram is weighted
 * ``h.axes``: A Sequence of axes
 
 Axes have:
@@ -24,7 +24,7 @@ Axes have:
 * ``ax[i]``: A sequence of lower, upper bin, or the discrete bin value (integer or sting)
 * ``len(ax)``: The number of bins
 * ``ax.traits.circular``: True if circular
-* ``ax.traits.discrete``: True if discrete (Integer or Category axes)
+* ``ax.traits.discrete``: True if the bin represents a single value (e.g. Integer or Category axes) instead of an interval (e.g. Regular or Variable axes)
 
 Plotters should see if ``.counts()`` is None; no boost-histogram objects currently
 return None, but a future storage or different library could.

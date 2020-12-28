@@ -19,12 +19,12 @@ The summing accumulators (not ``Mean()`` and ``WeightedMean())``) support thread
 Data
 ^^^^
 
-The primary value from a histogram is always available as ``.value()``. The variance is available as ``.variances()``, unless you fill an unweighed histogram with weights, which will cause this to be return None, since the variance is no longer computable (use a weighted storage instead if you need the variances). The effective counts are available as ``.counts()``; this
+The primary value from a histogram is always available as ``.value()``. The variance is available as ``.variances()``, unless you fill an unweighed histogram with weights, which will cause this to be return None, since the variance is no longer computable (use a weighted storage instead if you need the variances). The counts are available as ``.counts()``. If the histogram is weighted, .counts() returns the effective counts; see TODO for details.
 
 Views
 ^^^^^
 
-While Histograms do conform to the Python buffer protocol, the best way to get access to the raw contents of a histogram as a Numpy array is with ``.view()``. This way you can optionally pass ``flow=True`` to get the flow bins, and if you have an accumulator storage, you will get a View, which is a slightly augmented ndarrray subclass (see :ref:`usage-accumulators`).
+While Histograms do conform to the Python buffer protocol, the best way to get access to the raw contents of a histogram as a NumPy array is with ``.view()``. This way you can optionally pass ``flow=True`` to get the flow bins, and if you have an accumulator storage, you will get a View, which is a slightly augmented ndarrray subclass (see :ref:`usage-accumulators`).
 
 
 Operations

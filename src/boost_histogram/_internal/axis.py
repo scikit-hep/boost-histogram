@@ -172,7 +172,7 @@ class Axis(object):
     @property
     def options(self):
         """
-        DEPRECATED: use .trails instead.
+        DEPRECATED: use .traits instead.
         Return the options.  Fields:
           .underflow - True if axes captures values that are too small
           .overflow  - True if axes captures values that are too large
@@ -194,7 +194,6 @@ class Axis(object):
             self._ax.traits_circular,
             self._ax.traits_growth,
             self._ax.traits_continuous,
-            self._ax.traits_inclusive,
             self._ax.traits_ordered,
         )
 

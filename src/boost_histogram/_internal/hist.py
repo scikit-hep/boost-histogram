@@ -876,7 +876,9 @@ class Histogram(object):
         For an unweighed histogram where kind == "COUNT", this should return the same
         as values if the histogram was not filled with weights, and None otherwise.
         If counts is equal to 1 or less, the variance in that cell is undefined if
-        kind == "MEAN".
+        kind == "MEAN". This must be written <= 1, and not < 2; when this
+        effective counts (weighed mean), then counts could be less than 2 but
+        more than 1.
 
         If kind == "MEAN", the counts can be used to compute the error on the mean
         as sqrt(variances / counts), this works whether or not the entries are
@@ -909,17 +911,17 @@ class Histogram(object):
         have no sensible .counts, so this is Optional and should be checked by
         Consumers.
 
-        For a weighted histogram, counts is defined as sum_of_weights ** 2 /
-        sum_of_weights_squared. It is equal or less than the number of times
-        the bin was filled, the equality holds when all filled weights are equal.
-        The larger the spread in weights, the smaller it is, but it is always 0
-        if filled 0 times, and 1 if filled once, and more than 1 otherwise.
-
         If kind == "MEAN", counts (effective or not) can and should be used to
         determine whether the mean value and its variance should be displayed
         (see documentation of values and variances, respectively). The counts
         should also be used to compute the error on the mean (see documentation
         of variances).
+
+        For a weighted histogram, counts is defined as sum_of_weights ** 2 /
+        sum_of_weights_squared. It is equal or less than the number of times
+        the bin was filled, the equality holds when all filled weights are equal.
+        The larger the spread in weights, the smaller it is, but it is always 0
+        if filled 0 times, and 1 if filled once, and more than 1 otherwise.
 
         :return: np.ndarray[np.float64]
         """

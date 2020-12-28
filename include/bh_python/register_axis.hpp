@@ -117,33 +117,26 @@ py::class_<A> register_axis(py::module& m, Args&&... args) {
         .def_property_readonly("traits_underflow",
                                [](const A& self) {
                                    return static_cast<bool>(
-                                       bh::axis::traits::options(self)
-                                       & bh::axis::option::underflow);
+                                       self.options() & bh::axis::option::underflow);
                                })
         .def_property_readonly("traits_overflow",
                                [](const A& self) {
                                    return static_cast<bool>(
-                                       bh::axis::traits::options(self)
-                                       & bh::axis::option::overflow);
+                                       self.options() & bh::axis::option::overflow);
                                })
         .def_property_readonly("traits_circular",
                                [](const A& self) {
                                    return static_cast<bool>(
-                                       bh::axis::traits::options(self)
-                                       & bh::axis::option::circular);
+                                       self.options() & bh::axis::option::circular);
                                })
         .def_property_readonly("traits_growth",
                                [](const A& self) {
-                                   return static_cast<bool>(
-                                       bh::axis::traits::options(self)
-                                       & bh::axis::option::growth);
+                                   return static_cast<bool>(self.options()
+                                                            & bh::axis::option::growth);
                                })
         .def_property_readonly(
             "traits_continuous",
             [](const A& self) { return bh::axis::traits::continuous(self); })
-        .def_property_readonly(
-            "traits_inclusive",
-            [](const A& self) { return bh::axis::traits::inclusive(self); })
         .def_property_readonly(
             "traits_ordered",
             [](const A& self) { return bh::axis::traits::ordered(self); })

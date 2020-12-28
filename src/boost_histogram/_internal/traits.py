@@ -7,7 +7,6 @@ _traits = (
     "circular",
     "growth",
     "continuous",
-    "inclusive",
     "ordered",
 )
 
@@ -25,11 +24,10 @@ class Traits(object):
         circular=False,
         growth=False,
         continuous=False,
-        inclusive=False,
         ordered=False,
     ):
         for name in _traits:
-            object.__setattr__(self, name, locals()[name])
+            setattr(self, name, locals()[name])
 
     def __eq__(self, other):
         return all(getattr(self, name) == getattr(other, name) for name in _traits)

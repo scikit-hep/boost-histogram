@@ -175,9 +175,7 @@ class TestRegular(Axis):
 
         ax = bh.axis.Regular(1, 2, 3)
         assert isinstance(ax, bh.axis.Regular)
-        assert ax.traits == bh.axis.Traits(
-            underflow=True, overflow=True, inclusive=True, **STD_TRAITS
-        )
+        assert ax.traits == bh.axis.Traits(underflow=True, overflow=True, **STD_TRAITS)
 
         ax = bh.axis.Regular(1, 2, 3, overflow=False)
         assert isinstance(ax, bh.axis.Regular)
@@ -194,7 +192,7 @@ class TestRegular(Axis):
         ax = bh.axis.Regular(1, 2, 3, growth=True)
         assert isinstance(ax, bh.axis.Regular)
         assert ax.traits == bh.axis.Traits(
-            underflow=True, overflow=True, growth=True, inclusive=True, **STD_TRAITS
+            underflow=True, overflow=True, growth=True, **STD_TRAITS
         )
 
     def test_equal(self):
@@ -491,9 +489,7 @@ class TestVariable(Axis):
 
         ax = bh.axis.Variable([1, 2, 3])
         assert isinstance(ax, bh.axis.Variable)
-        assert ax.traits == bh.axis.Traits(
-            underflow=True, overflow=True, inclusive=True, **STD_TRAITS
-        )
+        assert ax.traits == bh.axis.Traits(underflow=True, overflow=True, **STD_TRAITS)
 
         ax = bh.axis.Variable([1, 2, 3], overflow=False)
         assert isinstance(ax, bh.axis.Variable)
@@ -606,19 +602,17 @@ class TestInteger:
 
         ax = bh.axis.Integer(1, 3)
         assert isinstance(ax, bh.axis.Integer)
-        assert ax.traits == bh.axis.Traits(
-            underflow=True, overflow=True, inclusive=True, **STD_TRAITS
-        )
+        assert ax.traits == bh.axis.Traits(underflow=True, overflow=True, **STD_TRAITS)
 
         # See https://github.com/boostorg/histogram/issues/305
         ax = bh.axis.Integer(1, 3, overflow=False)
         assert isinstance(ax, bh.axis.Integer)
-        assert ax.traits == bh.axis.Traits(underflow=True, inclusive=True, **STD_TRAITS)
+        assert ax.traits == bh.axis.Traits(underflow=True, **STD_TRAITS)
 
         # See https://github.com/boostorg/histogram/issues/305
         ax = bh.axis.Integer(1, 3, underflow=False)
         assert isinstance(ax, bh.axis.Integer)
-        assert ax.traits == bh.axis.Traits(overflow=True, inclusive=True, **STD_TRAITS)
+        assert ax.traits == bh.axis.Traits(overflow=True, **STD_TRAITS)
 
         ax = bh.axis.Integer(1, 3, underflow=False, overflow=False)
         assert isinstance(ax, bh.axis.Integer)
@@ -626,7 +620,7 @@ class TestInteger:
 
         ax = bh.axis.Integer(1, 3, growth=True)
         assert isinstance(ax, bh.axis.Integer)
-        assert ax.traits == bh.axis.Traits(growth=True, inclusive=True, **STD_TRAITS)
+        assert ax.traits == bh.axis.Traits(growth=True, **STD_TRAITS)
 
     def test_equal(self):
         assert bh.axis.Integer(-1, 2) == bh.axis.Integer(-1, 2)
@@ -734,19 +728,19 @@ class TestCategory(Axis):
 
         ax = bh.axis.IntCategory([1, 2, 3])
         assert isinstance(ax, bh.axis.IntCategory)
-        assert ax.traits == bh.axis.Traits(overflow=True, inclusive=True)
+        assert ax.traits == bh.axis.Traits(overflow=True)
 
         ax = bh.axis.IntCategory([1, 2, 3], growth=True)
         assert isinstance(ax, bh.axis.IntCategory)
-        assert ax.traits == bh.axis.Traits(growth=True, inclusive=True)
+        assert ax.traits == bh.axis.Traits(growth=True)
 
         ax = bh.axis.StrCategory(["1", "2", "3"])
         assert isinstance(ax, bh.axis.StrCategory)
-        assert ax.traits == bh.axis.Traits(overflow=True, inclusive=True)
+        assert ax.traits == bh.axis.Traits(overflow=True)
 
         ax = bh.axis.StrCategory(["1", "2", "3"], growth=True)
         assert isinstance(ax, bh.axis.StrCategory)
-        assert ax.traits == bh.axis.Traits(growth=True, inclusive=True)
+        assert ax.traits == bh.axis.Traits(growth=True)
 
     def test_equal(self):
         assert bh.axis.IntCategory([1, 2, 3]) == bh.axis.IntCategory([1, 2, 3])
@@ -853,8 +847,6 @@ class TestBoolean:
         ax = bh.axis.Boolean()
         assert isinstance(ax, bh.axis.Boolean)
 
-        # Note: this axis not inclusive, since we don't have a dedicated bool
-        # fill and we can slice it, unlike in Boost.Histogram.
         assert ax.traits == bh.axis.Traits(ordered=True)
 
     def test_equal(self):

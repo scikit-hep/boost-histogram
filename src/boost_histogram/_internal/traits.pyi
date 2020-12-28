@@ -7,7 +7,6 @@ class Traits:
     circular: bool
     growth: bool
     continuous: bool
-    inclusive: bool
     ordered: bool
 
     def __init__(
@@ -17,7 +16,6 @@ class Traits:
         circular=False,
         growth=False,
         continuous=False,
-        inclusive=False,
         ordered=False,
     ): ...
 
