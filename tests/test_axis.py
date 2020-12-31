@@ -725,10 +725,13 @@ class TestCategory(Axis):
             bh.axis.IntCategory([1, 2, 3], underflow=True)
 
     def test_traits(self):
-
         ax = bh.axis.IntCategory([1, 2, 3])
         assert isinstance(ax, bh.axis.IntCategory)
         assert ax.traits == bh.axis.Traits(overflow=True)
+
+        with pytest.warns(FutureWarning):
+            assert not ax.options.underflow
+            assert ax.options.overflow
 
         ax = bh.axis.IntCategory([1, 2, 3], growth=True)
         assert isinstance(ax, bh.axis.IntCategory)

@@ -9,9 +9,9 @@ from .sig_tools import inject_signature
 from .axis_transform import AxisTransform
 from .utils import cast, register, set_family, MAIN_FAMILY, set_module
 from .six import string_types
+from .deprecated import deprecated
 
 import copy
-import warnings
 
 del absolute_import, division, print_function
 
@@ -42,6 +42,8 @@ class Axis(object):
     def __getattr__(self, attr):
         if attr == "metadata":
             return None
+        elif attr == "options":
+            return self._options()
         raise AttributeError(
             "object {0} has not attribute {1}".format(self.__class__.__name__, attr)
         )
@@ -169,10 +171,9 @@ class Axis(object):
 
         return ret
 
-    @property
-    def options(self):
+    @deprecated("Use .traits instead", name="options")
+    def _options(self):
         """
-        DEPRECATED: use .traits instead.
         Return the options.  Fields:
           .underflow - True if axes captures values that are too small
           .overflow  - True if axes captures values that are too large
@@ -180,7 +181,6 @@ class Axis(object):
           .growth    - True if axis can grow
           .circular  - True if axis wraps around
         """
-        warnings.warn("DEPRECATED: use .traits instead", FutureWarning)
         return self._ax.options
 
     @property

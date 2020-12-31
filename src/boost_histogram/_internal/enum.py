@@ -10,6 +10,9 @@ except ImportError:
         Enum = object  # type: ignore
 
 
+# This is a StrEnum as defined in Python 3.10
 class Kind(str, Enum):
     COUNT = "COUNT"
     MEAN = "MEAN"
+
+    __str__ = str.__str__  # type: ignore

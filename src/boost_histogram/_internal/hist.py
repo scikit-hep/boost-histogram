@@ -20,6 +20,7 @@ from .storage import Double, Storage
 from .utils import cast, register, set_family, MAIN_FAMILY, set_module
 from .view import _to_view
 from .enum import Kind
+from .deprecated import deprecated
 
 
 ArrayLike = Any
@@ -221,6 +222,15 @@ class Histogram(object):
                 ax.__dict__ = copy.deepcopy(ax._ax.metadata, memo)
 
         return other
+
+    def __getattr__(self, attr):
+        # type: (str) -> Any
+        if attr == "rank":
+            return self._rank()
+
+        raise AttributeError(
+            "object {0} has not attribute {1}".format(self.__class__.__name__, attr)
+        )
 
     @property
     def ndim(self):
@@ -614,14 +624,12 @@ class Histogram(object):
         """
         return self._hist.sum(flow)
 
-    @property
-    def rank(self):
+    @deprecated("Use .ndim instead", name="rank")
+    def _rank(self):
         # type: () -> int
         """
-        Number of axes (dimensions) of histogram. DEPRECATED, use ndim.
+        Number of axes (dimensions) of histogram.
         """
-        msg = "Use .ndim instead"
-        warnings.warn(msg, FutureWarning)
         return self._hist.rank()
 
     @property
