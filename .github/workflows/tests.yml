@@ -89,7 +89,7 @@ jobs:
 
     - uses: actions/setup-python@v2
 
-    - uses: joerick/cibuildwheel@v1.7.3
+    - uses: joerick/cibuildwheel@v1.7.4
       env:
         CIBW_BUILD: cp38-win_amd64 cp27-manylinux_i686 cp37-macosx_x86_64
         CIBW_TEST_EXTRAS: test
