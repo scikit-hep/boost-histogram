@@ -13,7 +13,7 @@ Using the protocol:
 
 Plotters should only depend on the methods and attributes listed below. In short, they are:
 
-* ``h.kind``: The bh.Kind of the histogram (COUNT or MEAN)
+* ``h.kind``: The ``bh.Kind`` of the histogram (COUNT or MEAN)
 * ``h.values()``: The value (as given by the kind)
 * ``h.variances()``: The variance in the value (None if an unweighed histogram was filled with weights)
 * ``h.counts()``: How many fills the bin received or the effective number of fills if the histogram is weighted

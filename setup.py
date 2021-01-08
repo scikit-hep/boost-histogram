@@ -49,7 +49,7 @@ ext_modules = [
 
 
 extras = {
-    "test": ["pytest", "pytest-benchmark"],
+    "test": ["pytest", "pytest-benchmark", "typing_extensions"],
     "docs": [
         "Sphinx~=3.0",
         "recommonmark>=0.5.0",
