@@ -71,8 +71,9 @@ jobs:
         submodules: true
         
     - run: |
-        python3 --version
         python --version
+        python3 --version
+        python3 -m pip --version
 
     - uses: henryiii/cibuildwheel@feat/archgha
       env:
