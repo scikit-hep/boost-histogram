@@ -69,10 +69,12 @@ jobs:
     - uses: actions/checkout@v1
       with:
         submodules: true
+        
+    - run: |
+      python3 --version
+      python --version
 
-    - uses: actions/setup-python@v2
-
-    - uses: joerick/cibuildwheel@v1.7.4
+    - uses: henryiii/cibuildwheel@feat/archgha
       env:
         CIBW_SKIP: cp27-win* pp*
         CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.CIBW_MANYLINUX_I686_IMAGE }}
