@@ -51,11 +51,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, windows-latest, macos-latest]
+        os: [windows-latest, macos-latest]
         type: [Standard]
 
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-20.04
             type: Standard
             CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
             CIBW_MANYLINUX_I686_IMAGE: manylinux2010
