@@ -907,6 +907,21 @@ class Histogram(object):
                 return view
             else:
                 return None
+        elif hasattr(view, "sum_of_weights"):
+            return np.divide(
+                view.variance,
+                view.sum_of_weights,
+                out=np.full(view.sum_of_weights.shape, np.nan),
+                where=view.sum_of_weights > 1,
+            )
+
+        elif hasattr(view, "count"):
+            return np.divide(
+                view.variance,
+                view.count,
+                out=np.full(view.count.shape, np.nan),
+                where=view.count > 1,
+            )
         else:
             return view.variance
 
