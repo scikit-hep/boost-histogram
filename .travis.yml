@@ -19,6 +19,7 @@ jobs:
     arch: arm64
   - services: docker
     arch: ppc64le
+    env: CIBW_SKIP="cp35* cp36*" NPY_NUM_BUILD_JOBS=1
     # - services: docker
     #   arch: s390x
     # beta - Doesn't always work. Wait till Travis fixes.
@@ -26,7 +27,7 @@ jobs:
 install:
 - sudo rm -r $HOME/.cache
 - python3 -m pip install --upgrade twine setuptools setuptools_scm pip cryptography
-- python3 -m pip install cibuildwheel==1.5.2
+- python3 -m pip install cibuildwheel==1.8.0
 
 script:
 - sed -i '/numpy/d' pyproject.toml

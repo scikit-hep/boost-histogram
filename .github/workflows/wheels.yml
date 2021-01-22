@@ -29,16 +29,11 @@ jobs:
       with:
         submodules: true
 
-    - uses: actions/setup-python@v2
-
-    - name: Install deps
-      run: python -m pip install build twine
-
     - name: Build SDist
-      run: python -m build -s
+      run: pipx run --spec build pyproject-build --sdist
 
     - name: Check metadata
-      run: twine check dist/*
+      run: pipx run twine check dist/*
 
     - uses: actions/upload-artifact@v2
       with:
@@ -70,9 +65,7 @@ jobs:
       with:
         submodules: true
 
-    - uses: actions/setup-python@v2
-
-    - uses: joerick/cibuildwheel@v1.7.4
+    - uses: joerick/cibuildwheel@v1.8.0
       env:
         CIBW_SKIP: cp27-win* pp*
         CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.CIBW_MANYLINUX_I686_IMAGE }}
@@ -107,9 +100,7 @@ jobs:
       with:
         submodules: true
 
-    - uses: actions/setup-python@v2
-
-    - uses: joerick/cibuildwheel@v1.7.4
+    - uses: joerick/cibuildwheel@v1.8.0
       env:
         CIBW_SKIP: cp*
 
@@ -137,13 +128,10 @@ jobs:
       with:
         submodules: true
 
-    - uses: actions/setup-python@v2
-
-
     - uses: ilammy/msvc-dev-cmd@v1
 
     - name: Build 64-bit wheel
-      uses: joerick/cibuildwheel@v1.7.4
+      uses: joerick/cibuildwheel@v1.8.0
       env:
         CIBW_BUILD: cp27-win_amd64
         DISTUTILS_USE_SDK: 1
@@ -154,7 +142,7 @@ jobs:
         arch: x86
 
     - name: Build 32-bit wheel
-      uses: joerick/cibuildwheel@v1.7.4
+      uses: joerick/cibuildwheel@v1.8.0
       env:
         CIBW_BUILD: cp27-win32 pp27-win32
         DISTUTILS_USE_SDK: 1
