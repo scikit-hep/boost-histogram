@@ -62,7 +62,7 @@ def test_plottible_histogram_weight_reg():
 def test_plottible_histogram_simple_var():
     h = bh.Histogram(bh.axis.Variable([0, 1, 2, 3, 4]))
 
-    # TODO: Setting directly or filling with weight should cause variances to
+    # Setting directly or filling with weight should cause variances to
     # be None.  Manipulations directly on the view, however, are up to the user
     # - once you've asked for a view of the memory, you should know what your
     # are doing. At least if you change it inplace.
@@ -87,6 +87,27 @@ def test_plottible_histogram_simple_var():
     assert not h.axes[0].traits.circular
 
     h.fill([1], weight=0)
+
+    assert_allclose(VALUES, h.counts())
+    assert_allclose(VALUES, h.values())
+    assert h.variances() is None
+
+
+def test_plottible_histogram_simple_var_invalidate_inplace():
+    h = bh.Histogram(bh.axis.Variable([0, 1, 2, 3, 4]))
+    h.view()[...] = VALUES
+
+    h2 = h * 1
+
+    assert_allclose(VALUES, h.counts())
+    assert_allclose(VALUES, h.values())
+    assert_allclose(VALUES, h.variances())
+
+    assert_allclose(VALUES, h2.counts())
+    assert_allclose(VALUES, h2.values())
+    assert h2.variances() is None
+
+    h *= 1
 
     assert_allclose(VALUES, h.counts())
     assert_allclose(VALUES, h.values())

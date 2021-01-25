@@ -314,6 +314,7 @@ class Histogram(object):
         else:
             view = self.view(flow=False)
             getattr(view, name)(other)
+        self._variance_known = False
         return self
 
     def __idiv__(self, other):
