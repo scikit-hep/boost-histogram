@@ -203,10 +203,11 @@ class WeightedMeanView(View):
 
     @property
     def variance(self):
-        return self["_sum_of_weighted_deltas_squared"] / (
-            self["sum_of_weights"]
-            - self["sum_of_weights_squared"] / self["sum_of_weights"]
-        )
+        with np.errstate(divide="ignore", invalid="ignore"):
+            return self["_sum_of_weighted_deltas_squared"] / (
+                self["sum_of_weights"]
+                - self["sum_of_weights_squared"] / self["sum_of_weights"]
+            )
 
 
 @fields("count", "value", "sum_of_deltas_squared")
@@ -217,7 +218,8 @@ class MeanView(View):
     # Variance is a computation
     @property
     def variance(self):
-        return self["sum_of_deltas_squared"] / (self["count"] - 1)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            return self["sum_of_deltas_squared"] / (self["count"] - 1)
 
 
 def _to_view(item, value=False):
