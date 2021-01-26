@@ -43,6 +43,8 @@ def test_init():
 
     h = bh.Histogram(bh.axis.Integer(-1, 2))
     assert h.ndim == 1
+    with pytest.warns(FutureWarning):
+        assert h.rank == 1
     assert h.axes[0] == bh.axis.Integer(-1, 2)
     assert h.axes[0].extent == 5
     assert h.axes[0].size == 3

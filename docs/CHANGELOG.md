@@ -9,6 +9,11 @@ Pressing forward to 1.0.
 
 #### User changes
 
+* Support for PlottableProtocol. You can now access `.values()`, `.counts()`,
+  and `.variances()` on all storages; used by plotting libraries. `.kind` describes
+  the Kind of the histogram (`bh.Kind.COUNT` or `bh.Kind.MEAN`). `.options` has
+  been renamed to `.traits`, and a few more useful traits were added, like
+  `.discrete`. Most other portions of the Protocol were already present. [#476][]
 * You can now set all complex storages, either on a Histogram or a View with an
   (N+1)D array [#475][]
 * Axes are now normal `__dict__` classes, you can manipulate the `__dict__` as
@@ -26,9 +31,17 @@ Pressing forward to 1.0.
 * Bumped to pybind11 2.6.1 [#470][]
 * Black formatting used in notebooks too [#470][]
 
+
+#### Upgrade warning
+
+If you are using `Axis.options`, please transition to `Axis.traits`. `traits`
+includes all the old options, along with some new traits, and matches the
+PlottableProtocol requirements.
+
 [#470]: https://github.com/scikit-hep/boost-histogram/pull/470
 [#472]: https://github.com/scikit-hep/boost-histogram/pull/472
 [#475]: https://github.com/scikit-hep/boost-histogram/pull/475
+[#476]: https://github.com/scikit-hep/boost-histogram/pull/476
 [#477]: https://github.com/scikit-hep/boost-histogram/pull/477
 
 

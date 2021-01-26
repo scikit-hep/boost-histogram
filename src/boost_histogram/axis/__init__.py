@@ -11,6 +11,7 @@ from .._internal.axis import (
     Boolean,
 )
 from .._internal.axestuple import ArrayTuple, AxesTuple
+from .._internal.traits import Traits
 from .._core.axis import options
 from . import transform
 
@@ -25,6 +26,7 @@ __all__ = (
     "Boolean",
     "Axis",
     "options",
+    "Traits",
     "transform",
     "ArrayTuple",
     "AxesTuple",

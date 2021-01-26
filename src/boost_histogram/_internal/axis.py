@@ -4,10 +4,12 @@ from __future__ import absolute_import, division, print_function
 from .._core import axis as ca
 
 from .kwargs import KWArgs
+from .traits import Traits
 from .sig_tools import inject_signature
 from .axis_transform import AxisTransform
 from .utils import cast, register, set_family, MAIN_FAMILY, set_module
 from .six import string_types
+from .deprecated import deprecated
 
 import copy
 
@@ -40,6 +42,8 @@ class Axis(object):
     def __getattr__(self, attr):
         if attr == "metadata":
             return None
+        elif attr == "options":
+            return self._options()
         raise AttributeError(
             "object {0} has not attribute {1}".format(self.__class__.__name__, attr)
         )
@@ -136,9 +140,9 @@ class Axis(object):
         def _process_internal(item, default):
             return default if item is None else item(self) if callable(item) else item
 
-        begin = _process_internal(start, -1 if self._ax.options.underflow else 0)
+        begin = _process_internal(start, -1 if self._ax.traits_underflow else 0)
         end = _process_internal(
-            stop, len(self) + (1 if self._ax.options.overflow else 0)
+            stop, len(self) + (1 if self._ax.traits_overflow else 0)
         )
 
         return begin, end
@@ -155,20 +159,20 @@ class Axis(object):
         """
 
         ret = ""
-        if self.options.growth:
+        if self.traits.growth:
             ret += ", growth=True"
-        elif self.options.circular:
+        elif self.traits.circular:
             ret += ", circular=True"
         else:
-            if not self.options.underflow:
+            if not self.traits.underflow:
                 ret += ", underflow=False"
-            if not self.options.overflow:
+            if not self.traits.overflow:
                 ret += ", overflow=False"
 
         return ret
 
-    @property
-    def options(self):
+    @deprecated("Use .traits instead", name="options")
+    def _options(self):
         """
         Return the options.  Fields:
           .underflow - True if axes captures values that are too small
@@ -178,6 +182,20 @@ class Axis(object):
           .circular  - True if axis wraps around
         """
         return self._ax.options
+
+    @property
+    def traits(self):
+        """
+        Get traits for the axis - read only properties of a specific axis.
+        """
+        return Traits(
+            self._ax.traits_underflow,
+            self._ax.traits_overflow,
+            self._ax.traits_circular,
+            self._ax.traits_growth,
+            self._ax.traits_continuous,
+            self._ax.traits_ordered,
+        )
 
     @property
     def size(self):
@@ -512,9 +530,9 @@ class BaseCategory(Axis):
         """
 
         ret = ""
-        if self.options.growth:
+        if self.traits.growth:
             ret += ", growth=True"
-        elif self.options.circular:
+        elif self.traits.circular:
             ret += ", circular=True"
 
         return ret

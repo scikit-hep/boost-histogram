@@ -49,7 +49,7 @@ def copy_fn(request):
     "opts", ({}, {"growth": True}, {"underflow": True, "overflow": True})
 )
 def test_options(copy_fn, opts):
-    orig = bh.axis.options(**opts)
+    orig = bh.axis.Traits(**opts)
     new = copy_fn(orig)
     assert new == orig
 

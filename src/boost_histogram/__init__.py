@@ -2,6 +2,7 @@
 from __future__ import absolute_import, division, print_function
 
 from ._internal.hist import Histogram
+from ._internal.enum import Kind
 from . import axis, storage, accumulators, utils, numpy
 from .tag import loc, rebin, sum, underflow, overflow
 
@@ -37,6 +38,7 @@ del absolute_import, division, print_function
 
 __all__ = (
     "Histogram",
+    "Kind",
     "axis",
     "storage",
     "accumulators",

@@ -73,7 +73,7 @@ jobs:
 
     - name: Test
       working-directory: ./build
-      run: python -m pytest
+      run: python -m pytest -ra
 
   build_wheels:
     name: Wheels on ${{ matrix.os }}
