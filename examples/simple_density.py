@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import numpy as np
-import boost_histogram as bh
-import matplotlib.pyplot as plt
 import functools
 import operator
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+import boost_histogram as bh
 
 # Make a 2D histogram
 hist = bh.Histogram(bh.axis.Regular(50, -3, 3), bh.axis.Regular(50, -3, 3))

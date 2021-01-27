@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-import boost_histogram as bh
-
 import numpy as np
 from numpy.testing import assert_allclose
 
+import boost_histogram as bh
 
 COUNTS = np.array([3, 4, 5, 6])
 VALUES = np.array([1, 2, 3, 4])

@@ -4,18 +4,18 @@ import copy
 import ctypes
 import math
 
-import numpy as np
-from numpy.testing import assert_array_equal, assert_almost_equal
-import pytest
-import boost_histogram as bh
-
 import env
+import numpy as np
+import pytest
+from numpy.testing import assert_almost_equal, assert_array_equal
+
+import boost_histogram as bh
 
 try:
     # Python 2
-    from cPickle import loads, dumps
+    from cPickle import dumps, loads
 except ImportError:
-    from pickle import loads, dumps
+    from pickle import dumps, loads
 
 
 ftype = ctypes.CFUNCTYPE(ctypes.c_double, ctypes.c_double)

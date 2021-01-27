@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
+import numpy as np
 import pytest
+from numpy.testing import assert_almost_equal, assert_array_equal
 
 import boost_histogram as bh
-import numpy as np
-from numpy.testing import assert_array_equal, assert_almost_equal
 
 
 def fillit(hist, *args, **kwargs):

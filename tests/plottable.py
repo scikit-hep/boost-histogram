@@ -11,16 +11,7 @@ MyPy will force you to only use items in the Protocol.
 """
 
 import sys
-from typing import (
-    Any,
-    Iterable,
-    Optional,
-    Sequence,
-    Tuple,
-    TypeVar,
-    Union,
-)
-
+from typing import Any, Iterable, Optional, Sequence, Tuple, TypeVar, Union
 
 if sys.version_info < (3, 8):
     from typing_extensions import Protocol, runtime_checkable

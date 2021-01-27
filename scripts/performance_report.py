@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-from timeit import timeit
 import math
 import multiprocessing
+from timeit import timeit
 
 print("Welcome to boost-histogram's performance report")
 

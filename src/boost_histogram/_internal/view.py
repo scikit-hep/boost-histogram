@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 
-from ..accumulators import Mean, WeightedMean, WeightedSum
-
 import numpy as np
+
+from ..accumulators import Mean, WeightedMean, WeightedSum
 
 
 class View(np.ndarray):

@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import boost_histogram as bh
 import pickle
 from pathlib import Path
+
+import boost_histogram as bh
 
 h1 = bh.Histogram(bh.axis.Regular(2, -1, 1))
 h2 = h1.copy()

@@ -3,11 +3,11 @@
 
 
 import pickle
+from pathlib import Path
 
 import typer
-import boost_histogram as bh
 
-from pathlib import Path
+import boost_histogram as bh
 
 
 def make_pickle(

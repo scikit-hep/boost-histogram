@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
 
-import boost_histogram as bh
-from numpy.testing import assert_allclose
 import pytest
+from numpy.testing import assert_allclose
+
+import boost_histogram as bh
 
 
 @pytest.fixture

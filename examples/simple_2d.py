@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import boost_histogram as bh
 import matplotlib.pyplot as plt
 import numpy as np
+
+import boost_histogram as bh
 
 # Create 2d-histogram with two axes with 20 equidistant bins from -3 to 3
 h = bh.Histogram(

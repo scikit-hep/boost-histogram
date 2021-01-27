@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
 
-from setuptools import setup
-
-import sys
 import os
+import sys
+
+from setuptools import setup
 
 DIR = os.path.abspath(os.path.dirname(__file__))
 
 sys.path.append(os.path.join(DIR, "extern", "pybind11"))
-from pybind11.setup_helpers import Pybind11Extension, ParallelCompile  # noqa: E402
+from pybind11.setup_helpers import ParallelCompile, Pybind11Extension  # noqa: E402
 
 del sys.path[-1]
 

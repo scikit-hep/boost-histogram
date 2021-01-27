@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
+import copy
+
+import numpy as np
 import pytest
 
 import boost_histogram as bh
-import numpy as np
-
-import copy
 
 np113 = tuple(int(x) for x in np.__version__.split(".")[:2]) >= (1, 13)
 

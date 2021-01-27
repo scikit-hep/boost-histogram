@@ -5,23 +5,21 @@ import copy
 import os
 import threading
 import warnings
-
-from typing import Optional, Any, Tuple
+from typing import Any, Optional, Tuple
 
 import numpy as np
 
 from .. import _core
-from .axis import Axis
 from .axestuple import AxesTuple
+from .axis import Axis
+from .deprecated import deprecated
+from .enum import Kind
 from .kwargs import KWArgs
 from .sig_tools import inject_signature
 from .six import string_types
 from .storage import Double, Storage
-from .utils import cast, register, set_family, MAIN_FAMILY, set_module
+from .utils import MAIN_FAMILY, cast, register, set_family, set_module
 from .view import _to_view
-from .enum import Kind
-from .deprecated import deprecated
-
 
 ArrayLike = Any
 

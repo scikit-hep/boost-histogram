@@ -2,13 +2,13 @@
 from __future__ import absolute_import, division, print_function
 
 from ._internal.storage import (
-    Storage,
-    Int64,
-    Double,
     AtomicInt64,
+    Double,
+    Int64,
+    Mean,
+    Storage,
     Unlimited,
     Weight,
-    Mean,
     WeightedMean,
 )
 

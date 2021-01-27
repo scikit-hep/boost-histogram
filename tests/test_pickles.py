@@ -6,10 +6,10 @@ except ImportError:
 
 import os
 
-import pytest
-import boost_histogram as bh
-
 import env
+import pytest
+
+import boost_histogram as bh
 
 DIR = os.path.abspath(os.path.dirname(__file__))
 

@@ -16,12 +16,11 @@
 #
 import os
 import re
+import shutil
+import sys
 
 # Docs require Python 3.6+ to generate
 from pathlib import Path
-
-import shutil
-import sys
 
 DIR = Path(__file__).parent.resolve()
 BASEDIR = DIR.parent
@@ -35,7 +34,7 @@ copyright = "2020, Henry Schreiner, Hans Dembinski"
 author = "Henry Schreiner, Hans Dembinski"
 
 # It is better to use pkg_resources, but we can't build on RtD
-from pkg_resources import get_distribution, DistributionNotFound
+from pkg_resources import DistributionNotFound, get_distribution
 
 try:
     version = get_distribution("boost_histogram").version

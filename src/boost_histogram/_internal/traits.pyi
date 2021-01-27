@@ -1,6 +1,5 @@
 from typing import Any
 
-
 class Traits:
     underflow: bool
     overflow: bool
