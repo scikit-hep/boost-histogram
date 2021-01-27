@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 
+import sys
+
 # bh.sum is just the Python sum, so from boost_histogram import * is safe (but
 # not recommended)
-try:
+if sys.version_info < (3, 0):
+    from __builtin__ import sum
+else:
     from builtins import sum
-except ImportError:
-    from __builtin__ import sum  # type: ignore
 
 del absolute_import, division, print_function
 
