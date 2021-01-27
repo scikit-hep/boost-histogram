@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import sys
+
 import pytest
 
 import boost_histogram  # noqa: F401
-
-import sys
 
 collect_ignore = []
 if sys.version_info < (3, 6):

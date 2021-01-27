@@ -1,19 +1,18 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 
-from . import axis as _axis
-from ._internal import hist as _hist
-from ._internal.utils import cast as _cast
-from . import _core
-from . import storage as _storage
-
-from ._internal.kwargs import KWArgs as _KWArgs
-from ._internal.sig_tools import inject_signature as _inject_signature
 from functools import reduce as _reduce
 from operator import mul as _mul
 
 import numpy as _np
 
+from . import _core
+from . import axis as _axis
+from . import storage as _storage
+from ._internal import hist as _hist
+from ._internal.kwargs import KWArgs as _KWArgs
+from ._internal.sig_tools import inject_signature as _inject_signature
+from ._internal.utils import cast as _cast
 
 del absolute_import, division, print_function  # hides these from IPython
 

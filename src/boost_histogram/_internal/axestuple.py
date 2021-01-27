@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 
-from .axis import Axis
-from .utils import set_module
 from functools import partial
 
 import numpy as np
+
+from .axis import Axis
+from .utils import set_module
 
 del absolute_import, division, print_function
 

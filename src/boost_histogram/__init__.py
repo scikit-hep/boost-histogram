@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 
-from ._internal.hist import Histogram
+from . import accumulators, axis, numpy, storage, utils
 from ._internal.enum import Kind
-from . import axis, storage, accumulators, utils, numpy
-from .tag import loc, rebin, sum, underflow, overflow
-
+from ._internal.hist import Histogram
+from .tag import loc, overflow, rebin, sum, underflow
 from .version import version as __version__
 
 try:

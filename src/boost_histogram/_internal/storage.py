@@ -2,7 +2,7 @@
 from __future__ import absolute_import, division, print_function
 
 from .._core import storage as store
-from .utils import set_family, MAIN_FAMILY, set_module
+from .utils import MAIN_FAMILY, set_family, set_module
 
 del absolute_import, division, print_function
 

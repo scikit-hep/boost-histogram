@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-import boost_histogram as bh
 import numpy as np
+
+import boost_histogram as bh
 
 
 # This is not a reasonable approximation of Pandas, but rather a test for an

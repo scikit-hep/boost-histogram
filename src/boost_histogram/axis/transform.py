@@ -3,8 +3,8 @@ from __future__ import absolute_import, division, print_function
 
 from .._internal.axis_transform import (
     AxisTransform,
-    Pow,
     Function,
+    Pow,
     _internal_conversion,
 )
 

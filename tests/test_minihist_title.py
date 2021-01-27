@@ -3,8 +3,8 @@
 # custom attributes, like title in Hist, is working.
 
 import pytest
-import boost_histogram as bh
 
+import boost_histogram as bh
 
 # First, make a new family to identify your library
 CUSTOM_FAMILY = object()

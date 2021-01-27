@@ -1,17 +1,16 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 
-from .._core import axis as ca
-
-from .kwargs import KWArgs
-from .traits import Traits
-from .sig_tools import inject_signature
-from .axis_transform import AxisTransform
-from .utils import cast, register, set_family, MAIN_FAMILY, set_module
-from .six import string_types
-from .deprecated import deprecated
-
 import copy
+
+from .._core import axis as ca
+from .axis_transform import AxisTransform
+from .deprecated import deprecated
+from .kwargs import KWArgs
+from .sig_tools import inject_signature
+from .six import string_types
+from .traits import Traits
+from .utils import MAIN_FAMILY, cast, register, set_family, set_module
 
 del absolute_import, division, print_function
 

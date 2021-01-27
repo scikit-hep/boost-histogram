@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from pytest import approx
+
 import boost_histogram as bh
 
 
