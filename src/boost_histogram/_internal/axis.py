@@ -45,7 +45,7 @@ class Axis(object):
         elif attr == "options":
             return self._options()
         raise AttributeError(
-            "object {0} has not attribute {1}".format(self.__class__.__name__, attr)
+            "object {} has not attribute {}".format(self.__class__.__name__, attr)
         )
 
     def __init__(self, ax, metadata, __dict__):
@@ -223,7 +223,7 @@ class Axis(object):
                 i += self._ax.size
             if i >= self._ax.size:
                 raise IndexError(
-                    "Out of range access, {0} is more than {1}".format(i, self._ax.size)
+                    "Out of range access, {} is more than {}".format(i, self._ax.size)
                 )
         return self.bin(i)
 
@@ -351,7 +351,7 @@ class Regular(Axis):
         ret = super(Regular, self)._repr_kwargs()
 
         if self.transform is not None:
-            ret += ", transform={0}".format(self.transform)
+            ret += ", transform={}".format(self.transform)
 
         return ret
 
@@ -599,7 +599,7 @@ class StrCategory(BaseCategory):
     def _repr_args(self):
         "Return inner part of signature for use in repr"
 
-        return "[{0}]".format(", ".join(repr(c) for c in self))
+        return "[{}]".format(", ".join(repr(c) for c in self))
 
 
 @set_family(MAIN_FAMILY)
@@ -646,7 +646,7 @@ class IntCategory(BaseCategory):
     def _repr_args(self):
         "Return inner part of signature for use in repr"
 
-        return "[{0}]".format(", ".join(format(c, "g") for c in self))
+        return "[{}]".format(", ".join(format(c, "g") for c in self))
 
 
 # Contains all common methods and properties for the boolean axis

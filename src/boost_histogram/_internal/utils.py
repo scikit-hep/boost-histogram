@@ -165,7 +165,7 @@ def cast(self, cpp_object, parent_class):
         return _cast_make_object(fallback_class, cpp_object, is_class)
 
     raise TypeError(
-        "No conversion to {0} from {1} found.".format(parent_class.__name__, cpp_object)
+        "No conversion to {} from {} found.".format(parent_class.__name__, cpp_object)
     )
 
 

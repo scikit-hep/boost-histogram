@@ -17,7 +17,7 @@ h.fill(x, weight=4)  # increment bin counter by 4
 for idx, (lower, upper) in enumerate(h.axes[0]):
     val = h[idx]
     print(
-        "bin {0} [{1:g}, {2:g}): {3} +/- {4}".format(
+        "bin {} [{:g}, {:g}): {} +/- {}".format(
             idx, lower, upper, val.value, val.variance ** 0.5
         )
     )
@@ -25,13 +25,13 @@ for idx, (lower, upper) in enumerate(h.axes[0]):
 # under- and overflow bin
 lo, up = h.axes[0][bh.underflow]
 print(
-    "underflow [{0:g}, {1:g}): {2} +/- {3}".format(
+    "underflow [{:g}, {:g}): {} +/- {}".format(
         lo, up, h[bh.underflow].value, h[bh.underflow].variance ** 0.5
     )
 )
 lo, up = h.axes[0][bh.overflow]
 print(
-    "overflow  [{0:g}, {1:g}): {2} +/- {3}".format(
+    "overflow  [{:g}, {:g}): {} +/- {}".format(
         lo, up, h[bh.overflow].value, h[bh.overflow].variance ** 0.5
     )
 )

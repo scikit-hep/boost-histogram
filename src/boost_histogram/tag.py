@@ -74,7 +74,7 @@ class loc(Locator):
         self.value = value
 
     def _print_self_(self):
-        return "({0})".format(self.value)
+        return "({})".format(self.value)
 
     def __call__(self, axis):
         return axis.index(self.value) + self.offset

@@ -229,7 +229,7 @@ class Histogram(object):
             return self._rank()
 
         raise AttributeError(
-            "object {0} has not attribute {1}".format(self.__class__.__name__, attr)
+            "object {} has not attribute {}".format(self.__class__.__name__, attr)
         )
 
     @property
@@ -295,7 +295,7 @@ class Histogram(object):
         elif hasattr(other, "shape") and other.shape:
             if len(other.shape) != self.ndim:
                 raise ValueError(
-                    "Number of dimensions {0} must match histogram {1}".format(
+                    "Number of dimensions {} must match histogram {}".format(
                         len(other.shape), self.ndim
                     )
                 )
@@ -307,7 +307,7 @@ class Histogram(object):
                 getattr(view, name)(other)
             else:
                 raise ValueError(
-                    "Wrong shape {0}, expected {1} or {2}".format(
+                    "Wrong shape {}, expected {} or {}".format(
                         other.shape, self.shape, self.axes.extent
                     )
                 )
@@ -511,9 +511,9 @@ class Histogram(object):
         outer = self.sum(flow=True)
         if outer:
             inner = self.sum(flow=False)
-            ret += " # Sum: {0}".format(inner)
+            ret += " # Sum: {}".format(inner)
             if inner != outer:
-                ret += " ({0} with flow)".format(outer)
+                ret += " ({} with flow)".format(outer)
         return ret
 
     def _compute_commonindex(self, index):
@@ -771,7 +771,7 @@ class Histogram(object):
         # Instead, we simply require matching dimensions.
         if value_ndim > 0 and value_ndim != sum(isinstance(i, slice) for i in indexes):
             raise ValueError(
-                "Setting a {0}D histogram with a {1}D array must have a matching number of dimensions".format(
+                "Setting a {}D histogram with a {}D array must have a matching number of dimensions".format(
                     len(indexes), value_ndim
                 )
             )
@@ -813,10 +813,10 @@ class Histogram(object):
                     stop += has_underflow
 
                 else:
-                    msg = "Mismatched shapes in dimension {0}".format(n)
-                    msg += ", {0} != {1}".format(value_shape[n], request_len)
+                    msg = "Mismatched shapes in dimension {}".format(n)
+                    msg += ", {} != {}".format(value_shape[n], request_len)
                     if use_underflow or use_overflow:
-                        msg += " or {0}".format(
+                        msg += " or {}".format(
                             request_len + use_underflow + use_overflow
                         )
                     raise ValueError(msg)
