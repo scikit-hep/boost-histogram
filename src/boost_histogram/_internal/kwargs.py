@@ -22,7 +22,7 @@ class KWArgs(object):
         if name in self.kwargs:
             self.kwargs.pop(name)
         else:
-            raise KeyError("{0} is required".format(name))
+            raise KeyError("{} is required".format(name))
 
     def optional(self, name, default=None):
         if name in self.kwargs:

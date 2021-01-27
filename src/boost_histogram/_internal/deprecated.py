@@ -18,7 +18,7 @@ class deprecated:
         @functools.wraps(func)
         def decorated_func(*args, **kwargs):
             warnings.warn(
-                "{0} is deprecated: {1}".format(
+                "{} is deprecated: {}".format(
                     self._name or func.__name__, self._reason
                 ),
                 category=FutureWarning,

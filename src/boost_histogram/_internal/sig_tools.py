@@ -9,7 +9,7 @@ del absolute_import, division, print_function
 def make_signature_params(sig, locals=None):
     if locals is None:
         locals = {}
-    exec("def _({0}): pass".format(sig), globals(), locals)
+    exec("def _({}): pass".format(sig), globals(), locals)
     return list(inspect.signature(locals["_"]).parameters.values())
 
 
