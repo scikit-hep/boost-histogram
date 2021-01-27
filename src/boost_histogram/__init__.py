@@ -21,7 +21,7 @@ except ImportError as err:
     total_msg = "\n".join([msg, new_msg])
 
     # Python 2
-    if sys.version_info.major < 3:
+    if sys.version_info < (3, 0):
         orig = sys.exc_info()
         assert orig[0] is not None and orig[2] is not None
         exc_info = orig[0], orig[0](total_msg), orig[2]
