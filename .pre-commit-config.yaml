@@ -33,6 +33,16 @@ repos:
   - id: cmake-format
     additional_dependencies: [pyyaml]
 
+- repo: https://github.com/asottile/pyupgrade
+  rev: v2.7.4
+  hooks:
+  - id: pyupgrade
+
+- repo: https://github.com/PyCQA/isort
+  rev: 5.7.0
+  hooks:
+  - id: isort
+
 - repo: https://github.com/pycqa/flake8
   rev: 3.8.4
   hooks:
@@ -51,11 +61,6 @@ repos:
   hooks:
   - id: check-manifest
     stages: [manual]
-
-- repo: https://github.com/asottile/pyupgrade
-  rev: v2.7.4
-  hooks:
-  - id: pyupgrade
 
 - repo: local
   hooks:
