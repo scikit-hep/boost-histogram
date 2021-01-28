@@ -2,7 +2,7 @@
 
 # Version 0.12
 
-### Version 0.12.0 (WIP)
+### Version 0.12.0
 
 Pressing forward to 1.0.
 
@@ -22,13 +22,14 @@ Pressing forward to 1.0.
 
 #### Bug fixes
 
+* Fixed slicing projection with one-sided slices [#479][]
 * Fixed issue if final bin of Variable histogram was infinite by updating to Boost 1.75 [#470][]
 * NumPy arrays can be used for weights in `bh.numpy` [#472][]
 * Vectorization for WeightedMean accumulators was broken [#475][]
 
 #### Developer changes
 
-* Bumped to pybind11 2.6.1 [#470][]
+* Bumped to pybind11 version [#470][]
 * Black formatting used in notebooks too [#470][]
 
 
@@ -43,6 +44,7 @@ PlottableProtocol requirements.
 [#475]: https://github.com/scikit-hep/boost-histogram/pull/475
 [#476]: https://github.com/scikit-hep/boost-histogram/pull/476
 [#477]: https://github.com/scikit-hep/boost-histogram/pull/477
+[#479]: https://github.com/scikit-hep/boost-histogram/pull/479
 
 
 ## Version 0.11
