@@ -8,9 +8,11 @@ on:
   pull_request:
     branches:
       - master
+      - main
   push:
     branches:
       - master
+      - main
   release:
     types:
       - published
@@ -67,42 +69,12 @@ jobs:
 
     - uses: joerick/cibuildwheel@v1.8.0
       env:
-        CIBW_SKIP: cp27-win* pp*
+        CIBW_SKIP: cp27-win* pp27*
         CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.CIBW_MANYLINUX_I686_IMAGE }}
         CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.CIBW_MANYLINUX_X86_64_IMAGE }}
         CIBW_TEST_EXTRAS: test
         CIBW_TEST_COMMAND: "pytest {project}/tests"
-
-    - name: Show files
-      run: ls -lh wheelhouse
-      shell: bash
-
-    - name: Verify clean directory
-      run: git diff --exit-code
-      shell: bash
-
-    - name: Upload wheels
-      uses: actions/upload-artifact@v2
-      with:
-        path: wheelhouse/*.whl
-
-  build_pypy_wheels:
-    name: PyPy wheels on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-
-
-    steps:
-    - uses: actions/checkout@v1
-      with:
-        submodules: true
-
-    - uses: joerick/cibuildwheel@v1.8.0
-      env:
-        CIBW_SKIP: cp*
+        CIBW_TEST_SKIP: "pp*macos*"
 
     - name: Show files
       run: ls -lh wheelhouse
@@ -144,7 +116,7 @@ jobs:
     - name: Build 32-bit wheel
       uses: joerick/cibuildwheel@v1.8.0
       env:
-        CIBW_BUILD: cp27-win32 pp27-win32
+        CIBW_BUILD: cp27-win32
         DISTUTILS_USE_SDK: 1
         MSSdk: 1
         CIBW_TEST_EXTRAS: test
@@ -165,7 +137,7 @@ jobs:
 
   upload_all:
     name: Upload if release
-    needs: [build_wheels, build_pypy_wheels, build_win27_wheels, build_sdist]
+    needs: [build_wheels, build_win27_wheels, build_sdist]
     runs-on: ubuntu-latest
     if: github.event_name == 'release' && github.event.action == 'published'
 
