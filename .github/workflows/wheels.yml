@@ -17,10 +17,9 @@ on:
     types:
       - published
 
-
 env:
   CIBW_ENVIRONMENT: "SETUPTOOLS_SCM_PRETEND_VERSION=${{ github.event.inputs.overrideVersion }}"
-
+  SETUPTOOLS_SCM_PRETEND_VERSION: ${{ github.event.inputs.overrideVersion }}
 
 jobs:
   build_sdist:
@@ -40,7 +39,6 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         path: dist/*.tar.gz
-
 
   build_wheels:
     name: ${{ matrix.type }} wheels on ${{ matrix.os }}
@@ -89,7 +87,6 @@ jobs:
       with:
         path: wheelhouse/*.whl
 
-
   # Windows 2.7 (requires pybind11 workaround)
   build_win27_wheels:
     name: Py 2.7 wheels on Windows
@@ -133,7 +130,6 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         path: wheelhouse/*.whl
-
 
   upload_all:
     name: Upload if release
