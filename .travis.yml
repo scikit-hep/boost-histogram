@@ -31,7 +31,7 @@ install:
 
 script:
 - sed -i '/numpy/d' pyproject.toml
-- CIBW_BUILD_VERBOSITY=1 CIBW_ENVIRONMENT="SETUPTOOLS_SCM_PRETEND_VERSION=\"$TRAVIS_TAG\"" python3 -m cibuildwheel --output-dir dist
+- CIBW_BUILD_VERBOSITY=1 CIBW_ENVIRONMENT="SETUPTOOLS_SCM_PRETEND_VERSION=\"$TRAVIS_TAG\"" travis_wait 60 python3 -m cibuildwheel --output-dir dist
 
 deploy:
   provider: pypi

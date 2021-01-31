@@ -10,12 +10,12 @@ class Traits:
 
     def __init__(
         self,
-        underflow=False,
-        overflow=False,
-        circular=False,
-        growth=False,
-        continuous=False,
-        ordered=False,
+        underflow: bool = False,
+        overflow: bool = False,
+        circular: bool = False,
+        growth: bool = False,
+        continuous: bool = False,
+        ordered: bool = False,
     ): ...
 
     @property

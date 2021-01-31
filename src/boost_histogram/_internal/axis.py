@@ -2,6 +2,7 @@
 from __future__ import absolute_import, division, print_function
 
 import copy
+from typing import Any
 
 from .._core import axis as ca
 from .axis_transform import AxisTransform
@@ -16,6 +17,7 @@ del absolute_import, division, print_function
 
 
 def _isstr(value):
+    # type: (Any) -> bool
     """
     Check to see if this is a stringlike or a (nested) iterable of stringlikes
     """

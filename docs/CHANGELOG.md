@@ -1,11 +1,10 @@
 # What's new in boost-histogram
 
-# Version 0.12
+## Version 0.13
 
-### Version 0.12.0
+### Version 0.13.0
 
-Pressing forward to 1.0.
-
+PlottableProtocol provides a way to plot in different libraries, and easy access to common quantities. This is expected to be the final release for Python 2, and mostly equivalent in API to 1.0.
 
 #### User changes
 
@@ -14,6 +13,24 @@ Pressing forward to 1.0.
   the Kind of the histogram (`bh.Kind.COUNT` or `bh.Kind.MEAN`). `.options` has
   been renamed to `.traits`, and a few more useful traits were added, like
   `.discrete`. Most other portions of the Protocol were already present. [#476][]
+
+#### Bug fixes
+
+* Added additional support for typing, fixing a couple of rare Python 2 bugs in the process [#493][].
+
+[#476]: https://github.com/scikit-hep/boost-histogram/pull/476
+[#493]: https://github.com/scikit-hep/boost-histogram/pull/493
+
+
+## Version 0.12
+
+### Version 0.12.0
+
+Pressing forward to 1.0.
+
+
+#### User changes
+
 * You can now set all complex storages, either on a Histogram or a View with an
   (N+1)D array [#475][]
 * Axes are now normal `__dict__` classes, you can manipulate the `__dict__` as
@@ -42,7 +59,6 @@ PlottableProtocol requirements.
 [#470]: https://github.com/scikit-hep/boost-histogram/pull/470
 [#472]: https://github.com/scikit-hep/boost-histogram/pull/472
 [#475]: https://github.com/scikit-hep/boost-histogram/pull/475
-[#476]: https://github.com/scikit-hep/boost-histogram/pull/476
 [#477]: https://github.com/scikit-hep/boost-histogram/pull/477
 [#479]: https://github.com/scikit-hep/boost-histogram/pull/479
 

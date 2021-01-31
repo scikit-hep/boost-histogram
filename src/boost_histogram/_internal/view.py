@@ -14,7 +14,7 @@ class View(np.ndarray):
 
         # If the shape is empty, return the parent type
         if not sliced.shape:
-            return self._PARENT._make(*sliced)
+            return self._PARENT._make(*sliced)  # type: ignore
         # If the dtype has changed, return a normal array (no longer a record)
         elif sliced.dtype != self.dtype:
             return np.asarray(sliced)
@@ -31,7 +31,7 @@ class View(np.ndarray):
         )
 
     def __str__(self):
-        fields = ", ".join(self._FIELDS)
+        fields = ", ".join(self._FIELDS)  # type: ignore
         return "{self.__class__.__name__}: ({fields})\n{arr}".format(
             self=self, fields=fields, arr=self.view(np.ndarray)
         )
@@ -45,9 +45,9 @@ class View(np.ndarray):
         array = np.asarray(value)
         if (
             array.ndim == super(View, self).__getitem__(ind).ndim + 1
-            and len(self._FIELDS) == array.shape[-1]
+            and len(self._FIELDS) == array.shape[-1]  # type: ignore
         ):
-            self.__setitem__(ind, self._PARENT._array(*np.moveaxis(array, -1, 0)))
+            self.__setitem__(ind, self._PARENT._array(*np.moveaxis(array, -1, 0)))  # type: ignore
         elif self.dtype == array.dtype:
             super(View, self).__setitem__(ind, array)
         else:
@@ -182,11 +182,11 @@ class WeightedSumView(View):
 
         # ufuncs that are allowed to reduce
         if ufunc in {np.add} and method == "reduce" and len(inputs) == 1:
-            results = (ufunc.reduce(self[field], **kwargs) for field in self._FIELDS)
+            results = (ufunc.reduce(self[field], **kwargs) for field in self._FIELDS)  # type: ignore
             return self._PARENT._make(*results)
 
         # If unsupported, just pass through (will return not implemented)
-        return super(WeightedSumView, self).__array_ufunc__(
+        return super(WeightedSumView, self).__array_ufunc__(  # type: ignore
             ufunc, method, *inputs, **kwargs
         )
 
@@ -224,7 +224,7 @@ class MeanView(View):
 
 def _to_view(item, value=False):
     for cls in View.__subclasses__():
-        if cls._FIELDS == item.dtype.names:
+        if cls._FIELDS == item.dtype.names:  # type: ignore
             ret = item.view(cls)
             if value and ret.shape:
                 return ret.value
