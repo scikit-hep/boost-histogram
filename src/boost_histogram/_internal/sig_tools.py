@@ -9,11 +9,13 @@ del absolute_import, division, print_function
 
 
 if sys.version_info < (3, 0):
+    make_signature_params = None
 
     def inject_signature(sig, locals=None):
         # type: (str, Optional[Dict[str, Any]]) -> Any
         def wrap(f):
             return f
+        return wrap
 
 
 else:
