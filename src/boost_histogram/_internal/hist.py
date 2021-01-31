@@ -2,7 +2,7 @@
 from __future__ import absolute_import, division, print_function
 
 import copy
-import os
+import sys
 import threading
 import warnings
 from typing import Any, Optional, Tuple
@@ -20,6 +20,11 @@ from .six import string_types
 from .storage import Double, Storage
 from .utils import MAIN_FAMILY, cast, register, set_family, set_module
 from .view import _to_view
+
+if sys.version_info >= (3, 4):
+    from os import cpu_count
+else:
+    from multiprocessing import cpu_count
 
 ArrayLike = Any
 
@@ -127,7 +132,8 @@ class Histogram(object):
         # If we construct with another Histogram as the only positional argument,
         # support that too
         if len(axes) == 1 and isinstance(axes[0], Histogram):
-            self.__init__(axes[0]._hist)
+            # Special case - we can recursively call __init__ here
+            self.__init__(axes[0]._hist)  # type: ignore
             self._from_histogram_object(axes[0])
             return
 
@@ -370,7 +376,7 @@ class Histogram(object):
             return self
 
         if threads == 0:
-            threads = os.cpu_count()
+            threads = cpu_count()
 
         if self._hist._storage_type in {
             _core.storage.mean,
@@ -545,10 +551,12 @@ class Histogram(object):
             if indexes[i] is sum or hasattr(indexes[i], "factor"):
                 indexes[i] = slice(None, None, indexes[i])
             # General locators
+            # Note that MyPy doesn't like these very much - the fix
+            # will be to properly set input types
             elif callable(indexes[i]):
-                indexes[i] = indexes[i](self.axes[i])
+                indexes[i] = indexes[i](self.axes[i])  # type: ignore
             elif hasattr(indexes[i], "__index__"):
-                if abs(indexes[i]) >= hist.axis(i).size:
+                if abs(indexes[i]) >= hist.axis(i).size:  # type: ignore
                     raise IndexError("histogram index is out of range")
                 indexes[i] %= hist.axis(i).size
 

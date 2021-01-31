@@ -110,7 +110,8 @@ def histogram(
         kwargs["storage"] = _storage.Int64()
 
     if isinstance(bins, str):
-        if tuple(int(x) for x in np.__version__.split(".")[:2]) < (1, 13):
+        # Bug in NumPy 1.20 typing support - __version__ is missing
+        if tuple(int(x) for x in np.version.version.split(".")[:2]) < (1, 13):
             raise KeyError(
                 "Upgrade numpy to 1.13+ to use string arguments to boost-histogram's histogram function"
             )

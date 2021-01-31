@@ -3,7 +3,6 @@
 
 from typing import Any
 
-
 _traits = (
     "underflow",
     "overflow",
