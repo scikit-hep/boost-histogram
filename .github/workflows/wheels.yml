@@ -41,42 +41,46 @@ jobs:
         path: dist/*.tar.gz
 
   build_wheels:
-    name: ${{ matrix.type }} wheels on ${{ matrix.os }}
+    name: ${{ matrix.type }} ${{ matrix.arch }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
+        arch: [auto]
         type: [Standard]
 
         include:
           - os: ubuntu-latest
             type: Standard
+            arch: auto
             CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
             CIBW_MANYLINUX_I686_IMAGE: manylinux2010
 
           - os: ubuntu-latest
             type: ManyLinux1
+            arch: auto
             CIBW_MANYLINUX_X86_64_IMAGE: skhep/manylinuxgcc-x86_64
             CIBW_MANYLINUX_I686_IMAGE: skhep/manylinuxgcc-i686
+
+          - os: macos-latest
+            type: Standard
+            arch: universal2
 
     steps:
     - uses: actions/checkout@v1
       with:
         submodules: true
 
-    - uses: joerick/cibuildwheel@v1.8.0
+    - uses: joerick/cibuildwheel@v1.9.0
       env:
         CIBW_SKIP: cp27-win* pp27*
         CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.CIBW_MANYLINUX_I686_IMAGE }}
         CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.CIBW_MANYLINUX_X86_64_IMAGE }}
+        CIBW_ARCHS: ${{ matrix.arch }}
         CIBW_TEST_EXTRAS: test
         CIBW_TEST_COMMAND: "pytest {project}/tests"
-        CIBW_TEST_SKIP: "pp*macos*"
-
-    - name: Show files
-      run: ls -lh wheelhouse
-      shell: bash
+        CIBW_TEST_SKIP: "pp*macos* *universal2:arm64"
 
     - name: Verify clean directory
       run: git diff --exit-code
@@ -100,7 +104,7 @@ jobs:
     - uses: ilammy/msvc-dev-cmd@v1
 
     - name: Build 64-bit wheel
-      uses: joerick/cibuildwheel@v1.8.0
+      uses: joerick/cibuildwheel@v1.9.0
       env:
         CIBW_BUILD: cp27-win_amd64
         DISTUTILS_USE_SDK: 1
@@ -111,17 +115,13 @@ jobs:
         arch: x86
 
     - name: Build 32-bit wheel
-      uses: joerick/cibuildwheel@v1.8.0
+      uses: joerick/cibuildwheel@v1.9.0
       env:
         CIBW_BUILD: cp27-win32
         DISTUTILS_USE_SDK: 1
         MSSdk: 1
         CIBW_TEST_EXTRAS: test
         CIBW_TEST_COMMAND: "pytest {project}/tests"
-
-    - name: Show files
-      run: ls -lh wheelhouse
-      shell: bash
 
     - name: Verify clean directory
       run: git diff --exit-code
