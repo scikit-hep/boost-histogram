@@ -20,6 +20,7 @@ on:
 env:
   CIBW_ENVIRONMENT: "SETUPTOOLS_SCM_PRETEND_VERSION=${{ github.event.inputs.overrideVersion }}"
   SETUPTOOLS_SCM_PRETEND_VERSION: ${{ github.event.inputs.overrideVersion }}
+  PIP_ONLY_BINARY: numpy
 
 jobs:
   build_sdist:
@@ -46,8 +47,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        arch: [auto]
+        os: [windows-latest, macos-latest]
+        arch: [auto64]
         type: [Standard]
 
         include:
@@ -67,6 +68,9 @@ jobs:
             type: Standard
             arch: universal2
 
+          - os: windows-latest
+            type: Standard
+            arch: auto32
     steps:
     - uses: actions/checkout@v1
       with:
@@ -90,6 +94,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         path: wheelhouse/*.whl
+
 
   # Windows 2.7 (requires pybind11 workaround)
   build_win27_wheels:
