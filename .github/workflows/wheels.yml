@@ -18,9 +18,8 @@ on:
       - published
 
 env:
-  CIBW_ENVIRONMENT: "SETUPTOOLS_SCM_PRETEND_VERSION=${{ github.event.inputs.overrideVersion }}"
+  CIBW_ENVIRONMENT: "PIP_ONLY_BINARY=numpy SETUPTOOLS_SCM_PRETEND_VERSION=${{ github.event.inputs.overrideVersion }}"
   SETUPTOOLS_SCM_PRETEND_VERSION: ${{ github.event.inputs.overrideVersion }}
-  PIP_ONLY_BINARY: numpy
 
 jobs:
   build_sdist:
