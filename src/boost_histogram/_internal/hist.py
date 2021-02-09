@@ -44,7 +44,7 @@ _histograms = (
 
 def _fill_cast(value, inner=False):
     """
-    Convert to NumPy arrays. Some buffer objects do not get converted by forcecast.
+    Convert to NumPy arrays; must be c-order dense arrays to work.
     If not called by itself (inner=False), then will work through one level of tuple/list.
     """
     if value is None or isinstance(value, string_types + (bytes,)):
@@ -340,9 +340,9 @@ class Histogram(object):
         ----------
         *args : Union[Array[float], Array[int], Array[str], float, int, str]
             Provide one value or array per dimension.
-        weight : List[Union[Array[float], Array[int], Array[str], float, int, str]]]
-            Provide weights (only if the histogram storage supports it)
-        sample : List[Union[Array[float], Array[int], Array[str], float, int, str]]]
+        weight : List[Union[Array[float], Array[int], float, int]]]
+            Provide weights (float only if the histogram storage supports it)
+        sample : List[Union[Array[float], Array[int], float, int]]]
             Provide samples (only if the histogram storage supports it)
         threads : Optional[int]
             Fill with threads. Defaults to None, which does not activate
