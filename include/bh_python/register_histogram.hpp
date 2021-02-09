@@ -85,21 +85,12 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
 
         ;
 
-// Protection against an overzealous warning system
-// https://bugs.llvm.org/show_bug.cgi?id=43124
-#ifdef __clang__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wself-assign-overloaded"
-#endif
     def_optionally(hist,
                    bh::detail::has_operator_rdiv<histogram_t, histogram_t>{},
                    py::self /= py::self);
     def_optionally(hist,
                    bh::detail::has_operator_rmul<histogram_t, histogram_t>{},
                    py::self *= py::self);
-#ifdef __clang__
-#pragma GCC diagnostic pop
-#endif
 
     hist.def(
             "to_numpy",

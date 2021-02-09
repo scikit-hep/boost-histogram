@@ -15,6 +15,7 @@ if sys.version_info < (3, 0):
         # type: (str, Optional[Dict[str, Any]]) -> Any
         def wrap(f):
             return f
+
         return wrap
 
 
