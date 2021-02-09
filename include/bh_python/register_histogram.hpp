@@ -24,11 +24,94 @@
 #include <boost/mp11.hpp>
 
 #include <future>
+#include <numeric>
 #include <sstream>
 #include <string>
 #include <thread>
 #include <tuple>
 #include <vector>
+
+class Ticker {
+    std::vector<std::size_t> shape_;
+    std::vector<std::size_t> indices_;
+    size_t n_;
+    size_t linear_size_;
+
+  public:
+    Ticker(std::vector<size_t> shape)
+        : shape_(shape)
+        , indices_(shape.size(), 0)
+        , n_(0)
+        , linear_size_(std::accumulate(
+              std::begin(shape), std::end(shape), 1u, std::multiplies<std::size_t>())) {
+    }
+
+    std::size_t ndim() const { return shape_.size(); }
+    std::size_t linear_size() const { return linear_size_; }
+    const std::vector<std::size_t>& shape() const { return shape_; }
+    const std::vector<std::size_t>& indices() const { return indices_; }
+
+    void next() {
+        for(std::size_t i = ndim() - 1; i >= 0; --i) {
+            n_++;
+            indices_[i]++;
+            if(indices_[i] != shape_[i])
+                break;
+            indices_[i] = 0;
+        }
+    }
+    bool done() const { return n_ < linear_size_; }
+};
+
+/// Like py::vectorize, but for dynamic inputs (py::args)
+/// There are inputs.size() number of args / function arguments, using the letter i for
+/// looping. There are result.ndim() number of diminsions in the broadcast arrays, using
+/// j for looping
+template <class T, class V>
+py::array_t<T> dynamic_vectorize(std::function<T(const std::vector<V>&&)> func,
+                                 const py::args& args) {
+    std::vector<py::array_t<V>> inputs;
+    for(const auto&& arg : args) {
+        try {
+            inputs.push_back(py::cast<py::array_t<V>>(arg));
+        } catch(const py::cast_error&) {
+            inputs.emplace_back({
+                py::cast<V>(arg),
+            });
+        }
+    }
+
+    // Prepare the shape vector; holds the broadcast shape
+    std::vector<std::size_t> shape;
+    for(const py::array_t<V>&& input : inputs) {
+        for(std::size_t i = 0; i < input.ndim(); i++) {
+            if(shape.size() < i)
+                shape.emplace_back(1);
+
+            if(shape[i] == 1)
+                shape[i] = input.shape(i);
+            else if(shape[i] != input.shape(i))
+                throw std::runtime_error("Missmatched shapes!");
+        }
+    }
+
+    std::vector<V> input_vector(inputs.size());
+    py::array_t<T> result{shape, {}};
+
+    for(Ticker ticker{shape}; !ticker.done(); ticker.next()) {
+        for(std::size_t i; i < inputs.size(); ++i) {
+            for(std::size_t j; j < ticker.ndim(); j++) {
+                size_t idx = ticker.indices()[j];
+                if(j >= inputs[i].ndim() || inputs[i].shape(j) == 1)
+                    idx = 1;
+                input_vector[i] = inputs[i].at(idx);
+            }
+        }
+        result(i) = func(input_vector); // i needs to be correct
+    }
+
+    return result;
+}
 
 template <class S>
 auto register_histogram(py::module& m, const char* name, const char* desc) {
@@ -85,21 +168,12 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
 
         ;
 
-// Protection against an overzealous warning system
-// https://bugs.llvm.org/show_bug.cgi?id=43124
-#ifdef __clang__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wself-assign-overloaded"
-#endif
     def_optionally(hist,
                    bh::detail::has_operator_rdiv<histogram_t, histogram_t>{},
                    py::self /= py::self);
     def_optionally(hist,
                    bh::detail::has_operator_rmul<histogram_t, histogram_t>{},
                    py::self *= py::self);
-#ifdef __clang__
-#pragma GCC diagnostic pop
-#endif
 
     hist.def(
             "to_numpy",
