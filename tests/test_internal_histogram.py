@@ -135,6 +135,31 @@ def test_numpy_dd():
     assert_array_equal(x1, x2)
     assert_array_equal(y1, y2)
 
+def test_numpy_weights():
+    h = bh.Histogram(
+        bh.axis.Regular(10, 0, 1), bh.axis.Regular(5, 0, 1), storage=bh.storage.Weight()
+    )
+
+    for i in range(10):
+        for j in range(5):
+            x, y = h.axes[0].centers[i], h.axes[1].centers[j]
+            v = i + j * 10 + 1
+            h.fill([x] * v, [y] * v)
+
+    h2, x2, y2 = h.to_numpy(mode="numpy")
+    h1, (x1, y1) = h.to_numpy(dd=True, mode="numpy")
+
+    assert_array_equal(h1, h2)
+    assert_array_equal(x1, x2)
+    assert_array_equal(y1, y2)
+
+    h1, (x1, y1) = h.to_numpy(dd=True, mode="numpy")
+    h2, x2, y2 = h.to_numpy(mode="view")
+
+    assert_array_equal(h1, h2.value)
+    assert_array_equal(x1, x2)
+    assert_array_equal(y1, y2)
+
 
 def test_numpy_flow():
     h = bh.Histogram(

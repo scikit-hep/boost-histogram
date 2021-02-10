@@ -79,7 +79,10 @@ def histogramdd(
         density = hist.view() / hist.sum() / areas
         return (density, hist.to_numpy()[1:])
 
-    return hist if bh_cls is not None else hist.to_numpy(dd=True)
+    # Note: this is mode="view" since users have to ask explicilty for special
+    # storages, so mode="numpy" would throw away part of what they are asking
+    # for. Users can use a histogram return type if they need mode="numpy".
+    return hist if bh_cls is not None else hist.to_numpy(dd=True, mode="view")
 
 
 @_inject_signature(
