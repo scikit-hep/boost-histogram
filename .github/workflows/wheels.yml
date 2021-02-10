@@ -18,8 +18,11 @@ on:
       - published
 
 env:
-  CIBW_ENVIRONMENT: "PIP_ONLY_BINARY=numpy SETUPTOOLS_SCM_PRETEND_VERSION=${{ github.event.inputs.overrideVersion }}"
   SETUPTOOLS_SCM_PRETEND_VERSION: ${{ github.event.inputs.overrideVersion }}
+  CIBW_ENVIRONMENT: "PIP_ONLY_BINARY=numpy SETUPTOOLS_SCM_PRETEND_VERSION=${{ github.event.inputs.overrideVersion }}"
+  CIBW_TEST_EXTRAS: test
+  CIBW_TEST_COMMAND: "pytest {project}/tests"
+  CIBW_TEST_SKIP: "pp*macos* *universal2:arm64"
 
 jobs:
   build_sdist:
@@ -31,7 +34,7 @@ jobs:
         submodules: true
 
     - name: Build SDist
-      run: pipx run --spec build pyproject-build --sdist
+      run: pipx run --spec build==0.2.1 pyproject-build --sdist
 
     - name: Check metadata
       run: pipx run twine check dist/*
@@ -39,6 +42,38 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         path: dist/*.tar.gz
+
+  build_arch_wheels:
+    name: ${{ matrix.python }} on ${{ matrix.arch }}
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        python: [36, 37, 38, 39]
+        arch: [aarch64]
+    steps:
+
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+
+    - uses: docker/setup-qemu-action@v1
+      with:
+        platforms: all
+
+    - uses: joerick/cibuildwheel@v1.9.0
+      env:
+        CIBW_BUILD: cp${{ matrix.python }}-*
+        CIBW_ARCHS: ${{ matrix.arch }}
+
+    - name: Verify clean directory
+      run: git diff --exit-code
+      shell: bash
+
+    - name: Upload wheels
+      uses: actions/upload-artifact@v2
+      with:
+        path: wheelhouse/*.whl
+
 
   build_wheels:
     name: ${{ matrix.type }} ${{ matrix.arch }} on ${{ matrix.os }}
@@ -49,27 +84,29 @@ jobs:
         os: [windows-latest, macos-latest]
         arch: [auto64]
         type: [Standard]
+        build: ["*"]
 
         include:
           - os: ubuntu-latest
             type: Standard
             arch: auto
+            build: "cp3* pp*"
             CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
             CIBW_MANYLINUX_I686_IMAGE: manylinux2010
 
           - os: ubuntu-latest
             type: ManyLinux1
             arch: auto
+            build: "cp{27,35,36,37,38}-*"
             CIBW_MANYLINUX_X86_64_IMAGE: skhep/manylinuxgcc-x86_64
             CIBW_MANYLINUX_I686_IMAGE: skhep/manylinuxgcc-i686
 
           - os: macos-latest
-            type: Standard
             arch: universal2
 
           - os: windows-latest
-            type: Standard
             arch: auto32
+
     steps:
     - uses: actions/checkout@v1
       with:
@@ -77,13 +114,11 @@ jobs:
 
     - uses: joerick/cibuildwheel@v1.9.0
       env:
-        CIBW_SKIP: cp27-win* pp27*
+        CIBW_BUILD: ${{ matrix.build }}
+        CIBW_SKIP: cp27-win* pp27-win*
         CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.CIBW_MANYLINUX_I686_IMAGE }}
         CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.CIBW_MANYLINUX_X86_64_IMAGE }}
         CIBW_ARCHS: ${{ matrix.arch }}
-        CIBW_TEST_EXTRAS: test
-        CIBW_TEST_COMMAND: "pytest {project}/tests"
-        CIBW_TEST_SKIP: "pp*macos* *universal2:arm64"
 
     - name: Verify clean directory
       run: git diff --exit-code
@@ -124,8 +159,6 @@ jobs:
         CIBW_BUILD: cp27-win32
         DISTUTILS_USE_SDK: 1
         MSSdk: 1
-        CIBW_TEST_EXTRAS: test
-        CIBW_TEST_COMMAND: "pytest {project}/tests"
 
     - name: Verify clean directory
       run: git diff --exit-code
@@ -137,13 +170,11 @@ jobs:
 
   upload_all:
     name: Upload if release
-    needs: [build_wheels, build_win27_wheels, build_sdist]
+    needs: [build_wheels, build_win27_wheels, build_arch_wheels, build_sdist]
     runs-on: ubuntu-latest
     if: github.event_name == 'release' && github.event.action == 'published'
 
     steps:
-    - uses: actions/setup-python@v2
-
     - uses: actions/download-artifact@v2
       with:
         name: artifact

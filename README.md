@@ -3,7 +3,6 @@
 # boost-histogram for Python
 
 [![Actions Status][actions-badge]][actions-link]
-[![Travis-CI][travis-badge]][travis-link]
 [![Documentation Status][rtd-badge]][rtd-link]
 [![Code style: black][black-badge]][black-link]
 
@@ -162,31 +161,33 @@ The easiest way to get boost-histogram is to use a binary wheel, which happens w
 python -m pip install boost-histogram
 ```
 
-Wheels are produced using [cibuildwheel](https://cibuildwheel.readthedocs.io/en/stable/); all platforms supported by cibuildwheel are provided in boost-histogram:
+Wheels are produced using [cibuildwheel](https://cibuildwheel.readthedocs.io/en/stable/); all common platforms have wheels provided in boost-histogram:
 
 | System | Arch | Python versions | PyPy versions |
 |---------|-----|------------------|--------------|
-| ManyLinux1 (custom GCC 9.2) | 32 & 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8, 3.9 | |
+| ManyLinux1 (custom GCC 9.2) | 32 & 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8 | |
 | ManyLinux2010 | 32 & 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8, 3.9 | 7.3: 2.7, 3.6, 3.7 |
-| ManyLinux2014 | ARM64 & PowerPC | 3.5, 3.6, 3.7, 3.8, 3.9 | |
+| ManyLinux2014 | ARM64 | 3.6, 3.7, 3.8, 3.9 | |
 | macOS 10.9+ | 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8, 3.9 | 7.3: 2.7, 3.6, 3.7 |
+| macOS Universal2 | Arm64 | 3.9 | |
 | Windows | 32 & 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8, 3.9 | (32 bit) 7.3: 2.7, 3.6, 3.7 |
 
 
-* manylinux1: Using a custom docker container with GCC 9; should work but can't be called directly other compiled extensions unless they do the same thing (think that's the main caveat). Supporting 32 bits because it's there.
+* manylinux1: Using a custom docker container with GCC 9; should work but can't be called directly other compiled extensions unless they do the same thing (think that's the main caveat). Supporting 32 bits because it's there. Anything running Python 3.9 should be compatible with manylinux2010, so manylinux1 not provided for Python 3.9 (like NumPy).
 * manylinux2010: Requires pip 10+ and a version of Linux newer than 2010.
 * Windows: pybind11 requires compilation with a newer copy of Visual Studio than Python 2.7's Visual Studio 2008; you need to have the [Visual Studio 2015 distributable][msvc2015] installed (the dll is included in 2017 and 2019, as well).
 * PyPy: Supported on all platforms that `cibuildwheel` supports, in pypy2, pypy3.6, and pypy3.7 variants.
-* ARM and PowerPC on Linux is supported for newer Python versions via manylinux2014.
+* ARM on Linux is supported for newer Python versions via manylinux2014. PowerPC or IBM-Z available on request.
+* macOS Universal2 wheels for Apple Silicon and Intel provided for Python 3.9 (requires Pip 21.0.1).
 
 [msvc2015]: https://www.microsoft.com/en-us/download/details.aspx?id=48145
 
-If you are on a Linux system that is not part of the "many" in manylinux, such as Alpine or ClearLinux, building from source is usually fine, since the compilers on those systems are often quite new. It will just take a little longer to install when it's using the sdist instead of a wheel.
+If you are on a Linux system that is not part of the "many" in manylinux, such as Alpine or ClearLinux, building from source is usually fine, since the compilers on those systems are often quite new. It will just take longer to install when it is using the sdist instead of a wheel.
 
 
 #### Conda-Forge
 
-The boost-histogram package is available on Conda-Forge, as well. All supported versions are available with the exception of Python 2.7, which is no longer supported by conda-forge directly. If you really need boost-histogram + Conda + Python 2.7, please open an issue.
+The boost-histogram package is available on Conda-Forge, as well. All supported versions are available with the exception of Python 2.7, which is no longer supported by conda-forge directly.
 
 ```bash
 conda install -c conda-forge boost-histogram
@@ -278,8 +279,6 @@ Support for this work was provided by the National Science Foundation cooperativ
 [rtd-badge]:                https://readthedocs.org/projects/boost-histogram/badge/?version=latest
 [rtd-link]:                 https://boost-histogram.readthedocs.io/en/latest/?badge=latest
 [sk-badge]:                 https://scikit-hep.org/assets/images/Scikit--HEP-Project-blue.svg
-[travis-badge]:             https://travis-ci.com/scikit-hep/boost-histogram.svg?branch=master
-[travis-link]:              https://travis-ci.com/scikit-hep/boost-histogram
 
 [Boost::Histogram]:         https://www.boost.org/doc/libs/release/libs/histogram/doc/html/index.html
 [Boost::Histogram source]:  https://github.com/boostorg/histogram
