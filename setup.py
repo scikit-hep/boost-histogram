@@ -13,8 +13,10 @@ from pybind11.setup_helpers import ParallelCompile, Pybind11Extension  # noqa: E
 
 del sys.path[-1]
 
-# Use the environment variable NPY_NUM_BUILD_JOBS
-ParallelCompile("NPY_NUM_BUILD_JOBS").install()
+# Use the environment variable CMAKE_BUILD_PARALLEL_LEVEL to control parallel builds
+ParallelCompile("CMAKE_BUILD_PARALLEL_LEVEL").install()
+
+cxx_std = int(os.environ.get("CMAKE_CXX_STANDAR", "14"))
 
 SRC_FILES = [
     "src/module.cpp",
@@ -42,7 +44,7 @@ ext_modules = [
         "boost_histogram._core",
         SRC_FILES,
         include_dirs=INCLUDE_DIRS,
-        cxx_std=14,
+        cxx_std=cxx_std,
         extra_compile_args=["/d2FH4-"] if sys.platform.startswith("win32") else [],
     )
 ]
