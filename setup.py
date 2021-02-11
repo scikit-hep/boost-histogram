@@ -51,7 +51,7 @@ ext_modules = [
 
 
 extras = {
-    "test": ["pytest", "pytest-benchmark", "typing_extensions"],
+    "test": ["pytest", "pytest-benchmark", "typing_extensions", "cloudpickle"],
     "docs": [
         "Sphinx~=3.0",
         "recommonmark>=0.5.0",
@@ -60,7 +60,7 @@ extras = {
         "sphinx_copybutton",
     ],
     "examples": ["matplotlib", "xarray", "xhistogram", "netCDF4", "numba", "uproot3"],
-    "dev": ["ipykernel", "cloudpickle", "typer"],
+    "dev": ["ipykernel", "typer"],
 }
 extras["all"] = sum(extras.values(), [])
 extras["dev"] += extras["test"]
