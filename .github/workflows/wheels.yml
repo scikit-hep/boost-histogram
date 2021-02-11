@@ -22,7 +22,7 @@ env:
   CIBW_ENVIRONMENT: "PIP_ONLY_BINARY=numpy SETUPTOOLS_SCM_PRETEND_VERSION=${{ github.event.inputs.overrideVersion }}"
   CIBW_TEST_EXTRAS: test
   CIBW_TEST_COMMAND: "pytest {project}/tests"
-  CIBW_TEST_SKIP: "pp*macos* *universal2:arm64"
+  CIBW_TEST_SKIP: "pp*macos* pp*win* pp27-* *universal2:arm64"
 
 jobs:
   build_sdist:
