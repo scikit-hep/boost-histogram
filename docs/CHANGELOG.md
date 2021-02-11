@@ -4,7 +4,9 @@
 
 ### Version 0.13.0
 
-PlottableProtocol provides a way to plot in different libraries, and easy access to common quantities. This is expected to be the final release for Python 2, and mostly equivalent in API to 1.0.
+PlottableProtocol provides a way to plot in different libraries, and easy
+access to common quantities. This is expected to be the final release for
+Python 2, and mostly equivalent in API to 1.0.
 
 #### User changes
 
@@ -14,12 +16,24 @@ PlottableProtocol provides a way to plot in different libraries, and easy access
   been renamed to `.traits`, and a few more useful traits were added, like
   `.discrete`. Most other portions of the Protocol were already present. [#476][]
 
+
+#### Developer changes
+
+* Support compiling with C++17 [#502][]
+* Rename `NPY_NUM_BUILD_JOBS` to `CMAKE_BUILD_PARALLEL_LEVEL` for consistency
+  with other Scikit-HEP projects. [#502][]
+* Use GitHub Actions for ARM compiling [#474][]
+* Apple Silicon support (since 0.12) [#495][]
+
 #### Bug fixes
 
 * Added additional support for typing, fixing a couple of rare Python 2 bugs in the process [#493][].
 
+[#474]: https://github.com/scikit-hep/boost-histogram/pull/474
 [#476]: https://github.com/scikit-hep/boost-histogram/pull/476
 [#493]: https://github.com/scikit-hep/boost-histogram/pull/493
+[#495]: https://github.com/scikit-hep/boost-histogram/pull/495
+[#502]: https://github.com/scikit-hep/boost-histogram/pull/502
 
 
 ## Version 0.12
