@@ -27,14 +27,14 @@ env:
 jobs:
   build_sdist:
     name: Build SDist
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v1
       with:
         submodules: true
 
     - name: Build SDist
-      run: pipx run --spec build==0.2.1 pyproject-build --sdist
+      run: pipx run --spec build pyproject-build --sdist
 
     - name: Check metadata
       run: pipx run twine check dist/*
@@ -103,9 +103,11 @@ jobs:
 
           - os: macos-latest
             arch: universal2
+            build: "*"
 
           - os: windows-latest
             arch: auto32
+            build: "*"
 
     steps:
     - uses: actions/checkout@v1
