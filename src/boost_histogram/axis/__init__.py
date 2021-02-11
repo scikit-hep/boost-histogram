@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 
-from .._core.axis import options
 from .._internal.axestuple import ArrayTuple, AxesTuple
 from .._internal.axis import (
     Axis,
@@ -25,7 +24,6 @@ __all__ = (
     "StrCategory",
     "Boolean",
     "Axis",
-    "options",
     "Traits",
     "transform",
     "ArrayTuple",

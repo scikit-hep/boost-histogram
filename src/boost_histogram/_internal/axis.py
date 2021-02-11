@@ -6,7 +6,6 @@ from typing import Any
 
 from .._core import axis as ca
 from .axis_transform import AxisTransform
-from .deprecated import deprecated
 from .kwargs import KWArgs
 from .sig_tools import inject_signature
 from .six import string_types
@@ -43,8 +42,6 @@ class Axis(object):
     def __getattr__(self, attr):
         if attr == "metadata":
             return None
-        elif attr == "options":
-            return self._options()
         raise AttributeError(
             "object {} has not attribute {}".format(self.__class__.__name__, attr)
         )
@@ -171,18 +168,6 @@ class Axis(object):
                 ret += ", overflow=False"
 
         return ret
-
-    @deprecated("Use .traits instead", name="options")
-    def _options(self):
-        """
-        Return the options.  Fields:
-          .underflow - True if axes captures values that are too small
-          .overflow  - True if axes captures values that are too large
-                       (or non-valid for category axes)
-          .growth    - True if axis can grow
-          .circular  - True if axis wraps around
-        """
-        return self._ax.options
 
     @property
     def traits(self):

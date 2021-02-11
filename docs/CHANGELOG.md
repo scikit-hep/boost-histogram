@@ -1,5 +1,9 @@
 # What's new in boost-histogram
 
+## Version 1.0
+
+* Removed deprecated `.options` from axes. Use `.traits` instead. [#503][]
+
 ## Version 0.13
 
 ### Version 0.13.0
@@ -37,6 +41,7 @@ Python 2, and mostly equivalent in API to 1.0.
 [#493]: https://github.com/scikit-hep/boost-histogram/pull/493
 [#495]: https://github.com/scikit-hep/boost-histogram/pull/495
 [#502]: https://github.com/scikit-hep/boost-histogram/pull/502
+[#503]: https://github.com/scikit-hep/boost-histogram/pull/503
 
 
 ## Version 0.12
