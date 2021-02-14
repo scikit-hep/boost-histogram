@@ -15,6 +15,9 @@ Python 2, and mostly equivalent in API to 1.0.
   the Kind of the histogram (`bh.Kind.COUNT` or `bh.Kind.MEAN`). `.options` has
   been renamed to `.traits`, and a few more useful traits were added, like
   `.discrete`. Most other portions of the Protocol were already present. [#476][]
+* `.options` has been replaced with `.traits`, with a wider range of
+  Boost.Histogram traits.
+* Removed deprecated `.rank` on histograms (since 0.8). Use `.ndim` instead.
 
 
 #### Developer changes
