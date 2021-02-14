@@ -146,15 +146,15 @@ def test_numpy_weights():
             v = i + j * 10 + 1
             h.fill([x] * v, [y] * v)
 
-    h2, x2, y2 = h.to_numpy(mode="numpy")
-    h1, (x1, y1) = h.to_numpy(dd=True, mode="numpy")
+    h2, x2, y2 = h.to_numpy(view=False)
+    h1, (x1, y1) = h.to_numpy(dd=True, view=False)
 
     assert_array_equal(h1, h2)
     assert_array_equal(x1, x2)
     assert_array_equal(y1, y2)
 
-    h1, (x1, y1) = h.to_numpy(dd=True, mode="numpy")
-    h2, x2, y2 = h.to_numpy(mode="view")
+    h1, (x1, y1) = h.to_numpy(dd=True, view=False)
+    h2, x2, y2 = h.to_numpy(view=True)
 
     assert_array_equal(h1, h2.value)
     assert_array_equal(x1, x2)

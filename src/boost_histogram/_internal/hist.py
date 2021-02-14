@@ -552,11 +552,11 @@ class Histogram(object):
 
         return indexes
 
-    @inject_signature("self, flow=False, *, dd=False, mode='numpy'")
+    @inject_signature("self, flow=False, *, dd=False, view=False")
     def to_numpy(self, flow=False, **kwargs):
         """
-        Convert to a Numpy style tuple of return arrays. Edges are converted
-        to exactly match NumPy standards, with upper edge inclusive, unlike
+        Convert to a Numpy style tuple of return arrays. Edges are converted to
+        match NumPy standards, with upper edge inclusive, unlike
         boost-histogram, where upper edge is exclusive.
 
         Parameters
@@ -566,11 +566,11 @@ class Histogram(object):
         dd : bool = False
             Use the histogramdd return syntax, where the edges are in a tuple.
             Otherwise, this is the histogram/histogram2d return style.
-        mode : Literal["numpy", "view"] = "numpy"
-            The behavior for the return value. "numpy" will return the NumPy
+        view : bool  = False
+            The behavior for the return value. By default, this will return
             array of the values only regardless of the storage (which is all
-            NumPy's histogram function can do). "view" will leave the
-            boost-histogram view of the storage untouched.
+            NumPy's histogram function can do). view=True will return the
+            boost-histogram view of the storage.
 
         Return
         ------
@@ -582,18 +582,16 @@ class Histogram(object):
 
         with KWArgs(kwargs) as kw:
             dd = kw.optional("dd", False)
-            mode = kw.optional("mode", "numpy")
+            view = kw.optional("view", False)
 
         # Python 3+ would be simpler
         return_tuple = self._hist.to_numpy(flow)
         hist = return_tuple[0]
 
-        if mode == "numpy":
-            hist = self.values(flow=flow)
-        elif mode == "view":
+        if view:
             hist = self.view(flow=flow)
         else:
-            raise KeyError("Invalid mode")
+            hist = self.values(flow=flow)
 
         if dd:
             return hist, return_tuple[1:]
