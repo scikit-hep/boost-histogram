@@ -19,6 +19,9 @@ Python 2, and mostly equivalent in API to 1.0.
   Boost.Histogram traits.
 * Removed deprecated `.rank` on histograms (since 0.8). Use `.ndim` instead.
 
+#### Bug fixes
+
+* The resulting histogram from `bh.numpy.*` functions is now reducible [#508][]
 
 #### Developer changes
 
@@ -37,6 +40,7 @@ Python 2, and mostly equivalent in API to 1.0.
 [#493]: https://github.com/scikit-hep/boost-histogram/pull/493
 [#495]: https://github.com/scikit-hep/boost-histogram/pull/495
 [#502]: https://github.com/scikit-hep/boost-histogram/pull/502
+[#508]: https://github.com/scikit-hep/boost-histogram/pull/508
 
 
 ## Version 0.12

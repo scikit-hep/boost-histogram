@@ -14,7 +14,9 @@ namespace bh = boost::histogram;
 
 namespace axis {
 
-/// Mimics the numpy behavoir exactly.
+using index_type = boost::histogram::axis::index_type;
+
+/// Mimics the numpy behavior for the upper bin; required for auto range.
 class regular_numpy : public bh::axis::regular<double, bh::use_default, metadata_t> {
     using value_type = double;
     double stop_{0};
@@ -23,6 +25,10 @@ class regular_numpy : public bh::axis::regular<double, bh::use_default, metadata
     regular_numpy(unsigned n, value_type start, value_type stop, metadata_t meta = {})
         : regular(n, start, stop, meta)
         , stop_(stop) {}
+
+    regular_numpy(const regular_numpy& a, index_type i, index_type j, unsigned n)
+        : regular(a, i, j, n)
+        , stop_(a.stop_) {}
 
     regular_numpy()
         : regular() {}
