@@ -12,7 +12,6 @@ import numpy as np
 from .. import _core
 from .axestuple import AxesTuple
 from .axis import Axis
-from .deprecated import deprecated
 from .enum import Kind
 from .kwargs import KWArgs
 from .sig_tools import inject_signature
@@ -226,15 +225,6 @@ class Histogram(object):
                 ax.__dict__ = copy.deepcopy(ax._ax.metadata, memo)
 
         return other
-
-    def __getattr__(self, attr):
-        # type: (str) -> Any
-        if attr == "rank":
-            return self._rank()
-
-        raise AttributeError(
-            "object {} has not attribute {}".format(self.__class__.__name__, attr)
-        )
 
     @property
     def ndim(self):
@@ -630,14 +620,6 @@ class Histogram(object):
         Compute the sum over the histogram bins (optionally including the flow bins).
         """
         return self._hist.sum(flow)
-
-    @deprecated("Use .ndim instead", name="rank")
-    def _rank(self):
-        # type: () -> int
-        """
-        Number of axes (dimensions) of histogram.
-        """
-        return self._hist.rank()
 
     @property
     def size(self):
