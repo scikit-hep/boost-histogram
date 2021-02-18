@@ -235,6 +235,9 @@ We would like to acknowledge the contributors that made this project possible ([
     <td align="center"><a href="https://github.com/alexander-held"><img src="https://avatars0.githubusercontent.com/u/45009355?v=4?s=100" width="100px;" alt=""/><br /><sub><b>alexander-held</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/issues?q=author%3Aalexander-held" title="Bug reports">🐛</a></td>
     <td align="center"><a href="https://github.com/chrisburr"><img src="https://avatars3.githubusercontent.com/u/5220533?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Chris Burr</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/commits?author=chrisburr" title="Documentation">📖</a></td>
   </tr>
+  <tr>
+    <td align="center"><a href="https://keybase.io/kgizdov"><img src="https://avatars.githubusercontent.com/u/3164953?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Konstantin Gizdov</b></sub></a><br /><a href="#platform-kgizdov" title="Packaging/porting to new platform">📦</a> <a href="https://github.com/scikit-hep/boost-histogram/issues?q=author%3Akgizdov" title="Bug reports">🐛</a></td>
+  </tr>
 </table>
 
 <!-- markdownlint-restore -->
