@@ -134,8 +134,8 @@ class Histogram(object):
             return
 
         # Support objects that provide a to_boost method, like Uproot
-        elif len(axes) == 1 and hasattr(axes[0], "_to_boost_"):
-            self.__init__(axes[0]. _to_boost_())
+        elif len(axes) == 1 and hasattr(axes[0], "_to_boost_histogram_"):
+            self.__init__(axes[0]. _to_boost_histogram_())
             return
 
         # Keyword only trick (change when Python2 is dropped)
