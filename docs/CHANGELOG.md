@@ -15,31 +15,32 @@ Python 2, and mostly equivalent in API to 1.0.
   the Kind of the histogram (`bh.Kind.COUNT` or `bh.Kind.MEAN`). `.options` has
   been renamed to `.traits`, and a few more useful traits were added, like
   `.discrete`. Most other portions of the Protocol were already present. [#476][]
-* `.options` has been replaced with `.traits`, with a wider range of
-  Boost.Histogram traits.
-* Removed deprecated `.rank` on histograms (since 0.8). Use `.ndim` instead.
-
-#### Bug fixes
-
-* The resulting histogram from `bh.numpy.*` functions is now reducible [#508][]
-
-#### Developer changes
-
-* Support compiling with C++17 [#502][]
-* Rename `NPY_NUM_BUILD_JOBS` to `CMAKE_BUILD_PARALLEL_LEVEL` for consistency
-  with other Scikit-HEP projects. [#502][]
-* Use GitHub Actions for ARM compiling [#474][]
-* Apple Silicon support (since 0.12) [#495][]
+* Removed deprecated `.rank` on histograms (since 0.8). Use `.ndim` instead.  [#505][]
+* Supports converting user histogram objects that provide a
+  `_to_boost_histogram_` method. [#483][]
+* A `view=True` parameter must now be passed to get a View instead of a standard
+  NumPy values arrray from `to_numpy()`. [#498][]
 
 #### Bug fixes
 
 * Added additional support for typing, fixing a couple of rare Python 2 bugs in the process [#493][].
+* The resulting histogram from `bh.numpy.*` functions is now reducible [#508][]
+
+#### Developer changes
+
+* Use GitHub Actions for ARM compiling [#474][]
+* Apple Silicon support (since 0.12) [#495][]
+* Support compiling with C++17 [#502][]
+* Rename `NPY_NUM_BUILD_JOBS` to `CMAKE_BUILD_PARALLEL_LEVEL` for consistency
+  with other Scikit-HEP projects. [#502][]
 
 [#474]: https://github.com/scikit-hep/boost-histogram/pull/474
 [#476]: https://github.com/scikit-hep/boost-histogram/pull/476
 [#493]: https://github.com/scikit-hep/boost-histogram/pull/493
 [#495]: https://github.com/scikit-hep/boost-histogram/pull/495
+[#498]: https://github.com/scikit-hep/boost-histogram/pull/498
 [#502]: https://github.com/scikit-hep/boost-histogram/pull/502
+[#505]: https://github.com/scikit-hep/boost-histogram/pull/505
 [#508]: https://github.com/scikit-hep/boost-histogram/pull/508
 
 
