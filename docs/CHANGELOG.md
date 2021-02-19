@@ -36,6 +36,7 @@ Python 2, and mostly equivalent in API to 1.0.
 
 [#474]: https://github.com/scikit-hep/boost-histogram/pull/474
 [#476]: https://github.com/scikit-hep/boost-histogram/pull/476
+[#483]: https://github.com/scikit-hep/boost-histogram/pull/483
 [#493]: https://github.com/scikit-hep/boost-histogram/pull/493
 [#495]: https://github.com/scikit-hep/boost-histogram/pull/495
 [#498]: https://github.com/scikit-hep/boost-histogram/pull/498
