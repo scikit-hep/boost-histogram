@@ -139,7 +139,18 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "kgizdov",
+      "name": "Konstantin Gizdov",
+      "avatar_url": "https://avatars.githubusercontent.com/u/3164953?v=4",
+      "profile": "https://keybase.io/kgizdov",
+      "contributions": [
+        "platform",
+        "bug"
+      ]
     }
   ],
-  "contributorsPerLine": 7
+  "contributorsPerLine": 7,
+  "skipCi": true
 }
