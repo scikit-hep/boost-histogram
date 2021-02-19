@@ -43,6 +43,7 @@ jobs:
       with:
         path: dist/*.tar.gz
 
+
   build_arch_wheels:
     name: ${{ matrix.python }} on ${{ matrix.arch }}
     runs-on: ubuntu-20.04
@@ -83,12 +84,10 @@ jobs:
       matrix:
         os: [windows-latest, macos-latest]
         arch: [auto64]
-        type: [Standard]
         build: ["*"]
 
         include:
           - os: ubuntu-latest
-            type: Standard
             arch: auto
             build: "cp3* pp*"
             CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
@@ -169,6 +168,7 @@ jobs:
     - uses: actions/upload-artifact@v2
       with:
         path: wheelhouse/*.whl
+
 
   upload_all:
     name: Upload if release
