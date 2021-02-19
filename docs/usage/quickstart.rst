@@ -84,11 +84,17 @@ See :ref:`usage-indexing`.
 Accessing the contents
 ----------------------
 
-You can use ``hist.view()`` to get
-a Numpy array (or a RecArray-like wrapper for non-simple storages).
-Most methods like ``.view()`` offer an optional keyword
-argument that you can pass, ``flow=True``, to enable the under and
-overflow bins (disabled by default).
+You can use ``hist.values()`` to get a Numpy array from any histogram. You can
+get the variances with ``hist.variances()``, though if you fill an unweighted
+storage with weights, this will return None, as you no longer can compute the
+variances correctly (please use a weighted storage if you need to). You can
+also get the number of entries in a bin with ``.counts()``; this will return
+counts even if your storage is a mean storage. See :ref:`_usage-plotting`.
+
+If you want access to the full underlying storage, ``.view()`` will return a
+NumPy array for simple storages or a RecArray-like wrapper for non-simple
+storages.  Most methods  offer an optional keyword argument that you can pass,
+``flow=True``, to enable the under and overflow bins (disabled by default).
 
 .. code:: python3
 
@@ -98,7 +104,7 @@ overflow bins (disabled by default).
 Setting the contents
 --------------------
 
-You can set the contents directly as you would a Numpy array;
+You can set the contents directly as you would a NumPy array;
 you can set either values or arrays at a time:
 
 .. code:: python3
@@ -107,8 +113,15 @@ you can set either values or arrays at a time:
     hist[bh.underflow] = 0 # set the underflow bin
     hist2d[3:5, 2:4] = np.eye(2) # set with array
 
-See :ref:`usage-indexing`.
+For non-simple storages, you can add an extra dimension that matches the
+constructor arguments of that accumulator. For example, if you want to fill
+a Weight histogram with three values, you can dimension:
 
+.. code:: python3
+
+    hist[0:3] = [[1,.1], [2, .2], [3, .3]]
+
+See :ref:`usage-indexing`.
 
 Accessing Axes
 --------------

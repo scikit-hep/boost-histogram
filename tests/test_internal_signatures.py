@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 import inspect
 
+import env
 import pytest
 
 import boost_histogram as bh
 from boost_histogram._internal.sig_tools import make_signature_params
-
-import env
-
 
 pytestmark = pytest.mark.skipif(env.PY2, reason="Python 2 does not have signatures")
 

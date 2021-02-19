@@ -1,20 +1,22 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
 
-from setuptools import setup
-
-import sys
 import os
+import sys
+
+from setuptools import setup
 
 DIR = os.path.abspath(os.path.dirname(__file__))
 
 sys.path.append(os.path.join(DIR, "extern", "pybind11"))
-from pybind11.setup_helpers import Pybind11Extension, ParallelCompile  # noqa: E402
+from pybind11.setup_helpers import ParallelCompile, Pybind11Extension  # noqa: E402
 
 del sys.path[-1]
 
-# Use the environment variable NPY_NUM_BUILD_JOBS
-ParallelCompile("NPY_NUM_BUILD_JOBS").install()
+# Use the environment variable CMAKE_BUILD_PARALLEL_LEVEL to control parallel builds
+ParallelCompile("CMAKE_BUILD_PARALLEL_LEVEL").install()
+
+cxx_std = int(os.environ.get("CMAKE_CXX_STANDARD", "14"))
 
 SRC_FILES = [
     "src/module.cpp",
@@ -42,14 +44,14 @@ ext_modules = [
         "boost_histogram._core",
         SRC_FILES,
         include_dirs=INCLUDE_DIRS,
-        cxx_std=14,
+        cxx_std=cxx_std,
         extra_compile_args=["/d2FH4-"] if sys.platform.startswith("win32") else [],
     )
 ]
 
 
 extras = {
-    "test": ["pytest", "pytest-benchmark"],
+    "test": ["pytest", "pytest-benchmark", "typing_extensions", "cloudpickle"],
     "docs": [
         "Sphinx~=3.0",
         "recommonmark>=0.5.0",
@@ -58,7 +60,7 @@ extras = {
         "sphinx_copybutton",
     ],
     "examples": ["matplotlib", "xarray", "xhistogram", "netCDF4", "numba", "uproot3"],
-    "dev": ["ipykernel", "cloudpickle", "typer"],
+    "dev": ["ipykernel", "typer"],
 }
 extras["all"] = sum(extras.values(), [])
 extras["dev"] += extras["test"]

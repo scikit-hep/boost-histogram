@@ -4,7 +4,9 @@ project(BOOST_HISTOGRAM LANGUAGES CXX)
 # Version is added later
 
 # Boost histogram requires C++14
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD
+    14
+    CACHE STRING "The C++ standard to compile with, 14+")
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 

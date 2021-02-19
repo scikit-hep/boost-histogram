@@ -1,20 +1,23 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 
-from .._core import axis as ca
+import copy
+from typing import Any
 
+from .._core import axis as ca
+from .axis_transform import AxisTransform
+from .deprecated import deprecated
 from .kwargs import KWArgs
 from .sig_tools import inject_signature
-from .axis_transform import AxisTransform
-from .utils import cast, register, set_family, MAIN_FAMILY, set_module
 from .six import string_types
-
-import copy
+from .traits import Traits
+from .utils import MAIN_FAMILY, cast, register, set_family, set_module
 
 del absolute_import, division, print_function
 
 
 def _isstr(value):
+    # type: (Any) -> bool
     """
     Check to see if this is a stringlike or a (nested) iterable of stringlikes
     """
@@ -40,8 +43,10 @@ class Axis(object):
     def __getattr__(self, attr):
         if attr == "metadata":
             return None
+        elif attr == "options":
+            return self._options()
         raise AttributeError(
-            "object {0} has not attribute {1}".format(self.__class__.__name__, attr)
+            "object {} has not attribute {}".format(self.__class__.__name__, attr)
         )
 
     def __init__(self, ax, metadata, __dict__):
@@ -136,9 +141,9 @@ class Axis(object):
         def _process_internal(item, default):
             return default if item is None else item(self) if callable(item) else item
 
-        begin = _process_internal(start, -1 if self._ax.options.underflow else 0)
+        begin = _process_internal(start, -1 if self._ax.traits_underflow else 0)
         end = _process_internal(
-            stop, len(self) + (1 if self._ax.options.overflow else 0)
+            stop, len(self) + (1 if self._ax.traits_overflow else 0)
         )
 
         return begin, end
@@ -155,20 +160,20 @@ class Axis(object):
         """
 
         ret = ""
-        if self.options.growth:
+        if self.traits.growth:
             ret += ", growth=True"
-        elif self.options.circular:
+        elif self.traits.circular:
             ret += ", circular=True"
         else:
-            if not self.options.underflow:
+            if not self.traits.underflow:
                 ret += ", underflow=False"
-            if not self.options.overflow:
+            if not self.traits.overflow:
                 ret += ", overflow=False"
 
         return ret
 
-    @property
-    def options(self):
+    @deprecated("Use .traits instead", name="options")
+    def _options(self):
         """
         Return the options.  Fields:
           .underflow - True if axes captures values that are too small
@@ -178,6 +183,20 @@ class Axis(object):
           .circular  - True if axis wraps around
         """
         return self._ax.options
+
+    @property
+    def traits(self):
+        """
+        Get traits for the axis - read only properties of a specific axis.
+        """
+        return Traits(
+            self._ax.traits_underflow,
+            self._ax.traits_overflow,
+            self._ax.traits_circular,
+            self._ax.traits_growth,
+            self._ax.traits_continuous,
+            self._ax.traits_ordered,
+        )
 
     @property
     def size(self):
@@ -205,7 +224,7 @@ class Axis(object):
                 i += self._ax.size
             if i >= self._ax.size:
                 raise IndexError(
-                    "Out of range access, {0} is more than {1}".format(i, self._ax.size)
+                    "Out of range access, {} is more than {}".format(i, self._ax.size)
                 )
         return self.bin(i)
 
@@ -333,7 +352,7 @@ class Regular(Axis):
         ret = super(Regular, self)._repr_kwargs()
 
         if self.transform is not None:
-            ret += ", transform={0}".format(self.transform)
+            ret += ", transform={}".format(self.transform)
 
         return ret
 
@@ -512,9 +531,9 @@ class BaseCategory(Axis):
         """
 
         ret = ""
-        if self.options.growth:
+        if self.traits.growth:
             ret += ", growth=True"
-        elif self.options.circular:
+        elif self.traits.circular:
             ret += ", circular=True"
 
         return ret
@@ -581,7 +600,7 @@ class StrCategory(BaseCategory):
     def _repr_args(self):
         "Return inner part of signature for use in repr"
 
-        return "[{0}]".format(", ".join(repr(c) for c in self))
+        return "[{}]".format(", ".join(repr(c) for c in self))
 
 
 @set_family(MAIN_FAMILY)
@@ -628,7 +647,7 @@ class IntCategory(BaseCategory):
     def _repr_args(self):
         "Return inner part of signature for use in repr"
 
-        return "[{0}]".format(", ".join(format(c, "g") for c in self))
+        return "[{}]".format(", ".join(format(c, "g") for c in self))
 
 
 # Contains all common methods and properties for the boolean axis

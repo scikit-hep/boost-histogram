@@ -6,10 +6,10 @@ except ImportError:
 
 import os
 
-import pytest
-import boost_histogram as bh
-
 import env
+import pytest
+
+import boost_histogram as bh
 
 DIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -57,8 +57,8 @@ def test_read_pickle(version):
     assert isinstance(h3.axes[0], bh.axis.StrCategory)
     assert isinstance(h3.axes[1], bh.axis.Variable)
 
-    assert h3.axes[0].options.growth
-    assert not h3.axes[1].options.growth
+    assert h3.axes[0].traits.growth
+    assert not h3.axes[1].traits.growth
 
     assert h1.axes[0].metadata is None
     assert h2.axes[0].metadata == {"hello": "world"}

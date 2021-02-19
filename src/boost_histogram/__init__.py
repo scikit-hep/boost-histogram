@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 
+from . import accumulators, axis, numpy, storage, utils
+from ._internal.enum import Kind
 from ._internal.hist import Histogram
-from . import axis, storage, accumulators, utils, numpy
-from .tag import loc, rebin, sum, underflow, overflow
-
+from .tag import loc, overflow, rebin, sum, underflow
 from .version import version as __version__
 
 try:
@@ -20,7 +20,7 @@ except ImportError as err:
     total_msg = "\n".join([msg, new_msg])
 
     # Python 2
-    if sys.version_info.major < 3:
+    if sys.version_info < (3, 0):
         orig = sys.exc_info()
         assert orig[0] is not None and orig[2] is not None
         exc_info = orig[0], orig[0](total_msg), orig[2]
@@ -37,6 +37,7 @@ del absolute_import, division, print_function
 
 __all__ = (
     "Histogram",
+    "Kind",
     "axis",
     "storage",
     "accumulators",

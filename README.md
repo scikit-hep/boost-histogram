@@ -3,7 +3,6 @@
 # boost-histogram for Python
 
 [![Actions Status][actions-badge]][actions-link]
-[![Travis-CI][travis-badge]][travis-link]
 [![Documentation Status][rtd-badge]][rtd-link]
 [![Code style: black][black-badge]][black-link]
 
@@ -56,8 +55,7 @@ hist.fill(
 )
 
 # Numpy array view into histogram counts, no overflow bins
-counts = hist.view()
-
+values = hist.values()
 ```
 
 ## Features
@@ -75,7 +73,7 @@ counts = hist.view()
     * `bh.axis.Integer(start, stop, underflow=True, overflow=True, growth=False)`: Special high-speed version of `regular` for evenly spaced bins of width 1
     * `bh.axis.Variable([start, edge1, edge2, ..., stop], underflow=True, overflow=True)`: Uneven bin spacing
     * `bh.axis.Category([...], growth=False)`: Integer or string categories
-    * `bh.axis.Boolean()`: A True/False axis [(known issue with slicing/selection in 0.8.0)]()
+    * `bh.axis.Boolean()`: A True/False axis
 * Axis features:
     * `.index(value)`: The index at a point (or points) on the axis
     * `.value(index)`: The value for a fractional bin (or bins) in the axis
@@ -84,7 +82,7 @@ counts = hist.view()
     * `.edges`: The N+1 bin edges (if continuous)
     * `.extent`: The number of bins (including under/overflow)
     * `.metadata`: Anything a user wants to store
-    * `.options`: The options set on the axis (`bh.axis.options`)
+    * `.traits`: The options set on the axis (`bh.axis.options`)
     * `.size`: The number of bins (not including under/overflow)
     * `.widths`: The N bin widths
 * Many storage types
@@ -106,10 +104,14 @@ counts = hist.view()
   * `+`: Add two histograms (storages must match types currently)
   * `*=`: Multiply by a scaler (not all storages) (`hist * scalar` and `scalar * hist` supported too)
   * `/=`: Divide by a scaler (not all storages) (`hist / scalar` supported too)
+  * `.kind`: Either `bh.Kind.COUNT` or `bh.Kind.MEAN`, depending on storage
   * `.sum(flow=False)`: The total count of all bins
   * `.project(ax1, ax2, ...)`: Project down to listed axis (numbers)
   * `.to_numpy(flow=False)`: Convert to a NumPy style tuple (with or without under/overflow bins)
   * `.view(flow=False)`: Get a view on the bin contents (with or without under/overflow bins)
+  * `.values(flow=False)`: Get a view on the values (counts or means, depending on storage)
+  * `.variances(flow=False)`: Get the variances if available
+  * `.counts(flow=False)`: Get the effective counts for all storage types
   * `.reset()`: Set counters to 0
   * `.empty(flow=False)`: Check to see if the histogram is empty (can check flow bins too if asked)
   * `.copy(deep=False)`: Make a copy of a histogram
@@ -159,31 +161,33 @@ The easiest way to get boost-histogram is to use a binary wheel, which happens w
 python -m pip install boost-histogram
 ```
 
-Wheels are produced using [cibuildwheel](https://cibuildwheel.readthedocs.io/en/stable/); all platforms supported by cibuildwheel are provided in boost-histogram:
+Wheels are produced using [cibuildwheel](https://cibuildwheel.readthedocs.io/en/stable/); all common platforms have wheels provided in boost-histogram:
 
 | System | Arch | Python versions | PyPy versions |
 |---------|-----|------------------|--------------|
-| ManyLinux1 (custom GCC 9.2) | 32 & 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8, 3.9 | |
+| ManyLinux1 (custom GCC 9.2) | 32 & 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8 | |
 | ManyLinux2010 | 32 & 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8, 3.9 | 7.3: 2.7, 3.6, 3.7 |
-| ManyLinux2014 | ARM64 & PowerPC | 3.5, 3.6, 3.7, 3.8, 3.9 | |
+| ManyLinux2014 | ARM64 | 3.6, 3.7, 3.8, 3.9 | |
 | macOS 10.9+ | 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8, 3.9 | 7.3: 2.7, 3.6, 3.7 |
+| macOS Universal2 | Arm64 | 3.9 | |
 | Windows | 32 & 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8, 3.9 | (32 bit) 7.3: 2.7, 3.6, 3.7 |
 
 
-* manylinux1: Using a custom docker container with GCC 9; should work but can't be called directly other compiled extensions unless they do the same thing (think that's the main caveat). Supporting 32 bits because it's there.
+* manylinux1: Using a custom docker container with GCC 9; should work but can't be called directly other compiled extensions unless they do the same thing (think that's the main caveat). Supporting 32 bits because it's there. Anything running Python 3.9 should be compatible with manylinux2010, so manylinux1 not provided for Python 3.9 (like NumPy).
 * manylinux2010: Requires pip 10+ and a version of Linux newer than 2010.
 * Windows: pybind11 requires compilation with a newer copy of Visual Studio than Python 2.7's Visual Studio 2008; you need to have the [Visual Studio 2015 distributable][msvc2015] installed (the dll is included in 2017 and 2019, as well).
 * PyPy: Supported on all platforms that `cibuildwheel` supports, in pypy2, pypy3.6, and pypy3.7 variants.
-* ARM and PowerPC on Linux is supported for newer Python versions via manylinux2014.
+* ARM on Linux is supported for newer Python versions via manylinux2014. PowerPC or IBM-Z available on request.
+* macOS Universal2 wheels for Apple Silicon and Intel provided for Python 3.9 (requires Pip 21.0.1).
 
 [msvc2015]: https://www.microsoft.com/en-us/download/details.aspx?id=48145
 
-If you are on a Linux system that is not part of the "many" in manylinux, such as Alpine or ClearLinux, building from source is usually fine, since the compilers on those systems are often quite new. It will just take a little longer to install when it's using the sdist instead of a wheel.
+If you are on a Linux system that is not part of the "many" in manylinux, such as Alpine or ClearLinux, building from source is usually fine, since the compilers on those systems are often quite new. It will just take longer to install when it is using the sdist instead of a wheel.
 
 
 #### Conda-Forge
 
-The boost-histogram package is available on Conda-Forge, as well. All supported versions are available with the exception of Python 2.7, which is no longer supported by conda-forge directly. If you really need boost-histogram + Conda + Python 2.7, please open an issue.
+The boost-histogram package is available on Conda-Forge, as well. All supported versions are available with the exception of Python 2.7, which is no longer supported by conda-forge directly.
 
 ```bash
 conda install -c conda-forge boost-histogram
@@ -231,6 +235,9 @@ We would like to acknowledge the contributors that made this project possible ([
     <td align="center"><a href="https://github.com/alexander-held"><img src="https://avatars0.githubusercontent.com/u/45009355?v=4?s=100" width="100px;" alt=""/><br /><sub><b>alexander-held</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/issues?q=author%3Aalexander-held" title="Bug reports">🐛</a></td>
     <td align="center"><a href="https://github.com/chrisburr"><img src="https://avatars3.githubusercontent.com/u/5220533?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Chris Burr</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/commits?author=chrisburr" title="Documentation">📖</a></td>
   </tr>
+  <tr>
+    <td align="center"><a href="https://keybase.io/kgizdov"><img src="https://avatars.githubusercontent.com/u/3164953?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Konstantin Gizdov</b></sub></a><br /><a href="#platform-kgizdov" title="Packaging/porting to new platform">📦</a> <a href="https://github.com/scikit-hep/boost-histogram/issues?q=author%3Akgizdov" title="Bug reports">🐛</a></td>
+  </tr>
 </table>
 
 <!-- markdownlint-restore -->
@@ -275,8 +282,6 @@ Support for this work was provided by the National Science Foundation cooperativ
 [rtd-badge]:                https://readthedocs.org/projects/boost-histogram/badge/?version=latest
 [rtd-link]:                 https://boost-histogram.readthedocs.io/en/latest/?badge=latest
 [sk-badge]:                 https://scikit-hep.org/assets/images/Scikit--HEP-Project-blue.svg
-[travis-badge]:             https://travis-ci.com/scikit-hep/boost-histogram.svg?branch=master
-[travis-link]:              https://travis-ci.com/scikit-hep/boost-histogram
 
 [Boost::Histogram]:         https://www.boost.org/doc/libs/release/libs/histogram/doc/html/index.html
 [Boost::Histogram source]:  https://github.com/boostorg/histogram

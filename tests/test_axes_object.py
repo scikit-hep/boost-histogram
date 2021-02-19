@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import boost_histogram as bh
-
 import numpy as np
+
+import boost_histogram as bh
 
 
 def test_axes_all_at_once():

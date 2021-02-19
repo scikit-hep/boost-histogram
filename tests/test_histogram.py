@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
+import functools
+import operator
+import sys
+from io import BytesIO
+
+import numpy as np
 import pytest
+from numpy.testing import assert_array_equal
 from pytest import approx
 
 import boost_histogram as bh
-
-import numpy as np
-from numpy.testing import assert_array_equal
-from io import BytesIO
-import sys
-import operator
-import functools
 
 try:
     import cPickle as pickle

@@ -114,6 +114,34 @@ py::class_<A> register_axis(py::module& m, Args&&... args) {
                  }
              })
 
+        .def_property_readonly("traits_underflow",
+                               [](const A& self) {
+                                   return static_cast<bool>(
+                                       self.options() & bh::axis::option::underflow);
+                               })
+        .def_property_readonly("traits_overflow",
+                               [](const A& self) {
+                                   return static_cast<bool>(
+                                       self.options() & bh::axis::option::overflow);
+                               })
+        .def_property_readonly("traits_circular",
+                               [](const A& self) {
+                                   return static_cast<bool>(
+                                       self.options() & bh::axis::option::circular);
+                               })
+        .def_property_readonly("traits_growth",
+                               [](const A& self) {
+                                   return static_cast<bool>(self.options()
+                                                            & bh::axis::option::growth);
+                               })
+        .def_property_readonly(
+            "traits_continuous",
+            [](const A& self) { return bh::axis::traits::continuous(self); })
+        .def_property_readonly(
+            "traits_ordered",
+            [](const A& self) { return bh::axis::traits::ordered(self); })
+
+        // Deprecated - use the .traits property filled by the values above instead.
         .def_property_readonly(
             "options",
             [](const A&) { return options{bh::axis::traits::get_options<A>::value}; },
@@ -127,7 +155,7 @@ py::class_<A> register_axis(py::module& m, Args&&... args) {
 
         .def_property_readonly(
             "size",
-            &A::size,
+            [](const A& ob) { return ob.size(); },
             "Returns the number of bins excluding under- and overflow")
 
         .def_property_readonly(

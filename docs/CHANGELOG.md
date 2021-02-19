@@ -1,6 +1,50 @@
 # What's new in boost-histogram
 
-# Version 0.12
+## Version 0.13
+
+### Version 0.13.0
+
+PlottableProtocol provides a way to plot in different libraries, and easy
+access to common quantities. This is expected to be the final release for
+Python 2, and mostly equivalent in API to 1.0.
+
+#### User changes
+
+* Support for PlottableProtocol. You can now access `.values()`, `.counts()`,
+  and `.variances()` on all storages; used by plotting libraries. `.kind` describes
+  the Kind of the histogram (`bh.Kind.COUNT` or `bh.Kind.MEAN`). `.options` has
+  been renamed to `.traits`, and a few more useful traits were added, like
+  `.discrete`. Most other portions of the Protocol were already present. [#476][]
+* Removed deprecated `.rank` on histograms (since 0.8). Use `.ndim` instead.  [#505][]
+* Supports converting user histogram objects that provide a
+  `_to_boost_histogram_` method. [#483][]
+* A `view=True` parameter must now be passed to get a View instead of a standard
+  NumPy values arrray from `to_numpy()`. [#498][]
+
+#### Bug fixes
+
+* Added additional support for typing, fixing a couple of rare Python 2 bugs in the process [#493][].
+* The resulting histogram from `bh.numpy.*` functions is now reducible [#508][]
+
+#### Developer changes
+
+* Use GitHub Actions for ARM compiling [#474][]
+* Apple Silicon support (since 0.12) [#495][]
+* Support compiling with C++17 [#502][]
+* Rename `NPY_NUM_BUILD_JOBS` to `CMAKE_BUILD_PARALLEL_LEVEL` for consistency
+  with other Scikit-HEP projects. [#502][]
+
+[#474]: https://github.com/scikit-hep/boost-histogram/pull/474
+[#476]: https://github.com/scikit-hep/boost-histogram/pull/476
+[#493]: https://github.com/scikit-hep/boost-histogram/pull/493
+[#495]: https://github.com/scikit-hep/boost-histogram/pull/495
+[#498]: https://github.com/scikit-hep/boost-histogram/pull/498
+[#502]: https://github.com/scikit-hep/boost-histogram/pull/502
+[#505]: https://github.com/scikit-hep/boost-histogram/pull/505
+[#508]: https://github.com/scikit-hep/boost-histogram/pull/508
+
+
+## Version 0.12
 
 ### Version 0.12.0
 
@@ -26,6 +70,13 @@ Pressing forward to 1.0.
 
 * Bumped to pybind11 version [#470][]
 * Black formatting used in notebooks too [#470][]
+
+
+#### Upgrade warning
+
+If you are using `Axis.options`, please transition to `Axis.traits`. `traits`
+includes all the old options, along with some new traits, and matches the
+PlottableProtocol requirements.
 
 [#470]: https://github.com/scikit-hep/boost-histogram/pull/470
 [#472]: https://github.com/scikit-hep/boost-histogram/pull/472

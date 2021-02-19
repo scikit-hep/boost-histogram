@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 
+import sys
+
 # bh.sum is just the Python sum, so from boost_histogram import * is safe (but
 # not recommended)
-try:
+if sys.version_info < (3, 0):
+    from __builtin__ import sum
+else:
     from builtins import sum
-except ImportError:
-    from __builtin__ import sum  # type: ignore
 
 del absolute_import, division, print_function
 
@@ -25,6 +27,7 @@ class Slicer(object):
     """
 
     def __getitem__(self, item):
+        # type: (slice) -> slice
         return item
 
 
@@ -33,12 +36,14 @@ class Locator(object):
     NAME = ""
 
     def __init__(self, offset=0):
+        # type: (int) -> None
         if not isinstance(offset, int):
             raise ValueError("The offset must be an integer")
 
         self.offset = offset
 
     def __add__(self, offset):
+        # type: (int) -> Locator
         from copy import copy
 
         other = copy(self)
@@ -46,6 +51,7 @@ class Locator(object):
         return other
 
     def __sub__(self, offset):
+        # type: (int) -> Locator
         from copy import copy
 
         other = copy(self)
@@ -53,9 +59,11 @@ class Locator(object):
         return other
 
     def _print_self_(self):
+        # type: () -> str
         return ""
 
     def __repr__(self):
+        # type: () -> str
         s = self.NAME or self.__class__.__name__
         s += self._print_self_()
         if self.offset != 0:
@@ -68,11 +76,13 @@ class loc(Locator):
     __slots__ = ("value",)
 
     def __init__(self, value, offset=0):
+        # type: (float, int) -> None
         super(loc, self).__init__(offset)
         self.value = value
 
     def _print_self_(self):
-        return "({0})".format(self.value)
+        # type: () -> str
+        return "({})".format(self.value)
 
     def __call__(self, axis):
         return axis.index(self.value) + self.offset
@@ -104,6 +114,7 @@ class at(object):
     __slots__ = ("value",)
 
     def __init__(self, value):
+        # type: (float) -> None
         self.value = value
 
     def __call__(self, axis):
@@ -114,9 +125,11 @@ class rebin(object):
     __slots__ = ("factor",)
 
     def __init__(self, value):
+        # type: (int) -> None
         self.factor = value
 
     def __repr__(self):
+        # type: () -> str
         return "{self.__class__.__name__}({self.factor})".format(self=self)
 
     # TODO: Add __call__ to support UHI

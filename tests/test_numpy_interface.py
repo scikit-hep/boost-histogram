@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
+import copy
+
+import numpy as np
 import pytest
 
 import boost_histogram as bh
-import numpy as np
-
-import copy
 
 np113 = tuple(int(x) for x in np.__version__.split(".")[:2]) >= (1, 13)
 
@@ -73,6 +73,9 @@ def test_histogram1d_object(a, opt):
 
     np.testing.assert_array_almost_equal(e1, e2)
     np.testing.assert_array_equal(h1, h2)
+
+    # Ensure reducible
+    assert bh_h2[:5].values() == pytest.approx(h1[:5])
 
     opt = copy.deepcopy(opt)
     opt["density"] = True

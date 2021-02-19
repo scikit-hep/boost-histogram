@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 
-from .._core import axis as ca
-
-from .utils import register, set_family, MAIN_FAMILY, set_module
-from .sig_tools import inject_signature
-from .kwargs import KWArgs
-
 import copy
+from typing import Any
+
+from .._core import axis as ca
+from .kwargs import KWArgs
+from .sig_tools import inject_signature
+from .utils import MAIN_FAMILY, register, set_family, set_module
 
 del absolute_import, division, print_function
 
@@ -34,11 +34,16 @@ class AxisTransform(object):
             return self.__class__.__name__ + "() # Missing _this, broken class"
 
     def _produce(self, bins, start, stop):
-        return self.__class__._type(bins, start, stop)
+        # type: (int, int, int) -> Any
+        # Note: this is an ABC; _type must be defined on children
+        # These can be fixed later with a Protocol
+        return self.__class__._type(bins, start, stop)  # type: ignore
 
     def __init__(self):
+        # type: () -> None
         "Create a new transform instance"
-        (cpp_class,) = self._types
+        # Note: this comes from set_family
+        (cpp_class,) = self._types  # type: ignore
         self._this = cpp_class()
 
     def forward(self, value):
@@ -62,7 +67,8 @@ class Pow(AxisTransform):
 
     def __init__(self, power):
         "Create a new transform instance"
-        (cpp_class,) = self._types
+        # Note: this comes from set_family
+        (cpp_class,) = self._types  # type: ignore
         self._this = cpp_class(power)
 
     @property
@@ -134,7 +140,8 @@ class Function(AxisTransform):
             convert = k.optional("convert")
             name = k.optional("name", "")
 
-        (cpp_class,) = self._types
+        # Note: this comes from set_family
+        (cpp_class,) = self._types  # type: ignore
         self._this = cpp_class(forward, inverse, convert, name)
 
     # This one does need to be a normal method

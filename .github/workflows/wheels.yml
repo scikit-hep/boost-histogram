@@ -120,9 +120,10 @@ jobs:
     - uses: joerick/cibuildwheel@v1.9.0
       env:
         CIBW_BUILD: ${{ matrix.build }}
-        CIBW_SKIP: cp27-win* pp27*
+        CIBW_SKIP: cp27-win* pp27-win*
         CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.CIBW_MANYLINUX_I686_IMAGE }}
         CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.CIBW_MANYLINUX_X86_64_IMAGE }}
+        CIBW_ARCHS: ${{ matrix.arch }}
 
     - name: Verify clean directory
       run: git diff --exit-code
@@ -163,8 +164,6 @@ jobs:
         CIBW_BUILD: cp27-win32
         DISTUTILS_USE_SDK: 1
         MSSdk: 1
-        CIBW_TEST_EXTRAS: test
-        CIBW_TEST_COMMAND: "pytest {project}/tests"
 
     - name: Verify clean directory
       run: git diff --exit-code
@@ -176,19 +175,17 @@ jobs:
 
   upload_all:
     name: Upload if release
-    needs: [build_wheels, build_win27_wheels, build_sdist]
+    needs: [build_wheels, build_win27_wheels, build_arch_wheels, build_sdist]
     runs-on: ubuntu-latest
     if: github.event_name == 'release' && github.event.action == 'published'
 
     steps:
-    - uses: actions/setup-python@v2
-
     - uses: actions/download-artifact@v2
       with:
         name: artifact
         path: dist
 
-    - uses: pypa/gh-action-pypi-publish@v1.4.1
+    - uses: pypa/gh-action-pypi-publish@v1.4.2
       with:
         user: __token__
         password: ${{ secrets.pypi_password }}

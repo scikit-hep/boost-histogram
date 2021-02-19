@@ -1,19 +1,18 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 
-from . import axis as _axis
-from ._internal import hist as _hist
-from ._internal.utils import cast as _cast
-from . import _core
-from . import storage as _storage
-
-from ._internal.kwargs import KWArgs as _KWArgs
-from ._internal.sig_tools import inject_signature as _inject_signature
 from functools import reduce as _reduce
 from operator import mul as _mul
 
 import numpy as _np
 
+from . import _core
+from . import axis as _axis
+from . import storage as _storage
+from ._internal import hist as _hist
+from ._internal.kwargs import KWArgs as _KWArgs
+from ._internal.sig_tools import inject_signature as _inject_signature
+from ._internal.utils import cast as _cast
 
 del absolute_import, division, print_function  # hides these from IPython
 
@@ -80,7 +79,10 @@ def histogramdd(
         density = hist.view() / hist.sum() / areas
         return (density, hist.to_numpy()[1:])
 
-    return hist if bh_cls is not None else hist.to_numpy(dd=True)
+    # Note: this is view=True since users have to ask explicitly for special
+    # storages, so view=False would throw away part of what they are asking
+    # for. Users can use a histogram return type if they need view=False.
+    return hist if bh_cls is not None else hist.to_numpy(view=True, dd=True)
 
 
 @_inject_signature(
@@ -111,7 +113,8 @@ def histogram(
         kwargs["storage"] = _storage.Int64()
 
     if isinstance(bins, str):
-        if tuple(int(x) for x in np.__version__.split(".")[:2]) < (1, 13):
+        # Bug in NumPy 1.20 typing support - __version__ is missing
+        if tuple(int(x) for x in np.version.version.split(".")[:2]) < (1, 13):
             raise KeyError(
                 "Upgrade numpy to 1.13+ to use string arguments to boost-histogram's histogram function"
             )
