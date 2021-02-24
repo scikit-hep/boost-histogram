@@ -61,7 +61,7 @@ jobs:
       with:
         platforms: all
 
-    - uses: joerick/cibuildwheel@v1.9.0
+    - uses: joerick/cibuildwheel@v1.10.0
       env:
         CIBW_BUILD: cp${{ matrix.python }}-*
         CIBW_ARCHS: ${{ matrix.arch }}
@@ -113,7 +113,7 @@ jobs:
       with:
         submodules: true
 
-    - uses: joerick/cibuildwheel@v1.9.0
+    - uses: joerick/cibuildwheel@v1.10.0
       env:
         CIBW_BUILD: ${{ matrix.build }}
         CIBW_SKIP: cp27-win* pp27-win*
@@ -144,7 +144,7 @@ jobs:
     - uses: ilammy/msvc-dev-cmd@v1
 
     - name: Build 64-bit wheel
-      uses: joerick/cibuildwheel@v1.9.0
+      uses: joerick/cibuildwheel@v1.10.0
       env:
         CIBW_BUILD: cp27-win_amd64
         DISTUTILS_USE_SDK: 1
@@ -155,7 +155,7 @@ jobs:
         arch: x86
 
     - name: Build 32-bit wheel
-      uses: joerick/cibuildwheel@v1.9.0
+      uses: joerick/cibuildwheel@v1.10.0
       env:
         CIBW_BUILD: cp27-win32
         DISTUTILS_USE_SDK: 1
