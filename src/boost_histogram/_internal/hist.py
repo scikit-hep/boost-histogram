@@ -138,7 +138,7 @@ class Histogram(object):
 
         # Support objects that provide a to_boost method, like Uproot
         elif len(axes) == 1 and hasattr(axes[0], "_to_boost_histogram_"):
-            self.__init__(axes[0]. _to_boost_histogram_())
+            self.__init__(axes[0]._to_boost_histogram_())  # type: ignore
             return
 
         # Keyword only trick (change when Python2 is dropped)
@@ -601,7 +601,7 @@ class Histogram(object):
         if dd:
             return hist, return_tuple[1:]
         else:
-            return (hist,) +  return_tuple[1:]
+            return (hist,) + return_tuple[1:]
 
     @inject_signature("self, *, deep=True")
     def copy(self, **kwargs):
