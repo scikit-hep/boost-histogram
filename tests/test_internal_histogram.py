@@ -135,6 +135,7 @@ def test_numpy_dd():
     assert_array_equal(x1, x2)
     assert_array_equal(y1, y2)
 
+
 def test_numpy_weights():
     h = bh.Histogram(
         bh.axis.Regular(10, 0, 1), bh.axis.Regular(5, 0, 1), storage=bh.storage.Weight()
