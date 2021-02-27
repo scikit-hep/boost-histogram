@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import, division, print_function
-
 import copy
 from typing import Any
 
@@ -9,11 +6,9 @@ from .kwargs import KWArgs
 from .sig_tools import inject_signature
 from .utils import MAIN_FAMILY, register, set_family, set_module
 
-del absolute_import, division, print_function
-
 
 @set_module("boost_histogram.axis.transform")
-class AxisTransform(object):
+class AxisTransform:
     __slots__ = ("_this",)
 
     def __copy__(self):

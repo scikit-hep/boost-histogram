@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # This is basically a dataclass from Python 3.7, with frozen=True
 
 from typing import Any
@@ -16,7 +15,7 @@ _traits = (
 # This can be converted to a immutable dataclass once Python < 3.7 is dropped.
 
 
-class Traits(object):
+class Traits:
     __slots__ = _traits
 
     def __init__(

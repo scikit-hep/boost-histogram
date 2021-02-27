@@ -49,7 +49,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["2.7", "3.5", "3.9", "pypy3"]
+        python-version: ["3.6", "3.9", "pypy3"]
         include:
         - python-version: "3.8"
           cmake-extras: "-DCMAKE_CXX_STANDARD=17"
@@ -92,7 +92,7 @@ jobs:
 
     - uses: joerick/cibuildwheel@v1.10.0
       env:
-        CIBW_BUILD: cp38-win_amd64 cp27-manylinux_i686 cp37-macosx_x86_64
+        CIBW_BUILD: cp38-win_amd64 cp36-manylinux_i686 cp37-macosx_x86_64
         CIBW_TEST_EXTRAS: test
         CIBW_TEST_COMMAND: pytest {project}/tests
         CIBW_BUILD_VERBOSITY: 1

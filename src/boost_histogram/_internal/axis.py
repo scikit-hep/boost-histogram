@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import, division, print_function
-
 import copy
 from typing import Any
 
@@ -11,8 +8,6 @@ from .sig_tools import inject_signature
 from .six import string_types
 from .traits import Traits
 from .utils import MAIN_FAMILY, cast, register, set_family, set_module
-
-del absolute_import, division, print_function
 
 
 def _isstr(value):
@@ -31,7 +26,7 @@ def _isstr(value):
 
 # Contains common methods and properties to all axes
 @set_module("boost_histogram.axis")
-class Axis(object):
+class Axis:
     __slots__ = ("_ax", "__dict__")
 
     def __setattr__(self, attr, value):
@@ -43,7 +38,7 @@ class Axis(object):
         if attr == "metadata":
             return None
         raise AttributeError(
-            "object {} has not attribute {}".format(self.__class__.__name__, attr)
+            f"object {self.__class__.__name__} has not attribute {attr}"
         )
 
     def __init__(self, ax, metadata, __dict__):
@@ -209,7 +204,7 @@ class Axis(object):
                 i += self._ax.size
             if i >= self._ax.size:
                 raise IndexError(
-                    "Out of range access, {} is more than {}".format(i, self._ax.size)
+                    f"Out of range access, {i} is more than {self._ax.size}"
                 )
         return self.bin(i)
 
@@ -300,7 +295,7 @@ class Regular(Axis):
                 not isinstance(transform, AxisTransform)
                 and AxisTransform in transform.__bases__
             ):
-                raise TypeError("You must pass an instance, use {}()".format(transform))
+                raise TypeError(f"You must pass an instance, use {transform}()")
 
             ax = transform._produce(bins, start, stop)
 
@@ -324,7 +319,7 @@ class Regular(Axis):
         else:
             raise KeyError("Unsupported collection of options")
 
-        super(Regular, self).__init__(ax, metadata, __dict__)
+        super().__init__(ax, metadata, __dict__)
 
     def _repr_args(self):
         "Return inner part of signature for use in repr"
@@ -334,10 +329,10 @@ class Regular(Axis):
         )
 
     def _repr_kwargs(self):
-        ret = super(Regular, self)._repr_kwargs()
+        ret = super()._repr_kwargs()
 
         if self.transform is not None:
-            ret += ", transform={}".format(self.transform)
+            ret += f", transform={self.transform}"
 
         return ret
 
@@ -416,7 +411,7 @@ class Variable(Axis):
         else:
             raise KeyError("Unsupported collection of options")
 
-        super(Variable, self).__init__(ax, metadata, __dict__)
+        super().__init__(ax, metadata, __dict__)
 
     def _repr_args(self):
         "Return inner part of signature for use in repr"
@@ -494,7 +489,7 @@ class Integer(Axis):
         else:
             raise KeyError("Unsupported collection of options")
 
-        super(Integer, self).__init__(ax, metadata, __dict__)
+        super().__init__(ax, metadata, __dict__)
 
     def _repr_args(self):
         "Return inner part of signature for use in repr"
@@ -566,7 +561,7 @@ class StrCategory(BaseCategory):
         else:
             raise KeyError("Unsupported collection of options")
 
-        super(StrCategory, self).__init__(ax, metadata, __dict__)
+        super().__init__(ax, metadata, __dict__)
 
     def index(self, value):
         """
@@ -627,7 +622,7 @@ class IntCategory(BaseCategory):
         else:
             raise KeyError("Unsupported collection of options")
 
-        super(IntCategory, self).__init__(ax, metadata, __dict__)
+        super().__init__(ax, metadata, __dict__)
 
     def _repr_args(self):
         "Return inner part of signature for use in repr"
@@ -661,7 +656,7 @@ class Boolean(Axis):
 
         ax = ca.boolean()
 
-        super(Boolean, self).__init__(ax, metadata, __dict__)
+        super().__init__(ax, metadata, __dict__)
 
     def _repr_args(self):
         "Return inner part of signature for use in repr"

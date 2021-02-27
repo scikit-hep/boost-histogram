@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Try to import Enum, but if it fails, not worth breaking over.
 
 from typing import Callable, cast

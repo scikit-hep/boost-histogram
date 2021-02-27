@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import, division, print_function
-
 from functools import reduce as _reduce
 from operator import mul as _mul
 
@@ -13,8 +10,6 @@ from ._internal import hist as _hist
 from ._internal.kwargs import KWArgs as _KWArgs
 from ._internal.sig_tools import inject_signature as _inject_signature
 from ._internal.utils import cast as _cast
-
-del absolute_import, division, print_function  # hides these from IPython
 
 __all__ = ("histogram", "histogram2d", "histogramdd")
 

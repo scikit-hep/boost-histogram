@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 try:
     from cPickle import pickle
 except ImportError:
@@ -22,7 +21,7 @@ DIR = os.path.abspath(os.path.dirname(__file__))
 @pytest.mark.parametrize("version", ["0.10.2", "0.6.2", "0.11.1"])
 def test_read_pickle(version):
 
-    filename = os.path.join(DIR, "pickles", "bh_{}.pkl".format(version))
+    filename = os.path.join(DIR, "pickles", f"bh_{version}.pkl")
     with open(filename, "rb") as f:
         d = pickle.load(f)
 

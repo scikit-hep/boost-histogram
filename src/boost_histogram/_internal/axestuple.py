@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import, division, print_function
-
 from functools import partial
 from typing import Any, List, Tuple
 
@@ -8,8 +5,6 @@ import numpy as np
 
 from .axis import Axis
 from .utils import set_module
-
-del absolute_import, division, print_function
 
 
 @set_module("boost_histogram.axis")
@@ -103,7 +98,7 @@ class AxesTuple(tuple):
 
     def __getitem__(self, item):
         # type: (Any) -> Any
-        result = super(AxesTuple, self).__getitem__(item)
+        result = super().__getitem__(item)
         return self.__class__(result) if isinstance(result, tuple) else result
 
     def __getattr__(self, attr):
@@ -117,7 +112,7 @@ class AxesTuple(tuple):
     # Python 2 support - remove after 1.0
     def __getslice__(self, start, stop):
         # type: (int, int) -> AxesTuple
-        result = super(AxesTuple, self).__getslice__(start, stop)  # type: ignore
+        result = super().__getslice__(start, stop)  # type: ignore
         return self.__class__(result)
 
     value.__doc__ = Axis.value.__doc__

@@ -1,21 +1,11 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import, division, print_function
-
-import sys
-
 # bh.sum is just the Python sum, so from boost_histogram import * is safe (but
 # not recommended)
-if sys.version_info < (3, 0):
-    from __builtin__ import sum
-else:
-    from builtins import sum
-
-del absolute_import, division, print_function
+from builtins import sum
 
 __all__ = ("Slicer", "Locator", "at", "loc", "overflow", "underflow", "rebin", "sum")
 
 
-class Slicer(object):
+class Slicer:
     """
     This is a simple class to make slicing inside dictionaries simpler.
     This is how it should be used:
@@ -31,7 +21,7 @@ class Slicer(object):
         return item
 
 
-class Locator(object):
+class Locator:
     __slots__ = ("offset",)
     NAME = ""
 
@@ -77,12 +67,12 @@ class loc(Locator):
 
     def __init__(self, value, offset=0):
         # type: (float, int) -> None
-        super(loc, self).__init__(offset)
+        super().__init__(offset)
         self.value = value
 
     def _print_self_(self):
         # type: () -> str
-        return "({})".format(self.value)
+        return f"({self.value})"
 
     def __call__(self, axis):
         return axis.index(self.value) + self.offset
@@ -110,7 +100,7 @@ class Overflow(Locator):
 overflow = Overflow()
 
 
-class at(object):
+class at:
     __slots__ = ("value",)
 
     def __init__(self, value):
@@ -121,7 +111,7 @@ class at(object):
         return self.value
 
 
-class rebin(object):
+class rebin:
     __slots__ = ("factor",)
 
     def __init__(self, value):

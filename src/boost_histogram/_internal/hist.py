@@ -1,10 +1,7 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import, division, print_function
-
 import copy
-import sys
 import threading
 import warnings
+from os import cpu_count
 from typing import Any, Optional, Tuple
 
 import numpy as np
@@ -19,11 +16,6 @@ from .six import string_types
 from .storage import Double, Storage
 from .utils import MAIN_FAMILY, cast, register, set_family, set_module
 from .view import _to_view
-
-if sys.version_info >= (3, 4):
-    from os import cpu_count
-else:
-    from multiprocessing import cpu_count
 
 ArrayLike = Any
 
@@ -90,7 +82,7 @@ def _expand_ellipsis(indexes, rank):
 @register(_histograms)
 @set_family(MAIN_FAMILY)
 @set_module("boost_histogram")
-class Histogram(object):
+class Histogram:
     # Note this is a __slots__ __dict__ class!
     __slots__ = (
         "_hist",
@@ -162,7 +154,7 @@ class Histogram(object):
 
         if len(axes) > _core.hist._axes_limit:
             raise IndexError(
-                "Too many axes, must be less than {}".format(_core.hist._axes_limit)
+                f"Too many axes, must be less than {_core.hist._axes_limit}"
             )
 
         # Check all available histograms, and if the storage matches, return that one
@@ -496,7 +488,7 @@ class Histogram(object):
         ret = "{self.__class__.__name__}({newline}".format(
             self=self, newline=newline if len(self.axes) > 1 else ""
         )
-        ret += ",{newline}".format(newline=newline).join(repr(ax) for ax in self.axes)
+        ret += f",{newline}".join(repr(ax) for ax in self.axes)
         ret += "{comma}{newline}storage={storage}".format(
             storage=self._storage_type(),
             newline=newline
@@ -510,9 +502,9 @@ class Histogram(object):
         outer = self.sum(flow=True)
         if outer:
             inner = self.sum(flow=False)
-            ret += " # Sum: {}".format(inner)
+            ret += f" # Sum: {inner}"
             if inner != outer:
-                ret += " ({} with flow)".format(outer)
+                ret += f" ({outer} with flow)"
         return ret
 
     def _compute_commonindex(self, index):
@@ -821,7 +813,7 @@ class Histogram(object):
                     stop += has_underflow
 
                 else:
-                    msg = "Mismatched shapes in dimension {}".format(n)
+                    msg = f"Mismatched shapes in dimension {n}"
                     msg += ", {} != {}".format(value_shape[n], request_len)
                     if use_underflow or use_overflow:
                         msg += " or {}".format(

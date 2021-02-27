@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import abc
 import copy
 
@@ -763,7 +762,7 @@ class TestCategory(Axis):
 
         ax = bh.axis.StrCategory("ABC", metadata="foo")
         # If unicode is the default (Python 3, generally)
-        if type("") == type(u""):  # noqa: E721
+        if type("") == type(""):  # noqa: E721
             assert repr(ax) == "StrCategory(['A', 'B', 'C'])"
         else:
             assert repr(ax) == "StrCategory([u'A', u'B', u'C'])"

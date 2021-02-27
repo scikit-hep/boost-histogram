@@ -1,12 +1,7 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import, division, print_function
-
 from typing import Any, Dict, Set
 
-del absolute_import, division, print_function
 
-
-class KWArgs(object):
+class KWArgs:
     def __init__(self, kwargs):
         # type: (Dict[str, Any]) -> None
         self.kwargs = kwargs
@@ -29,7 +24,7 @@ class KWArgs(object):
         if name in self.kwargs:
             self.kwargs.pop(name)
         else:
-            raise KeyError("{} is required".format(name))
+            raise KeyError(f"{name} is required")
 
     def optional(self, name, default=None):
         # type: (str, Any) -> Any
