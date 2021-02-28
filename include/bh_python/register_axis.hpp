@@ -11,7 +11,6 @@
 #include <bh_python/axis.hpp>
 #include <bh_python/fill.hpp>
 #include <bh_python/make_pickle.hpp>
-#include <bh_python/options.hpp>
 
 #include <boost/histogram/axis/ostream.hpp>
 #include <boost/histogram/axis/traits.hpp>
@@ -140,12 +139,6 @@ py::class_<A> register_axis(py::module& m, Args&&... args) {
         .def_property_readonly(
             "traits_ordered",
             [](const A& self) { return bh::axis::traits::ordered(self); })
-
-        // Deprecated - use the .traits property filled by the values above instead.
-        .def_property_readonly(
-            "options",
-            [](const A&) { return options{bh::axis::traits::get_options<A>::value}; },
-            "Return the options associated to the axis")
 
         .def_property(
             "metadata",
