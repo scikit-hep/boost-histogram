@@ -109,12 +109,6 @@ class AxesTuple(tuple):
         # type: (str, Any) -> None
         self.__class__(s.__setattr__(attr, v) for s, v in zip(self, values))
 
-    # Python 2 support - remove after 1.0
-    def __getslice__(self, start, stop):
-        # type: (int, int) -> AxesTuple
-        result = super().__getslice__(start, stop)  # type: ignore
-        return self.__class__(result)
-
     value.__doc__ = Axis.value.__doc__
     index.__doc__ = Axis.index.__doc__
     bin.__doc__ = Axis.bin.__doc__

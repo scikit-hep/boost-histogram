@@ -5,7 +5,6 @@ from .._core import axis as ca
 from .axis_transform import AxisTransform
 from .kwargs import KWArgs
 from .sig_tools import inject_signature
-from .six import string_types
 from .traits import Traits
 from .utils import MAIN_FAMILY, cast, register, set_family, set_module
 
@@ -16,7 +15,7 @@ def _isstr(value):
     Check to see if this is a stringlike or a (nested) iterable of stringlikes
     """
 
-    if isinstance(value, string_types + (bytes,)):
+    if isinstance(value, (str, bytes)):
         return True
     elif hasattr(value, "__iter__"):
         return all(_isstr(v) for v in value)

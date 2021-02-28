@@ -27,11 +27,12 @@ git submodule update --init --depth 10
 
 While developers often work in CMake, the "correct" way to develop a python
 package is in a virtual environment. This is how you would set one up with
-Python 3:
+Python's built-in venv:
 
 ```bash
 python3 -m venv .env
 source ./.env/bin/activate
+pip install -U pip
 pip install -ve .[all]
 ```
 

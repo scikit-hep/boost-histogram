@@ -1,15 +1,6 @@
-import sys
+import plottable
 
-import pytest
-
-pytestmark = pytest.mark.skipif(
-    sys.version_info < (3, 6), reason="Cannot import protocol on Python 2"
-)
-
-
-import plottable  # noqa: E402
-
-import boost_histogram as bh  # noqa: E402
+import boost_histogram as bh
 
 
 def test_plotting_protocol():

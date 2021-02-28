@@ -12,7 +12,6 @@ from .axis import Axis
 from .enum import Kind
 from .kwargs import KWArgs
 from .sig_tools import inject_signature
-from .six import string_types
 from .storage import Double, Storage
 from .utils import MAIN_FAMILY, cast, register, set_family, set_module
 from .view import _to_view
@@ -38,7 +37,7 @@ def _fill_cast(value, inner=False):
     Convert to NumPy arrays. Some buffer objects do not get converted by forcecast.
     If not called by itself (inner=False), then will work through one level of tuple/list.
     """
-    if value is None or isinstance(value, string_types + (bytes,)):
+    if value is None or isinstance(value, (str, bytes)):
         return value
     elif not inner and isinstance(value, (tuple, list)):
         return tuple(_fill_cast(a, inner=True) for a in value)

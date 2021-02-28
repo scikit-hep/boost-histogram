@@ -2,6 +2,8 @@
 
 ## Version 1.0
 
+Dropped support for Python 2 and 3.5; removed large numbers of workarounds.
+
 * Removed deprecated `.options` from axes. Use `.traits` instead. [#503][]
 
 [#503]: https://github.com/scikit-hep/boost-histogram/pull/503
