@@ -148,7 +148,7 @@ py::class_<A> register_axis(py::module& m, Args&&... args) {
 
         .def_property_readonly(
             "size",
-            [](const A& ob){ return ob.size(); },
+            [](const A& ob) { return ob.size(); },
             "Returns the number of bins excluding under- and overflow")
 
         .def_property_readonly(

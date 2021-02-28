@@ -74,6 +74,9 @@ def test_histogram1d_object(a, opt):
     np.testing.assert_array_almost_equal(e1, e2)
     np.testing.assert_array_equal(h1, h2)
 
+    # Ensure reducible
+    assert bh_h2[:5].values() == pytest.approx(h1[:5])
+
     opt = copy.deepcopy(opt)
     opt["density"] = True
 
