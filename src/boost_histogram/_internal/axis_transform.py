@@ -2,8 +2,6 @@ import copy
 from typing import Any
 
 from .._core import axis as ca
-from .kwargs import KWArgs
-from .sig_tools import inject_signature
 from .utils import MAIN_FAMILY, register, set_family, set_module
 
 
@@ -60,7 +58,7 @@ class Pow(AxisTransform):
     __slots__ = ()
     _type = ca.regular_pow
 
-    def __init__(self, power):
+    def __init__(self, power: float):
         "Create a new transform instance"
         # Note: this comes from set_family
         (cpp_class,) = self._types  # type: ignore
@@ -83,8 +81,7 @@ class Function(AxisTransform):
     __slots__ = ()
     _type = ca.regular_trans
 
-    @inject_signature("self, forward, inverse, *, convert=None, name=''")
-    def __init__(self, forward, inverse, **kwargs):
+    def __init__(self, forward, inverse, *, convert=None, name: str = ""):
         """
         Create a functional transform from a ctypes double(double) function
         pointer or any object that provides such an interface through a
@@ -131,16 +128,12 @@ class Function(AxisTransform):
 
         """
 
-        with KWArgs(kwargs) as k:
-            convert = k.optional("convert")
-            name = k.optional("name", "")
-
         # Note: this comes from set_family
         (cpp_class,) = self._types  # type: ignore
         self._this = cpp_class(forward, inverse, convert, name)
 
     # This one does need to be a normal method
-    def _produce(self, bins, start, stop):
+    def _produce(self, bins: int, start: int, stop: int):
         return self.__class__._type(bins, start, stop, self._this)
 
 
