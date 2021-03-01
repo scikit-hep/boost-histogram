@@ -71,6 +71,12 @@ def test_copy():
     assert id(b) != id(c)
 
 
+def test_fill_int_storage_with_floats():
+    h = bh.Histogram(bh.axis.Regular(10,-1,1), storage=bh.storage.Int64())
+    h.fill([.3,.4,.5], weight=[1, 3, 2])
+    h.fill([.3,.4,.5], weight=[.1, .3, .2])
+
+
 def test_fill_int_1d():
 
     h = bh.Histogram(bh.axis.Integer(-1, 2))

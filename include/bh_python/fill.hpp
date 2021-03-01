@@ -101,8 +101,8 @@ using arg_t = variant::variant<c_array_t<double>,
                                int,
                                c_array_t<std::string>,
                                std::string>;
-
-using weight_t = variant::variant<variant::monostate, double, c_array_t<double>>;
+template <class T>
+using weight_t = variant::variant<variant::monostate, T, c_array_t<T>>;
 
 inline auto get_vargs(const vector_axis_variant& axes, const py::args& args) {
     if(args.size() != axes.size())
@@ -131,25 +131,26 @@ inline auto get_vargs(const vector_axis_variant& axes, const py::args& args) {
     return vargs;
 }
 
-inline auto get_weight(py::kwargs& kwargs) {
+template <class T>
+auto get_weight(py::kwargs& kwargs) {
     // default constructed as monostate to indicate absence of weight
-    variant::variant<variant::monostate, double, c_array_t<double>> weight;
+    weight_t<T> weight;
     auto w = optional_arg(kwargs, "weight");
     if(!w.is_none()) {
-        if(is_value<double>(w))
-            weight = py::cast<double>(w);
+        if(is_value<T>(w))
+            weight = py::cast<T>(w);
         else
-            weight = py::cast<c_array_t<double>>(w);
+            weight = py::cast<c_array_t<T>>(w);
     }
     return weight;
 }
 
 // for accumulators that accept a weight
-template <class Histogram, class VArgs>
+template <class weight_type, class Histogram, class VArgs>
 void fill_impl(bh::detail::accumulator_traits_holder<true>,
                Histogram& h,
                const VArgs& vargs,
-               const weight_t& weight,
+               const weight_t<weight_type>& weight,
                py::kwargs& kwargs) {
     none_only_arg(kwargs, "sample");
     finalize_args(kwargs);
@@ -163,11 +164,11 @@ void fill_impl(bh::detail::accumulator_traits_holder<true>,
 }
 
 // for accumulators that accept a weight and a double
-template <class Histogram, class VArgs>
+template <class weight_type, class Histogram, class VArgs>
 void fill_impl(bh::detail::accumulator_traits_holder<true, const double&>,
                Histogram& h,
                const VArgs& vargs,
-               const weight_t& weight,
+               const weight_t<weight_type>& weight,
                py::kwargs& kwargs) {
     auto s = required_arg(kwargs, "sample");
     finalize_args(kwargs);
@@ -192,10 +193,14 @@ void fill_impl(bh::detail::accumulator_traits_holder<true, const double&>,
 template <class Histogram>
 Histogram& fill(Histogram& self, py::args args, py::kwargs kwargs) {
     using value_type = typename Histogram::value_type;
-    detail::fill_impl(bh::detail::accumulator_traits<value_type>{},
-                      self,
-                      detail::get_vargs(bh::unsafe_access::axes(self), args),
-                      detail::get_weight(kwargs),
-                      kwargs);
+    using weight_type
+        = boost::mp11::mp_if_c<std::is_integral<value_type>::value, int, double>;
+
+    detail::fill_impl<weight_type>(
+        bh::detail::accumulator_traits<value_type>{},
+        self,
+        detail::get_vargs(bh::unsafe_access::axes(self), args),
+        detail::get_weight<weight_type>(kwargs),
+        kwargs);
     return self;
 }
