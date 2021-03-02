@@ -1,27 +1,18 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import, division, print_function
-
 import copy
-from typing import Any
+from typing import Any, Dict, Optional, Tuple, Union
 
 from .._core import axis as ca
 from .axis_transform import AxisTransform
-from .kwargs import KWArgs
-from .sig_tools import inject_signature
-from .six import string_types
 from .traits import Traits
 from .utils import MAIN_FAMILY, cast, register, set_family, set_module
 
-del absolute_import, division, print_function
 
-
-def _isstr(value):
-    # type: (Any) -> bool
+def _isstr(value: Any) -> bool:
     """
     Check to see if this is a stringlike or a (nested) iterable of stringlikes
     """
 
-    if isinstance(value, string_types + (bytes,)):
+    if isinstance(value, (str, bytes)):
         return True
     elif hasattr(value, "__iter__"):
         return all(_isstr(v) for v in value)
@@ -29,24 +20,30 @@ def _isstr(value):
         return False
 
 
+def opts(**kwargs: bool):
+    return {k for k, v in kwargs.items() if v}
+
+
 # Contains common methods and properties to all axes
 @set_module("boost_histogram.axis")
-class Axis(object):
+class Axis:
     __slots__ = ("_ax", "__dict__")
 
-    def __setattr__(self, attr, value):
+    def __setattr__(self, attr: str, value: Any) -> None:
         if attr == "__dict__":
             self._ax.metadata = value
         object.__setattr__(self, attr, value)
 
-    def __getattr__(self, attr):
+    def __getattr__(self, attr: str) -> Any:
         if attr == "metadata":
             return None
         raise AttributeError(
-            "object {} has not attribute {}".format(self.__class__.__name__, attr)
+            f"object {self.__class__.__name__} has not attribute {attr}"
         )
 
-    def __init__(self, ax, metadata, __dict__):
+    def __init__(
+        self, ax, metadata: Optional[Dict[str, Any]], __dict__: Optional[Dict[str, Any]]
+    ):
         """
         ax: the C++ object
         metadata: the metadata keyword contents
@@ -79,7 +76,7 @@ class Axis(object):
         other.__dict__ = other._ax.metadata
         return other
 
-    def index(self, value):
+    def index(self, value: float) -> int:
         """
         Return the fractional index(es) given a value (or values) on the axis.
         """
@@ -93,14 +90,14 @@ class Axis(object):
                 )
             )
 
-    def value(self, index):
+    def value(self, index: float) -> float:
         """
         Return the value(s) given an (fractional) index (or indices).
         """
 
         return self._ax.value(index)
 
-    def bin(self, index):
+    def bin(self, index: float) -> Union[float, str, Tuple[float, float]]:
         """
         Return the edges of the bins as a tuple for a
         continuous axis or the bin value for a
@@ -122,13 +119,13 @@ class Axis(object):
         nice_ax.__dict__ = cpp_object.metadata
         return nice_ax
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self._ax.size
 
     def __iter__(self):
         return self._ax.__iter__()
 
-    def _process_loc(self, start, stop):
+    def _process_loc(self, start, stop) -> Tuple[int, int]:
         """
         Compute start and stop into actual start and stop values in Boost.Histogram.
         None -> -1 or 0 for start, -> len or len+1 for stop. If start or stop are
@@ -145,12 +142,12 @@ class Axis(object):
 
         return begin, end
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "{self.__class__.__name__}({args}{kwargs})".format(
             self=self, args=self._repr_args(), kwargs=self._repr_kwargs()
         )
 
-    def _repr_kwargs(self):
+    def _repr_kwargs(self) -> str:
         """
         Return options for use in repr. Metadata is last,
         just in case it spans multiple lines.
@@ -170,7 +167,7 @@ class Axis(object):
         return ret
 
     @property
-    def traits(self):
+    def traits(self) -> Traits:
         """
         Get traits for the axis - read only properties of a specific axis.
         """
@@ -184,14 +181,14 @@ class Axis(object):
         )
 
     @property
-    def size(self):
+    def size(self) -> int:
         """
         Return number of bins excluding under- and overflow.
         """
         return self._ax.size
 
     @property
-    def extent(self):
+    def extent(self) -> int:
         """
         Return number of bins including under- and overflow.
         """
@@ -209,7 +206,7 @@ class Axis(object):
                 i += self._ax.size
             if i >= self._ax.size:
                 raise IndexError(
-                    "Out of range access, {} is more than {}".format(i, self._ax.size)
+                    f"Out of range access, {i} is more than {self._ax.size}"
                 )
         return self.bin(i)
 
@@ -251,10 +248,20 @@ class Axis(object):
 class Regular(Axis):
     __slots__ = ()
 
-    @inject_signature(
-        "self, bins, start, stop, *, metadata=None, underflow=True, overflow=True, growth=False, circular=False, transform=None, __dict__=None"
-    )
-    def __init__(self, bins, start, stop, **kwargs):
+    def __init__(
+        self,
+        bins,
+        start,
+        stop,
+        *,
+        metadata=None,
+        underflow=True,
+        overflow=True,
+        growth=False,
+        circular=False,
+        transform=None,
+        __dict__=None,
+    ):
         """
         Make a regular axis with nice keyword arguments for underflow,
         overflow, and growth.
@@ -284,13 +291,9 @@ class Regular(Axis):
             The full metadata dictionary
         """
 
-        with KWArgs(kwargs) as k:
-            metadata = k.optional("metadata")
-            transform = k.optional("transform")
-            __dict__ = k.optional("__dict__")
-            options = k.options(
-                underflow=True, overflow=True, growth=False, circular=False
-            )
+        options = opts(
+            underflow=underflow, overflow=overflow, growth=growth, circular=circular
+        )
 
         if transform is not None:
             if options != {"underflow", "overflow"}:
@@ -300,7 +303,7 @@ class Regular(Axis):
                 not isinstance(transform, AxisTransform)
                 and AxisTransform in transform.__bases__
             ):
-                raise TypeError("You must pass an instance, use {}()".format(transform))
+                raise TypeError(f"You must pass an instance, use {transform}()")
 
             ax = transform._produce(bins, start, stop)
 
@@ -324,25 +327,25 @@ class Regular(Axis):
         else:
             raise KeyError("Unsupported collection of options")
 
-        super(Regular, self).__init__(ax, metadata, __dict__)
+        super().__init__(ax, metadata, __dict__)
 
-    def _repr_args(self):
+    def _repr_args(self) -> str:
         "Return inner part of signature for use in repr"
 
         return "{bins:g}, {start:g}, {stop:g}".format(
             bins=self.size, start=self.edges[0], stop=self.edges[-1]
         )
 
-    def _repr_kwargs(self):
-        ret = super(Regular, self)._repr_kwargs()
+    def _repr_kwargs(self) -> str:
+        ret = super()._repr_kwargs()
 
         if self.transform is not None:
-            ret += ", transform={}".format(self.transform)
+            ret += f", transform={self.transform}"
 
         return ret
 
     @property
-    def transform(self):
+    def transform(self) -> Optional[AxisTransform]:
         if hasattr(self._ax, "transform"):
             return cast(self, self._ax.transform, AxisTransform)
         return None
@@ -363,10 +366,17 @@ class Regular(Axis):
 class Variable(Axis):
     __slots__ = ()
 
-    @inject_signature(
-        "self, edges, *, metadata=None, underflow=True, overflow=True, growth=False, __dict__=None"
-    )
-    def __init__(self, edges, **kwargs):
+    def __init__(
+        self,
+        edges,
+        *,
+        metadata: Any = None,
+        underflow: bool = True,
+        overflow: bool = True,
+        growth: bool = False,
+        circular: bool = False,
+        __dict__: Dict[str, Any] = None,
+    ):
         """
         Make an axis with irregularly spaced bins. Provide a list
         or array of bin edges, and len(edges)-1 bins will be made.
@@ -390,12 +400,9 @@ class Variable(Axis):
             The full metadata dictionary
         """
 
-        with KWArgs(kwargs) as k:
-            metadata = k.optional("metadata")
-            __dict__ = k.optional("__dict__")
-            options = k.options(
-                underflow=True, overflow=True, circular=False, growth=False
-            )
+        options = opts(
+            underflow=underflow, overflow=overflow, growth=growth, circular=circular
+        )
 
         if options == {"growth", "underflow", "overflow"}:
             ax = ca.variable_uoflow_growth(edges)
@@ -416,9 +423,9 @@ class Variable(Axis):
         else:
             raise KeyError("Unsupported collection of options")
 
-        super(Variable, self).__init__(ax, metadata, __dict__)
+        super().__init__(ax, metadata, __dict__)
 
-    def _repr_args(self):
+    def _repr_args(self) -> str:
         "Return inner part of signature for use in repr"
 
         if len(self) > 20:
@@ -442,10 +449,18 @@ class Variable(Axis):
 class Integer(Axis):
     __slots__ = ()
 
-    @inject_signature(
-        "self, start, stop, *, metadata=None, underflow=True, overflow=True, growth=False, __dict__=None"
-    )
-    def __init__(self, start, stop, **kwargs):
+    def __init__(
+        self,
+        start: int,
+        stop: int,
+        *,
+        metadata: Any = None,
+        underflow: bool = True,
+        overflow: bool = True,
+        growth: bool = False,
+        circular: bool = False,
+        __dict__: Dict[str, Any] = None,
+    ):
         """
         Make an integer axis, with a collection of consecutive integers.
 
@@ -470,12 +485,9 @@ class Integer(Axis):
             The full metadata dictionary
         """
 
-        with KWArgs(kwargs) as k:
-            metadata = k.optional("metadata")
-            __dict__ = k.optional("__dict__")
-            options = k.options(
-                underflow=True, overflow=True, circular=False, growth=False
-            )
+        options = opts(
+            underflow=underflow, overflow=overflow, growth=growth, circular=circular
+        )
 
         # underflow and overflow settings are ignored, integers are always
         # finite and thus cannot end up in a flow bin when growth is on
@@ -494,7 +506,7 @@ class Integer(Axis):
         else:
             raise KeyError("Unsupported collection of options")
 
-        super(Integer, self).__init__(ax, metadata, __dict__)
+        super().__init__(ax, metadata, __dict__)
 
     def _repr_args(self):
         "Return inner part of signature for use in repr"
@@ -530,8 +542,14 @@ class BaseCategory(Axis):
 class StrCategory(BaseCategory):
     __slots__ = ()
 
-    @inject_signature("self, categories, *, metadata=None, growth=False, __dict__=None")
-    def __init__(self, categories, **kwargs):
+    def __init__(
+        self,
+        categories,
+        *,
+        metadata: Any = None,
+        growth: bool = False,
+        __dict__: Dict[str, Any] = None,
+    ):
         """
         Make a category axis with strings; items will
         be added to a predefined list of bins or a growing (with growth=True)
@@ -551,10 +569,7 @@ class StrCategory(BaseCategory):
             The full metadata dictionary
         """
 
-        with KWArgs(kwargs) as k:
-            metadata = k.optional("metadata")
-            __dict__ = k.optional("__dict__")
-            options = k.options(growth=False)
+        options = opts(growth=growth)
 
         # henryiii: We currently expand "abc" to "a", "b", "c" - some
         # Python interfaces protect against that
@@ -566,7 +581,7 @@ class StrCategory(BaseCategory):
         else:
             raise KeyError("Unsupported collection of options")
 
-        super(StrCategory, self).__init__(ax, metadata, __dict__)
+        super().__init__(ax, metadata, __dict__)
 
     def index(self, value):
         """
@@ -594,8 +609,14 @@ class StrCategory(BaseCategory):
 class IntCategory(BaseCategory):
     __slots__ = ()
 
-    @inject_signature("self, categories, *, metadata=None, growth=False, __dict__=None")
-    def __init__(self, categories, **kwargs):
+    def __init__(
+        self,
+        categories,
+        *,
+        metadata: Any = None,
+        growth: bool = False,
+        __dict__: Optional[Dict[str, Any]] = None,
+    ):
         """
         Make a category axis with ints; items will
         be added to a predefined list of bins or a growing (with growth=True)
@@ -615,10 +636,7 @@ class IntCategory(BaseCategory):
             The full metadata dictionary
         """
 
-        with KWArgs(kwargs) as k:
-            metadata = k.optional("metadata")
-            __dict__ = k.optional("__dict__")
-            options = k.options(growth=False)
+        options = opts(growth=growth)
 
         if options == {"growth"}:
             ax = ca.category_int_growth(tuple(categories))
@@ -627,9 +645,9 @@ class IntCategory(BaseCategory):
         else:
             raise KeyError("Unsupported collection of options")
 
-        super(IntCategory, self).__init__(ax, metadata, __dict__)
+        super().__init__(ax, metadata, __dict__)
 
-    def _repr_args(self):
+    def _repr_args(self) -> str:
         "Return inner part of signature for use in repr"
 
         return "[{}]".format(", ".join(format(c, "g") for c in self))
@@ -642,8 +660,7 @@ class IntCategory(BaseCategory):
 class Boolean(Axis):
     __slots__ = ()
 
-    @inject_signature("self, *, metadata=None, __dict__=None")
-    def __init__(self, **kwargs):
+    def __init__(self, *, metadata: Any = None, __dict__: Dict[str, Any] = None):
         """
         Make an axis for boolean values.
 
@@ -655,15 +672,11 @@ class Boolean(Axis):
             The full metadata dictionary
         """
 
-        with KWArgs(kwargs) as k:
-            metadata = k.optional("metadata")
-            __dict__ = k.optional("__dict__")
-
         ax = ca.boolean()
 
-        super(Boolean, self).__init__(ax, metadata, __dict__)
+        super().__init__(ax, metadata, __dict__)
 
-    def _repr_args(self):
+    def _repr_args(self) -> str:
         "Return inner part of signature for use in repr"
         if self.size == 2:
             return ""
@@ -675,9 +688,9 @@ class Boolean(Axis):
             return "<True>"
         else:
             # Shouldn't be possible, can't grow
-            "<unknown>"
+            return "<unknown>"
 
-    def _repr_kwargs(self):
+    def _repr_kwargs(self) -> str:
         """
         Return options for use in repr. Metadata is last,
         just in case it spans multiple lines.

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import abc
 import copy
 
@@ -9,9 +8,6 @@ from pytest import approx
 
 import boost_histogram as bh
 import boost_histogram.utils
-
-# compatible with Python 2 *and* 3:
-ABC = abc.ABCMeta("ABC", (object,), {"__slots__": ()})
 
 
 @pytest.mark.parametrize(
@@ -76,7 +72,7 @@ def test_metadata(axis, args, opt, kwargs):
     assert ax.__dict__ == {"metadata": 5}
     assert ax.metadata == 5
 
-    # Python 2 does not allow mixing ** and kw
+    # Python 2 did not allow mixing ** and kw
     new_kwargs = copy.copy(kwargs)
     new_kwargs["__dict__"] = {"something": 2}
     new_kwargs["metadata"] = 3
@@ -93,7 +89,7 @@ def test_metadata(axis, args, opt, kwargs):
 # The point of this ABC is to force all the tests listed here to be implemented
 # for each axis type. PyTest instantiates these test classes for us, so missing
 # one really does fail the test.
-class Axis(ABC):
+class Axis(abc.ABC):
     @abc.abstractmethod
     def test_init(self):
         pass
@@ -762,11 +758,7 @@ class TestCategory(Axis):
         assert repr(ax) == "IntCategory([1, 2, 3])"
 
         ax = bh.axis.StrCategory("ABC", metadata="foo")
-        # If unicode is the default (Python 3, generally)
-        if type("") == type(u""):  # noqa: E721
-            assert repr(ax) == "StrCategory(['A', 'B', 'C'])"
-        else:
-            assert repr(ax) == "StrCategory([u'A', u'B', u'C'])"
+        assert repr(ax) == "StrCategory(['A', 'B', 'C'])"
 
     @pytest.mark.parametrize("ref", ([1, 2, 3], "ABC"))
     def test_getitem(self, ref, growth):

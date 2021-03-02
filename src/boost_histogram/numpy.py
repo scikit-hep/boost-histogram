@@ -1,8 +1,11 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import, division, print_function
-
 from functools import reduce as _reduce
 from operator import mul as _mul
+from typing import TYPE_CHECKING, Optional, Sequence, Tuple, Union
+
+if TYPE_CHECKING:
+    from numpy.typing import ArrayLike
+else:
+    ArrayLike = object
 
 import numpy as _np
 
@@ -10,39 +13,37 @@ from . import _core
 from . import axis as _axis
 from . import storage as _storage
 from ._internal import hist as _hist
-from ._internal.kwargs import KWArgs as _KWArgs
-from ._internal.sig_tools import inject_signature as _inject_signature
 from ._internal.utils import cast as _cast
-
-del absolute_import, division, print_function  # hides these from IPython
 
 __all__ = ("histogram", "histogram2d", "histogramdd")
 
 
-@_inject_signature(
-    "a, bins=10, range=None, normed=None, weights=None, density=None, *, histogram=None, storage=None, threads=None"
-)
 def histogramdd(
-    a, bins=10, range=None, normed=None, weights=None, density=None, **kwargs
+    a: Tuple[ArrayLike, ...],
+    bins: Union[int, Tuple[int, ...]] = 10,
+    range: Optional[Sequence[Union[None, Tuple[float, float]]]] = None,
+    normed: None = None,
+    weights: ArrayLike = None,
+    density: bool = False,
+    *,
+    histogram=None,
+    storage: _storage.Storage = _storage.Double(),  # noqa: B008
+    threads: Optional[int] = None
 ):
     np = _np  # Hidden to keep module clean
 
-    with _KWArgs(kwargs) as k:
-        bh_cls = k.optional("histogram", None)
-        threads = k.optional("threads", None)
-        cls = _hist.Histogram if bh_cls is None else bh_cls
-        bh_storage = k.optional("storage", _storage.Double())
+    cls = _hist.Histogram if histogram is None else histogram
 
     if normed is not None:
         raise KeyError(
             "normed=True is not recommended for use in Numpy, and is not supported in boost-histogram; use density=True instead"
         )
-    if density and bh_cls is not None:
+    if density and histogram is not None:
         raise KeyError(
             "boost-histogram does not support the density keyword when returning a boost-histogram object"
         )
 
-    # Odd numpy design here. Oh well.
+    # Odd NumPy design here. Oh well.
     if isinstance(a, np.ndarray):
         a = a.T
 
@@ -50,13 +51,14 @@ def histogramdd(
 
     # Integer bins: all the same
     try:
-        bins = [int(bins)] * rank
+        bins = (int(bins),) * rank  # type: ignore
     except TypeError:
         pass
+    assert not isinstance(bins, int)
 
     # Single None -> list of Nones
     if range is None:
-        range = [None] * rank
+        range = (None,) * rank
 
     axs = []
     for n, (b, r) in enumerate(zip(bins, range)):
@@ -68,30 +70,47 @@ def histogramdd(
             new_ax = _cast(None, cpp_ax, _axis.Axis)
             axs.append(new_ax)
         else:
-            b = np.asarray(b, dtype=np.double)
-            b[-1] = np.nextafter(b[-1], np.finfo("d").max)
-            axs.append(_axis.Variable(b))
+            barr = np.asarray(b, dtype=np.double)
+            barr[-1] = np.nextafter(barr[-1], np.finfo("d").max)
+            axs.append(_axis.Variable(barr))
 
-    hist = cls(*axs, storage=bh_storage).fill(*a, weight=weights, threads=threads)
+    hist = cls(*axs, storage=storage).fill(*a, weight=weights, threads=threads)
 
     if density:
         areas = _reduce(_mul, hist.axes.widths)
-        density = hist.view() / hist.sum() / areas
-        return (density, hist.to_numpy()[1:])
+        density_val = hist.view() / hist.sum() / areas
+        return (density_val, hist.to_numpy()[1:])
 
     # Note: this is view=True since users have to ask explicitly for special
     # storages, so view=False would throw away part of what they are asking
     # for. Users can use a histogram return type if they need view=False.
-    return hist if bh_cls is not None else hist.to_numpy(view=True, dd=True)
+    return hist if histogram is not None else hist.to_numpy(view=True, dd=True)
 
 
-@_inject_signature(
-    "x, y, bins=10, range=None, normed=None, weights=None, density=None, *, histogram=None, storage=None, threads=None"
-)
 def histogram2d(
-    x, y, bins=10, range=None, normed=None, weights=None, density=None, **kwargs
+    x: ArrayLike,
+    y: ArrayLike,
+    bins: Union[int, Tuple[int, int]] = 10,
+    range: Optional[Sequence[Union[None, Tuple[float, float]]]] = None,
+    normed: None = None,
+    weights: ArrayLike = None,
+    density: bool = False,
+    *,
+    histogram=None,
+    storage: _storage.Storage = _storage.Double(),  # noqa: B008
+    threads: Optional[int] = None
 ):
-    result = histogramdd((x, y), bins, range, normed, weights, density, **kwargs)
+    result = histogramdd(
+        (x, y),
+        bins,
+        range,
+        normed,
+        weights,
+        density,
+        histogram=histogram,
+        storage=storage,
+        threads=threads,
+    )
 
     if isinstance(result, tuple):
         data, (edgesx, edgesy) = result
@@ -100,17 +119,27 @@ def histogram2d(
         return result
 
 
-@_inject_signature(
-    "a, bins=10, range=None, normed=None, weights=None, density=None, *, histogram=None, storage=None, threads=None"
-)
 def histogram(
-    a, bins=10, range=None, normed=None, weights=None, density=None, **kwargs
+    a: ArrayLike,
+    bins: int = 10,
+    range: Optional[Tuple[float, float]] = None,
+    normed: None = None,
+    weights: ArrayLike = None,
+    density: bool = False,
+    *,
+    histogram=None,
+    storage: Optional[_storage.Storage] = None,
+    threads: Optional[int] = None
 ):
     np = _np
 
     # numpy 1d histogram returns integers in some cases
-    if "storage" not in kwargs and not (weights is not None or normed or density):
-        kwargs["storage"] = _storage.Int64()
+    if storage is None:
+        storage = (
+            _storage.Double()
+            if weights is not None or normed or density
+            else _storage.Int64()
+        )
 
     if isinstance(bins, str):
         # Bug in NumPy 1.20 typing support - __version__ is missing
@@ -120,7 +149,17 @@ def histogram(
             )
         bins = np.histogram_bin_edges(a, bins, range, weights)
 
-    result = histogramdd((a,), (bins,), (range,), normed, weights, density, **kwargs)
+    result = histogramdd(
+        (a,),
+        (bins,),
+        (range,),
+        normed,
+        weights,
+        density,
+        histogram=histogram,
+        storage=storage,
+        threads=threads,
+    )
     if isinstance(result, tuple):
         data, (edges,) = result
         return data, edges

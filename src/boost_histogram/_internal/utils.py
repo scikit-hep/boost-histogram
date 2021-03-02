@@ -1,8 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import, division, print_function
-
-del absolute_import, division, print_function
-
 # Custom families (other packages can define custom families)
 MAIN_FAMILY = object()  # This family will be used as a fallback
 
@@ -80,7 +75,7 @@ def register(cpp_types=None):
 
         for cpp_type in cpp_types:
             if cpp_type in cls._types:
-                raise TypeError("You are trying to register {} again".format(cpp_type))
+                raise TypeError(f"You are trying to register {cpp_type} again")
 
             cls._types.add(cpp_type)
 
@@ -165,14 +160,13 @@ def cast(self, cpp_object, parent_class):
         return _cast_make_object(fallback_class, cpp_object, is_class)
 
     raise TypeError(
-        "No conversion to {} from {} found.".format(parent_class.__name__, cpp_object)
+        f"No conversion to {parent_class.__name__} from {cpp_object} found."
     )
 
 
 def _walk_bases(cls):
     for base in cls.__bases__:
-        for inner in _walk_bases(base):
-            yield inner
+        yield from _walk_bases(base)
         yield base
 
 
@@ -180,6 +174,5 @@ def _walk_subclasses(cls):
     for base in cls.__subclasses__():
         # Find the furthest child to allow
         # user subclasses to work
-        for inner in _walk_subclasses(base):
-            yield inner
+        yield from _walk_subclasses(base)
         yield base

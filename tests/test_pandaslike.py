@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import numpy as np
 
 import boost_histogram as bh
@@ -6,7 +5,7 @@ import boost_histogram as bh
 
 # This is not a reasonable approximation of Pandas, but rather a test for an
 # arbitrary convertible object (but if this works, so does Pandas)
-class Seriesish(object):
+class Seriesish:
     def __init__(self, array):
         self.array = np.asarray(array)
 

@@ -1,11 +1,8 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import, division, print_function
-
 import copy
-import sys
 import threading
 import warnings
-from typing import Any, Optional, Tuple
+from os import cpu_count
+from typing import TYPE_CHECKING, Any, Optional, Tuple, TypeVar, Union
 
 import numpy as np
 
@@ -13,19 +10,14 @@ from .. import _core
 from .axestuple import AxesTuple
 from .axis import Axis
 from .enum import Kind
-from .kwargs import KWArgs
-from .sig_tools import inject_signature
-from .six import string_types
 from .storage import Double, Storage
 from .utils import MAIN_FAMILY, cast, register, set_family, set_module
 from .view import _to_view
 
-if sys.version_info >= (3, 4):
-    from os import cpu_count
+if TYPE_CHECKING:
+    from numpy.typing import ArrayLike
 else:
-    from multiprocessing import cpu_count
-
-ArrayLike = Any
+    ArrayLike = Any
 
 
 NOTHING = object()
@@ -46,7 +38,7 @@ def _fill_cast(value, inner=False):
     Convert to NumPy arrays. Some buffer objects do not get converted by forcecast.
     If not called by itself (inner=False), then will work through one level of tuple/list.
     """
-    if value is None or isinstance(value, string_types + (bytes,)):
+    if value is None or isinstance(value, (str, bytes)):
         return value
     elif not inner and isinstance(value, (tuple, list)):
         return tuple(_fill_cast(a, inner=True) for a in value)
@@ -85,12 +77,15 @@ def _expand_ellipsis(indexes, rank):
         raise IndexError("an index can only have a single ellipsis ('...')")
 
 
+H = TypeVar("H", bound="Histogram")
+
+
 # We currently do not cast *to* a histogram, but this is consistent
 # and could be used later.
 @register(_histograms)
 @set_family(MAIN_FAMILY)
 @set_module("boost_histogram")
-class Histogram(object):
+class Histogram:
     # Note this is a __slots__ __dict__ class!
     __slots__ = (
         "_hist",
@@ -99,10 +94,12 @@ class Histogram(object):
     )
     # .metadata and ._variance_known are part of the dict
 
-    @inject_signature(
-        "self, *axes, storage=Double(), metadata=None", locals={"Double": Double}
-    )
-    def __init__(self, *axes, **kwargs):
+    def __init__(
+        self,
+        *axes: Axis,
+        storage: Storage = Double(),  # noqa: B008
+        metadata: Any = None,
+    ):
         """
         Construct a new histogram.
 
@@ -124,7 +121,7 @@ class Histogram(object):
         # Allow construction from a raw histogram object (internal)
         if len(axes) == 1 and isinstance(axes[0], _histograms):
             self._hist = axes[0]
-            self.metadata = kwargs.get("metadata")
+            self.metadata = metadata
             self.axes = self._generate_axes_()
             return
 
@@ -141,12 +138,10 @@ class Histogram(object):
             self.__init__(axes[0]._to_boost_histogram_())  # type: ignore
             return
 
-        # Keyword only trick (change when Python2 is dropped)
-        with KWArgs(kwargs) as k:
-            storage = k.optional("storage")
-            if storage is None:
-                storage = Double()
-            self.metadata = k.optional("metadata")
+        if storage is None:
+            storage = Double()
+
+        self.metadata = metadata
 
         # Check for missed parenthesis or incorrect types
         if not isinstance(storage, Storage):
@@ -162,7 +157,7 @@ class Histogram(object):
 
         if len(axes) > _core.hist._axes_limit:
             raise IndexError(
-                "Too many axes, must be less than {}".format(_core.hist._axes_limit)
+                f"Too many axes, must be less than {_core.hist._axes_limit}"
             )
 
         # Check all available histograms, and if the storage matches, return that one
@@ -326,8 +321,13 @@ class Histogram(object):
         return self._compute_inplace_op("__imul__", other)
 
     # TODO: Marked as too complex by flake8. Should be factored out a bit.
-    @inject_signature("self, *args, weight=None, sample=None, threads=None")
-    def fill(self, *args, **kwargs):  # noqa: C901
+    def fill(
+        self: H,
+        *args: Union[ArrayLike, str],
+        weight: Optional[ArrayLike] = None,
+        sample: Optional[ArrayLike] = None,
+        threads: Optional[int] = None,
+    ) -> H:  # noqa: C901
         """
         Insert data into the histogram.
 
@@ -335,7 +335,7 @@ class Histogram(object):
         ----------
         *args : Union[Array[float], Array[int], Array[str], float, int, str]
             Provide one value or array per dimension.
-        weight : List[Union[Array[float], Array[int], Array[str], float, int, str]]]
+        weight : List[Union[Array[float], Array[int], float, int, str]]]
             Provide weights (only if the histogram storage supports it)
         sample : List[Union[Array[float], Array[int], Array[str], float, int, str]]]
             Provide samples (only if the histogram storage supports it)
@@ -344,11 +344,6 @@ class Histogram(object):
             threaded filling.  Using 0 will automatically pick the number of
             available threads (usually two per core).
         """
-
-        with KWArgs(kwargs) as kw:
-            weight = kw.optional("weight")
-            sample = kw.optional("sample")
-            threads = kw.optional("threads")
 
         if (
             self._hist._storage_type
@@ -382,11 +377,13 @@ class Histogram(object):
         data = [np.array_split(a, threads) for a in args]
 
         if weight is None or np.isscalar(weight):
+            assert threads is not None
             weights = [weight] * threads
         else:
             weights = np.array_split(weight, threads)
 
         if sample is None or np.isscalar(sample):
+            assert threads is not None
             samples = [sample] * threads
         else:
             samples = np.array_split(sample, threads)
@@ -496,7 +493,7 @@ class Histogram(object):
         ret = "{self.__class__.__name__}({newline}".format(
             self=self, newline=newline if len(self.axes) > 1 else ""
         )
-        ret += ",{newline}".format(newline=newline).join(repr(ax) for ax in self.axes)
+        ret += f",{newline}".join(repr(ax) for ax in self.axes)
         ret += "{comma}{newline}storage={storage}".format(
             storage=self._storage_type(),
             newline=newline
@@ -510,9 +507,9 @@ class Histogram(object):
         outer = self.sum(flow=True)
         if outer:
             inner = self.sum(flow=False)
-            ret += " # Sum: {}".format(inner)
+            ret += f" # Sum: {inner}"
             if inner != outer:
-                ret += " ({} with flow)".format(outer)
+                ret += f" ({outer} with flow)"
         return ret
 
     def _compute_commonindex(self, index):
@@ -557,8 +554,7 @@ class Histogram(object):
 
         return indexes
 
-    @inject_signature("self, flow=False, *, dd=False, view=False")
-    def to_numpy(self, flow=False, **kwargs):
+    def to_numpy(self, flow: bool = False, *, dd: bool = False, view: bool = False):
         """
         Convert to a Numpy style tuple of return arrays. Edges are converted to
         match NumPy standards, with upper edge inclusive, unlike
@@ -585,35 +581,20 @@ class Histogram(object):
             The edges for each dimension
         """
 
-        with KWArgs(kwargs) as kw:
-            dd = kw.optional("dd", False)
-            view = kw.optional("view", False)
-
-        # Python 3+ would be simpler
-        return_tuple = self._hist.to_numpy(flow)
-        hist = return_tuple[0]
-
-        if view:
-            hist = self.view(flow=flow)
-        else:
-            hist = self.values(flow=flow)
+        hist, *edges = self._hist.to_numpy(flow)
+        hist = self.view(flow=flow) if view else self.values(flow=flow)
 
         if dd:
-            return hist, return_tuple[1:]
+            return (hist, edges)
         else:
-            return (hist,) + return_tuple[1:]
+            return (hist, *edges)
 
-    @inject_signature("self, *, deep=True")
-    def copy(self, **kwargs):
+    def copy(self, *, deep=True):
         """
         Make a copy of the histogram. Defaults to making a
         deep copy (axis metadata copied); use deep=False
         to avoid making a copy of axis metadata.
         """
-
-        # Future versions may add new options here
-        with KWArgs(kwargs) as k:
-            deep = k.optional("deep", True)
 
         if deep:
             return copy.deepcopy(self)
@@ -627,31 +608,28 @@ class Histogram(object):
         self._hist.reset()
         return self
 
-    def empty(self, flow=False):
-        # type: (bool) -> bool
+    def empty(self, flow: bool = False) -> bool:
         """
         Check to see if the histogram has any non-default values.
         You can use flow=True to check flow bins too.
         """
         return self._hist.empty(flow)
 
-    def sum(self, flow=False):
+    def sum(self, flow: bool = False):
         """
         Compute the sum over the histogram bins (optionally including the flow bins).
         """
         return self._hist.sum(flow)
 
     @property
-    def size(self):
-        # type: () -> int
+    def size(self) -> int:
         """
         Total number of bins in the histogram (including underflow/overflow).
         """
         return self._hist.size()
 
     @property
-    def shape(self):
-        # type: () -> Tuple[int, ...]
+    def shape(self) -> Tuple[int, ...]:
         """
         Tuple of axis sizes (not including underflow/overflow).
         """
@@ -774,7 +752,7 @@ class Histogram(object):
             value_shape = value.shape
             value_ndim = value.ndim
 
-        # Numpy does not broadcast partial slices, but we would need
+        # NumPy does not broadcast partial slices, but we would need
         # to allow it (because we do allow broadcasting up dimensions)
         # Instead, we simply require matching dimensions.
         if value_ndim > 0 and value_ndim != sum(isinstance(i, slice) for i in indexes):
@@ -821,7 +799,7 @@ class Histogram(object):
                     stop += has_underflow
 
                 else:
-                    msg = "Mismatched shapes in dimension {}".format(n)
+                    msg = f"Mismatched shapes in dimension {n}"
                     msg += ", {} != {}".format(value_shape[n], request_len)
                     if use_underflow or use_overflow:
                         msg += " or {}".format(
@@ -835,8 +813,7 @@ class Histogram(object):
 
         view[tuple(indexes)] = value
 
-    def project(self, *args):
-        # type: (Axis) -> Histogram
+    def project(self: H, *args: int) -> H:
         """
         Project to a single axis or several axes on a multidimensional histogram.
         Provided a list of axis numbers, this will produce the histogram over
@@ -848,8 +825,7 @@ class Histogram(object):
     # Implementation of PlottableHistogram
 
     @property
-    def kind(self):
-        # type: () -> Kind
+    def kind(self) -> Kind:
         """
         Returns Kind.COUNT if this is a normal summing histogram, and Kind.MEAN if this is a
         mean histogram.
@@ -864,8 +840,7 @@ class Histogram(object):
         else:
             return Kind.COUNT
 
-    def values(self, flow=False):
-        # type: (bool) -> ArrayLike
+    def values(self, flow: bool = False) -> np.ndarray:
         """
         Returns the accumulated values. The counts for simple histograms, the
         sum of weights for weighted histograms, the mean for profiles, etc.
@@ -885,8 +860,7 @@ class Histogram(object):
         else:
             return view.value
 
-    def variances(self, flow=False):
-        # type: (bool) -> Optional[ArrayLike]
+    def variances(self, flow: bool = False) -> Optional[np.ndarray]:
         """
         Returns the estimated variance of the accumulated values. The sum of squared
         weights for weighted histograms, the variance of samples for profiles, etc.
@@ -934,8 +908,7 @@ class Histogram(object):
         else:
             return view.variance
 
-    def counts(self, flow=False):
-        # type: (bool) -> Optional[ArrayLike]
+    def counts(self, flow: bool = False) -> np.ndarray:
         """
         Returns the number of entries in each bin for an unweighted
         histogram or profile and an effective number of entries (defined below)

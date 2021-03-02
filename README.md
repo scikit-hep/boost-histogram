@@ -165,19 +165,18 @@ Wheels are produced using [cibuildwheel](https://cibuildwheel.readthedocs.io/en/
 
 | System | Arch | Python versions | PyPy versions |
 |---------|-----|------------------|--------------|
-| ManyLinux1 (custom GCC 9.2) | 32 & 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8 | |
-| ManyLinux2010 | 32 & 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8, 3.9 | 7.3: 2.7, 3.6, 3.7 |
+| ManyLinux1 (custom GCC 9.2) | 32 & 64-bit | 3.6, 3.7, 3.8 | |
+| ManyLinux2010 | 32 & 64-bit | 3.6, 3.7, 3.8, 3.9 | 7.3: 3.6, 3.7 |
 | ManyLinux2014 | ARM64 | 3.6, 3.7, 3.8, 3.9 | |
-| macOS 10.9+ | 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8, 3.9 | 7.3: 2.7, 3.6, 3.7 |
+| macOS 10.9+ | 64-bit | 3.6, 3.7, 3.8, 3.9 | 7.3: 3.6, 3.7 |
 | macOS Universal2 | Arm64 | 3.9 | |
-| Windows | 32 & 64-bit | 2.7, 3.5, 3.6, 3.7, 3.8, 3.9 | (32 bit) 7.3: 2.7, 3.6, 3.7 |
+| Windows | 32 & 64-bit | 3.6, 3.7, 3.8, 3.9 | (32 bit) 7.3: 3.6, 3.7 |
 
 
 * manylinux1: Using a custom docker container with GCC 9; should work but can't be called directly other compiled extensions unless they do the same thing (think that's the main caveat). Supporting 32 bits because it's there. Anything running Python 3.9 should be compatible with manylinux2010, so manylinux1 not provided for Python 3.9 (like NumPy).
 * manylinux2010: Requires pip 10+ and a version of Linux newer than 2010.
-* Windows: pybind11 requires compilation with a newer copy of Visual Studio than Python 2.7's Visual Studio 2008; you need to have the [Visual Studio 2015 distributable][msvc2015] installed (the dll is included in 2017 and 2019, as well).
-* PyPy: Supported on all platforms that `cibuildwheel` supports, in pypy2, pypy3.6, and pypy3.7 variants.
-* ARM on Linux is supported for newer Python versions via manylinux2014. PowerPC or IBM-Z available on request.
+* PyPy: Supported  for both pypy3.6 and pypy3.7 variants.
+* ARM on Linux is supported for newer Python versions via `manylinux2014`. PowerPC or IBM-Z available on request, or `manylinux_2_24`.
 * macOS Universal2 wheels for Apple Silicon and Intel provided for Python 3.9 (requires Pip 21.0.1).
 
 [msvc2015]: https://www.microsoft.com/en-us/download/details.aspx?id=48145
@@ -187,7 +186,7 @@ If you are on a Linux system that is not part of the "many" in manylinux, such a
 
 #### Conda-Forge
 
-The boost-histogram package is available on Conda-Forge, as well. All supported versions are available with the exception of Python 2.7, which is no longer supported by conda-forge directly.
+The boost-histogram package is available on Conda-Forge, as well. All supported variants are available.
 
 ```bash
 conda install -c conda-forge boost-histogram
@@ -196,8 +195,6 @@ conda install -c conda-forge boost-histogram
 #### Source builds
 
 For a source build, for example from an "sdist" package, the only requirements are a C++14 compatible compiler. The compiler requirements are dictated by Boost.Histogram's C++ requirements: gcc >= 5.5, clang >= 3.8, msvc >= 14.1. You should have a version of pip less than 2-3 years old (10+).
-
-If you are using Python 2.7 on Windows, you will need to use a recent version of Visual studio and force distutils to use it, or just upgrade to Python 3.6 or newer. Check the pybind11 documentation for [more help](https://pybind11.readthedocs.io/en/stable/faq.html#working-with-ancient-visual-studio-2009-builds-on-windows). On some Linux systems, you may need to use a newer compiler than the one your distribution ships with.
 
 Boost is not required or needed (this only depends on included header-only dependencies). This library is under active development; you can install directly from GitHub if you would like.
 

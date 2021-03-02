@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # The point of this test is to make sure that the infrastructure for supporting
 # custom attributes, like title in Hist, is working.
 
@@ -19,7 +18,7 @@ class NamedAxesTuple(bh.axis.AxesTuple):
             for i, ax in enumerate(self):
                 if ax.name == name:
                     return i
-            raise KeyError("{} not found in axes".format(name))
+            raise KeyError(f"{name} not found in axes")
         else:
             return name
 
@@ -33,7 +32,7 @@ class NamedAxesTuple(bh.axis.AxesTuple):
         else:
             item = self._get_index_by_name(item)
 
-        return super(NamedAxesTuple, self).__getitem__(item)
+        return super().__getitem__(item)
 
     @property
     def name(self):
@@ -47,7 +46,7 @@ class NamedAxesTuple(bh.axis.AxesTuple):
 # boost-histogram will know what to convert C++ objects into.
 
 
-class AxesMixin(object):
+class AxesMixin:
     __slots__ = ()
 
     @property
@@ -66,7 +65,7 @@ class Regular(bh.axis.Regular, AxesMixin):
 
     def __init__(self, bins, start, stop, name):
 
-        super(Regular, self).__init__(bins, start, stop)
+        super().__init__(bins, start, stop)
 
         self._ax.metadata["name"] = name
 
@@ -77,7 +76,7 @@ class CustomHist(bh.Histogram):
         return NamedAxesTuple(self._axis(i) for i in range(self.ndim))
 
     def __init__(self, *args, **kwargs):
-        super(CustomHist, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         valid_names = [ax.name for ax in self.axes if ax.name]
         if len(valid_names) != len(set(valid_names)):
             msg = "{} instance cannot contain axes with duplicated names".format(

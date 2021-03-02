@@ -111,7 +111,7 @@ Category axis
 
    You should put integers in a category axis; but unlike an integer axis, the integers do not need to be adjacent.
 
-One use for an IntCategory axis is for an IntEnum (Python 3):
+One use for an IntCategory axis is for an IntEnum:
 
 .. code:: python3
 

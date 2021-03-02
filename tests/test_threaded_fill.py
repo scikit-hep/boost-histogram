@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import numpy as np
 import pytest
 from numpy.testing import assert_almost_equal, assert_array_equal
@@ -11,7 +10,7 @@ def fillit(hist, *args, **kwargs):
 
 
 @pytest.mark.benchmark(group="threaded-fill-1d")
-@pytest.mark.parametrize("threads", [1, 4], ids=lambda x: "threads={}".format(x))
+@pytest.mark.parametrize("threads", [1, 4], ids=lambda x: f"threads={x}")
 # @pytest.mark.parametrize("atomic", [True, False], ids=["atomic", "double"])
 @pytest.mark.parametrize(
     "storage", [bh.storage.AtomicInt64, bh.storage.Double, bh.storage.Int64]
@@ -28,7 +27,7 @@ def test_threads(benchmark, threads, storage):
     assert_array_equal(hist_linear, hist_result)
 
 
-@pytest.mark.parametrize("threads", [1, 4, 7], ids=lambda x: "threads={}".format(x))
+@pytest.mark.parametrize("threads", [1, 4, 7], ids=lambda x: f"threads={x}")
 @pytest.mark.parametrize(
     "storage", [bh.storage.AtomicInt64, bh.storage.Double, bh.storage.Int64]
 )
@@ -45,7 +44,7 @@ def test_threaded_builtin(threads, storage):
     assert_array_equal(hist_atomic1, hist_atomic2)
 
 
-@pytest.mark.parametrize("threads", [1, 4, 7], ids=lambda x: "threads={}".format(x))
+@pytest.mark.parametrize("threads", [1, 4, 7], ids=lambda x: f"threads={x}")
 def test_threaded_numpy(threads):
     vals = np.random.rand(10003)
 
@@ -55,7 +54,7 @@ def test_threaded_numpy(threads):
     assert_array_equal(hist_1, hist_2)
 
 
-@pytest.mark.parametrize("threads", [1, 4, 7], ids=lambda x: "threads={}".format(x))
+@pytest.mark.parametrize("threads", [1, 4, 7], ids=lambda x: f"threads={x}")
 def test_threaded_weights(threads):
     x, y, weights = np.random.rand(3, 10003)
 
@@ -68,7 +67,7 @@ def test_threaded_weights(threads):
     assert_almost_equal(hist_1.view(), hist_2.view())
 
 
-@pytest.mark.parametrize("threads", [1, 4, 7], ids=lambda x: "threads={}".format(x))
+@pytest.mark.parametrize("threads", [1, 4, 7], ids=lambda x: f"threads={x}")
 def test_threaded_weight_storage(threads):
     x, y, weights = np.random.rand(3, 10003)
 

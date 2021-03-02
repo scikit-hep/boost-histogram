@@ -1,14 +1,12 @@
-# -*- coding: utf-8 -*-
-from __future__ import division
-
 import os
 import sys
+from pathlib import Path
 
 from setuptools import setup
 
-DIR = os.path.abspath(os.path.dirname(__file__))
+DIR = Path(__file__).parent.resolve()
 
-sys.path.append(os.path.join(DIR, "extern", "pybind11"))
+sys.path.append(str(DIR / "extern" / "pybind11"))
 from pybind11.setup_helpers import ParallelCompile, Pybind11Extension  # noqa: E402
 
 del sys.path[-1]
@@ -51,7 +49,12 @@ ext_modules = [
 
 
 extras = {
-    "test": ["pytest", "pytest-benchmark", "typing_extensions", "cloudpickle"],
+    "test": [
+        "pytest",
+        "pytest-benchmark",
+        "typing_extensions; python_version<'3.8'",
+        "cloudpickle",
+    ],
     "docs": [
         "Sphinx~=3.0",
         "recommonmark>=0.5.0",

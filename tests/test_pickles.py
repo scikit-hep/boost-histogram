@@ -1,12 +1,6 @@
-# -*- coding: utf-8 -*-
-try:
-    from cPickle import pickle
-except ImportError:
-    import pickle
-
 import os
+import pickle
 
-import env
 import pytest
 
 import boost_histogram as bh
@@ -14,15 +8,10 @@ import boost_histogram as bh
 DIR = os.path.abspath(os.path.dirname(__file__))
 
 
-@pytest.mark.xfail(
-    env.PY2 and env.CPYTHON,
-    raises=TypeError,
-    reason="Python 3 pickle can't be read in CPython 2",
-)
 @pytest.mark.parametrize("version", ["0.10.2", "0.6.2", "0.11.1"])
 def test_read_pickle(version):
 
-    filename = os.path.join(DIR, "pickles", "bh_{}.pkl".format(version))
+    filename = os.path.join(DIR, "pickles", f"bh_{version}.pkl")
     with open(filename, "rb") as f:
         d = pickle.load(f)
 

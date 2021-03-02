@@ -1,16 +1,11 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import, division, print_function
-
 from .._core import storage as store
 from .utils import MAIN_FAMILY, set_family, set_module
 
-del absolute_import, division, print_function
-
 
 # Simple mixin to provide a common base class for types
-class Storage(object):
+class Storage:
     def __repr__(self):
-        return "{self.__class__.__name__}()".format(self=self)
+        return f"{self.__class__.__name__}()"
 
 
 # MAIN FAMILY

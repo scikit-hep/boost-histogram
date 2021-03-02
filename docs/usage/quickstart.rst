@@ -157,7 +157,7 @@ You can save histograms using pickle:
 
 Special care was taken to ensure that this is fast and efficient.  Please use
 the latest version of the Pickle protocol you feel comfortable using; you
-cannot use version 0, the version that is default on Python 2. The most recent
+cannot use version 0, the version that was default on Python 2. The most recent
 versions provide performance benefits.
 
 Computing with Histograms

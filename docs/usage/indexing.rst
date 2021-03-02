@@ -232,8 +232,7 @@ Implementation notes
 
 loc, rebin, and sum are *not* unique tags, or special types, but rather
 APIs for classes. New versions of these could be added, and
-implementations could be shared among Histogram libraries. For clarity,
-the following code is written in Python 3.6+. `Prototype
+implementations could be shared among Histogram libraries. `Prototype
 here <https://gist.github.com/henryiii/d545a673ea2b3225cb985c9c02ac958b>`__.
 `Extra doc
 here <https://docs.google.com/document/d/1bJKA7Y0QXf46w53UFizJ4bnZlVIkb4aCqx6m2hoN0HM/edit#heading=h.jvegm6z8f387>`__.

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import functools
 import operator
 import sys
@@ -82,9 +81,8 @@ def test_fill_int_1d():
         h.fill()
     with pytest.raises(ValueError):
         h.fill(1, 2)
-    with pytest.raises(TypeError) as k:
+    with pytest.raises(TypeError):
         h.fill(1, fiddlesticks=2)
-    assert k.value.args[0] == "Keyword(s) fiddlesticks not expected"
 
     h.fill(-3)
     assert h.empty()

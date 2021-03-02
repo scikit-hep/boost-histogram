@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # To regenerate API docs:
 # sphinx-apidoc -o api ../src/boost_histogram -M -f -t template/
 

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10...3.18)
+cmake_minimum_required(VERSION 3.10...3.19)
 
 project(BOOST_HISTOGRAM LANGUAGES CXX)
 # Version is added later
@@ -120,10 +120,6 @@ if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang" OR "${CMAKE_CXX_COMPILER_ID}" MATC
     target_compile_options(_core PRIVATE -Werror)
   endif()
 
-  # Python 2 will not be compatible with C++17, but let's not be reminded of that over and over again here.
-  if("${PYTHON_VERSION_MAJOR}" LESS 3 AND "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    target_compile_options(_core PRIVATE -Wno-deprecated-register)
-  endif()
 elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
   target_compile_options(_core PRIVATE /W4)
   if(BOOST_HISTOGRAM_ERRORS)
