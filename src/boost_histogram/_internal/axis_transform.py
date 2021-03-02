@@ -20,20 +20,18 @@ class AxisTransform:
         self._this = this
         return self
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         if hasattr(self, "_this"):
             return repr(self._this)
         else:
             return self.__class__.__name__ + "() # Missing _this, broken class"
 
-    def _produce(self, bins, start, stop):
-        # type: (int, int, int) -> Any
+    def _produce(self, bins: int, start: int, stop: int) -> Any:
         # Note: this is an ABC; _type must be defined on children
         # These can be fixed later with a Protocol
         return self.__class__._type(bins, start, stop)  # type: ignore
 
-    def __init__(self):
-        # type: () -> None
+    def __init__(self) -> None:
         "Create a new transform instance"
         # Note: this comes from set_family
         (cpp_class,) = self._types  # type: ignore

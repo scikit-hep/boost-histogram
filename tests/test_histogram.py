@@ -81,7 +81,7 @@ def test_fill_int_1d():
         h.fill()
     with pytest.raises(ValueError):
         h.fill(1, 2)
-    with pytest.raises(TypeError) as k:
+    with pytest.raises(TypeError):
         h.fill(1, fiddlesticks=2)
 
     h.fill(-3)

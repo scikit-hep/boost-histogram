@@ -1,5 +1,3 @@
-import sys
-
 import pytest
 
 import boost_histogram  # noqa: F401
