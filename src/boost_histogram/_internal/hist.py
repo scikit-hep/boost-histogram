@@ -581,19 +581,13 @@ class Histogram:
             The edges for each dimension
         """
 
-        # Python 3+ would be simpler
-        return_tuple = self._hist.to_numpy(flow)
-        hist = return_tuple[0]
-
-        if view:
-            hist = self.view(flow=flow)
-        else:
-            hist = self.values(flow=flow)
+        hist, *edges = self._hist.to_numpy(flow)
+        hist = self.view(flow=flow) if view else self.values(flow=flow)
 
         if dd:
-            return hist, return_tuple[1:]
+            return (hist, edges)
         else:
-            return (hist,) + return_tuple[1:]
+            return (hist, *edges)
 
     def copy(self, *, deep=True):
         """

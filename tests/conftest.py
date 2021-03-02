@@ -4,10 +4,6 @@ import pytest
 
 import boost_histogram  # noqa: F401
 
-collect_ignore = []
-if sys.version_info < (3, 6):
-    collect_ignore.append("test_docstrings_uhi.py")
-
 
 @pytest.fixture(params=(False, True), ids=("no_growth", "growth"))
 def growth(request):
