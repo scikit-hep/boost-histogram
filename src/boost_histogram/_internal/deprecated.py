@@ -8,7 +8,7 @@ import warnings
 
 
 class deprecated:
-    def __init__(self, reason: str, name: str="") -> None:
+    def __init__(self, reason: str, name: str = "") -> None:
         self._reason = reason
         self._name = name
 
