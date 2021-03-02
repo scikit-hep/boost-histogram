@@ -1,13 +1,20 @@
 import copy
 from typing import Any
 
+import boost_histogram
+
 from .._core import axis as ca
-from .utils import MAIN_FAMILY, register, set_family, set_module
+from .utils import register, set_module
 
 
 @set_module("boost_histogram.axis.transform")
 class AxisTransform:
     __slots__ = ("_this",)
+    _family: object
+
+    def __init_subclass__(cls, *, family: object) -> None:
+        super().__init_subclass__()
+        cls._family = family
 
     def __copy__(self):
         other = self.__class__.__new__(self.__class__)
@@ -33,7 +40,7 @@ class AxisTransform:
 
     def __init__(self) -> None:
         "Create a new transform instance"
-        # Note: this comes from set_family
+        # Note: this comes from family
         (cpp_class,) = self._types  # type: ignore
         self._this = cpp_class()
 
@@ -49,16 +56,15 @@ class AxisTransform:
 core = "__init__ forward inverse".split()
 
 
-@set_family(MAIN_FAMILY)
 @set_module("boost_histogram.axis.transform")
 @register({ca.transform.pow})
-class Pow(AxisTransform):
+class Pow(AxisTransform, family=boost_histogram):
     __slots__ = ()
     _type = ca.regular_pow
 
     def __init__(self, power: float):
         "Create a new transform instance"
-        # Note: this comes from set_family
+        # Note: this comes from family
         (cpp_class,) = self._types  # type: ignore
         self._this = cpp_class(power)
 
@@ -72,10 +78,9 @@ class Pow(AxisTransform):
         return self.__class__._type(bins, start, stop, self.power)
 
 
-@set_family(MAIN_FAMILY)
 @set_module("boost_histogram.axis.transform")
 @register({ca.transform.func_transform})
-class Function(AxisTransform):
+class Function(AxisTransform, family=boost_histogram):
     __slots__ = ()
     _type = ca.regular_trans
 
@@ -126,7 +131,7 @@ class Function(AxisTransform):
 
         """
 
-        # Note: this comes from set_family
+        # Note: this comes from family
         (cpp_class,) = self._types  # type: ignore
         self._this = cpp_class(forward, inverse, convert, name)
 

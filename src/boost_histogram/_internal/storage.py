@@ -1,53 +1,51 @@
+import boost_histogram
+
 from .._core import storage as store
-from .utils import MAIN_FAMILY, set_family, set_module
+from .utils import set_module
 
 
 # Simple mixin to provide a common base class for types
 class Storage:
+    _family: object
+
+    def __init_subclass__(cls, *, family: object) -> None:
+        super().__init_subclass__()
+        cls._family = family
+
     def __repr__(self):
         return f"{self.__class__.__name__}()"
 
 
-# MAIN FAMILY
-
-
-@set_family(MAIN_FAMILY)
 @set_module("boost_histogram.storage")
-class Int64(store.int64, Storage):
+class Int64(store.int64, Storage, family=boost_histogram):
     pass
 
 
-@set_family(MAIN_FAMILY)
 @set_module("boost_histogram.storage")
-class Double(store.double, Storage):
+class Double(store.double, Storage, family=boost_histogram):
     pass
 
 
-@set_family(MAIN_FAMILY)
 @set_module("boost_histogram.storage")
-class AtomicInt64(store.atomic_int64, Storage):
+class AtomicInt64(store.atomic_int64, Storage, family=boost_histogram):
     pass
 
 
-@set_family(MAIN_FAMILY)
 @set_module("boost_histogram.storage")
-class Unlimited(store.unlimited, Storage):
+class Unlimited(store.unlimited, Storage, family=boost_histogram):
     pass
 
 
-@set_family(MAIN_FAMILY)
 @set_module("boost_histogram.storage")
-class Weight(store.weight, Storage):
+class Weight(store.weight, Storage, family=boost_histogram):
     pass
 
 
-@set_family(MAIN_FAMILY)
 @set_module("boost_histogram.storage")
-class Mean(store.mean, Storage):
+class Mean(store.mean, Storage, family=boost_histogram):
     pass
 
 
-@set_family(MAIN_FAMILY)
 @set_module("boost_histogram.storage")
-class WeightedMean(store.weighted_mean, Storage):
+class WeightedMean(store.weighted_mean, Storage, family=boost_histogram):
     pass

@@ -49,6 +49,10 @@ class NamedAxesTuple(bh.axis.AxesTuple):
 class AxesMixin:
     __slots__ = ()
 
+    # Only required for placing the Mixin first
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+
     @property
     def name(self):
         """
@@ -58,20 +62,27 @@ class AxesMixin:
 
 
 # The order of the mixin is important here - it must be first
-# to override bh.axis.Regular
-@bh.utils.set_family(CUSTOM_FAMILY)
-class Regular(bh.axis.Regular, AxesMixin):
+# if it needs to override bh.axis.Regular, otherwise, last is simpler,
+# as it doesn't need to forward __init_subclass__ kwargs then.
+
+
+class Regular(bh.axis.Regular, AxesMixin, family=CUSTOM_FAMILY):
     __slots__ = ()
 
     def __init__(self, bins, start, stop, name):
-
         super().__init__(bins, start, stop)
-
         self._ax.metadata["name"] = name
 
 
-@bh.utils.set_family(CUSTOM_FAMILY)
-class CustomHist(bh.Histogram):
+class Integer(AxesMixin, bh.axis.Integer, family=CUSTOM_FAMILY):
+    __slots__ = ()
+
+    def __init__(self, start, stop, name):
+        super().__init__(start, stop)
+        self._ax.metadata["name"] = name
+
+
+class CustomHist(bh.Histogram, family=CUSTOM_FAMILY):
     def _generate_axes_(self):
         return NamedAxesTuple(self._axis(i) for i in range(self.ndim))
 
@@ -86,7 +97,7 @@ class CustomHist(bh.Histogram):
 
 
 def test_hist_creation():
-    hist_1 = CustomHist(Regular(10, 0, 1, name="a"), Regular(20, 0, 4, name="b"))
+    hist_1 = CustomHist(Regular(10, 0, 1, name="a"), Integer(0, 4, name="b"))
     assert hist_1.axes[0].name == "a"
     assert hist_1.axes[1].name == "b"
 
@@ -105,16 +116,18 @@ def test_hist_index():
 
 
 def test_hist_convert():
-    hist_1 = CustomHist(Regular(10, 0, 1, name="a"), Regular(20, 0, 4, name="b"))
+    hist_1 = CustomHist(Regular(10, 0, 1, name="a"), Integer(0, 4, name="b"))
     hist_bh = bh.Histogram(hist_1)
 
     assert type(hist_bh.axes[0]) == bh.axis.Regular
+    assert type(hist_bh.axes[1]) == bh.axis.Integer
     assert hist_bh.axes[0].name == "a"
     assert hist_bh.axes[1].name == "b"
 
     hist_2 = CustomHist(hist_bh)
 
     assert type(hist_2.axes[0]) == Regular
+    assert type(hist_2.axes[1]) == Integer
     assert hist_2.axes[0].name == "a"
     assert hist_2.axes[1].name == "b"
 
@@ -122,6 +135,7 @@ def test_hist_convert():
     hist_3 = CustomHist(hist_1)
 
     assert type(hist_3.axes[0]) == Regular
+    assert type(hist_3.axes[1]) == Integer
     assert hist_3.axes[0].name == "a"
     assert hist_3.axes[1].name == "b"
 
