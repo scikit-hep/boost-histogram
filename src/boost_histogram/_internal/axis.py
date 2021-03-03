@@ -1,10 +1,12 @@
 import copy
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Dict, Optional, Set, Tuple, Union
+
+import boost_histogram
 
 from .._core import axis as ca
 from .axis_transform import AxisTransform
 from .traits import Traits
-from .utils import MAIN_FAMILY, cast, register, set_family, set_module
+from .utils import cast, register, set_module
 
 
 def _isstr(value: Any) -> bool:
@@ -20,7 +22,7 @@ def _isstr(value: Any) -> bool:
         return False
 
 
-def opts(**kwargs: bool):
+def opts(**kwargs: bool) -> Set[str]:
     return {k for k, v in kwargs.items() if v}
 
 
@@ -28,6 +30,11 @@ def opts(**kwargs: bool):
 @set_module("boost_histogram.axis")
 class Axis:
     __slots__ = ("_ax", "__dict__")
+    _family: object
+
+    def __init_subclass__(cls, *, family: object) -> None:
+        super().__init_subclass__()
+        cls._family = family
 
     def __setattr__(self, attr: str, value: Any) -> None:
         if attr == "__dict__":
@@ -244,8 +251,7 @@ class Axis:
     }
 )
 @set_module("boost_histogram.axis")
-@set_family(MAIN_FAMILY)
-class Regular(Axis):
+class Regular(Axis, family=boost_histogram):
     __slots__ = ()
 
     def __init__(
@@ -361,9 +367,8 @@ class Regular(Axis):
         ca.variable_circular,
     }
 )
-@set_family(MAIN_FAMILY)
 @set_module("boost_histogram.axis")
-class Variable(Axis):
+class Variable(Axis, family=boost_histogram):
     __slots__ = ()
 
     def __init__(
@@ -444,9 +449,8 @@ class Variable(Axis):
         ca.integer_circular,
     }
 )
-@set_family(MAIN_FAMILY)
 @set_module("boost_histogram.axis")
-class Integer(Axis):
+class Integer(Axis, family=boost_histogram):
     __slots__ = ()
 
     def __init__(
@@ -514,7 +518,7 @@ class Integer(Axis):
         return "{start:g}, {stop:g}".format(start=self.edges[0], stop=self.edges[-1])
 
 
-class BaseCategory(Axis):
+class BaseCategory(Axis, family=boost_histogram):
     __slots__ = ()
 
     def _repr_kwargs(self):
@@ -536,10 +540,9 @@ class BaseCategory(Axis):
         return ret
 
 
-@set_family(MAIN_FAMILY)
 @set_module("boost_histogram.axis")
 @register({ca.category_str_growth, ca.category_str})
-class StrCategory(BaseCategory):
+class StrCategory(BaseCategory, family=boost_histogram):
     __slots__ = ()
 
     def __init__(
@@ -603,10 +606,9 @@ class StrCategory(BaseCategory):
         return "[{}]".format(", ".join(repr(c) for c in self))
 
 
-@set_family(MAIN_FAMILY)
 @set_module("boost_histogram.axis")
 @register({ca.category_int, ca.category_int_growth})
-class IntCategory(BaseCategory):
+class IntCategory(BaseCategory, family=boost_histogram):
     __slots__ = ()
 
     def __init__(
@@ -655,9 +657,8 @@ class IntCategory(BaseCategory):
 
 # Contains all common methods and properties for the boolean axis
 @register({ca.boolean})
-@set_family(MAIN_FAMILY)
 @set_module("boost_histogram.axis")
-class Boolean(Axis):
+class Boolean(Axis, family=boost_histogram):
     __slots__ = ()
 
     def __init__(self, *, metadata: Any = None, __dict__: Dict[str, Any] = None):

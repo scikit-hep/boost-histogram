@@ -1,8 +1,4 @@
-# Custom families (other packages can define custom families)
-MAIN_FAMILY = object()  # This family will be used as a fallback
-
-# These are not exported because custom user classes do not need to
-# add to the original families, they should make their own.
+import boost_histogram
 
 
 def set_module(name):
@@ -18,40 +14,22 @@ def set_module(name):
     return add_module
 
 
-def set_family(family):
-    """
-    Decorator to set the family of a class. When an object
-    is produced from the C++ bindings, it will look through
-    all subclasses of the base class (Axis, Transform, Storage,
-    etc.) to find a match. If possible, it will match the family
-    of the object that is producing it (Histogram, Axis, etc.).
-    If a family is not found, it will return the main family
-    as a fallback.
-    """
-
-    def add_family(cls):
-        cls._family = family
-        return cls
-
-    return add_family
-
-
 def register(cpp_types=None):
     """
     Decorator to register a C++ type to a Python class.
     Each class given will be added to a lookup list "_types"
     that cast knows about. It should also part of a "family",
     and any class in a family will cast to the same family.
-    See set_family. You do not need to register a class if it
-    inherits from the C++ class.
+    You do not need to register a class if it inherits from
+    the C++ class.
 
     For example, internally this call:
 
         ax = hist._axis(0)
 
     which will get a raw C++ object and need to cast it to a Python
-    wrapped object. There is currently one candidates (users
-    could add more): MAIN_FAMILY. Cast will use the
+    wrapped object. There is currently one candidate (users
+    could add more): boost_histogram. Cast will use the
     parent class's family to return the correct family. If the
     requested family is not found, then the regular family is the
     fallback.
@@ -121,10 +99,10 @@ def cast(self, cpp_object, parent_class):
         cast(self, hist.cpp_axis(), Axis)
         # -> returns Regular(...) if regular axis, etc.
 
-    If self is None, just use the MAIN_FAMILY.
+    If self is None, just use the boost_histogram family.
     """
     if self is None:
-        family = MAIN_FAMILY
+        family = boost_histogram
     else:
         family = self._family
 
@@ -152,7 +130,7 @@ def cast(self, cpp_object, parent_class):
                 return _cast_make_object(canidate_class, cpp_object, is_class)
 
             # Or remember the class if it was from the main family
-            if canidate_class._family is MAIN_FAMILY:
+            if canidate_class._family is boost_histogram:
                 fallback_class = canidate_class
 
     # If no perfect match was registered, return the main family

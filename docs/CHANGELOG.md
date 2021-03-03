@@ -3,10 +3,20 @@
 ## Version 1.0
 
 Dropped support for Python 2 and 3.5; removed large numbers of workarounds.
+Subclassing histogram components now uses Python 3 class keyword syntax to set
+families.
 
+#### User changes
+
+* Dropped Python 2.7 and 3.5 support [#512][]
 * Removed deprecated `.options` from axes. Use `.traits` instead. [#503][]
+* Use keyword class family setting when subclassing histogram components
+  instead of custom decorator. [#513][]
 
 [#503]: https://github.com/scikit-hep/boost-histogram/pull/503
+[#512]: https://github.com/scikit-hep/boost-histogram/pull/512
+[#513]: https://github.com/scikit-hep/boost-histogram/pull/513
+
 
 ## Version 0.13
 

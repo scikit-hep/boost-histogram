@@ -6,12 +6,14 @@ from typing import TYPE_CHECKING, Any, Optional, Tuple, TypeVar, Union
 
 import numpy as np
 
+import boost_histogram
+
 from .. import _core
 from .axestuple import AxesTuple
 from .axis import Axis
 from .enum import Kind
 from .storage import Double, Storage
-from .utils import MAIN_FAMILY, cast, register, set_family, set_module
+from .utils import cast, register, set_module
 from .view import _to_view
 
 if TYPE_CHECKING:
@@ -83,7 +85,6 @@ H = TypeVar("H", bound="Histogram")
 # We currently do not cast *to* a histogram, but this is consistent
 # and could be used later.
 @register(_histograms)
-@set_family(MAIN_FAMILY)
 @set_module("boost_histogram")
 class Histogram:
     # Note this is a __slots__ __dict__ class!
@@ -93,6 +94,12 @@ class Histogram:
         "__dict__",
     )
     # .metadata and ._variance_known are part of the dict
+
+    _family: object = boost_histogram
+
+    def __init_subclass__(cls, *, family: object) -> None:
+        super().__init_subclass__()
+        cls._family = family
 
     def __init__(
         self,

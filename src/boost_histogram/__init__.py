@@ -1,4 +1,4 @@
-from . import accumulators, axis, numpy, storage, utils
+from . import accumulators, axis, numpy, storage
 from ._internal.enum import Kind
 from ._internal.hist import Histogram
 from .tag import loc, overflow, rebin, sum, underflow
@@ -24,7 +24,6 @@ __all__ = (
     "axis",
     "storage",
     "accumulators",
-    "utils",
     "numpy",
     "loc",
     "rebin",

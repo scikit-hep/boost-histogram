@@ -4,20 +4,16 @@ import boost_histogram as bh
 def test_subclass():
     NEW_FAMILY = object()
 
-    @bh.utils.set_family(NEW_FAMILY)
-    class MyHist(bh.Histogram):
+    class MyHist(bh.Histogram, family=NEW_FAMILY):
         pass
 
-    @bh.utils.set_family(NEW_FAMILY)
-    class MyRegular(bh.axis.Regular):
+    class MyRegular(bh.axis.Regular, family=NEW_FAMILY):
         __slots__ = ()
 
-    @bh.utils.set_family(NEW_FAMILY)
-    class MyIntStorage(bh.storage.Int64):
+    class MyIntStorage(bh.storage.Int64, family=NEW_FAMILY):
         pass
 
-    @bh.utils.set_family(NEW_FAMILY)
-    class MyPowTransform(bh.axis.transform.Pow):
+    class MyPowTransform(bh.axis.transform.Pow, family=NEW_FAMILY):
         pass
 
     h = MyHist(MyRegular(10, 0, 2, transform=MyPowTransform(2)), storage=MyIntStorage())
