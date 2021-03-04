@@ -16,29 +16,16 @@
 [![Scikit-HEP][sk-badge]](https://scikit-hep.org/)
 
 
-Python bindings for [Boost::Histogram][] ([source][Boost::Histogram source]), a
-C++14 library. This is of the [fastest libraries][] for
-histogramming, while still providing the power of a full histogram object. See [what's new](./docs/CHANGELOG.md). Powers [Hist][], an analyst-friendly histogram library.
+Python bindings for [Boost::Histogram][] ([source][Boost::Histogram
+source]), a C++14 library. This is of the [fastest libraries][] for
+histogramming, while still providing the power of a full histogram object. See
+[what's new](./docs/CHANGELOG.md).
 
-## Installation
-
-You can install this library from [PyPI](https://pypi.org/project/boost-histogram/) with pip:
-
-```bash
-python -m pip install boost-histogram
-```
-
-or you can use Conda through [conda-forge](https://github.com/conda-forge/boost-histogram-feedstock):
-
-```bash
-conda install -c conda-forge boost-histogram
-```
-
-All the normal best-practices for Python apply; you should be in a virtual environment, etc.
-
+For end users interested in analysis, see [Hist][], a first-party
+analyst-friendly histogram library that extends boost-histogram with many new
+shortcuts, plotting, and more.
 
 ## Usage
-
 
 ```python
 import boost_histogram as bh
@@ -51,14 +38,28 @@ hist = bh.Histogram(
 
 # Filling can be done with arrays, one per dimension
 hist.fill(
-    [0.3, 0.5, 0.2], [0.1, 0.4, 0.9]
+    [0.3, 0.5, 0.2],
+    [0.1, 0.4, 0.9],
 )
 
 # Numpy array view into histogram counts, no overflow bins
 values = hist.values()
+
+# Make a new histogram with just the second axis, summing over the first, and
+# rebinning the second into larger bins:
+h2 = hist[::sum, :: bh.rebin(2)]
 ```
 
-## Features
+We support the [uhi][] [PlottableHistogram][] protocol, so boost-histogram/hist
+histograms can be plotted via any compatible library, such as [mplhep][].
+
+[uhi]: https://github.com/scikit-hep/uhi
+[PlottableHistogram]: https://uhi.readthedocs.io/en/latest/plotting.html
+[mplhep]: https://github.com/scikit-hep/mplhep
+
+## Cheatsheet
+
+<details><summary>Simplified list of features (click to expand)</summary>
 
 * Many axis types (all support `metadata=...`)
     * `bh.axis.Regular(n, start, stop, ...)`: Make a regular axis. Options listed below.
@@ -70,9 +71,10 @@ values = hist.values()
         * `transform=bh.axis.transform.Sqrt`: Square root spacing
         * `transform=bh.axis.transform.Pow(v)`: Power spacing
         * See also the flexible [Function transform](https://boost-histogram.readthedocs.io/en/latest/usage/transforms.html)
-    * `bh.axis.Integer(start, stop, underflow=True, overflow=True, growth=False)`: Special high-speed version of `regular` for evenly spaced bins of width 1
-    * `bh.axis.Variable([start, edge1, edge2, ..., stop], underflow=True, overflow=True)`: Uneven bin spacing
-    * `bh.axis.Category([...], growth=False)`: Integer or string categories
+    * `bh.axis.Integer(start, stop, *, underflow=True, overflow=True, growth=False, circular=False)`: Special high-speed version of `regular` for evenly spaced bins of width 1
+    * `bh.axis.Variable([start, edge1, edge2, ..., stop], *, underflow=True, overflow=True, circular=False)`: Uneven bin spacing
+    * `bh.axis.IntCategory([...], *, growth=False)`: Integer categories
+    * `bh.axis.StrCategory([...], *, growth=False)`: String categories
     * `bh.axis.Boolean()`: A True/False axis
 * Axis features:
     * `.index(value)`: The index at a point (or points) on the axis
@@ -82,7 +84,7 @@ values = hist.values()
     * `.edges`: The N+1 bin edges (if continuous)
     * `.extent`: The number of bins (including under/overflow)
     * `.metadata`: Anything a user wants to store
-    * `.traits`: The options set on the axis (`bh.axis.options`)
+    * `.traits`: The options set on the axis
     * `.size`: The number of bins (not including under/overflow)
     * `.widths`: The N bin widths
 * Many storage types
@@ -106,8 +108,8 @@ values = hist.values()
   * `/=`: Divide by a scaler (not all storages) (`hist / scalar` supported too)
   * `.kind`: Either `bh.Kind.COUNT` or `bh.Kind.MEAN`, depending on storage
   * `.sum(flow=False)`: The total count of all bins
-  * `.project(ax1, ax2, ...)`: Project down to listed axis (numbers)
-  * `.to_numpy(flow=False)`: Convert to a NumPy style tuple (with or without under/overflow bins)
+  * `.project(ax1, ax2, ...)`: Project down to listed axis (numbers). Can also reorder axes.
+  * `.to_numpy(flow=False, view=False)`: Convert to a NumPy style tuple (with or without under/overflow bins)
   * `.view(flow=False)`: Get a view on the bin contents (with or without under/overflow bins)
   * `.values(flow=False)`: Get a view on the values (counts or means, depending on storage)
   * `.variances(flow=False)`: Get the variances if available
@@ -126,7 +128,7 @@ values = hist.values()
       * `.axes.bin(*args)`: Returns the bin edges as a tuple of pairs (continuous axis) or values (describe)
       * `.axes.index(*args)`: Returns the bin index at a value for each axis
       * `.axes.value(*args)`: Returns the bin value at an index for each axis
-* Indexing - Supports the [Unified Histogram Indexing (UHI)](https://boost-histogram.readthedocs.io/en/latest/usage/indexing.html) proposal
+* Indexing - Supports [UHI Indexing](https://uhi.readthedocs.io/en/latest/indexing.html)
     * Bin content access / setting
         * `v = h[b]`: Access bin content by index number
         * `v = h[{0:b}]`: All actions can be represented by `axis:item` dictionary instead of by position (mostly useful for slicing)
@@ -147,21 +149,31 @@ values = hist.values()
     * Histograms follow the buffer interface, and provide `.view()`
     * Histograms can be converted to NumPy style output tuple with `.to_numpy()`
 * Details
-    * Use `bh.Histogram(..., storage=...)` to make a histogram (there are several different types)
     * All objects support copy/deepcopy/pickle
 
+</details>
 
-## Supported platforms
+
+## Installation
+
+You can install this library from [PyPI](https://pypi.org/project/boost-histogram/) with pip:
+
+```bash
+python3 -m pip install boost-histogram
+```
+
+
+All the normal best-practices for Python apply; Pip should not be very old, you
+should be in a virtual environment, etc. Python 3.6+ is required; for older
+versions of Python, version `0.13` will be installed instead, which is API
+equivalent to 1.0, but will not be gaining new features.
 
 #### Binaries available:
 
-The easiest way to get boost-histogram is to use a binary wheel, which happens when you run:
-
-```bash
-python -m pip install boost-histogram
-```
-
-Wheels are produced using [cibuildwheel](https://cibuildwheel.readthedocs.io/en/stable/); all common platforms have wheels provided in boost-histogram:
+The easiest way to get boost-histogram is to use a binary wheel, which happens
+when you run the above command on a supported platform.  Wheels are produced using
+[cibuildwheel](https://cibuildwheel.readthedocs.io/en/stable/); all common
+platforms have wheels provided in boost-histogram:
 
 | System | Arch | Python versions | PyPy versions |
 |---------|-----|------------------|--------------|
@@ -173,20 +185,17 @@ Wheels are produced using [cibuildwheel](https://cibuildwheel.readthedocs.io/en/
 | Windows | 32 & 64-bit | 3.6, 3.7, 3.8, 3.9 | (32 bit) 7.3: 3.6, 3.7 |
 
 
-* manylinux1: Using a custom docker container with GCC 9; should work but can't be called directly other compiled extensions unless they do the same thing (think that's the main caveat). Supporting 32 bits because it's there. Anything running Python 3.9 should be compatible with manylinux2010, so manylinux1 not provided for Python 3.9 (like NumPy).
-* manylinux2010: Requires pip 10+ and a version of Linux newer than 2010.
-* PyPy: Supported  for both pypy3.6 and pypy3.7 variants.
+* manylinux1: Using a custom docker container with GCC 9 to produce. Anything running Python 3.9 should be compatible with manylinux2010, so manylinux1 not provided for Python 3.9 (like NumPy).
+* manylinux2010: Requires pip 10+.
+* PyPy 7.3.x: Supported for both pypy3.6 and pypy3.7 variants on all platforms.
 * ARM on Linux is supported for newer Python versions via `manylinux2014`. PowerPC or IBM-Z available on request, or `manylinux_2_24`.
 * macOS Universal2 wheels for Apple Silicon and Intel provided for Python 3.9 (requires Pip 21.0.1).
 
-[msvc2015]: https://www.microsoft.com/en-us/download/details.aspx?id=48145
-
-If you are on a Linux system that is not part of the "many" in manylinux, such as Alpine or ClearLinux, building from source is usually fine, since the compilers on those systems are often quite new. It will just take longer to install when it is using the sdist instead of a wheel.
-
+If you are on a Linux system that is not part of the "many" in manylinux, such as Alpine or ClearLinux, building from source is usually fine, since the compilers on those systems are often quite new. It will just take longer to install when it is using the sdist instead of a wheel. All dependencies are header-only and included.
 
 #### Conda-Forge
 
-The boost-histogram package is available on Conda-Forge, as well. All supported variants are available.
+The boost-histogram package is available on [conda-forge](https://github.com/conda-forge/boost-histogram-feedstock), as well. All supported variants are available.
 
 ```bash
 conda install -c conda-forge boost-histogram
@@ -194,17 +203,19 @@ conda install -c conda-forge boost-histogram
 
 #### Source builds
 
-For a source build, for example from an "sdist" package, the only requirements are a C++14 compatible compiler. The compiler requirements are dictated by Boost.Histogram's C++ requirements: gcc >= 5.5, clang >= 3.8, msvc >= 14.1. You should have a version of pip less than 2-3 years old (10+).
+For a source build, for example from an "SDist" package, the only requirements are a C++14 compatible compiler. The compiler requirements are dictated by Boost.Histogram's C++ requirements: gcc >= 5.5, clang >= 3.8, or msvc >= 14.1. You should have a version of pip less than 2-3 years old (10+).
 
-Boost is not required or needed (this only depends on included header-only dependencies). This library is under active development; you can install directly from GitHub if you would like.
+Boost is not required or needed (this only depends on included header-only dependencies). You can install directly from GitHub if you would like.
 
 ```bash
 python -m pip install git+https://github.com/scikit-hep/boost-histogram.git@develop
 ```
 
+
 ## Developing
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for details on how to set up a development environment.
+
 
 ## Contributors
 

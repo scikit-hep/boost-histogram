@@ -40,7 +40,7 @@ pip install -ve .[all]
 
 You can set up a kernel for external Jupyter then deactivate your environment:
 
-```python
+```bash
 python -m ipykernel install --user --name boost-hist
 deactivate
 ```

@@ -36,7 +36,7 @@ True ``is_valid`` selection, you can use a ``sum``:
 
 .. code:: python3
 
-   h1 = hist[:, True, ::bh.sum]
+   h1 = hist[:, True, :: bh.sum]
 
 You can expand this example to any number of dimensions, boolean flags,
 and categories.
