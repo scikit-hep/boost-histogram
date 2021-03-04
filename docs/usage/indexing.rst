@@ -195,7 +195,7 @@ shortcut to quickly generate slices is provided, as well:
 
 .. code:: python3
 
-   ans = h[{1: slice(None,bh.loc(2.4),bh.sum)}]
+   ans = h[{1: slice(None, bh.loc(2.4), bh.sum)}]
 
    # Identical:
    s = bh.tag.Slicer()
@@ -298,7 +298,9 @@ Basic implementation (WIP):
                    high = binning.left(indexes[-1][-1])
                    hasover = True
 
-               binning = Regular(num, binning.low, high, hasunder=binning.hasunder, hasover=hasover)
+               binning = Regular(
+                   num, binning.low, high, hasunder=binning.hasunder, hasover=hasover
+               )
                counts = numpy.add.reduceat(counts, numpy.concatenate(indexes), axis=axis)
                return binning, counts
 

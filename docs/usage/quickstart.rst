@@ -40,7 +40,7 @@ The exact same syntax is used for 1D, 2D, and ND histograms:
    hist3D = bh.Histogram(
        bh.axis.Regular(10, 0, 100, circular=True),
        bh.axis.Regular(10, 0.0, 10.0),
-       bh.axis.Variable([1, 2, 3, 4, 5, 5.5, 6])
+       bh.axis.Variable([1, 2, 3, 4, 5, 5.5, 6]),
    )
 
 See :ref:`usage-axes` and :ref:`usage-transforms`.
@@ -76,7 +76,7 @@ using ``bh.sum`` as the third slice argument:
         bh.axis.Regular(10, 0, 1),
         bh.axis.Regular(10, 0, 1),
     )
-    mini = hist[1:5, bh.loc(0.2):bh.loc(0.9), ::bh.sum]
+    mini = hist[1:5, bh.loc(0.2) : bh.loc(0.9), :: bh.sum]
     # Will be 4 bins x 7 bins
 
 See :ref:`usage-indexing`.
@@ -110,8 +110,8 @@ you can set either values or arrays at a time:
 .. code:: python3
 
     hist[2] = 3.5
-    hist[bh.underflow] = 0 # set the underflow bin
-    hist2d[3:5, 2:4] = np.eye(2) # set with array
+    hist[bh.underflow] = 0  # set the underflow bin
+    hist2d[3:5, 2:4] = np.eye(2)  # set with array
 
 For non-simple storages, you can add an extra dimension that matches the
 constructor arguments of that accumulator. For example, if you want to fill
@@ -119,7 +119,7 @@ a Weight histogram with three values, you can dimension:
 
 .. code:: python3
 
-    hist[0:3] = [[1,.1], [2, .2], [3, .3]]
+    hist[0:3] = [[1, 0.1], [2, 0.2], [3, 0.3]]
 
 See :ref:`usage-indexing`.
 
@@ -147,10 +147,10 @@ You can save histograms using pickle:
 
     import pickle
 
-    with open('file.pkl', 'wb') as f:
+    with open("file.pkl", "wb") as f:
         pickle.dump(h, f)
 
-    with open('file.pkl', 'rb') as f:
+    with open("file.pkl", "rb") as f:
         h2 = pickle.load(f)
 
     assert h == h2

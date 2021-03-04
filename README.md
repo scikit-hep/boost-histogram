@@ -19,34 +19,13 @@
 Python bindings for [Boost::Histogram][] ([source][Boost::Histogram
 source]), a C++14 library. This is of the [fastest libraries][] for
 histogramming, while still providing the power of a full histogram object. See
-[what's new](./docs/CHANGELOG.md). 
+[what's new](./docs/CHANGELOG.md).
 
 For end users interested in analysis, see [Hist][], a first-party
 analyst-friendly histogram library that extends boost-histogram with many new
 shortcuts, plotting, and more.
 
-## Installation
-
-You can install this library from [PyPI](https://pypi.org/project/boost-histogram/) with pip:
-
-```bash
-python -m pip install boost-histogram
-```
-
-or you can use Conda through [conda-forge](https://github.com/conda-forge/boost-histogram-feedstock):
-
-```bash
-conda install -c conda-forge boost-histogram
-```
-
-All the normal best-practices for Python apply; you should be in a virtual
-environment, etc. Python 3.6+ is required; for older versions of Python,
-version `0.13` will be installed instead, which is API equivalent to 1.0, but
-will not be gaining new features.
-
-
 ## Usage
-
 
 ```python
 import boost_histogram as bh
@@ -59,15 +38,16 @@ hist = bh.Histogram(
 
 # Filling can be done with arrays, one per dimension
 hist.fill(
-    [0.3, 0.5, 0.2], [0.1, 0.4, 0.9]
+    [0.3, 0.5, 0.2],
+    [0.1, 0.4, 0.9],
 )
 
 # Numpy array view into histogram counts, no overflow bins
 values = hist.values()
 
 # Make a new histogram with just the second axis, summing over the first, and
-rebinning the second into larger bins:
-h2 = hist[::sum, ::bh.rebin(2)]
+# rebinning the second into larger bins:
+h2 = hist[::sum, :: bh.rebin(2)]
 ```
 
 We support the [uhi][] [PlottableHistogram][] protocol, so boost-histogram/hist
@@ -173,17 +153,27 @@ histograms can be plotted via any compatible library, such as [mplhep][].
 
 </details>
 
-## Supported platforms
+
+## Installation
+
+You can install this library from [PyPI](https://pypi.org/project/boost-histogram/) with pip:
+
+```bash
+python3 -m pip install boost-histogram
+```
+
+
+All the normal best-practices for Python apply; Pip should not be very old, you
+should be in a virtual environment, etc. Python 3.6+ is required; for older
+versions of Python, version `0.13` will be installed instead, which is API
+equivalent to 1.0, but will not be gaining new features.
 
 #### Binaries available:
 
-The easiest way to get boost-histogram is to use a binary wheel, which happens when you run:
-
-```bash
-python -m pip install boost-histogram
-```
-
-Wheels are produced using [cibuildwheel](https://cibuildwheel.readthedocs.io/en/stable/); all common platforms have wheels provided in boost-histogram:
+The easiest way to get boost-histogram is to use a binary wheel, which happens
+when you run the above command on a supported platform.  Wheels are produced using
+[cibuildwheel](https://cibuildwheel.readthedocs.io/en/stable/); all common
+platforms have wheels provided in boost-histogram:
 
 | System | Arch | Python versions | PyPy versions |
 |---------|-----|------------------|--------------|
@@ -205,7 +195,7 @@ If you are on a Linux system that is not part of the "many" in manylinux, such a
 
 #### Conda-Forge
 
-The boost-histogram package is available on Conda-Forge, as well. All supported variants are available.
+The boost-histogram package is available on [conda-forge](https://github.com/conda-forge/boost-histogram-feedstock), as well. All supported variants are available.
 
 ```bash
 conda install -c conda-forge boost-histogram

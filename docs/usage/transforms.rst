@@ -30,13 +30,18 @@ transformed axis, and this will be 15-90 times slower than a compiled method, li
 .. code-block:: python
 
    import ctypes
+
    ftype = ctypes.CFUNCTYPE(ctypes.c_double, ctypes.c_double)
 
    # Pure Python (15x slower)
-   bh.axis.Regular(10, 1, 4, transform=bh.axis.transform.Function(ftype(math.log), ftype(math.exp)))
+   bh.axis.Regular(
+       10, 1, 4, transform=bh.axis.transform.Function(ftype(math.log), ftype(math.exp))
+   )
 
    # Pure Python: Numpy (90x slower)
-   bh.axis.Regular(10, 1, 4, transform=bh.axis.transform.Function(ftype(np.log), ftype(np.exp)))
+   bh.axis.Regular(
+       10, 1, 4, transform=bh.axis.transform.Function(ftype(np.log), ftype(np.exp))
+   )
 
 You can create a Variable axis from the edges of this axis; often that will be faster.
 
@@ -54,13 +59,16 @@ a callable that will run directly through the C interface. This is just as fast 
 
    import numba
 
+
    @numba.cfunc(numba.float64(numba.float64))
    def exp(x):
        return math.exp(x)
 
+
    @numba.cfunc(numba.float64(numba.float64))
    def log(x):
        return math.log(x)
+
 
    bh.axis.Regular(10, 1, 4, transform=bh.axis.transform.Function(log, exp))
 
@@ -93,6 +101,7 @@ You can now use it like this:
 .. code-block:: python
 
    import ctypes
+
    ftype = ctypes.CFUNCTYPE(ctypes.c_double, ctypes.c_double)
 
    mylib = ctypes.CDLL("mylib.so")
@@ -130,7 +139,13 @@ ctypes call into the convert function. You need a little wrapper function to mak
        ftype = ctypes.CFUNCTYPE(ctypes.c_double, ctypes.c_double)
        return ftype(func)
 
-   bh.axis.Regular(10, 1, 4, transform=bh.axis.transform.Function(math.log, math.exp, convert=convert_python))
+
+   bh.axis.Regular(
+       10,
+       1,
+       4,
+       transform=bh.axis.transform.Function(math.log, math.exp, convert=convert_python),
+   )
 
 That's it.
 
@@ -145,14 +160,21 @@ function. Here are your options:
 
     import numba, math
 
+
     def convert_numba(func):
         return numba.cfunc(numba.double(numba.double))(func)
 
+
     # Built-ins and ufuncs need to be wrapped (numba can't read a signature)
     # User functions would not need the lambda
-    bh.axis.Regular(10, 1, 4,
-                    transform=bh.axis.transform.Function(lambda x: math.log(x), lambda x: math.exp(x),
-                                                         convert=convert_numba))
+    bh.axis.Regular(
+        10,
+        1,
+        4,
+        transform=bh.axis.transform.Function(
+            lambda x: math.log(x), lambda x: math.exp(x), convert=convert_numba
+        ),
+    )
 
 Note that ``numba.cfunc`` does not work on its own builtins, but requires a user function. Since with the exception
 of the simple example I'm showing here that is already available directly in boost-histogram, you will probably be
@@ -170,6 +192,7 @@ You can use strings to look up functions in the shared library:
        function = getattr(mylib, name)
        return ctypes.cast(function, ftype)
 
-   bh.axis.Regular(10, 1, 4,
-                   transform=bh.axis.transform.Function("my_log", "my_exp",
-                                                         convert=lookup))
+
+   bh.axis.Regular(
+       10, 1, 4, transform=bh.axis.transform.Function("my_log", "my_exp", convert=lookup)
+   )

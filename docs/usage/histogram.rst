@@ -72,10 +72,10 @@ You can save a histogram using pickle:
 
     import pickle
 
-    with open('file.pkl', 'wb') as f:
+    with open("file.pkl", "wb") as f:
         pickle.dump(h, f)
 
-    with open('file.pkl', 'rb') as f:
+    with open("file.pkl", "rb") as f:
         h2 = pickle.load(f)
 
     assert h == h2
