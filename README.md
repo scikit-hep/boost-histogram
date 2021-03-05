@@ -25,6 +25,8 @@ For end users interested in analysis, see [Hist][], a first-party
 analyst-friendly histogram library that extends boost-histogram with many new
 shortcuts, plotting, and more.
 
+[uhi]: https://uhi.readthedocs.io
+
 ## Usage
 
 ```python
@@ -163,10 +165,10 @@ python3 -m pip install boost-histogram
 ```
 
 
-All the normal best-practices for Python apply; Pip should not be very old, you
-should be in a virtual environment, etc. Python 3.6+ is required; for older
-versions of Python, version `0.13` will be installed instead, which is API
-equivalent to 1.0, but will not be gaining new features.
+All the normal best-practices for Python apply; Pip should not be very old (Pip
+9 is very old), you should be in a virtual environment, etc. Python 3.6+ is
+required; for older versions of Python, version `0.13` will be installed
+instead, which is API equivalent to 1.0, but will not be gaining new features.
 
 #### Binaries available:
 

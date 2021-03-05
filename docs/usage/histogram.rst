@@ -19,7 +19,7 @@ The summing accumulators (not ``Mean()`` and ``WeightedMean())``) support thread
 Data
 ^^^^
 
-The primary value from a histogram is always available as ``.value()``. The variance is available as ``.variances()``, unless you fill an unweighed histogram with weights, which will cause this to be return None, since the variance is no longer computable (use a weighted storage instead if you need the variances). The counts are available as ``.counts()``. If the histogram is weighted, .counts() returns the effective counts; see TODO for details.
+The primary value from a histogram is always available as ``.value()``. The variance is available as ``.variances()``, unless you fill an unweighed histogram with weights, which will cause this to be return None, since the variance is no longer computable (use a weighted storage instead if you need the variances). The counts are available as ``.counts()``. If the histogram is weighted, ``.counts()`` returns the effective counts; see `UHI <https://uhi.readthedocs.io/en/latest/plotting.html#the-full-protocol-version-1-follows>`_ for details.
 
 Views
 ^^^^^
@@ -33,15 +33,18 @@ Operations
 * ``h.rank``: The number of dimensions
 * ``h.size or len(h)``: The number of bins
 
-* ``+``: Add two histograms (storages must match types currently)
-* ``*=``: Multiply by a scaler (not all storages) (``hist * scalar`` and ``scalar * hist`` supported too)
-* ``/=``: Divide by a scaler (not all storages) (``hist / scalar`` supported too)
+* ``+``: Add two histograms, or add a scalar or array (storages must match types currently)
+* ``*=``: Multiply by a scaler, array, or histogram (not all storages) (``hist * scalar`` and ``scalar * hist`` supported too)
+* ``/=``: Divide by a scaler, array, or histogram (not all storages) (``hist / scalar`` supported too)
 * ``[...]``: Access a bin or a range of bins (get or set) (see :ref:`usage-indexing`)
 
 * ``.sum(flow=False)``: The total count of all bins
 * ``.project(ax1, ax2, ...)``: Project down to listed axis (numbers)
-* ``.to_numpy(flow=False)``: Convert to a NumPy style tuple (with or without under/overflow bins)
+* ``.to_numpy(flow=False, view=False)``: Convert to a NumPy style tuple (with or without under/overflow bins, and either return values (the default) or the entire view for accumulator storages.)
 * ``.view(flow=False)``: Get a view on the bin contents (with or without under/overflow bins)
+* ``.values(flow=False)``: Get a view on the values (counts or means, depending on storage)
+* ``.variances(flow=False)``: Get the variances if available
+* ``.counts(flow=False)``: Get the effective counts for all storage types
 * ``.reset()``: Set counters to 0
 * ``.empty(flow=False)``: Check to see if the histogram is empty (can check flow bins too if asked)
 * ``.copy(deep=False)``: Make a copy of a histogram

@@ -18,7 +18,7 @@ NumPy tuple output
 You can directly convert a histogram into the tuple of outputs that
 ``np.histogram*`` would give you using ``.to_numpy()`` or
 ``.to_numpy(flow=True)`` on any histogram.  This returns
-``edges[0], edges[1], ..., view``, and the edges are NumPy-style (upper edge
+``edges[0], edges[1], ..., values``, and the edges are NumPy-style (upper edge
 inclusive).
 
 NumPy adaptors
