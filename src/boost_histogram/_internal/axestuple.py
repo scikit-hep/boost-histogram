@@ -10,7 +10,7 @@ A = TypeVar("A", bound="ArrayTuple")
 
 
 @set_module("boost_histogram.axis")
-class ArrayTuple(tuple):
+class ArrayTuple(tuple):  # type: ignore
     __slots__ = ()
     # This is an exhaustive list as of NumPy 1.19
     _REDUCTIONS = {"sum", "any", "all", "min", "max", "prod"}
@@ -41,7 +41,7 @@ B = TypeVar("B", bound="AxesTuple")
 
 
 @set_module("boost_histogram.axis")
-class AxesTuple(tuple):
+class AxesTuple(tuple):  # type: ignore
     __slots__ = ()
     _MGRIDOPTS = {"sparse": True, "indexing": "ij"}
 

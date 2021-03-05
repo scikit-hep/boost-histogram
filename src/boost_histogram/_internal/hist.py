@@ -2,7 +2,7 @@ import copy
 import threading
 import warnings
 from os import cpu_count
-from typing import TYPE_CHECKING, Any, Optional, Tuple, TypeVar, Union
+from typing import Any, Optional, Set, Tuple, Type, TypeVar, Union
 
 import numpy as np
 
@@ -13,18 +13,13 @@ from .axestuple import AxesTuple
 from .axis import Axis
 from .enum import Kind
 from .storage import Double, Storage
+from .typing import ArrayLike, CppHistogram
 from .utils import cast, register, set_module
 from .view import _to_view
 
-if TYPE_CHECKING:
-    from numpy.typing import ArrayLike
-else:
-    ArrayLike = Any
-
-
 NOTHING = object()
 
-_histograms = (
+_histograms: Set[Type[CppHistogram]] = {
     _core.hist.any_double,
     _core.hist.any_int64,
     _core.hist.any_atomic_int64,
@@ -32,7 +27,7 @@ _histograms = (
     _core.hist.any_weight,
     _core.hist.any_mean,
     _core.hist.any_weighted_mean,
-)
+}
 
 
 def _fill_cast(value, inner=False):
@@ -84,7 +79,7 @@ H = TypeVar("H", bound="Histogram")
 
 # We currently do not cast *to* a histogram, but this is consistent
 # and could be used later.
-@register(_histograms)
+@register(_histograms)  # type: ignore
 @set_module("boost_histogram")
 class Histogram:
     # Note this is a __slots__ __dict__ class!
@@ -126,8 +121,8 @@ class Histogram:
         self._variance_known = True
 
         # Allow construction from a raw histogram object (internal)
-        if len(axes) == 1 and isinstance(axes[0], _histograms):
-            self._hist = axes[0]
+        if len(axes) == 1 and isinstance(axes[0], tuple(_histograms)):
+            self._hist: Any = axes[0]
             self.metadata = metadata
             self.axes = self._generate_axes_()
             return
@@ -291,7 +286,7 @@ class Histogram:
     def _compute_inplace_op(self, name, other):
         if isinstance(other, Histogram):
             getattr(self._hist, name)(other._hist)
-        elif isinstance(other, _histograms):
+        elif isinstance(other, tuple(_histograms)):
             getattr(self._hist, name)(other)
         elif hasattr(other, "shape") and other.shape:
             if len(other.shape) != self.ndim:
