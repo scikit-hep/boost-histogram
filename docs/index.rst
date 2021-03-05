@@ -65,6 +65,7 @@ See :ref:`usage-quickstart` for more.
    usage/plotting
    usage/analyses
    usage/numpy
+   usage/subclassing
    usage/comparison
 
 
