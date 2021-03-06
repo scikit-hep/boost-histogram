@@ -1,5 +1,6 @@
 import functools
 import warnings
+from typing import Any
 
 # Warning: this should not be directly used on properties. It will trigger on
 # tab completion - ALL tab completion that could include this property.
@@ -12,9 +13,9 @@ class deprecated:
         self._reason = reason
         self._name = name
 
-    def __call__(self, func):
+    def __call__(self, func: Any) -> Any:
         @functools.wraps(func)
-        def decorated_func(*args, **kwargs):
+        def decorated_func(*args: Any, **kwargs: Any) -> Any:
             warnings.warn(
                 "{} is deprecated: {}".format(
                     self._name or func.__name__, self._reason

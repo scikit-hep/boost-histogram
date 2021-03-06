@@ -3,6 +3,8 @@
 from builtins import sum
 from typing import TypeVar
 
+from ._internal.typing import AxisLike
+
 __all__ = ("Slicer", "Locator", "at", "loc", "overflow", "underflow", "rebin", "sum")
 
 
@@ -70,7 +72,7 @@ class loc(Locator):
     def _print_self_(self) -> str:
         return f"({self.value})"
 
-    def __call__(self, axis) -> int:
+    def __call__(self, axis: AxisLike) -> int:
         return axis.index(self.value) + self.offset
 
 
@@ -78,7 +80,7 @@ class Underflow(Locator):
     __slots__ = ()
     NAME = "underflow"
 
-    def __call__(self, axis) -> int:
+    def __call__(self, axis: AxisLike) -> int:
         return -1 + self.offset
 
 
@@ -89,7 +91,7 @@ class Overflow(Locator):
     __slots__ = ()
     NAME = "overflow"
 
-    def __call__(self, axis) -> int:
+    def __call__(self, axis: AxisLike) -> int:
         return len(axis) + self.offset
 
 
@@ -102,7 +104,7 @@ class at:
     def __init__(self, value: int) -> None:
         self.value = value
 
-    def __call__(self, axis) -> int:
+    def __call__(self, axis: AxisLike) -> int:
         return self.value
 
 

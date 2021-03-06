@@ -1,20 +1,38 @@
+import typing
+from typing import Callable, ClassVar, Iterator, Optional, Set, Type, TypeVar
+
 import boost_histogram
 
+from .typing import Protocol
 
-def set_module(name):
+
+class Registerable(Protocol):
+    _types: ClassVar[Set[Type[object]]]
+
+
+class HasFamily(Protocol):
+    _family: ClassVar[object]
+
+
+T = TypeVar("T")
+
+
+def set_module(name: str) -> Callable[[Type[T]], Type[T]]:
     """
     Set the __module__ attribute on a class. Very
     similar to numpy.core.overrides.set_module.
     """
 
-    def add_module(cls):
+    def add_module(cls: Type[T]) -> Type[T]:
         cls.__module__ = name
         return cls
 
     return add_module
 
 
-def register(cpp_types=None):
+def register(
+    cpp_types: Optional[Set[Type[object]]] = None,
+) -> Callable[[Type[T]], Type[T]]:
     """
     Decorator to register a C++ type to a Python class.
     Each class given will be added to a lookup list "_types"
@@ -43,32 +61,33 @@ def register(cpp_types=None):
     used for simple renamed classes that inject warnings, etc.
     """
 
-    def add_registration(cls):
+    def add_registration(cls: Type[T]) -> Type[T]:
         if cpp_types is None or len(cpp_types) == 0:
-            cls._types = set()
+            cls._types = set()  # type: ignore
             return cls
 
         if not hasattr(cls, "_types"):
-            cls._types = set()
+            cls._types = set()  # type: ignore
 
         for cpp_type in cpp_types:
-            if cpp_type in cls._types:
+            if cpp_type in cls._types:  # type: ignore
                 raise TypeError(f"You are trying to register {cpp_type} again")
 
-            cls._types.add(cpp_type)
+            cls._types.add(cpp_type)  # type: ignore
 
         return cls
 
     return add_registration
 
 
-def _cast_make_object(canidate_class, cpp_object, is_class):
+# TODO: Split into is_class/not is class versions (better typing)
+def _cast_make_object(canidate_class: T, cpp_object: object, is_class: bool) -> T:
     "Make an object for cast"
     if is_class:
         return canidate_class
 
     elif hasattr(canidate_class, "_convert_cpp"):
-        return canidate_class._convert_cpp(cpp_object)
+        return canidate_class._convert_cpp(cpp_object)  # type: ignore
 
     # Casting down does not work in pybind11,
     # see https://github.com/pybind/pybind11/issues/1640
@@ -76,10 +95,10 @@ def _cast_make_object(canidate_class, cpp_object, is_class):
     # _convert_cpp method.
 
     else:
-        return canidate_class(cpp_object)
+        return canidate_class(cpp_object)  # type: ignore
 
 
-def cast(self, cpp_object, parent_class):
+def cast(self: object, cpp_object: object, parent_class: Type[T]) -> T:
     """
     This converts a C++ object into a Python object.
     This takes the parent object, the C++ object,
@@ -102,9 +121,9 @@ def cast(self, cpp_object, parent_class):
     If self is None, just use the boost_histogram family.
     """
     if self is None:
-        family = boost_histogram
+        family: object = boost_histogram
     else:
-        family = self._family
+        family = self._family  # type: ignore
 
     # Convert objects to classes, and remember if we did so
     if isinstance(cpp_object, type):
@@ -120,35 +139,38 @@ def cast(self, cpp_object, parent_class):
     for canidate_class in _walk_subclasses(parent_class):
         # If a class was registered with this c++ type
         if hasattr(canidate_class, "_types"):
-            is_valid_type = cpp_class in canidate_class._types
+            ccr = typing.cast(Registerable, canidate_class)
+            is_valid_type = cpp_class in ccr._types
         else:
             is_valid_type = cpp_class in set(_walk_bases(canidate_class))
 
         if is_valid_type and hasattr(canidate_class, "_family"):
+            ccf = typing.cast(HasFamily, canidate_class)
+
             # Return immediately if the family is right
-            if canidate_class._family is family:
-                return _cast_make_object(canidate_class, cpp_object, is_class)
+            if ccf._family is family:
+                return _cast_make_object(ccf, cpp_object, is_class)  # type: ignore
 
             # Or remember the class if it was from the main family
-            if canidate_class._family is boost_histogram:
-                fallback_class = canidate_class
+            if ccf._family is boost_histogram:
+                fallback_class = ccf
 
     # If no perfect match was registered, return the main family
     if fallback_class is not None:
-        return _cast_make_object(fallback_class, cpp_object, is_class)
+        return _cast_make_object(fallback_class, cpp_object, is_class)  # type: ignore
 
     raise TypeError(
         f"No conversion to {parent_class.__name__} from {cpp_object} found."
     )
 
 
-def _walk_bases(cls):
+def _walk_bases(cls: Type[object]) -> Iterator[Type[object]]:
     for base in cls.__bases__:
         yield from _walk_bases(base)
         yield base
 
 
-def _walk_subclasses(cls):
+def _walk_subclasses(cls: Type[object]) -> Iterator[Type[object]]:
     for base in cls.__subclasses__():
         # Find the furthest child to allow
         # user subclasses to work
