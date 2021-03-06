@@ -1,29 +1,32 @@
 import copy
-from typing import Any
+from typing import Any, Type, TypeVar
 
 import boost_histogram
 
 from .._core import axis as ca
 from .utils import register, set_module
 
+T = TypeVar("T", bound="AxisTransform")
+
 
 @set_module("boost_histogram.axis.transform")
 class AxisTransform:
     __slots__ = ("_this",)
     _family: object
+    _this: Any
 
     def __init_subclass__(cls, *, family: object) -> None:
         super().__init_subclass__()
         cls._family = family
 
-    def __copy__(self):
-        other = self.__class__.__new__(self.__class__)
+    def __copy__(self: T) -> T:
+        other: T = self.__class__.__new__(self.__class__)
         other._this = copy.copy(self._this)
         return other
 
     @classmethod
-    def _convert_cpp(cls, this):
-        self = cls.__new__(cls)
+    def _convert_cpp(cls: Type[T], this: Any) -> T:
+        self: T = cls.__new__(cls)
         self._this = this
         return self
 
@@ -44,16 +47,13 @@ class AxisTransform:
         (cpp_class,) = self._types  # type: ignore
         self._this = cpp_class()
 
-    def forward(self, value):
+    def forward(self, value: float) -> float:
         "Compute the forward transform"
-        return self._this.forward(value)
+        return self._this.forward(value)  # type: ignore
 
-    def inverse(self, value):
+    def inverse(self, value: float) -> float:
         "Compute the inverse transform"
-        return self._this.inverse(value)
-
-
-core = ("__init__", "forward", "inverse")
+        return self._this.inverse(value)  # type: ignore
 
 
 @set_module("boost_histogram.axis.transform")
@@ -69,9 +69,9 @@ class Pow(AxisTransform, family=boost_histogram):
         self._this = cpp_class(power)
 
     @property
-    def power(self):
+    def power(self) -> float:
         "The power of the transform"
-        return self._this.power
+        return self._this.power  # type: ignore
 
     # This one does need to be a normal method
     def _produce(self, bins: int, start: float, stop: float) -> Any:
@@ -84,7 +84,9 @@ class Function(AxisTransform, family=boost_histogram):
     __slots__ = ()
     _type = ca.regular_trans
 
-    def __init__(self, forward, inverse, *, convert=None, name: str = ""):
+    def __init__(
+        self, forward: Any, inverse: Any, *, convert: Any = None, name: str = ""
+    ):
         """
         Create a functional transform from a ctypes double(double) function
         pointer or any object that provides such an interface through a
@@ -140,5 +142,5 @@ class Function(AxisTransform, family=boost_histogram):
         return self.__class__._type(bins, start, stop, self._this)
 
 
-def _internal_conversion(value):
-    return getattr(ca.transform, value)
+def _internal_conversion(name: str) -> Any:
+    return getattr(ca.transform, name)

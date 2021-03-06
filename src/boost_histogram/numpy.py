@@ -1,6 +1,6 @@
 from functools import reduce as _reduce
 from operator import mul as _mul
-from typing import TYPE_CHECKING, Optional, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Any, Optional, Sequence, Tuple, Type, Union
 
 if TYPE_CHECKING:
     from numpy.typing import ArrayLike
@@ -9,7 +9,8 @@ else:
 
 import numpy as _np
 
-from . import _core
+import boost_histogram._core as _core
+
 from . import axis as _axis
 from . import storage as _storage
 from ._internal import hist as _hist
@@ -23,16 +24,17 @@ def histogramdd(
     bins: Union[int, Tuple[int, ...]] = 10,
     range: Optional[Sequence[Union[None, Tuple[float, float]]]] = None,
     normed: None = None,
-    weights: ArrayLike = None,
+    weights: Optional[ArrayLike] = None,
     density: bool = False,
     *,
-    histogram=None,
+    histogram: Optional[Type[_hist.Histogram]] = None,
     storage: _storage.Storage = _storage.Double(),  # noqa: B008
     threads: Optional[int] = None
-):
+) -> Any:
     np = _np  # Hidden to keep module clean
 
-    cls = _hist.Histogram if histogram is None else histogram
+    # TODO: Might be a bug in MyPy? This should type
+    cls: Type[_hist.Histogram] = _hist.Histogram if histogram is None else histogram  # type: ignore
 
     if normed is not None:
         raise KeyError(
@@ -93,13 +95,13 @@ def histogram2d(
     bins: Union[int, Tuple[int, int]] = 10,
     range: Optional[Sequence[Union[None, Tuple[float, float]]]] = None,
     normed: None = None,
-    weights: ArrayLike = None,
+    weights: Optional[ArrayLike] = None,
     density: bool = False,
     *,
-    histogram=None,
+    histogram: Optional[Type[_hist.Histogram]] = None,
     storage: _storage.Storage = _storage.Double(),  # noqa: B008
     threads: Optional[int] = None
-):
+) -> Any:
     result = histogramdd(
         (x, y),
         bins,
@@ -124,13 +126,13 @@ def histogram(
     bins: int = 10,
     range: Optional[Tuple[float, float]] = None,
     normed: None = None,
-    weights: ArrayLike = None,
+    weights: Optional[ArrayLike] = None,
     density: bool = False,
     *,
-    histogram=None,
+    histogram: Optional[Type[_hist.Histogram]] = None,
     storage: Optional[_storage.Storage] = None,
     threads: Optional[int] = None
-):
+) -> Any:
     np = _np
 
     # numpy 1d histogram returns integers in some cases

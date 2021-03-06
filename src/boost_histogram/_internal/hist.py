@@ -432,9 +432,9 @@ class Histogram:
         if self._hist._storage_type is _core.storage.atomic_int64:
 
             def fun(
-                *args: np.ndarray,
                 weight: Optional[ArrayLike],
                 sample: Optional[ArrayLike],
+                *args: np.ndarray,
             ) -> None:
                 self._hist.fill(*args, weight=weight, sample=sample)
 
@@ -442,9 +442,9 @@ class Histogram:
             sum_lock = threading.Lock()
 
             def fun(
-                *args: np.ndarray,
                 weight: Optional[ArrayLike],
                 sample: Optional[ArrayLike],
+                *args: np.ndarray,
             ) -> None:
                 local_hist = self._hist.__copy__()
                 local_hist.reset()
