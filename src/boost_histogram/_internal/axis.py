@@ -1,5 +1,19 @@
 import copy
-from typing import Any, Dict, Optional, Set, Tuple, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    Iterator,
+    Optional,
+    Set,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
+
+import numpy as np
 
 import boost_histogram
 
@@ -26,6 +40,12 @@ def opts(**kwargs: bool) -> Set[str]:
     return {k for k, v in kwargs.items() if v}
 
 
+AxCallOrInt = Union[int, Callable[["Axis"], int]]
+
+
+T = TypeVar("T", bound="Axis")
+
+
 # Contains common methods and properties to all axes
 @set_module("boost_histogram.axis")
 class Axis:
@@ -49,8 +69,11 @@ class Axis:
         )
 
     def __init__(
-        self, ax, metadata: Optional[Dict[str, Any]], __dict__: Optional[Dict[str, Any]]
-    ):
+        self,
+        ax: Any,
+        metadata: Optional[Dict[str, Any]],
+        __dict__: Optional[Dict[str, Any]],
+    ) -> None:
         """
         ax: the C++ object
         metadata: the metadata keyword contents
@@ -70,26 +93,26 @@ class Axis:
 
         self.__dict__ = self._ax.metadata
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: Dict[str, Any]) -> None:
         self._ax = state["_ax"]
         self.__dict__ = self._ax.metadata
 
-    def __getstate__(self):
+    def __getstate__(self) -> Dict[str, Any]:
         return {"_ax": self._ax}
 
-    def __copy__(self):
-        other = self.__class__.__new__(self.__class__)
+    def __copy__(self: T) -> T:
+        other: T = self.__class__.__new__(self.__class__)
         other._ax = copy.copy(self._ax)
         other.__dict__ = other._ax.metadata
         return other
 
-    def index(self, value: float) -> int:
+    def index(self, value: Union[float, str]) -> int:
         """
         Return the fractional index(es) given a value (or values) on the axis.
         """
 
         if not _isstr(value):
-            return self._ax.index(value)
+            return self._ax.index(value)  # type: ignore
         else:
             raise TypeError(
                 "index({value}) cannot be a string for a numerical axis".format(
@@ -102,44 +125,48 @@ class Axis:
         Return the value(s) given an (fractional) index (or indices).
         """
 
-        return self._ax.value(index)
+        return self._ax.value(index)  # type: ignore
 
-    def bin(self, index: float) -> Union[float, str, Tuple[float, float]]:
+    def bin(self, index: float) -> Union[int, str, Tuple[float, float]]:
         """
         Return the edges of the bins as a tuple for a
         continuous axis or the bin value for a
         non-continuous axis, when given an index.
         """
 
-        return self._ax.bin(index)
+        return self._ax.bin(index)  # type: ignore
 
-    def __eq__(self, other):
-        return self._ax == other._ax
+    def __eq__(self, other: Any) -> bool:
+        return self._ax == other._ax  # type: ignore
 
-    def __ne__(self, other):
-        return self._ax != other._ax
+    def __ne__(self, other: Any) -> bool:
+        return self._ax != other._ax  # type: ignore
 
     @classmethod
-    def _convert_cpp(cls, cpp_object):
-        nice_ax = cls.__new__(cls)
+    def _convert_cpp(cls: Type[T], cpp_object: Any) -> T:
+        nice_ax: T = cls.__new__(cls)
         nice_ax._ax = cpp_object
         nice_ax.__dict__ = cpp_object.metadata
         return nice_ax
 
     def __len__(self) -> int:
-        return self._ax.size
+        return self._ax.size  # type: ignore
 
-    def __iter__(self):
-        return self._ax.__iter__()
+    def __iter__(
+        self,
+    ) -> Union[Iterator[float], Iterator[str], Iterator[Tuple[float, float]]]:
+        return self._ax.__iter__()  # type: ignore
 
-    def _process_loc(self, start, stop) -> Tuple[int, int]:
+    def _process_loc(
+        self, start: Optional[AxCallOrInt], stop: Optional[AxCallOrInt]
+    ) -> Tuple[int, int]:
         """
         Compute start and stop into actual start and stop values in Boost.Histogram.
         None -> -1 or 0 for start, -> len or len+1 for stop. If start or stop are
         callable, then call them with the axes.
         """
 
-        def _process_internal(item, default):
+        def _process_internal(item: Optional[AxCallOrInt], default: int) -> int:
             return default if item is None else item(self) if callable(item) else item
 
         begin = _process_internal(start, -1 if self._ax.traits_underflow else 0)
@@ -192,16 +219,16 @@ class Axis:
         """
         Return number of bins excluding under- and overflow.
         """
-        return self._ax.size
+        return self._ax.size  # type: ignore
 
     @property
     def extent(self) -> int:
         """
         Return number of bins including under- and overflow.
         """
-        return self._ax.extent
+        return self._ax.extent  # type: ignore
 
-    def __getitem__(self, i):
+    def __getitem__(self, i: AxCallOrInt) -> Union[int, str, Tuple[float, float]]:
         """
         Access a bin, using normal Python syntax for wraparound.
         """
@@ -215,25 +242,26 @@ class Axis:
                 raise IndexError(
                     f"Out of range access, {i} is more than {self._ax.size}"
                 )
+        assert not callable(i)
         return self.bin(i)
 
     @property
-    def edges(self):
-        return self._ax.edges
+    def edges(self) -> np.ndarray:
+        return self._ax.edges  # type: ignore
 
     @property
-    def centers(self):
+    def centers(self) -> np.ndarray:
         """
         An array of bin centers.
         """
-        return self._ax.centers
+        return self._ax.centers  # type: ignore
 
     @property
-    def widths(self):
+    def widths(self) -> np.ndarray:
         """
         An array of bin widths.
         """
-        return self._ax.widths
+        return self._ax.widths  # type: ignore
 
 
 # Contains all common methods and properties for Regular axes
@@ -256,17 +284,17 @@ class Regular(Axis, family=boost_histogram):
 
     def __init__(
         self,
-        bins,
-        start,
-        stop,
+        bins: int,
+        start: float,
+        stop: float,
         *,
-        metadata=None,
-        underflow=True,
-        overflow=True,
-        growth=False,
-        circular=False,
-        transform=None,
-        __dict__=None,
+        metadata: Any = None,
+        underflow: bool = True,
+        overflow: bool = True,
+        growth: bool = False,
+        circular: bool = False,
+        transform: Optional[AxisTransform] = None,
+        __dict__: Optional[Dict[str, Any]] = None,
     ):
         """
         Make a regular axis with nice keyword arguments for underflow,
@@ -373,14 +401,14 @@ class Variable(Axis, family=boost_histogram):
 
     def __init__(
         self,
-        edges,
+        edges: Iterable[float],
         *,
         metadata: Any = None,
         underflow: bool = True,
         overflow: bool = True,
         growth: bool = False,
         circular: bool = False,
-        __dict__: Dict[str, Any] = None,
+        __dict__: Optional[Dict[str, Any]] = None,
     ):
         """
         Make an axis with irregularly spaced bins. Provide a list
@@ -463,7 +491,7 @@ class Integer(Axis, family=boost_histogram):
         overflow: bool = True,
         growth: bool = False,
         circular: bool = False,
-        __dict__: Dict[str, Any] = None,
+        __dict__: Optional[Dict[str, Any]] = None,
     ):
         """
         Make an integer axis, with a collection of consecutive integers.
@@ -512,16 +540,16 @@ class Integer(Axis, family=boost_histogram):
 
         super().__init__(ax, metadata, __dict__)
 
-    def _repr_args(self):
+    def _repr_args(self) -> str:
         "Return inner part of signature for use in repr"
 
-        return "{start:g}, {stop:g}".format(start=self.edges[0], stop=self.edges[-1])
+        return f"{self.edges[0]:g}, {self.edges[-1]:g}"
 
 
 class BaseCategory(Axis, family=boost_histogram):
     __slots__ = ()
 
-    def _repr_kwargs(self):
+    def _repr_kwargs(self) -> str:
         """
         Return options for use in repr. Metadata is last,
         just in case it spans multiple lines.
@@ -547,11 +575,11 @@ class StrCategory(BaseCategory, family=boost_histogram):
 
     def __init__(
         self,
-        categories,
+        categories: Iterable[str],
         *,
         metadata: Any = None,
         growth: bool = False,
-        __dict__: Dict[str, Any] = None,
+        __dict__: Optional[Dict[str, Any]] = None,
     ):
         """
         Make a category axis with strings; items will
@@ -586,13 +614,13 @@ class StrCategory(BaseCategory, family=boost_histogram):
 
         super().__init__(ax, metadata, __dict__)
 
-    def index(self, value):
+    def index(self, value: Union[float, str]) -> int:
         """
         Return the fractional index(es) given a value (or values) on the axis.
         """
 
         if _isstr(value):
-            return self._ax.index(value)
+            return self._ax.index(value)  # type: ignore
         else:
             raise TypeError(
                 "index({value}) must be a string or iterable of strings for a StrCategory axis".format(
@@ -600,7 +628,7 @@ class StrCategory(BaseCategory, family=boost_histogram):
                 )
             )
 
-    def _repr_args(self):
+    def _repr_args(self) -> str:
         "Return inner part of signature for use in repr"
 
         return "[{}]".format(", ".join(repr(c) for c in self))
@@ -613,7 +641,7 @@ class IntCategory(BaseCategory, family=boost_histogram):
 
     def __init__(
         self,
-        categories,
+        categories: Iterable[int],
         *,
         metadata: Any = None,
         growth: bool = False,
@@ -661,7 +689,9 @@ class IntCategory(BaseCategory, family=boost_histogram):
 class Boolean(Axis, family=boost_histogram):
     __slots__ = ()
 
-    def __init__(self, *, metadata: Any = None, __dict__: Dict[str, Any] = None):
+    def __init__(
+        self, *, metadata: Any = None, __dict__: Optional[Dict[str, Any]] = None
+    ):
         """
         Make an axis for boolean values.
 

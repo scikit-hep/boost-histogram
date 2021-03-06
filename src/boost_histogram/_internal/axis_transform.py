@@ -31,9 +31,9 @@ class AxisTransform:
         if hasattr(self, "_this"):
             return repr(self._this)
         else:
-            return self.__class__.__name__ + "() # Missing _this, broken class"
+            return f"{self.__class__.__name__}() # Missing _this, broken class"
 
-    def _produce(self, bins: int, start: int, stop: int) -> Any:
+    def _produce(self, bins: int, start: float, stop: float) -> Any:
         # Note: this is an ABC; _type must be defined on children
         # These can be fixed later with a Protocol
         return self.__class__._type(bins, start, stop)  # type: ignore
@@ -53,7 +53,7 @@ class AxisTransform:
         return self._this.inverse(value)
 
 
-core = "__init__ forward inverse".split()
+core = ("__init__", "forward", "inverse")
 
 
 @set_module("boost_histogram.axis.transform")
@@ -74,7 +74,7 @@ class Pow(AxisTransform, family=boost_histogram):
         return self._this.power
 
     # This one does need to be a normal method
-    def _produce(self, bins, start, stop):
+    def _produce(self, bins: int, start: float, stop: float) -> Any:
         return self.__class__._type(bins, start, stop, self.power)
 
 
@@ -136,7 +136,7 @@ class Function(AxisTransform, family=boost_histogram):
         self._this = cpp_class(forward, inverse, convert, name)
 
     # This one does need to be a normal method
-    def _produce(self, bins: int, start: int, stop: int):
+    def _produce(self, bins: int, start: float, stop: float) -> Any:
         return self.__class__._type(bins, start, stop, self._this)
 
 
