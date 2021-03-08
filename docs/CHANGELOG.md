@@ -4,7 +4,7 @@
 
 Dropped support for Python 2 and 3.5; removed large numbers of workarounds.
 Subclassing histogram components now uses Python 3 class keyword syntax to set
-families.
+families. Fully statically typed.
 
 #### User changes
 
@@ -12,6 +12,7 @@ families.
 * Removed deprecated `.options` from axes. Use `.traits` instead. [#503][]
 * Use keyword class family setting when subclassing histogram components
   instead of custom decorator. [#513][]
+* Full static typing available. [#520][]
 
 #### Bug fixes
 * Consistently show `metadata=` in repr if present; refactored internal repr handling [#518][]
@@ -20,6 +21,7 @@ families.
 [#512]: https://github.com/scikit-hep/boost-histogram/pull/512
 [#513]: https://github.com/scikit-hep/boost-histogram/pull/513
 [#518]: https://github.com/scikit-hep/boost-histogram/pull/518
+[#518]: https://github.com/scikit-hep/boost-histogram/pull/520
 
 
 ## Version 0.13
