@@ -13,9 +13,13 @@ families.
 * Use keyword class family setting when subclassing histogram components
   instead of custom decorator. [#513][]
 
+#### Bug fixes
+* Consistently show `metadata=` in repr if present; refactored internal repr handling [#518][]
+
 [#503]: https://github.com/scikit-hep/boost-histogram/pull/503
 [#512]: https://github.com/scikit-hep/boost-histogram/pull/512
 [#513]: https://github.com/scikit-hep/boost-histogram/pull/513
+[#518]: https://github.com/scikit-hep/boost-histogram/pull/518
 
 
 ## Version 0.13
