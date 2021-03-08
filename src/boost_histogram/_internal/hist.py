@@ -756,6 +756,8 @@ class Histogram:
                             "The third argument to a slice must be rebin or projection"
                         )
 
+                assert isinstance(start, int)
+                assert isinstance(stop, int)
                 slices.append(_core.algorithm.slice_and_rebin(i, start, stop, merge))
 
         reduced = self._hist.reduce(*slices)

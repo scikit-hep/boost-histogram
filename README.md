@@ -152,6 +152,7 @@ histograms can be plotted via any compatible library, such as [mplhep][].
     * Histograms can be converted to NumPy style output tuple with `.to_numpy()`
 * Details
     * All objects support copy/deepcopy/pickle
+    * Fully statically typed, tested with MyPy.
 
 </details>
 
