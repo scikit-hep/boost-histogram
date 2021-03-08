@@ -323,6 +323,8 @@ class Regular(Axis, family=boost_histogram):
             underflow=underflow, overflow=overflow, growth=growth, circular=circular
         )
 
+        ax: "ca._BaseRegular"
+
         if transform is not None:
             if options != {"underflow", "overflow"}:
                 raise KeyError("Transform supplied, cannot change other options")
@@ -438,6 +440,7 @@ class Variable(Axis, family=boost_histogram):
             underflow=underflow, overflow=overflow, growth=growth, circular=circular
         )
 
+        ax: "ca._BaseVariable"
         if options == {"growth", "underflow", "overflow"}:
             ax = ca.variable_uoflow_growth(edges)
         elif options == {"underflow", "overflow"}:
@@ -536,6 +539,8 @@ class Integer(Axis, family=boost_histogram):
             underflow=underflow, overflow=overflow, growth=growth, circular=circular
         )
 
+        ax: "ca._BaseInteger"
+
         # underflow and overflow settings are ignored, integers are always
         # finite and thus cannot end up in a flow bin when growth is on
         if "growth" in options and "circular" not in options:
@@ -626,6 +631,8 @@ class StrCategory(BaseCategory, family=boost_histogram):
 
         options = _opts(growth=growth)
 
+        ax: "ca._BaseCatStr"
+
         # henryiii: We currently expand "abc" to "a", "b", "c" - some
         # Python interfaces protect against that
 
@@ -693,6 +700,7 @@ class IntCategory(BaseCategory, family=boost_histogram):
         """
 
         options = _opts(growth=growth)
+        ax: "ca._BaseCatInt"
 
         if options == {"growth"}:
             ax = ca.category_int_growth(tuple(categories))

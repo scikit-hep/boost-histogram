@@ -214,11 +214,8 @@ py::class_<A> register_axis(py::module& m, Args&&... args) {
         .def_property_readonly("centers", &axis::centers<A>, "Return bin centers")
         .def_property_readonly("widths", &axis::widths<A>, "Return bin widths")
 
-        .def("index",
-             vectorize(&A::index),
-             "Index for value (or values) on the axis",
-             "x"_a)
-        .def("value", vectorize(&A::value), "Value at index (or indices)", "i"_a)
+        .def("index", vectorize(&A::index), "Index for value (or values) on the axis")
+        .def("value", vectorize(&A::value), "Value at index (or indices)")
 
         .def(make_pickle<A>());
 
