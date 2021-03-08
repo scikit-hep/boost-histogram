@@ -1,6 +1,6 @@
 from . import accumulators, axis, numpy, storage
 from ._internal.enum import Kind
-from ._internal.hist import Histogram
+from ._internal.hist import Histogram, IndexingExpr
 from .tag import loc, overflow, rebin, sum, underflow
 from .version import version as __version__
 
@@ -20,6 +20,7 @@ except ImportError as err:
 
 __all__ = (
     "Histogram",
+    "IndexingExpr",
     "Kind",
     "axis",
     "storage",
