@@ -30,7 +30,7 @@ __all__ = (
 
 
 class AxisLike(Protocol):
-    def index(self, value: float) -> int:
+    def index(self, value: Union[float, str]) -> int:
         ...
 
     def __len__(self) -> int:
