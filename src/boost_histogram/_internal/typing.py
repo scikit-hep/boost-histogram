@@ -10,11 +10,15 @@ if TYPE_CHECKING:
     from numpy import ufunc as Ufunc
     from numpy.typing import ArrayLike
 
+    from boost_histogram._core.accumulators import Mean, WeightedMean, WeightedSum
     from boost_histogram._core.hist import _BaseHistogram as CppHistogram
+
+    Accumulator = Union[WeightedSum, Mean, WeightedMean]
 else:
     ArrayLike = Any
     Ufunc = Any
     CppHistogram = Any
+    Accumulator = Any
 
 
 __all__ = (

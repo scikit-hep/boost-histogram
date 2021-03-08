@@ -1,6 +1,7 @@
 from ._core.accumulators import Mean, Sum, WeightedMean, WeightedSum
+from ._internal.typing import Accumulator
 
-__all__ = ("Sum", "Mean", "WeightedSum", "WeightedMean")
+__all__ = ("Sum", "Mean", "WeightedSum", "WeightedMean", "Accumulator")
 
 for cls in (Sum, Mean, WeightedSum, WeightedMean):
     cls.__module__ = "boost_histogram.accumulators"

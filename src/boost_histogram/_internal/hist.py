@@ -28,9 +28,9 @@ from .axestuple import AxesTuple
 from .axis import Axis
 from .enum import Kind
 from .storage import Double, Storage
-from .typing import ArrayLike, CppHistogram, SupportsIndex
+from .typing import Accumulator, ArrayLike, CppHistogram, SupportsIndex
 from .utils import cast, register, set_module
-from .view import _to_view
+from .view import View, _to_view
 
 NOTHING = object()
 
@@ -275,7 +275,7 @@ class Histogram:
         """
         return self._hist.rank()  # type: ignore
 
-    def view(self, flow: bool = False) -> np.ndarray:
+    def view(self, flow: bool = False) -> Union[np.ndarray, View]:
         """
         Return a view into the data, optionally with overflow turned on.
         """
@@ -675,8 +675,7 @@ class Histogram:
         """
         return self._hist.empty(flow)  # type: ignore
 
-    # TODO: Can also return accumulator
-    def sum(self, flow: bool = False) -> float:
+    def sum(self, flow: bool = False) -> Union[float, Accumulator]:
         """
         Compute the sum over the histogram bins (optionally including the flow bins).
         """
@@ -876,9 +875,9 @@ class Histogram:
             else:
                 indexes[n] = request + has_underflow
 
-        view[tuple(indexes)] = value
+        view[tuple(indexes)] = value  # type: ignore
 
-    def project(self: H, *args: int) -> H:
+    def project(self: H, *args: int) -> Union[H, float, Accumulator]:
         """
         Project to a single axis or several axes on a multidimensional histogram.
         Provided a list of axis numbers, this will produce the histogram over
