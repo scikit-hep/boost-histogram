@@ -42,4 +42,5 @@ libraries. ``cls._export_bh(self)`` is called from the outgoing class (being
 converted from), and ``self._import_bh_()`` is called afterward on the incoming
 class (being converted to). So if ``h1`` is an instance of ``H1``, and ``H2``
 is the new class, then ``H2(h1)`` calls ``H1._export_bh_(h2)`` and then
-``h2._import_bh()`` before returning ``h2``.
+``h2._import_bh()`` before returning ``h2``. The internal repr building for axes is
+a list produced by ``_repr_args_`` representing each item in the repr.

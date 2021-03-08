@@ -5,6 +5,7 @@ from typing import (
     Dict,
     Iterable,
     Iterator,
+    List,
     Optional,
     Set,
     Tuple,
@@ -177,27 +178,20 @@ class Axis:
         return begin, end
 
     def __repr__(self) -> str:
-        return "{self.__class__.__name__}({args}{kwargs})".format(
-            self=self, args=self._repr_args(), kwargs=self._repr_kwargs()
-        )
+        arg_str = ", ".join(self._repr_args_())
+        return f"{self.__class__.__name__}({arg_str})"
 
-    def _repr_kwargs(self) -> str:
+    def _repr_args_(self) -> List[str]:
         """
-        Return options for use in repr. Metadata is last,
-        just in case it spans multiple lines.
+        Return arg options for use in the repr as strings.
         """
 
-        ret = ""
-        if self.traits.growth:
-            ret += ", growth=True"
-        elif self.traits.circular:
-            ret += ", circular=True"
-        else:
-            if not self.traits.underflow:
-                ret += ", underflow=False"
-            if not self.traits.overflow:
-                ret += ", overflow=False"
-
+        ret = []
+        if self.metadata is not None:
+            if isinstance(self.metadata, str):
+                ret.append(f"metadata={self.metadata!r}")
+            else:
+                ret.append("metadata=...")
         return ret
 
     @property
@@ -363,18 +357,25 @@ class Regular(Axis, family=boost_histogram):
 
         super().__init__(ax, metadata, __dict__)
 
-    def _repr_args(self) -> str:
+    def _repr_args_(self) -> List[str]:
         "Return inner part of signature for use in repr"
 
-        return "{bins:g}, {start:g}, {stop:g}".format(
-            bins=self.size, start=self.edges[0], stop=self.edges[-1]
-        )
+        ret = [f"{self.size:g}", f"{self.edges[0]:g}", f"{self.edges[-1]:g}"]
 
-    def _repr_kwargs(self) -> str:
-        ret = super()._repr_kwargs()
+        if self.traits.growth:
+            ret.append("growth=True")
+        elif self.traits.circular:
+            ret.append("circular=True")
+        else:
+            if not self.traits.underflow:
+                ret.append("underflow=False")
+            if not self.traits.overflow:
+                ret.append("overflow=False")
 
         if self.transform is not None:
-            ret += f", transform={self.transform}"
+            ret.append(f"transform={self.transform}")
+
+        ret += super()._repr_args_()
 
         return ret
 
@@ -458,13 +459,27 @@ class Variable(Axis, family=boost_histogram):
 
         super().__init__(ax, metadata, __dict__)
 
-    def _repr_args(self) -> str:
+    def _repr_args_(self) -> List[str]:
         "Return inner part of signature for use in repr"
 
         if len(self) > 20:
-            return repr(self.edges)
+            ret = [repr(self.edges)]
         else:
-            return "[{}]".format(", ".join(format(v, "g") for v in self.edges))
+            ret = ["[{}]".format(", ".join(format(v, "g") for v in self.edges))]
+
+        if self.traits.growth:
+            ret.append("growth=True")
+        elif self.traits.circular:
+            ret.append("circular=True")
+        else:
+            if not self.traits.underflow:
+                ret.append("underflow=False")
+            if not self.traits.overflow:
+                ret.append("overflow=False")
+
+        ret += super()._repr_args_()
+
+        return ret
 
 
 @register(
@@ -540,31 +555,40 @@ class Integer(Axis, family=boost_histogram):
 
         super().__init__(ax, metadata, __dict__)
 
-    def _repr_args(self) -> str:
+    def _repr_args_(self) -> List[str]:
         "Return inner part of signature for use in repr"
 
-        return f"{self.edges[0]:g}, {self.edges[-1]:g}"
+        ret = [f"{self.edges[0]:g}", f"{self.edges[-1]:g}"]
+
+        if self.traits.growth:
+            ret.append("growth=True")
+        elif self.traits.circular:
+            ret.append("circular=True")
+        else:
+            if not self.traits.underflow:
+                ret.append("underflow=False")
+            if not self.traits.overflow:
+                ret.append("overflow=False")
+
+        ret += super()._repr_args_()
+
+        return ret
 
 
 class BaseCategory(Axis, family=boost_histogram):
     __slots__ = ()
 
-    def _repr_kwargs(self) -> str:
-        """
-        Return options for use in repr. Metadata is last,
-        just in case it spans multiple lines.
+    def _repr_args_(self) -> List[str]:
+        "Return inner part of signature for use in repr"
 
+        ret = []
 
-        This is specialized for Category axes to avoid repeating
-        the flow arguments unnecessarily.
-        """
-
-        ret = ""
         if self.traits.growth:
-            ret += ", growth=True"
+            ret.append("growth=True")
         elif self.traits.circular:
-            ret += ", circular=True"
+            ret.append("circular=True")
 
+        ret += super()._repr_args_()
         return ret
 
 
@@ -628,10 +652,12 @@ class StrCategory(BaseCategory, family=boost_histogram):
                 )
             )
 
-    def _repr_args(self) -> str:
+    def _repr_args_(self) -> List[str]:
         "Return inner part of signature for use in repr"
 
-        return "[{}]".format(", ".join(repr(c) for c in self))
+        ret = ["[{}]".format(", ".join(repr(c) for c in self))]
+        ret += super()._repr_args_()
+        return ret
 
 
 @set_module("boost_histogram.axis")
@@ -677,10 +703,12 @@ class IntCategory(BaseCategory, family=boost_histogram):
 
         super().__init__(ax, metadata, __dict__)
 
-    def _repr_args(self) -> str:
+    def _repr_args_(self) -> List[str]:
         "Return inner part of signature for use in repr"
 
-        return "[{}]".format(", ".join(format(c, "g") for c in self))
+        ret = ["[{}]".format(", ".join(format(c, "g") for c in self))]
+        ret += super()._repr_args_()
+        return ret
 
 
 # Contains all common methods and properties for the boolean axis
@@ -707,24 +735,16 @@ class Boolean(Axis, family=boost_histogram):
 
         super().__init__(ax, metadata, __dict__)
 
-    def _repr_args(self) -> str:
+    def _repr_args_(self) -> List[str]:
         "Return inner part of signature for use in repr"
-        if self.size == 2:
-            return ""
-        elif self.size == 0:
-            return "<empty>"
+        ret = []
+
+        if self.size == 0:
+            ret.append("<empty>")
         elif self.size == 1 and self.centers[0] < 0.75:
-            return "<False>"
+            ret.append("<False>")
         elif self.size == 1:
-            return "<True>"
-        else:
-            # Shouldn't be possible, can't grow
-            return "<unknown>"
+            ret.append("<True>")
 
-    def _repr_kwargs(self) -> str:
-        """
-        Return options for use in repr. Metadata is last,
-        just in case it spans multiple lines.
-        """
-
-        return ""
+        ret += super()._repr_args_()
+        return ret
