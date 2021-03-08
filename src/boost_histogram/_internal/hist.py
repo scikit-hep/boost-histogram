@@ -5,9 +5,11 @@ import warnings
 from os import cpu_count
 from typing import (
     Any,
+    Callable,
     Dict,
     Iterable,
     List,
+    Mapping,
     NewType,
     Optional,
     Set,
@@ -26,7 +28,7 @@ from .axestuple import AxesTuple
 from .axis import Axis
 from .enum import Kind
 from .storage import Double, Storage
-from .typing import ArrayLike, CppHistogram
+from .typing import ArrayLike, CppHistogram, SupportsIndex
 from .utils import cast, register, set_module
 from .view import _to_view
 
@@ -46,6 +48,9 @@ _histograms: Set[Type[CppHistogram]] = {
 
 CppAxis = NewType("CppAxis", object)
 
+InnerIndexing = Union[SupportsIndex, Callable[[Axis], int], slice]
+IndexingWithMapping = Union[InnerIndexing, Mapping[int, InnerIndexing]]
+IndexingExpr = Union[IndexingWithMapping, Tuple[IndexingWithMapping, ...]]
 
 T = TypeVar("T")
 
@@ -561,19 +566,23 @@ class Histogram:
                 ret += f" ({outer} with flow)"
         return ret
 
-    def _compute_commonindex(self, index: Any) -> Any:
+    def _compute_commonindex(
+        self, index: IndexingExpr
+    ) -> List[Union[SupportsIndex, slice, Mapping[int, Union[SupportsIndex, slice]]]]:
         """
         Takes indices and returns two iterables; one is a tuple or dict of the
         original, Ellipsis expanded index, and the other returns index,
         operation value pairs.
         """
+        indexes: List[Any]
+
         # Shorten the computations with direct access to raw object
         hist = self._hist
 
         # Support dict access
         if hasattr(index, "items"):
             indexes = [slice(None)] * hist.rank()
-            for k, v in index.items():
+            for k, v in index.items():  # type: ignore
                 indexes[k] = v
 
         # Normalize -> h[i] == h[i,]
@@ -589,15 +598,15 @@ class Histogram:
         # Allow [bh.loc(...)] to work
         for i in range(len(indexes)):
             # Support sum and rebin directly
-            if indexes[i] is sum or hasattr(indexes[i], "factor"):  # type: ignore
+            if indexes[i] is sum or hasattr(indexes[i], "factor"):
                 indexes[i] = slice(None, None, indexes[i])
             # General locators
             # Note that MyPy doesn't like these very much - the fix
             # will be to properly set input types
             elif callable(indexes[i]):
-                indexes[i] = indexes[i](self.axes[i])  # type: ignore
+                indexes[i] = indexes[i](self.axes[i])
             elif hasattr(indexes[i], "__index__"):
-                if abs(indexes[i]) >= hist.axis(i).size:  # type: ignore
+                if abs(indexes[i]) >= hist.axis(i).size:
                     raise IndexError("histogram index is out of range")
                 indexes[i] %= hist.axis(i).size
 
@@ -688,7 +697,9 @@ class Histogram:
         return self.axes.size
 
     # TODO: Marked as too complex by flake8. Should be factored out a bit.
-    def __getitem__(self, index):  # noqa: C901
+    def __getitem__(  # noqa: C901
+        self, index: IndexingExpr
+    ) -> Union["Histogram", float]:
 
         indexes = self._compute_commonindex(index)
 
@@ -696,7 +707,7 @@ class Histogram:
         # But don't try *dict!
         if not hasattr(indexes, "items"):
             try:
-                return self._hist.at(*indexes)
+                return self._hist.at(*indexes)  # type: ignore
             except RuntimeError:
                 pass
 
@@ -706,7 +717,7 @@ class Histogram:
         # Compute needed slices and projections
         for i, ind in enumerate(indexes):
             if hasattr(ind, "__index__"):
-                ind = slice(ind.__index__(), ind.__index__() + 1, sum)
+                ind = slice(ind.__index__(), ind.__index__() + 1, sum)  # type: ignore
 
             elif not isinstance(ind, slice):
                 raise IndexError(
@@ -760,7 +771,7 @@ class Histogram:
                 else reduced.sum(flow=True)
             )
 
-    def __setitem__(self, index, value):
+    def __setitem__(self, index: IndexingExpr, value: ArrayLike) -> None:
         """
         There are several supported possibilities:
 
@@ -795,7 +806,7 @@ class Histogram:
         if (
             value.ndim > 0
             and len(view.dtype) > 0  # type: ignore
-            and len(value.dtype) == 0
+            and len(value.dtype) == 0  # type: ignore
             and len(view.dtype) == value.shape[-1]  # type: ignore
         ):
             value_shape = value.shape[:-1]
