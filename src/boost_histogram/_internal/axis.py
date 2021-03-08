@@ -37,7 +37,7 @@ def _isstr(value: Any) -> bool:
         return False
 
 
-def opts(**kwargs: bool) -> Set[str]:
+def _opts(**kwargs: bool) -> Set[str]:
     return {k for k, v in kwargs.items() if v}
 
 
@@ -319,7 +319,7 @@ class Regular(Axis, family=boost_histogram):
             The full metadata dictionary
         """
 
-        options = opts(
+        options = _opts(
             underflow=underflow, overflow=overflow, growth=growth, circular=circular
         )
 
@@ -434,7 +434,7 @@ class Variable(Axis, family=boost_histogram):
             The full metadata dictionary
         """
 
-        options = opts(
+        options = _opts(
             underflow=underflow, overflow=overflow, growth=growth, circular=circular
         )
 
@@ -532,7 +532,7 @@ class Integer(Axis, family=boost_histogram):
             The full metadata dictionary
         """
 
-        options = opts(
+        options = _opts(
             underflow=underflow, overflow=overflow, growth=growth, circular=circular
         )
 
@@ -624,7 +624,7 @@ class StrCategory(BaseCategory, family=boost_histogram):
             The full metadata dictionary
         """
 
-        options = opts(growth=growth)
+        options = _opts(growth=growth)
 
         # henryiii: We currently expand "abc" to "a", "b", "c" - some
         # Python interfaces protect against that
@@ -692,7 +692,7 @@ class IntCategory(BaseCategory, family=boost_histogram):
             The full metadata dictionary
         """
 
-        options = opts(growth=growth)
+        options = _opts(growth=growth)
 
         if options == {"growth"}:
             ax = ca.category_int_growth(tuple(categories))
