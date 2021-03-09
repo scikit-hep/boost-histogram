@@ -28,8 +28,8 @@ shortcuts, plotting, and more.
 [uhi]: https://uhi.readthedocs.io
 ## Usage
 
-<img href="https://github.com/scikit-hep/boost-histogram/raw/develop/docs/_images/banner.png"
-     alt="Slideshow of features. See expandable text if the image is not reeadable"></img>
+<img href="https://github.com/scikit-hep/boost-histogram/raw/develop/docs/_images/banner.gif"
+     alt="Slideshow of features. See expandable text if the image is not readable"></img>
 
 <details><summary>Text intro (click to expand)</summary>
 
