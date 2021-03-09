@@ -4,6 +4,7 @@ import typing
 import warnings
 from os import cpu_count
 from typing import (
+    TYPE_CHECKING,
     Any,
     Callable,
     Dict,
@@ -1013,3 +1014,11 @@ class Histogram:
             return view.count  # type: ignore
         else:
             return view.value  # type: ignore
+
+
+if TYPE_CHECKING:
+    import typing
+
+    from uhi.typing.plottable import PlottableHistogram
+
+    _: PlottableHistogram = typing.cast(Histogram, None)
