@@ -772,7 +772,9 @@ class Histogram:
                 else reduced.sum(flow=True)
             )
 
-    def __setitem__(self, index: IndexingExpr, value: ArrayLike) -> None:
+    def __setitem__(
+        self, index: IndexingExpr, value: Union[ArrayLike, Accumulator]
+    ) -> None:
         """
         There are several supported possibilities:
 
