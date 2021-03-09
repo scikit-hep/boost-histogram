@@ -697,8 +697,8 @@ class Histogram:
 
     # TODO: Marked as too complex by flake8. Should be factored out a bit.
     def __getitem__(  # noqa: C901
-        self, index: IndexingExpr
-    ) -> Union["Histogram", float]:
+        self: H, index: IndexingExpr
+    ) -> Union[H, float, Accumulator]:
 
         indexes = self._compute_commonindex(index)
 
