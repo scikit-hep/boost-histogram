@@ -22,8 +22,8 @@ histogramming, while still providing the power of a full histogram object. See
 [what's new](./docs/CHANGELOG.md).
 
 For end users interested in analysis, see [Hist][], a first-party
-analyst-friendly histogram library that extends boost-histogram with many new
-shortcuts, plotting, and more.
+analyst-friendly histogram library that extends boost-histogram with named
+axes, many new shortcuts including UHI+, plotting shortcuts, and more.
 
 [uhi]: https://uhi.readthedocs.io
 ## Usage
@@ -58,7 +58,7 @@ h2 = hist[::sum, ::bh.rebin(2)]
 
 </details>
 
-We support the [uhi][] [PlottableHistogram][] protocol, so boost-histogram/hist
+We support the [uhi][] [PlottableHistogram][] protocol, so boost-histogram/[Hist][]
 histograms can be plotted via any compatible library, such as [mplhep][].
 
 [uhi]: https://github.com/scikit-hep/uhi
@@ -174,7 +174,7 @@ python3 -m pip install boost-histogram
 
 All the normal best-practices for Python apply; Pip should not be very old (Pip
 9 is very old), you should be in a virtual environment, etc. Python 3.6+ is
-required; for older versions of Python, version `0.13` will be installed
+required; for older versions of Python (3.5 and 2.7), `0.13` will be installed
 instead, which is API equivalent to 1.0, but will not be gaining new features.
 
 #### Binaries available:

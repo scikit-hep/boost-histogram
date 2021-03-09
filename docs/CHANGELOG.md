@@ -3,25 +3,36 @@
 ## Version 1.0
 
 Dropped support for Python 2 and 3.5; removed large numbers of workarounds.
-Subclassing histogram components now uses Python 3 class keyword syntax to set
-families. Fully statically typed.
+Fully statically typed. API compatible with the final `0.x` release for most
+uses, except for subclassing; subclassing histogram components now uses Python
+3 class keyword syntax to set families.
 
 #### User changes
 
 * Dropped Python 2.7 and 3.5 support [#512][]
 * Removed deprecated `.options` from axes. Use `.traits` instead. [#503][]
+* Full static typing available, UHI 0.1.2+ supported. [#516][], [#517][], [519][], [#520][], [#521][], [#523][]
+
+#### Subclassing Histogram changes
+
 * Use keyword class family setting when subclassing histogram components
   instead of custom decorator. [#513][]
-* Full static typing available. [#520][]
+* Structure of internal repr creation changed and made slightly more public. [#518][]
 
 #### Bug fixes
 * Consistently show `metadata=` in repr if present; refactored internal repr handling [#518][]
+* Minor typing related fixes for rare bugs (especially in `numpy.py`, [#521][])
 
 [#503]: https://github.com/scikit-hep/boost-histogram/pull/503
 [#512]: https://github.com/scikit-hep/boost-histogram/pull/512
 [#513]: https://github.com/scikit-hep/boost-histogram/pull/513
+[#516]: https://github.com/scikit-hep/boost-histogram/pull/516
+[#517]: https://github.com/scikit-hep/boost-histogram/pull/517
 [#518]: https://github.com/scikit-hep/boost-histogram/pull/518
-[#518]: https://github.com/scikit-hep/boost-histogram/pull/520
+[#519]: https://github.com/scikit-hep/boost-histogram/pull/519
+[#520]: https://github.com/scikit-hep/boost-histogram/pull/520
+[#521]: https://github.com/scikit-hep/boost-histogram/pull/521
+[#523]: https://github.com/scikit-hep/boost-histogram/pull/523
 
 
 ## Version 0.13
