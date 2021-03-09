@@ -1,7 +1,7 @@
 # bh.sum is just the Python sum, so from boost_histogram import * is safe (but
 # not recommended)
 from builtins import sum
-from typing import TypeVar
+from typing import TypeVar, Union
 
 from ._internal.typing import AxisLike
 
@@ -65,7 +65,7 @@ class Locator:
 class loc(Locator):
     __slots__ = ("value",)
 
-    def __init__(self, value: float, offset: int = 0) -> None:
+    def __init__(self, value: Union[str, float], offset: int = 0) -> None:
         super().__init__(offset)
         self.value = value
 

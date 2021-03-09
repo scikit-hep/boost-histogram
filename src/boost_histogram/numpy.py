@@ -80,7 +80,7 @@ def histogramdd(
 
     if density:
         areas = _reduce(_mul, hist.axes.widths)
-        density_val = hist.view() / hist.sum() / areas
+        density_val = hist.values() / np.sum(hist.values()) / areas
         return (density_val, hist.to_numpy()[1:])
 
     # Note: this is view=True since users have to ask explicitly for special
