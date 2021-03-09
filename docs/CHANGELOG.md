@@ -11,7 +11,7 @@ uses, except for subclassing; subclassing histogram components now uses Python
 
 * Dropped Python 2.7 and 3.5 support [#512][]
 * Removed deprecated `.options` from axes. Use `.traits` instead. [#503][]
-* Full static typing available, UHI 0.1.2+ supported. [#516][], [#517][], [519][], [#520][], [#521][], [#523][]
+* Full static typing available, UHI 0.1.2+ supported. [#516][], [#517][], [#519][], [#520][], [#521][], [#523][]
 
 #### Subclassing Histogram changes
 
