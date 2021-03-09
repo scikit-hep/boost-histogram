@@ -73,7 +73,7 @@ repos:
   hooks:
   - id: mypy
     files: src
-    additional_dependencies: [numpy==1.20.1]
+    additional_dependencies: [numpy==1.20.1, uhi==0.1.2]
 
 - repo: https://github.com/mgedmin/check-manifest
   rev: "0.46"
