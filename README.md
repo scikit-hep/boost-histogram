@@ -26,8 +26,13 @@ analyst-friendly histogram library that extends boost-histogram with many new
 shortcuts, plotting, and more.
 
 [uhi]: https://uhi.readthedocs.io
-
 ## Usage
+
+<img href="https://github.com/scikit-hep/boost-histogram/raw/develop/docs/_images/banner.png"
+     alt="Slideshow of features. See expandable text if the image is not reeadable"></img>
+
+<details><summary>Text intro (click to expand)</summary>
+
 
 ```python
 import boost_histogram as bh
@@ -49,8 +54,10 @@ values = hist.values()
 
 # Make a new histogram with just the second axis, summing over the first, and
 # rebinning the second into larger bins:
-h2 = hist[::sum, :: bh.rebin(2)]
+h2 = hist[::sum, ::bh.rebin(2)]
 ```
+
+</details>
 
 We support the [uhi][] [PlottableHistogram][] protocol, so boost-histogram/hist
 histograms can be plotted via any compatible library, such as [mplhep][].
