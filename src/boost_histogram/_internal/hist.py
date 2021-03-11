@@ -33,6 +33,9 @@ from .typing import Accumulator, ArrayLike, CppHistogram, SupportsIndex
 from .utils import cast, register, set_module
 from .view import View, _to_view
 
+if TYPE_CHECKING:
+    from builtins import ellipsis
+
 NOTHING = object()
 
 
@@ -49,7 +52,7 @@ _histograms: Set[Type[CppHistogram]] = {
 
 CppAxis = NewType("CppAxis", object)
 
-InnerIndexing = Union[SupportsIndex, Callable[[Axis], int], slice]
+InnerIndexing = Union[SupportsIndex, Callable[[Axis], int], slice, "ellipsis"]
 IndexingWithMapping = Union[InnerIndexing, Mapping[int, InnerIndexing]]
 IndexingExpr = Union[IndexingWithMapping, Tuple[IndexingWithMapping, ...]]
 
