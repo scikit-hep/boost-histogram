@@ -7,6 +7,8 @@ else:
     from typing import Protocol, SupportsIndex
 
 if TYPE_CHECKING:
+    from builtins import ellipsis
+
     from numpy import ufunc as Ufunc
     from numpy.typing import ArrayLike
 
@@ -41,5 +43,7 @@ class AxisLike(Protocol):
         ...
 
 
-StdIndex = Union[int, slice, Tuple[Union[slice, int], ...]]
-StrIndex = Union[int, slice, str, Tuple[Union[slice, int, str], ...]]
+StdIndex = Union[int, slice, "ellipsis", Tuple[Union[slice, int, "ellipsis"], ...]]
+StrIndex = Union[
+    int, slice, str, "ellipsis", Tuple[Union[slice, int, str, "ellipsis"], ...]
+]
