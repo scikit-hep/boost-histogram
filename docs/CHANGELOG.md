@@ -2,6 +2,16 @@
 
 ## Version 1.0
 
+### Version 1.0.1
+
+#### Typing changes
+
+* Added Ellipsis support to typing. [#525][]
+
+[#526]: https://github.com/scikit-hep/boost-histogram/pull/526
+
+### Version 1.0.0
+
 Dropped support for Python 2 and 3.5; removed large numbers of workarounds.
 Fully statically typed. API compatible with the final `0.x` release for most
 uses, except for subclassing; subclassing histogram components now uses Python
