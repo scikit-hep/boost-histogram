@@ -4,11 +4,16 @@
 
 ### Version 1.0.1
 
+#### Bug fixes
+
+* Added missing dependency on `typing_extensions` for Python 3.6 & 3.7 [#529][]
+
 #### Typing changes
 
 * Added Ellipsis support to typing. [#525][]
 
 [#526]: https://github.com/scikit-hep/boost-histogram/pull/526
+[#529]: https://github.com/scikit-hep/boost-histogram/pull/529
 
 ### Version 1.0.0
 
