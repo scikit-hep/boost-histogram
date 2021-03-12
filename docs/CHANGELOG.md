@@ -11,9 +11,11 @@
 #### Typing changes
 
 * Added Ellipsis support to typing. [#525][]
+* Better typing for Views. [#530][]
 
 [#526]: https://github.com/scikit-hep/boost-histogram/pull/526
 [#529]: https://github.com/scikit-hep/boost-histogram/pull/529
+[#530]: https://github.com/scikit-hep/boost-histogram/pull/530
 
 ### Version 1.0.0
 
