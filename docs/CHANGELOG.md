@@ -12,10 +12,12 @@
 
 * Added Ellipsis support to typing. [#525][]
 * Better typing for Views. [#530][]
+* Fixed issue with Histogram copy constructor requiring metadata [#532][]
 
 [#526]: https://github.com/scikit-hep/boost-histogram/pull/526
 [#529]: https://github.com/scikit-hep/boost-histogram/pull/529
 [#530]: https://github.com/scikit-hep/boost-histogram/pull/530
+[#532]: https://github.com/scikit-hep/boost-histogram/pull/532
 
 ### Version 1.0.0
 

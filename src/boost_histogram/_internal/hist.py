@@ -126,7 +126,11 @@ class Histogram:
         cls._family = family
 
     @typing.overload
-    def __init__(self, *args: Union["Histogram", CppHistogram], metadata: Any) -> None:
+    def __init__(self, *args: "Histogram") -> None:
+        ...
+
+    @typing.overload
+    def __init__(self, *args: CppHistogram, metadata: Any = ...) -> None:
         ...
 
     @typing.overload
@@ -256,8 +260,7 @@ class Histogram:
         Return a new histogram given a new _hist, copying metadata.
         """
 
-        # TODO: This might be a bug in MyPy
-        other: H = self.__class__(_hist)  # type: ignore
+        other = self.__class__(_hist)
         if memo is NOTHING:
             other.__dict__ = copy.copy(self.__dict__)
         else:
