@@ -121,9 +121,16 @@ class Histogram:
 
     _family: object = boost_histogram
 
-    def __init_subclass__(cls, *, family: object) -> None:
+    def __init_subclass__(cls, *, family: Optional[object] = None) -> None:
+        """
+        Sets the family for the histogram. This should be a unique object (such
+        as the main module of your package) that is consistently set across all
+        subclasses. When converting back from C++, casting will try to always
+        pick the best matching family from the loaded subclasses for Axis and
+        such.
+        """
         super().__init_subclass__()
-        cls._family = family
+        cls._family = family if family is not None else object()
 
     @typing.overload
     def __init__(self, *args: "Histogram") -> None:
