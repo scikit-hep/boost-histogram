@@ -31,7 +31,7 @@ from .enum import Kind
 from .storage import Double, Storage
 from .typing import Accumulator, ArrayLike, CppHistogram, SupportsIndex
 from .utils import cast, register, set_module
-from .view import View, _to_view
+from .view import MeanView, WeightedMeanView, WeightedSumView, _to_view
 
 if TYPE_CHECKING:
     from builtins import ellipsis
@@ -279,7 +279,9 @@ class Histogram:
         """
         return self._hist.rank()  # type: ignore
 
-    def view(self, flow: bool = False) -> Union[np.ndarray, View]:
+    def view(
+        self, flow: bool = False
+    ) -> Union[np.ndarray, WeightedSumView, WeightedMeanView, MeanView]:
         """
         Return a view into the data, optionally with overflow turned on.
         """

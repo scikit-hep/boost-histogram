@@ -1,4 +1,4 @@
-from typing import Any, Callable, Mapping, MutableMapping, Type, Union
+from typing import Any, Callable, ClassVar, Mapping, MutableMapping, Tuple, Type, Union
 
 import numpy as np
 
@@ -8,6 +8,7 @@ from .typing import ArrayLike, StrIndex, Ufunc
 
 class View(np.ndarray):
     __slots__ = ()
+    _FIELDS: ClassVar[Tuple[str, ...]]
 
     def __getitem__(self, ind: StrIndex) -> np.ndarray:
         sliced = super().__getitem__(ind)
@@ -28,7 +29,7 @@ class View(np.ndarray):
         return f"{self.__class__.__name__}(\n      " + repr(self.view(np.ndarray))[6:]
 
     def __str__(self) -> str:
-        fields = ", ".join(self._FIELDS)  # type: ignore
+        fields = ", ".join(self._FIELDS)
         return "{self.__class__.__name__}: ({fields})\n{arr}".format(
             self=self, fields=fields, arr=self.view(np.ndarray)
         )
@@ -42,7 +43,7 @@ class View(np.ndarray):
         array = np.asarray(value)
         if (
             array.ndim == super().__getitem__(ind).ndim + 1
-            and len(self._FIELDS) == array.shape[-1]  # type: ignore
+            and len(self._FIELDS) == array.shape[-1]
         ):
             self.__setitem__(ind, self._PARENT._array(*np.moveaxis(array, -1, 0)))  # type: ignore
         elif self.dtype == array.dtype:
@@ -95,6 +96,9 @@ def fields(*names: str) -> Callable[[Type[object]], Type[object]]:
 class WeightedSumView(View):
     __slots__ = ()
     _PARENT = WeightedSum
+
+    value: np.ndarray
+    variance: np.ndarray
 
     # Could be implemented on master View
     def __array_ufunc__(
@@ -181,7 +185,7 @@ class WeightedSumView(View):
 
         # ufuncs that are allowed to reduce
         if ufunc in {np.add} and method == "reduce" and len(inputs) == 1:
-            results = (ufunc.reduce(self[field], **kwargs) for field in self._FIELDS)  # type: ignore
+            results = (ufunc.reduce(self[field], **kwargs) for field in self._FIELDS)
             return self._PARENT._make(*results)  # type: ignore
 
         # If unsupported, just pass through (will return not implemented)
@@ -198,6 +202,11 @@ class WeightedMeanView(View):
     __slots__ = ()
     _PARENT = WeightedMean
 
+    sum_of_weights: np.ndarray
+    sum_of_weights_squared: np.ndarray
+    value: np.ndarray
+    _sum_of_weighted_deltas_squared: np.ndarray
+
     @property
     def variance(self) -> np.ndarray:
         with np.errstate(divide="ignore", invalid="ignore"):
@@ -212,6 +221,10 @@ class MeanView(View):
     __slots__ = ()
     _PARENT = Mean
 
+    count: np.ndarray
+    value: np.ndarray
+    sum_of_deltas_squared: np.ndarray
+
     # Variance is a computation
     @property
     def variance(self) -> np.ndarray:
@@ -219,9 +232,11 @@ class MeanView(View):
             return self["sum_of_deltas_squared"] / (self["count"] - 1)  # type: ignore
 
 
-def _to_view(item: np.ndarray, value: bool = False) -> Union[np.ndarray, View]:
+def _to_view(
+    item: np.ndarray, value: bool = False
+) -> Union[np.ndarray, WeightedSumView, WeightedMeanView, MeanView]:
     for cls in View.__subclasses__():
-        if cls._FIELDS == item.dtype.names:  # type: ignore
+        if cls._FIELDS == item.dtype.names:
             ret = item.view(cls)
             if value and ret.shape:
                 return ret.value  # type: ignore
