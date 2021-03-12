@@ -22,3 +22,13 @@ def test_subclass():
     assert h._storage_type == MyIntStorage
     assert type(h.axes[0]) == MyRegular
     assert type(h.axes[0].transform) == MyPowTransform
+
+
+def test_subclass_hist_only():
+    class MyHist(bh.Histogram):
+        pass
+
+    h = MyHist(bh.axis.Regular(10, 0, 2))
+
+    assert type(h) == MyHist
+    assert type(h.axes[0]) == bh.axis.Regular

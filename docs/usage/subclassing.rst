@@ -4,7 +4,7 @@
 Subclassing (advanced)
 ======================
 
-Subclassing boost-histogram components is supported, but requires a little extra care to ensure the subclasses do not return un-wrapped boost-histogram components when a subclassed version is available. The issue is that various actions make the C++ -> Python transition over again, such as using ``.project()``. For example, let's say you have a MyHistogram and a MyRegular. If you use ``project(0)``, that needs to also return a MyRegular, but it is reconverting the return value from C++ to Python, so it has to somehow know that MyRegular is the right axis subclass to select from for MyHistogram. This is accomplished with families.
+Subclassing boost-histogram components is supported, but requires a little extra care to ensure the subclasses do not return un-wrapped boost-histogram components when a subclassed version is available. The issue is that various actions make the C++ -> Python transition over again, such as using ``.project()``. For example, let's say you have a ``MyHistogram`` and a ``MyRegular``. If you use ``project(0)``, that needs to also return a ``MyRegular``, but it is reconverting the return value from C++ to Python, so it has to somehow know that ``MyRegular`` is the right axis subclass to select from for ``MyHistogram``. This is accomplished with families.
 
 When you subclass, you will need to add a family. Any object can be used - the module for your library is a good choice if you only have one "family" of histograms. Boost-histogram uses ``boost_histogram``, Hist uses ``hist``. You can use anything you want, though; a custom tag object like ``MY_FAMILY = object()`` works well too. It just has to support ``is``, and be the exact same object on all your subclasses.
 
@@ -19,7 +19,7 @@ When you subclass, you will need to add a family. Any object can be used - the m
     class Regular(bh.axis.Regular, family=my_package):
         ...
 
-If you only override Histogram, just use ``family=object()``.
+If you only override ``Histogram``, you can leave off the ``family=`` argument, or set it to ``None``. It will generate a private ``object()`` in this case. You must add an explicit family to ``Histogram`` if you subclass any further components.
 
 If you use Mixins, special care needs to be taken if you need a left-acting
 Mixin, since class keywords are handled via ``super()`` left to right. This is
@@ -32,7 +32,7 @@ a Mixin that will work on either side:
             super().__init_subclass__(**kwargs)  # type: ignore
 
 Mixins are recommended if you want to provide functionality to a collection of
-different subclasses, like Axis.
+different subclasses, like ``Axis``.
 
 There are customization hooks provided for subclasses as well.
 ``self._generate_axis_()`` is called to produce an ``AxesTuple``, so you can
