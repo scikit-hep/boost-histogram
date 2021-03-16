@@ -99,6 +99,15 @@ class Histogram(object):
     )
     # .metadata and ._variance_known are part of the dict
 
+    def __init_subclass__(cls, family=None):
+        """
+        # Backported from 1.0. No effect on Python 2, so ignored. Allows _just_
+        # histogram to be subclassed from both versions of boost-histogram. Subclassing
+        anything else will not work in both 1.x and 0.x.
+        """
+        if sys.version_info >= (3,):
+            super(Histogram, cls).__init_subclass__()
+
     @inject_signature(
         "self, *axes, storage=Double(), metadata=None", locals={"Double": Double}
     )
