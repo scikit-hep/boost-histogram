@@ -170,6 +170,12 @@ class Axis(object):
             if not self.traits.overflow:
                 ret += ", overflow=False"
 
+        if self.metadata is not None:
+            if isinstance(self.metadata, string_types):
+                ret += ", metadata={!r}".format(self.metadata)
+            else:
+                ret += ", metadata=..."
+
         return ret
 
     @deprecated("Use .traits instead", name="options")
@@ -536,6 +542,12 @@ class BaseCategory(Axis):
         elif self.traits.circular:
             ret += ", circular=True"
 
+        if self.metadata is not None:
+            if isinstance(self.metadata, string_types):
+                ret += ", metadata={!r}".format(self.metadata)
+            else:
+                ret += ", metadata=..."
+
         return ret
 
 
@@ -698,4 +710,11 @@ class Boolean(Axis):
         just in case it spans multiple lines.
         """
 
-        return ""
+        ret = ""
+        if self.metadata is not None:
+            if isinstance(self.metadata, string_types):
+                ret += ", metadata={!r}".format(self.metadata)
+            else:
+                ret += ", metadata=..."
+
+        return ret
