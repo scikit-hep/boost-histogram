@@ -53,6 +53,13 @@ py::class_<A> register_accumulator(py::module acc, Args&&... args) {
 
         .def(py::self *= double())
 
+        .def("__add__",
+             [](const A& self, const A& other) {
+                 A retval(self);
+                 retval += other;
+                 return retval;
+             })
+
         // The c++ name is replaced with the Python name here
         .def("__repr__",
              [](py::object self) {

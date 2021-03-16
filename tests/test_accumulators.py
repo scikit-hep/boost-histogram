@@ -1,3 +1,6 @@
+import pytest
+from pytest import approx
+
 import boost_histogram as bh
 
 
@@ -85,3 +88,48 @@ def test_mean():
     assert a == bh.accumulators.Mean(3, 2, 1)
 
     assert repr(a) == "Mean(count=3, value=2, variance=1)"
+
+
+def test_sum_mean():
+    a = bh.accumulators.Mean()
+    a.fill([1, 2, 3])
+
+    b = bh.accumulators.Mean()
+    b.fill([5, 6])
+
+    c = bh.accumulators.Mean()
+    c.fill([1, 2, 3, 5, 6])
+
+    ab = a + b
+    assert ab.value == approx(c.value)
+    assert ab.variance == approx(c.variance)
+    assert ab.count == approx(c.count)
+
+    a += b
+    assert a.value == approx(c.value)
+    assert a.variance == approx(c.variance)
+    assert a.count == approx(c.count)
+
+
+@pytest.mark.skip(reason="Needs to be fixed")
+def test_sum_weighed_mean():
+    a = bh.accumulators.WeightedMean()
+    a.fill([1, 2, 3])
+
+    b = bh.accumulators.WeightedMean()
+    b.fill([5, 6])
+
+    c = bh.accumulators.WeightedMean()
+    c.fill([1, 2, 3, 5, 6])
+
+    ab = a + b
+    assert ab.value == approx(c.value)
+    assert ab.variance == approx(c.variance)
+    assert ab.sum_of_weights == approx(c.sum_of_weights)
+    assert ab.sum_of_weights_squared == approx(c.sum_of_weights_squared)
+
+    a += b
+    assert a.value == approx(c.value)
+    assert a.variance == approx(c.variance)
+    assert a.sum_of_weights == approx(c.sum_of_weights)
+    assert a.sum_of_weights_squared == approx(c.sum_of_weights_squared)
