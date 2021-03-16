@@ -64,6 +64,14 @@ uses, except for subclassing; subclassing histogram components now uses Python
 
 ## Version 0.13
 
+## Version 0.13.1
+
+* Backport fix for Mean/WeightedMean summing.
+* Backport fix for `boost_histogram.numpy` density.
+* Backport missing metadata from the repr's.
+* Ignore `family=` on Histogram subclassing to make subclassing Histogram only possible in 1.x + 0.x code.
+
+
 ### Version 0.13.0
 
 PlottableProtocol provides a way to plot in different libraries, and easy
