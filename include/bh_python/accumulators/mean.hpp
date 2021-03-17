@@ -59,12 +59,20 @@ struct mean {
     }
 
     mean& operator+=(const mean& rhs) noexcept {
-        if(count != 0 || rhs.count != 0) {
-            const auto tmp = value * count + rhs.value * rhs.count;
-            count += rhs.count;
-            value = tmp / count;
-        }
+        if(rhs.count == 0)
+            return *this;
+
+        const auto mu1 = value;
+        const auto mu2 = rhs.value;
+        const auto n1  = count;
+        const auto n2  = rhs.count;
+
+        count += rhs.count;
+        value = (n1 * mu1 + n2 * mu2) / count;
         sum_of_deltas_squared += rhs.sum_of_deltas_squared;
+        sum_of_deltas_squared
+            += n1 * (value - mu1) * (value - mu1) + n2 * (value - mu2) * (value - mu2);
+
         return *this;
     }
 
