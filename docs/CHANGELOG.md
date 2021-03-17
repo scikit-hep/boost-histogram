@@ -10,6 +10,7 @@
 
 #### Bug fixes
 
+* Fix summing of Mean/WeightedMean accumulators [#537][]
 * Added missing dependency on `typing_extensions` for Python 3.6 & 3.7 [#529][]
 
 #### Typing changes
@@ -24,6 +25,7 @@
 [#530]: https://github.com/scikit-hep/boost-histogram/pull/530
 [#532]: https://github.com/scikit-hep/boost-histogram/pull/532
 [#533]: https://github.com/scikit-hep/boost-histogram/pull/532
+[#537]: https://github.com/scikit-hep/boost-histogram/pull/537
 
 ### Version 1.0.0
 
