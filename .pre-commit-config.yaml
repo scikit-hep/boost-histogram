@@ -38,7 +38,7 @@ repos:
     additional_dependencies: [pyyaml]
 
 - repo: https://github.com/asottile/pyupgrade
-  rev: v2.10.0
+  rev: v2.10.1
   hooks:
   - id: pyupgrade
 
@@ -48,13 +48,13 @@ repos:
   - id: isort
 
 - repo: https://github.com/asottile/setup-cfg-fmt
-  rev: v1.16.0
+  rev: v1.17.0
   hooks:
   - id: setup-cfg-fmt
     args: [--min-py3-version, "3.5"]
 
 - repo: https://github.com/pycqa/flake8
-  rev: 3.8.4
+  rev: 3.9.0
   hooks:
   - id: flake8
     exclude: docs/conf.py
