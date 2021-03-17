@@ -1,4 +1,3 @@
-import pytest
 from pytest import approx
 
 import boost_histogram as bh
@@ -111,7 +110,6 @@ def test_sum_mean():
     assert a.count == approx(c.count)
 
 
-@pytest.mark.skip(reason="Needs to be fixed")
 def test_sum_weighed_mean():
     a = bh.accumulators.WeightedMean()
     a.fill([1, 2, 3])

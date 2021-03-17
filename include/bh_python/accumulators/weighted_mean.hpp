@@ -62,13 +62,23 @@ struct weighted_mean {
     }
 
     weighted_mean& operator+=(const weighted_mean& rhs) {
-        if(sum_of_weights != 0 || rhs.sum_of_weights != 0) {
-            const auto tmp = value * sum_of_weights + rhs.value * rhs.sum_of_weights;
-            sum_of_weights += rhs.sum_of_weights;
-            sum_of_weights_squared += rhs.sum_of_weights_squared;
-            value = tmp / sum_of_weights;
-        }
+        if(rhs.sum_of_weights == 0)
+            return *this;
+
+        const auto mu1 = value;
+        const auto mu2 = rhs.value;
+        const auto n1  = sum_of_weights;
+        const auto n2  = rhs.sum_of_weights;
+
+        sum_of_weights += rhs.sum_of_weights;
+        sum_of_weights_squared += rhs.sum_of_weights_squared;
+
+        value = (n1 * mu1 + n2 * mu2) / sum_of_weights;
+
         _sum_of_weighted_deltas_squared += rhs._sum_of_weighted_deltas_squared;
+        _sum_of_weighted_deltas_squared
+            += n1 * (value - mu1) * (value - mu1) + n2 * (value - mu2) * (value - mu2);
+
         return *this;
     }
 
