@@ -112,13 +112,13 @@ def test_sum_mean():
 
 def test_sum_weighed_mean():
     a = bh.accumulators.WeightedMean()
-    a.fill([1, 2, 3])
+    a.fill([1, 2, 3], weight=[2, 5, 3])
 
     b = bh.accumulators.WeightedMean()
-    b.fill([5, 6])
+    b.fill([5, 6], weight=[12, 17])
 
     c = bh.accumulators.WeightedMean()
-    c.fill([1, 2, 3, 5, 6])
+    c.fill([1, 2, 3, 5, 6], weight=[2, 5, 3, 12, 17])
 
     ab = a + b
     assert ab.value == approx(c.value)

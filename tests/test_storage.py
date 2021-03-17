@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 from numpy.testing import assert_array_equal
+from pytest import approx
 
 import boost_histogram as bh
 
@@ -215,3 +216,45 @@ def test_modify_weights_by_view():
 
     assert hist.view().value[0] == pytest.approx(1.5)
     assert hist.view().value[1] == pytest.approx(2)
+
+
+# Issue #531
+def test_summing_mean_storage():
+    np.random.seed(42)
+    values = np.random.normal(loc=1.3, scale=0.1, size=1000)
+    samples = np.random.normal(loc=1.3, scale=0.1, size=1000)
+
+    h1 = bh.Histogram(bh.axis.Regular(20, -1, 3), storage=bh.storage.Mean())
+    h1.fill(values, sample=samples)
+
+    h2 = bh.Histogram(bh.axis.Regular(1, -1, 3), storage=bh.storage.Mean())
+    h2.fill(values, sample=samples)
+
+    s1 = h1.sum()
+    s2 = h2.sum()
+
+    assert s1.value == approx(s2.value)
+    assert s1.count == approx(s2.count)
+    assert s1.variance == approx(s2.variance)
+
+
+# Issue #531
+def test_summing_weighted_mean_storage():
+    np.random.seed(42)
+    values = np.random.normal(loc=1.3, scale=0.1, size=1000)
+    samples = np.random.normal(loc=1.3, scale=0.1, size=1000)
+    weights = np.random.uniform(0.1, 5, size=1000)
+
+    h1 = bh.Histogram(bh.axis.Regular(20, -1, 3), storage=bh.storage.WeightedMean())
+    h1.fill(values, sample=samples, weight=weights)
+
+    h2 = bh.Histogram(bh.axis.Regular(1, -1, 3), storage=bh.storage.WeightedMean())
+    h2.fill(values, sample=samples, weight=weights)
+
+    s1 = h1.sum()
+    s2 = h2.sum()
+
+    assert s1.value == approx(s2.value)
+    assert s1.sum_of_weights == approx(s2.sum_of_weights)
+    assert s1.sum_of_weights_squared == approx(s2.sum_of_weights_squared)
+    assert s1.variance == approx(s2.variance)
