@@ -93,13 +93,16 @@ def test_mean():
     assert repr(a) == "Mean(count=3, value=2, variance=1)"
 
 
-float_st = st.floats(allow_nan=False, allow_infinity=False, min_value=-1e30, max_value=1e30)
+float_st = st.floats(
+    allow_nan=False, allow_infinity=False, min_value=-1e30, max_value=1e30
+)
 simple_list_st = st.lists(float_st, min_size=1, max_size=10)
 
+
 @hypothesis.given(
-        simple_list_st,
-        simple_list_st,
-        )
+    simple_list_st,
+    simple_list_st,
+)
 def test_sum_mean(list1, list2):
     a = bh.accumulators.Mean()
     a.fill(list1)
@@ -123,14 +126,19 @@ def test_sum_mean(list1, list2):
 
 dual_lists_st = st.integers(min_value=1, max_value=10).flatmap(
     lambda n: st.tuples(
-st.lists(float_st, min_size=n, max_size=n),
-st.lists(st.floats(allow_nan=False, allow_infinity=False, min_value=1e-30, max_value=1e30), min_size=n, max_size=n)
-        )
-        )
+        st.lists(float_st, min_size=n, max_size=n),
+        st.lists(
+            st.floats(
+                allow_nan=False, allow_infinity=False, min_value=1e-30, max_value=1e30
+            ),
+            min_size=n,
+            max_size=n,
+        ),
+    )
+)
 
-@hypothesis.given(
-        dual_lists_st,dual_lists_st
-        )
+
+@hypothesis.given(dual_lists_st, dual_lists_st)
 def test_sum_weighed_mean(pair1, pair2):
     a = bh.accumulators.WeightedMean()
     a.fill(pair1[0], weight=pair1[1])

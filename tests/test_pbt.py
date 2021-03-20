@@ -10,7 +10,9 @@ nst = pytest.importorskip("hypothesis.extra.numpy")
 
 @hypothesis.given(
     nst.arrays(
-        float, (4,), elements=dict(min_value=1, max_value=100, exclude_min=True, allow_nan=False)
+        float,
+        (4,),
+        elements=dict(min_value=1, max_value=100, exclude_min=True, allow_nan=False),
     ),
     nst.arrays(
         float, (4,), elements=dict(min_value=-100, max_value=100, allow_nan=False)
