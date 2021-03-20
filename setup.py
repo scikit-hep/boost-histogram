@@ -49,12 +49,7 @@ ext_modules = [
 
 
 extras = {
-    "test": [
-        "pytest",
-        "pytest-benchmark",
-        "typing_extensions; python_version<'3.8'",
-        "cloudpickle",
-    ],
+    "test": ["pytest", "pytest-benchmark", "cloudpickle", "hypothesis >=6.0"],
     "docs": [
         "Sphinx~=3.0",
         "recommonmark>=0.5.0",
