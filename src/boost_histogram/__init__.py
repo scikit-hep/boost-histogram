@@ -12,7 +12,7 @@ except ImportError as err:
         raise
 
     new_msg = "Did you forget to compile boost-histogram? Use CMake or Setuptools to build, see the readme."
-    total_msg = "\n".join([msg, new_msg])
+    total_msg = f"{msg}\n{new_msg}"
 
     new_exception = type(err)(new_msg, name=err.name, path=err.path)
     raise new_exception from err
