@@ -46,13 +46,13 @@ repos:
     additional_dependencies: [pyyaml]
 
 - repo: https://github.com/asottile/pyupgrade
-  rev: v2.10.1
+  rev: v2.11.0
   hooks:
   - id: pyupgrade
     args: [--py36-plus]
 
 - repo: https://github.com/PyCQA/isort
-  rev: 5.7.0
+  rev: 5.8.0
   hooks:
   - id: isort
 
@@ -73,7 +73,7 @@ repos:
   hooks:
   - id: mypy
     files: src
-    additional_dependencies: [numpy==1.20.1, uhi==0.1.2]
+    additional_dependencies: [numpy==1.20.1, uhi==0.2.1]
 
 - repo: https://github.com/mgedmin/check-manifest
   rev: "0.46"
