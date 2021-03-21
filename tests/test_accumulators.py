@@ -115,12 +115,12 @@ def test_sum_mean(list1, list2):
 
     ab = a + b
     assert ab.value == approx(c.value)
-    assert ab.variance == approx(c.variance)
+    assert ab.variance == approx(c.variance, nan_ok=True)
     assert ab.count == approx(c.count)
 
     a += b
     assert a.value == approx(c.value)
-    assert a.variance == approx(c.variance)
+    assert a.variance == approx(c.variance, nan_ok=True)
     assert a.count == approx(c.count)
 
 
@@ -151,12 +151,12 @@ def test_sum_weighed_mean(pair1, pair2):
 
     ab = a + b
     assert ab.value == approx(c.value)
-    assert ab.variance == approx(c.variance)
+    assert ab.variance == approx(c.variance, nan_ok=True)
     assert ab.sum_of_weights == approx(c.sum_of_weights)
     assert ab.sum_of_weights_squared == approx(c.sum_of_weights_squared)
 
     a += b
     assert a.value == approx(c.value)
-    assert a.variance == approx(c.variance)
+    assert a.variance == approx(c.variance, nan_ok=True)
     assert a.sum_of_weights == approx(c.sum_of_weights)
     assert a.sum_of_weights_squared == approx(c.sum_of_weights_squared)
