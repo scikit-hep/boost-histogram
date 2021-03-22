@@ -1,5 +1,11 @@
 # What's new in boost-histogram
 
+## UPCOMING
+
+* Support running type checking from Python < 3.8 [#542][]
+
+[#542]: https://github.com/scikit-hep/boost-histogram/pull/542
+
 ## Version 1.0
 
 ### Version 1.0.1
