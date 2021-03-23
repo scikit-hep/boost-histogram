@@ -75,8 +75,8 @@ def _fill_cast(value: T, *, inner: bool = False) -> Union[T, np.ndarray, Tuple[T
 
 
 def _arg_shortcut(item: Union[Tuple[int, float, float], Axis, CppAxis]) -> CppAxis:
-    msg = "Developer shortcut: will be removed in a future version"
     if isinstance(item, tuple) and len(item) == 3:
+        msg = "Developer shortcut: will be removed in a future version"
         warnings.warn(msg, FutureWarning)
         return _core.axis.regular_uoflow(item[0], item[1], item[2])  # type: ignore
     elif isinstance(item, Axis):
@@ -364,10 +364,10 @@ class Histogram:
                         len(other.shape), self.ndim
                     )
                 )
-            elif all((a == b or a == 1) for a, b in zip(other.shape, self.shape)):
+            elif all(a in [b, 1] for a, b in zip(other.shape, self.shape)):
                 view = self.view(flow=False)
                 getattr(view, name)(other)
-            elif all((a == b or a == 1) for a, b in zip(other.shape, self.axes.extent)):
+            elif all(a in [b, 1] for a, b in zip(other.shape, self.axes.extent)):
                 view = self.view(flow=True)
                 getattr(view, name)(other)
             else:
@@ -494,13 +494,11 @@ class Histogram:
         """
         # TODO check the terminal width and adjust the presentation
         # only use for 1D, fall back to repr for ND
-        if self._hist.rank() == 1:
-            s = str(self._hist)
+        if self._hist.rank() != 1:
+            return repr(self)
+        s = str(self._hist)
             # get rid of first line and last character
-            s = s[s.index("\n") + 1 : -1]
-        else:
-            s = repr(self)
-        return s
+        return s[s.index("\n") + 1 : -1]
 
     def _axis(self, i: int = 0) -> Axis:
         """
@@ -547,15 +545,14 @@ class Histogram:
                 msg = "Cannot open boost-histogram pickle v{}".format(state[0])
                 raise RuntimeError(msg)
 
-            self.axes = self._generate_axes_()
-
         else:  # Classic (0.10 and before) state
             self._hist = state["_hist"]
             self._variance_known = True
             self.metadata = state.get("metadata", None)
             for i in range(self._hist.rank()):
                 self._hist.axis(i).metadata = {"metadata": self._hist.axis(i).metadata}
-            self.axes = self._generate_axes_()
+
+        self.axes = self._generate_axes_()
 
     def __repr__(self) -> str:
         newline = "\n  "
@@ -779,14 +776,13 @@ class Histogram:
 
         if not integrations:
             return self._new_hist(reduced)
-        else:
-            projections = [i for i in range(self.ndim) if i not in integrations]
+        projections = [i for i in range(self.ndim) if i not in integrations]
 
-            return (
-                self._new_hist(reduced.project(*projections))
-                if projections
-                else reduced.sum(flow=True)
-            )
+        return (
+            self._new_hist(reduced.project(*projections))
+            if projections
+            else reduced.sum(flow=True)
+        )
 
     def __setitem__(
         self, index: IndexingExpr, value: Union[ArrayLike, Accumulator]

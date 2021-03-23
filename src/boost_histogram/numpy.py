@@ -114,11 +114,11 @@ def histogram2d(
         threads=threads,
     )
 
-    if isinstance(result, tuple):
-        data, (edgesx, edgesy) = result
-        return data, edgesx, edgesy
-    else:
+    if not isinstance(result, tuple):
         return result
+
+    data, (edgesx, edgesy) = result
+    return data, edgesx, edgesy
 
 
 def histogram(
@@ -162,11 +162,11 @@ def histogram(
         storage=storage,
         threads=threads,
     )
-    if isinstance(result, tuple):
-        data, (edges,) = result
-        return data, edges
-    else:
+    if not isinstance(result, tuple):
         return result
+
+    data, (edges,) = result
+    return data, edges
 
 
 # Process docstrings

@@ -111,13 +111,16 @@ class WeightedSumView(View):
             return ufunc(np.asarray(inputs[0]), np.asarray(inputs[1]), **kwargs)  # type: ignore
 
         # Support unary + and -
-        if method == "__call__" and len(inputs) == 1:
-            if ufunc in {np.negative, np.positive}:
-                (result,) = kwargs.pop("out", [np.empty(self.shape, self.dtype)])
+        if (
+            method == "__call__"
+            and len(inputs) == 1
+            and ufunc in {np.negative, np.positive}
+        ):
+            (result,) = kwargs.pop("out", [np.empty(self.shape, self.dtype)])
 
-                ufunc(inputs[0]["value"], out=result["value"], **kwargs)
-                result["variance"] = inputs[0]["variance"]
-                return result.view(self.__class__)  # type: ignore
+            ufunc(inputs[0]["value"], out=result["value"], **kwargs)
+            result["variance"] = inputs[0]["variance"]
+            return result.view(self.__class__)  # type: ignore
 
         if method == "__call__" and len(inputs) == 2:
             input_0 = np.asarray(inputs[0])

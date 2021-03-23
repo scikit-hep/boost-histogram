@@ -14,13 +14,13 @@ class NamedAxesTuple(bh.axis.AxesTuple):
     __slots__ = ()
 
     def _get_index_by_name(self, name):
-        if isinstance(name, str):
-            for i, ax in enumerate(self):
-                if ax.name == name:
-                    return i
-            raise KeyError(f"{name} not found in axes")
-        else:
+        if not isinstance(name, str):
             return name
+
+        for i, ax in enumerate(self):
+            if ax.name == name:
+                return i
+        raise KeyError(f"{name} not found in axes")
 
     def __getitem__(self, item):
         if isinstance(item, slice):
