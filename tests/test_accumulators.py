@@ -94,7 +94,7 @@ def test_mean():
 
 
 float_st = st.floats(
-    allow_nan=False, allow_infinity=False, min_value=-1e5, max_value=1e5
+    allow_nan=False, allow_infinity=False, min_value=-1e4, max_value=1e4
 )
 simple_list_st = st.lists(float_st, min_size=1, max_size=10)
 
@@ -129,7 +129,7 @@ dual_lists_st = st.integers(min_value=1, max_value=10).flatmap(
         st.lists(float_st, min_size=n, max_size=n),
         st.lists(
             st.floats(
-                allow_nan=False, allow_infinity=False, min_value=1e-2, max_value=1e3
+                allow_nan=False, allow_infinity=False, min_value=1e-2, max_value=1e2
             ),
             min_size=n,
             max_size=n,
@@ -151,12 +151,12 @@ def test_sum_weighed_mean(pair1, pair2):
 
     ab = a + b
     assert ab.value == approx(c.value)
-    assert ab.variance == approx(c.variance, nan_ok=True, abs=1e-7, rel=1e-3)
+    assert ab.variance == approx(c.variance, nan_ok=True, abs=1e-3, rel=1e-2)
     assert ab.sum_of_weights == approx(c.sum_of_weights)
     assert ab.sum_of_weights_squared == approx(c.sum_of_weights_squared)
 
     a += b
     assert a.value == approx(c.value)
-    assert a.variance == approx(c.variance, nan_ok=True, abs=1e-7, rel=1e-3)
+    assert a.variance == approx(c.variance, nan_ok=True, abs=1e-3, rel=1e-2)
     assert a.sum_of_weights == approx(c.sum_of_weights)
     assert a.sum_of_weights_squared == approx(c.sum_of_weights_squared)
