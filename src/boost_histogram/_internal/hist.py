@@ -364,10 +364,10 @@ class Histogram:
                         len(other.shape), self.ndim
                     )
                 )
-            elif all(a in [b, 1] for a, b in zip(other.shape, self.shape)):
+            elif all(a in {b, 1} for a, b in zip(other.shape, self.shape)):
                 view = self.view(flow=False)
                 getattr(view, name)(other)
-            elif all(a in [b, 1] for a, b in zip(other.shape, self.axes.extent)):
+            elif all(a in {b, 1} for a, b in zip(other.shape, self.axes.extent)):
                 view = self.view(flow=True)
                 getattr(view, name)(other)
             else:
