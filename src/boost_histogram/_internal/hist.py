@@ -497,7 +497,7 @@ class Histogram:
         if self._hist.rank() != 1:
             return repr(self)
         s = str(self._hist)
-            # get rid of first line and last character
+        # get rid of first line and last character
         return s[s.index("\n") + 1 : -1]
 
     def _axis(self, i: int = 0) -> Axis:
