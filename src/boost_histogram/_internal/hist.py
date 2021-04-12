@@ -542,7 +542,7 @@ class Histogram:
                 if "_variance_known" not in state[1]:
                     self._variance_known = True
             else:
-                msg = "Cannot open boost-histogram pickle v{}".format(state[0])
+                msg = f"Cannot open boost-histogram pickle v{state[0]}"
                 raise RuntimeError(msg)
 
         else:  # Classic (0.10 and before) state
@@ -878,7 +878,7 @@ class Histogram:
 
                 else:
                     msg = f"Mismatched shapes in dimension {n}"
-                    msg += ", {} != {}".format(value_shape[n], request_len)
+                    msg += f", {value_shape[n]} != {request_len}"
                     if use_underflow or use_overflow:
                         msg += " or {}".format(
                             request_len + use_underflow + use_overflow
