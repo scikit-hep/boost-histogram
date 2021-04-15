@@ -1,7 +1,7 @@
 ipython
+myst_parser>=0.13
 nbsphinx
 numpy
-myst_parser>=0.13
 Sphinx>=3.0.0
 sphinx-book-theme>=0.0.33
 sphinx_copybutton
