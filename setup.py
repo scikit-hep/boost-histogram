@@ -53,7 +53,7 @@ extras = {
     "docs": [
         "Sphinx~=3.0",
         "myst_parser>=0.13",
-        "sphinx_book_theme==0.38.0",
+        "sphinx_book_theme==0.0.38",
         "nbsphinx",
         "sphinx_copybutton",
     ],
