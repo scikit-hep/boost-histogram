@@ -1,4 +1,5 @@
 import copy
+import logging
 import threading
 import typing
 import warnings
@@ -48,6 +49,8 @@ _histograms: Set[Type[CppHistogram]] = {
     _core.hist.any_mean,
     _core.hist.any_weighted_mean,
 }
+
+logger = logging.getLogger(__name__)
 
 
 CppAxis = NewType("CppAxis", object)
@@ -772,6 +775,7 @@ class Histogram:
                 assert isinstance(stop, int)
                 slices.append(_core.algorithm.slice_and_rebin(i, start, stop, merge))
 
+        logger.debug("Reduce with %s", slices)
         reduced = self._hist.reduce(*slices)
 
         if not integrations:

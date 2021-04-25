@@ -2,9 +2,11 @@
 
 ## UPCOMING
 
+* Fix scaling a weighted storage [#559][]
 * Support running type checking from Python < 3.8 [#542][]
 
 [#542]: https://github.com/scikit-hep/boost-histogram/pull/542
+[#559]: https://github.com/scikit-hep/boost-histogram/pull/559
 
 ## Version 1.0
 
