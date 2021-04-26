@@ -22,29 +22,29 @@ def test_basic_view(v):
 def test_view_mul(v):
     v2 = v * 2
     assert_allclose(v2.value, [0, 6, 4, 2])
-    assert_allclose(v2.variance, [0, 6, 4, 2])
+    assert_allclose(v2.variance, [0, 12, 8, 4])
 
     v2 = 2 * v
     assert_allclose(v2.value, [0, 6, 4, 2])
-    assert_allclose(v2.variance, [0, 6, 4, 2])
+    assert_allclose(v2.variance, [0, 12, 8, 4])
 
     v2 = v * (-2)
     assert_allclose(v2.value, [0, -6, -4, -2])
-    assert_allclose(v2.variance, [0, 6, 4, 2])
+    assert_allclose(v2.variance, [0, 12, 8, 4])
 
     v *= 2
     assert_allclose(v.value, [0, 6, 4, 2])
-    assert_allclose(v.variance, [0, 6, 4, 2])
+    assert_allclose(v.variance, [0, 12, 8, 4])
 
 
 def test_view_div(v):
     v2 = v / 2
     assert_allclose(v2.value, [0, 1.5, 1, 0.5])
-    assert_allclose(v2.variance, [0, 1.5, 1, 0.5])
+    assert_allclose(v2.variance, [0, 0.75, 0.5, 0.25])
 
     v2 = v / (-0.5)
     assert_allclose(v2.value, [0, -6, -4, -2])
-    assert_allclose(v2.variance, [0, 6, 4, 2])
+    assert_allclose(v2.variance, [0, 12, 8, 4])
 
     v2 = 1 / v[1:]
     assert_allclose(v2.value, [1 / 3, 1 / 2, 1])
@@ -52,7 +52,7 @@ def test_view_div(v):
 
     v /= 0.5
     assert_allclose(v.value, [0, 6, 4, 2])
-    assert_allclose(v.variance, [0, 6, 4, 2])
+    assert_allclose(v.variance, [0, 12, 8, 4])
 
 
 def test_view_add(v):

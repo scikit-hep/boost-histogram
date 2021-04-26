@@ -14,14 +14,17 @@ void register_algorithms(py::module& algorithm) {
             using range_t = bh::algorithm::reduce_command::range_t;
 
             if(self.range != range_t::none) {
-                const char* suffix = self.merge > 0 ? "_and_rebin" : "";
-                const char* start  = self.iaxis == bh::algorithm::reduce_command::unset
-                                        ? ""
-                                        : "iaxis={0}, ";
-                const char* merge = self.merge > 0 ? ", merge={3}" : "";
+                const char* suffix  = self.merge > 0 ? "_and_rebin" : "";
+                const char* c_start = self.iaxis == bh::algorithm::reduce_command::unset
+                                          ? ""
+                                          : "iaxis={0}, ";
+                const char* c_merge = self.merge > 0 ? ", merge={0}" : "";
+
+                py::str start = py::str(c_start).format(self.iaxis);
+                py::str merge = py::str(c_merge).format(self.merge);
 
                 if(self.range == range_t::indices) {
-                    return py::str("reduce_command(slice{0}({1}, begin={2}, "
+                    return py::str("reduce_command(slice{0}({1}begin={2}, "
                                    "end={3}{4}, mode={5}))")
                         .format(suffix,
                                 start,

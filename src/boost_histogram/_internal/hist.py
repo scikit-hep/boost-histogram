@@ -2,6 +2,7 @@
 from __future__ import absolute_import, division, print_function
 
 import copy
+import logging
 import sys
 import threading
 import warnings
@@ -39,6 +40,8 @@ _histograms = (
     _core.hist.any_mean,
     _core.hist.any_weighted_mean,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def _fill_cast(value, inner=False):
@@ -726,6 +729,7 @@ class Histogram(object):
 
                 slices.append(_core.algorithm.slice_and_rebin(i, start, stop, merge))
 
+        logger.debug("Reduce with %s", slices)
         reduced = self._hist.reduce(*slices)
 
         if not integrations:
