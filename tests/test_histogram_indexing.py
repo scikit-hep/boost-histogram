@@ -377,3 +377,30 @@ def test_axes_tuple_Nd():
 
     assert b1.ndim == 3
     assert a1.ndim == 2
+
+
+# issue 556
+def test_single_flow_bin():
+    # Flow is removed for category axes unless full sum is used
+    h = bh.Histogram(bh.axis.IntCategory([0, 1, 2]))
+    h.view(True)[:] = 1
+
+    assert h[::sum] == 4
+    assert h[0::sum] == 3
+    assert h[1::sum] == 2
+    assert h[2::sum] == 1
+    with pytest.raises(ValueError):
+        h[3::sum]
+
+    assert h[1:2][sum] == 4
+
+    h = bh.Histogram(bh.axis.Integer(0, 3))
+    h.view(True)[:] = 1
+
+    assert h[::sum] == 5
+    assert h[0::sum] == 4
+    assert h[1::sum] == 3
+    assert h[2::sum] == 2
+    assert h[3::sum] == 1
+
+    assert h[1:2][sum] == 5
