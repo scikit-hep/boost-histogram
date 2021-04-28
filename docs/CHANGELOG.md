@@ -2,6 +2,7 @@
 
 ## UPCOMING
 
+No changes yet.
 
 ## Version 1.0
 
@@ -60,6 +61,7 @@ uses, except for subclassing; subclassing histogram components now uses Python
 * Structure of internal repr creation changed and made slightly more public. [#518][]
 
 #### Bug fixes
+
 * Consistently show `metadata=` in repr if present; refactored internal repr handling [#518][]
 * Minor typing related fixes for rare bugs (especially in `numpy.py`, [#521][])
 
@@ -77,13 +79,17 @@ uses, except for subclassing; subclassing histogram components now uses Python
 
 ## Version 0.13
 
-## Version 0.13.1
+### Version 0.13.2
+
+* Backport fix scaling a weighted storage
+* Backport fix partial summation over a Categorical axis
+
+### Version 0.13.1
 
 * Backport fix for Mean/WeightedMean summing.
 * Backport fix for `boost_histogram.numpy` density.
 * Backport missing metadata from the repr's.
 * Ignore `family=` on Histogram subclassing to make subclassing Histogram only possible in 1.x + 0.x code.
-
 
 ### Version 0.13.0
 
