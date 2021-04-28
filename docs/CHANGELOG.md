@@ -1,25 +1,19 @@
 # What's new in boost-histogram
 
-## UPCOMING
-
-* Fix scaling a weighted storage [#559][]
-* Fix partial summation over a Categorical axis [#564][]
-* Support running type checking from Python < 3.8 [#542][]
-
-[#542]: https://github.com/scikit-hep/boost-histogram/pull/542
-[#559]: https://github.com/scikit-hep/boost-histogram/pull/559
-[#564]: https://github.com/scikit-hep/boost-histogram/pull/564
-
 
 ## Version 0.13
 
-## Version 0.13.1
+### Version 0.13.2
+
+* Backport fix scaling a weighted storage
+* Backport fix partial summation over a Categorical axis
+
+### Version 0.13.1
 
 * Backport fix for Mean/WeightedMean summing.
 * Backport fix for `boost_histogram.numpy` density.
 * Backport missing metadata from the repr's.
 * Ignore `family=` on Histogram subclassing to make subclassing Histogram only possible in 1.x + 0.x code.
-
 
 ### Version 0.13.0
 
