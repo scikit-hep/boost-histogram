@@ -31,7 +31,7 @@ void register_algorithms(py::module& algorithm) {
                                 self.begin.index,
                                 self.end.index,
                                 merge,
-                                self.crop);
+                                self.crop ? "slice_mode.crop" : "slice_mode.shrink");
                 } else {
                     return py::
                         str("reduce_command(shrink{0}({1}, lower={2}, upper={3}{4}))")
