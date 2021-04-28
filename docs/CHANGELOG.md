@@ -3,10 +3,12 @@
 ## UPCOMING
 
 * Fix scaling a weighted storage [#559][]
+* Fix partial summation over a Categorical axis [#564][]
 * Support running type checking from Python < 3.8 [#542][]
 
 [#542]: https://github.com/scikit-hep/boost-histogram/pull/542
 [#559]: https://github.com/scikit-hep/boost-histogram/pull/559
+[#564]: https://github.com/scikit-hep/boost-histogram/pull/564
 
 
 ## Version 0.13

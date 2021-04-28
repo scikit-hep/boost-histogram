@@ -136,15 +136,23 @@ class Axis(object):
         Compute start and stop into actual start and stop values in Boost.Histogram.
         None -> -1 or 0 for start, -> len or len+1 for stop. If start or stop are
         callable, then call them with the axes.
+
+        For a non-ordered axes, flow is all or nothing, so this will ensure overflow
+        is turned off if underflow is not None.
         """
 
         def _process_internal(item, default):
             return default if item is None else item(self) if callable(item) else item
 
-        begin = _process_internal(start, -1 if self._ax.traits_underflow else 0)
-        end = _process_internal(
-            stop, len(self) + (1 if self._ax.traits_overflow else 0)
-        )
+        underflow = -1 if self._ax.traits_underflow else 0
+        overflow = 1 if self._ax.traits_overflow else 0
+
+        # Non-ordered axes only use flow if integrating from None to None
+        if not self._ax.traits_ordered and not (start is None and stop is None):
+            overflow = 0
+
+        begin = _process_internal(start, underflow)
+        end = _process_internal(stop, len(self) + overflow)
 
         return begin, end
 
