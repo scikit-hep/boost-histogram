@@ -149,6 +149,15 @@
         "platform",
         "bug"
       ]
+    },
+    {
+      "login": "cranmer",
+      "name": "Kyle Cranmer",
+      "avatar_url": "https://avatars.githubusercontent.com/u/4458890?v=4",
+      "profile": "http://theoryandpractice.org",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
