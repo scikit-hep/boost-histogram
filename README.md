@@ -17,7 +17,7 @@
 
 
 Python bindings for [Boost::Histogram][] ([source][Boost::Histogram
-source]), a C++14 library. This is of the [fastest libraries][] for
+source]), a C++14 library. This is one of the [fastest libraries][] for
 histogramming, while still providing the power of a full histogram object. See
 [what's new](./docs/CHANGELOG.md).
 
