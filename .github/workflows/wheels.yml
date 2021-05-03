@@ -61,7 +61,7 @@ jobs:
       with:
         platforms: all
 
-    - uses: joerick/cibuildwheel@v1.10.0
+    - uses: joerick/cibuildwheel@v1.11.0
       env:
         CIBW_BUILD: cp${{ matrix.python }}-*
         CIBW_ARCHS: ${{ matrix.arch }}
@@ -113,7 +113,7 @@ jobs:
       with:
         submodules: true
 
-    - uses: joerick/cibuildwheel@v1.10.0
+    - uses: joerick/cibuildwheel@v1.11.0
       env:
         CIBW_BUILD: ${{ matrix.build }}
         CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.CIBW_MANYLINUX_I686_IMAGE }}
