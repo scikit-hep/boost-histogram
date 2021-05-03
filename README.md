@@ -254,6 +254,7 @@ We would like to acknowledge the contributors that made this project possible ([
   </tr>
   <tr>
     <td align="center"><a href="https://keybase.io/kgizdov"><img src="https://avatars.githubusercontent.com/u/3164953?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Konstantin Gizdov</b></sub></a><br /><a href="#platform-kgizdov" title="Packaging/porting to new platform">📦</a> <a href="https://github.com/scikit-hep/boost-histogram/issues?q=author%3Akgizdov" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="http://theoryandpractice.org"><img src="https://avatars.githubusercontent.com/u/4458890?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Kyle Cranmer</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/commits?author=cranmer" title="Documentation">📖</a></td>
   </tr>
 </table>
 
