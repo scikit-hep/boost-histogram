@@ -726,18 +726,22 @@ class Histogram:
             except RuntimeError:
                 pass
 
-        integrations = set()
-        slices = []
+        integrations: Set[int] = set()
+        slices: List[_core.algorithm.reduce_command] = []
+        pick_each: Dict[int, int] = dict()
 
         # Compute needed slices and projections
         for i, ind in enumerate(indexes):
             if hasattr(ind, "__index__"):
-                ind = slice(ind.__index__(), ind.__index__() + 1, sum)  # type: ignore
-
+                pick_each[i] = ind.__index__() + (  # type: ignore
+                    1 if self.axes[i].traits.underflow else 0
+                )
+                continue
             elif not isinstance(ind, slice):
                 raise IndexError(
                     "Must be a slice, an integer, or follow the locator protocol."
                 )
+
             # If the dictionary brackets are forgotten, it's easy to put a slice
             # into a slice - adding a nicer error message in that case
             if any(isinstance(v, slice) for v in (ind.start, ind.stop, ind.step)):
@@ -778,15 +782,25 @@ class Histogram:
         logger.debug("Reduce with %s", slices)
         reduced = self._hist.reduce(*slices)
 
-        if not integrations:
-            return self._new_hist(reduced)
-        projections = [i for i in range(self.ndim) if i not in integrations]
+        if pick_each:
+            my_slice = tuple(
+                pick_each.get(i, slice(None)) for i in range(reduced.rank())
+            )
+            logger.debug("Slices: %s", my_slice)
+            axes = [
+                reduced.axis(i) for i in range(reduced.rank()) if i not in pick_each
+            ]
+            logger.debug("Axes: %s", axes)
+            new_reduced = reduced.__class__(axes)
+            new_reduced.view(flow=True)[...] = reduced.view(flow=True)[my_slice]
+            reduced = new_reduced
+            integrations = {i - sum(j <= i for j in pick_each) for i in integrations}
 
-        return (
-            self._new_hist(reduced.project(*projections))
-            if projections
-            else reduced.sum(flow=True)
-        )
+        if integrations:
+            projections = [i for i in range(reduced.rank()) if i not in integrations]
+            reduced = reduced.project(*projections)
+
+        return self._new_hist(reduced) if reduced.rank() > 0 else reduced.sum(flow=True)
 
     def __setitem__(
         self, index: IndexingExpr, value: Union[ArrayLike, Accumulator]
