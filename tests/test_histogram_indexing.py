@@ -2,6 +2,7 @@
 import numpy as np
 import pytest
 from numpy.testing import assert_array_equal
+from pytest import approx
 
 import boost_histogram as bh
 
@@ -350,6 +351,30 @@ def test_pick_int_category():
     assert_array_equal(h[{2: bh.loc(3)}].view(), vals)
     assert_array_equal(h[:, :, bh.loc(5)].view(), vals + 1)
     assert_array_equal(h[:, :, bh.loc(7)].view(), 0)
+
+
+@pytest.mark.parametrize(
+    "ax",
+    [bh.axis.Regular(3, 0, 1), bh.axis.Variable([0, 0.3, 0.6, 1])],
+    ids=["regular", "variable"],
+)
+def test_pick_flowbin(ax):
+    w = 1e-2  # e.g. a cross section for a process
+    x = [-0.1, -0.1, 0.1, 0.1, 0.1]
+    y = [-0.1, 0.1, -0.1, -0.1, 0.1]
+
+    h = bh.Histogram(
+        ax,
+        ax,
+        storage=bh.storage.Weight(),
+    )
+    h.fill(x, y, weight=w)
+
+    uf_slice = h[bh.tag.underflow, ...]
+    assert uf_slice.values(flow=True) == approx(np.array([1, 1, 0, 0, 0]) * w)
+
+    uf_slice = h[..., bh.tag.underflow]
+    assert uf_slice.values(flow=True) == approx(np.array([1, 2, 0, 0, 0]) * w)
 
 
 def test_axes_tuple():

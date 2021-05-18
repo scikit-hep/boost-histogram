@@ -1,5 +1,11 @@
 # What's new in boost-histogram
 
+## UPCOMING
+
+* Fix "picking" on a flow bin [#576][]
+
+[#576]: https://github.com/scikit-hep/boost-histogram/pull/576
+
 
 ## Version 0.13
 
