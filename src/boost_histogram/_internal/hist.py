@@ -1,3 +1,4 @@
+import collections.abc
 import copy
 import logging
 import threading
@@ -729,6 +730,7 @@ class Histogram:
         integrations: Set[int] = set()
         slices: List[_core.algorithm.reduce_command] = []
         pick_each: Dict[int, int] = dict()
+        pick_set: Dict[int, List[int]] = dict()
 
         # Compute needed slices and projections
         for i, ind in enumerate(indexes):
@@ -736,6 +738,9 @@ class Histogram:
                 pick_each[i] = ind.__index__() + (  # type: ignore
                     1 if self.axes[i].traits.underflow else 0
                 )
+                continue
+            elif isinstance(ind, collections.abc.Sequence):
+                pick_set[i] = list(ind)
                 continue
             elif not isinstance(ind, slice):
                 raise IndexError(
@@ -782,17 +787,44 @@ class Histogram:
         logger.debug("Reduce with %s", slices)
         reduced = self._hist.reduce(*slices)
 
+        if pick_set:
+            my_slice = [
+                copy.copy(pick_set.get(i, slice(None))) for i in range(reduced.rank())
+            ]
+            logger.debug("Slices for picking sets: %s", my_slice)
+            axes = [reduced.axis(i) for i in range(reduced.rank())]
+            for i in range(reduced.rank()):
+                if i in pick_set:
+                    ax = reduced.axis(i)
+                    if ax.traits_continuous:
+                        raise RuntimeError(
+                            f"Axis {i} is not a categorical axis, cannot pick with list"
+                        )
+                    if ax.traits_overflow and ax.size not in pick_set[i]:
+                        my_slice[i].append(ax.size)  # type: ignore
+
+                    new_axis = axes[i].__class__(
+                        [axes[i].value(j) for j in pick_set[i]]
+                    )
+                    new_axis.metadata = axes[i].metadata
+                    axes[i] = new_axis
+
+            logger.debug("Axes: %s", axes)
+            new_reduced = reduced.__class__(axes)
+            new_reduced.view(flow=True)[...] = reduced.view(flow=True)[tuple(my_slice)]
+            reduced = new_reduced
+
         if pick_each:
-            my_slice = tuple(
+            tuple_slice = tuple(
                 pick_each.get(i, slice(None)) for i in range(reduced.rank())
             )
-            logger.debug("Slices: %s", my_slice)
+            logger.debug("Slices for pick each: %s", tuple_slice)
             axes = [
                 reduced.axis(i) for i in range(reduced.rank()) if i not in pick_each
             ]
             logger.debug("Axes: %s", axes)
             new_reduced = reduced.__class__(axes)
-            new_reduced.view(flow=True)[...] = reduced.view(flow=True)[my_slice]
+            new_reduced.view(flow=True)[...] = reduced.view(flow=True)[tuple_slice]
             reduced = new_reduced
             integrations = {i - sum(j <= i for j in pick_each) for i in integrations}
 
