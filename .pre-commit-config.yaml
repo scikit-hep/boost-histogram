@@ -11,7 +11,7 @@ repos:
     types_or: [python, pyi]
 
 - repo: https://github.com/nbQA-dev/nbQA
-  rev: 0.8.1
+  rev: 0.9.0
   hooks:
   - id: nbqa-black
     additional_dependencies: [black==20.8b1]
@@ -46,7 +46,7 @@ repos:
     additional_dependencies: [pyyaml]
 
 - repo: https://github.com/asottile/pyupgrade
-  rev: v2.16.0
+  rev: v2.18.2
   hooks:
   - id: pyupgrade
     args: [--py36-plus]
