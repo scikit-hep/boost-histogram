@@ -90,7 +90,7 @@ jobs:
       with:
         submodules: true
 
-    - uses: pypa/cibuildwheel@v1.11.0
+    - uses: pypa/cibuildwheel@v1.11.1
       env:
         CIBW_BUILD: cp38-win_amd64 cp36-manylinux_i686 cp37-macosx_x86_64
         CIBW_TEST_EXTRAS: test
