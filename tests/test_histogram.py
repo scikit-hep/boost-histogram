@@ -1234,3 +1234,13 @@ def test_np_scalars():
 
     hist /= np.float64(2.0)
     assert hist[bh.loc(7)] == 1.0
+
+
+def test_sum_empty_axis():
+    hist = bh.Histogram(
+        bh.axis.StrCategory("", growth=True),
+        bh.axis.Regular(10, 0, 1),
+        storage=bh.storage.Weight(),
+    )
+    assert hist.sum().value == 0
+    assert "Str" in repr(hist)

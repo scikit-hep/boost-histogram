@@ -35,8 +35,10 @@ import boost_histogram as bh
         (bh.axis.Integer, (1, 2), "", {"circular": True}),
         (bh.axis.IntCategory, ((1, 2, 3),), "", {}),
         (bh.axis.IntCategory, ((1, 2, 3),), "g", {}),
+        (bh.axis.IntCategory, ((),), "g", {}),
         (bh.axis.StrCategory, (tuple("ABC"),), "", {}),
         (bh.axis.StrCategory, (tuple("ABC"),), "g", {}),
+        (bh.axis.StrCategory, ((),), "g", {}),
     ],
 )
 def test_metadata(axis, args, opt, kwargs):
