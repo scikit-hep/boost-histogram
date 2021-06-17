@@ -5,7 +5,6 @@ cmake_minimum_required(VERSION 3.14...3.20)
 
 project(BOOST_HISTOGRAM_CPP LANGUAGES CXX)
 
-
 add_library(boost_histogram_cpp IMPORTED INTERFACE)
 
 # these are the boost header-only libraries required by boost::histogram
@@ -19,9 +18,8 @@ target_include_directories(
             ../../extern/throw_exception/include
             ../../extern/variant2/include)
 
-
-target_compile_options(boost_histogram_cpp
-  INTERFACE $<IF:$<CXX_COMPILER_ID:MSVC>,/fp:fast,-funsafe-math-optimizations>)
+target_compile_options(
+  boost_histogram_cpp INTERFACE $<IF:$<CXX_COMPILER_ID:MSVC>,/fp:fast,-funsafe-math-optimizations>)
 
 target_compile_features(boost_histogram_cpp INTERFACE cxx_std_14)
 
