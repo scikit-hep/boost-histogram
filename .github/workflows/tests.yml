@@ -90,11 +90,9 @@ jobs:
       with:
         submodules: true
 
-    - uses: pypa/cibuildwheel@v1.12.0
+    - uses: pypa/cibuildwheel@v2.0.0a4
       env:
         CIBW_BUILD: cp38-win_amd64 cp36-manylinux_i686 cp37-macosx_x86_64
-        CIBW_TEST_EXTRAS: test
-        CIBW_TEST_COMMAND: pytest {project}/tests
         CIBW_BUILD_VERBOSITY: 1
 
     - uses: actions/upload-artifact@v2
