@@ -1178,7 +1178,7 @@ def test_add_broadcast():
 
     h2 = h + [[1]]
     assert h2.sum() == 10 * 20
-    assert h2.sum(flow=True) == 10 * 20
+    assert h2.sum(flow=True) == 12 * 22
 
     h3 = h + np.ones((10, 20))
     assert h3.sum() == 10 * 20

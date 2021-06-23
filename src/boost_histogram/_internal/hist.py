@@ -380,7 +380,7 @@ class Histogram:
                     )
                 )
         else:
-            view = self.view(flow=False)
+            view = self.view(flow=True)
             getattr(view, name)(other)
         self._variance_known = False
         return self

@@ -429,3 +429,29 @@ def test_single_flow_bin():
     assert h[3::sum] == 1
 
     assert h[1:2][sum] == 5
+
+
+# issue 579
+
+
+def test_scale_flowbins():
+    w = 1e-1
+    x = np.random.normal(loc=0.4, scale=0.4, size=100)
+
+    h = bh.Histogram(bh.axis.Variable([0, 0.5, 1]), storage=bh.storage.Weight())
+
+    h.fill(x, weight=w)
+
+    ref_value = h.values(flow=True) * 5
+    scale_value = (h * 5).values(flow=True)
+
+    assert scale_value == approx(ref_value)
+
+
+def test_add_flowbins():
+    h = bh.Histogram(bh.axis.Variable([0, 0.5, 1]), storage=bh.storage.Weight())
+
+    ref_value = h.values(flow=True) + 5
+    scale_value = (h + 5).values(flow=True)
+
+    assert scale_value == approx(ref_value)
