@@ -11,7 +11,7 @@
 #include <bh_python/accumulators/weighted_mean.hpp>
 #include <bh_python/accumulators/weighted_sum.hpp>
 
-#include <boost/histogram/accumulators/thread_safe.hpp>
+#include <boost/histogram/accumulators/count.hpp>
 #include <boost/histogram/storage_adaptor.hpp>
 #include <boost/histogram/unlimited_storage.hpp>
 
@@ -23,7 +23,7 @@ namespace storage {
 
 // Names match Python names
 using int64         = bh::dense_storage<uint64_t>;
-using atomic_int64  = bh::dense_storage<bh::accumulators::thread_safe<uint64_t>>;
+using atomic_int64  = bh::dense_storage<bh::accumulators::count<uint64_t, true>>;
 using double_       = bh::dense_storage<double>;
 using unlimited     = bh::unlimited_storage<>;
 using weight        = bh::dense_storage<accumulators::weighted_sum<double>>;
@@ -80,8 +80,12 @@ template <class Archive>
 void save(Archive& ar, const storage::atomic_int64& s, unsigned /* version */) {
     // We cannot view the memory as a numpy array, because the internal layout of
     // std::atomic is undefined. So no reinterpret_casts are allowed.
-    py::array_t<std::int64_t> a(static_cast<py::ssize_t>(s.size()));
-    std::copy(s.begin(), s.end(), a.mutable_data());
+    py::array_t<std::uint64_t> a(static_cast<py::ssize_t>(s.size()));
+
+    auto in_ptr  = s.begin();
+    auto out_ptr = a.mutable_data();
+    for(; in_ptr != s.end(); ++in_ptr, ++out_ptr)
+        *out_ptr = in_ptr->value();
     ar << a;
 }
 
@@ -187,7 +191,7 @@ struct type_caster<storage::atomic_int64::value_type> {
         auto ptr = PyNumber_Long(src.ptr());
         if(!ptr)
             return false;
-        value.store(PyLong_AsUnsignedLongLong(ptr));
+        value = PyLong_AsUnsignedLongLong(ptr);
         Py_DECREF(ptr);
         return !PyErr_Occurred();
     }
@@ -195,7 +199,7 @@ struct type_caster<storage::atomic_int64::value_type> {
     static handle cast(storage::atomic_int64::value_type src,
                        return_value_policy /* policy */,
                        handle /* parent */) {
-        return PyLong_FromUnsignedLongLong(src.load());
+        return PyLong_FromUnsignedLongLong(src.value());
     }
 };
 } // namespace detail

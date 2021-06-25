@@ -20,8 +20,8 @@ namespace pybind11 {
 /// The descriptor for atomic_* is the same as the descriptor for *, as long this uses
 /// standard layout
 template <class T>
-struct format_descriptor<bh::accumulators::thread_safe<T>> : format_descriptor<T> {
-    static_assert(std::is_standard_layout<bh::accumulators::thread_safe<T>>::value, "");
+struct format_descriptor<bh::accumulators::count<T, true>> : format_descriptor<T> {
+    static_assert(std::is_standard_layout<bh::accumulators::count<T, true>>::value, "");
 };
 
 } // namespace pybind11
