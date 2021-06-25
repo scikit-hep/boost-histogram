@@ -83,6 +83,7 @@ ignore = [
 
 
 [tool.cibuildwheel]
+build-frontend = "build"
 test-extras = "test"
 test-command = "pytest {project}/tests"
 test-skip = ["pp*macos*", "pp*win*", "*universal2:arm64"]
