@@ -89,7 +89,7 @@ get the variances with ``hist.variances()``, though if you fill an unweighted
 storage with weights, this will return None, as you no longer can compute the
 variances correctly (please use a weighted storage if you need to). You can
 also get the number of entries in a bin with ``.counts()``; this will return
-counts even if your storage is a mean storage. See :ref:`_usage-plotting`.
+counts even if your storage is a mean storage. See :ref:`usage-plotting`.
 
 If you want access to the full underlying storage, ``.view()`` will return a
 NumPy array for simple storages or a RecArray-like wrapper for non-simple
