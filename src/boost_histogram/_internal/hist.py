@@ -803,27 +803,30 @@ class Histogram:
         reduced = self._hist.reduce(*slices)
 
         if pick_set:
-            slice_dict = copy.deepcopy(pick_set)
+            warnings.warn(
+                "List indexing selection is experimental. Removed bins are not placed in overflow."
+            )
             logger.debug("Slices for picking sets: %s", pick_set)
             axes = [reduced.axis(i) for i in range(reduced.rank())]
+            reduced_view = reduced.view(flow=True)
             for i in pick_set:
+                selection = copy.copy(pick_set[i])
                 ax = reduced.axis(i)
                 if ax.traits_ordered:
                     raise RuntimeError(
                         f"Axis {i} is not a categorical axis, cannot pick with list"
                     )
+
                 if ax.traits_overflow and ax.size not in pick_set[i]:
-                    slice_dict[i].append(ax.size)
+                    selection.append(ax.size)
 
                 new_axis = axes[i].__class__([axes[i].value(j) for j in pick_set[i]])
                 new_axis.metadata = axes[i].metadata
                 axes[i] = new_axis
+                reduced_view = np.take(reduced_view, selection, axis=i)
 
             logger.debug("Axes: %s", axes)
             new_reduced = reduced.__class__(axes)
-            reduced_view = reduced.view(flow=True)
-            for key, value in slice_dict.items():
-                reduced_view = np.take(reduced_view, value, axis=key)
             new_reduced.view(flow=True)[...] = reduced_view
             reduced = new_reduced
 

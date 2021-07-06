@@ -261,6 +261,7 @@ def test_int_cat_hist():
         h.fill(0.5)
 
 
+@pytest.mark.filterwarnings("ignore:List indexing selection is experimental")
 def test_int_cat_hist_pick_several():
     h = bh.Histogram(
         bh.axis.IntCategory([1, 2, 7], __dict__={"xval": 5}), storage=bh.storage.Int64()
@@ -290,6 +291,7 @@ def test_int_cat_hist_pick_several():
     assert h[[0, 1, 2]].axes[0].xval == 5
 
 
+@pytest.mark.filterwarnings("ignore:List indexing selection is experimental")
 def test_str_cat_pick_several():
     h = bh.Histogram(bh.axis.StrCategory(["a", "b", "c"]))
 
@@ -310,6 +312,7 @@ def test_str_cat_pick_several():
     assert tuple(h[[1, 0]].axes[0]) == ("b", "a")
 
 
+@pytest.mark.filterwarnings("ignore:List indexing selection is experimental")
 def test_pick_invalid():
     h = bh.Histogram(bh.axis.Regular(10, 0, 1))
     with pytest.raises(RuntimeError):
@@ -320,6 +323,7 @@ def test_pick_invalid():
         h[[0, 1]]
 
 
+@pytest.mark.filterwarnings("ignore:List indexing selection is experimental")
 def test_str_cat_pick_dual():
     h = bh.Histogram(
         bh.axis.StrCategory(["a", "b", "c"]), bh.axis.StrCategory(["d", "e", "f"])
@@ -335,6 +339,7 @@ def test_str_cat_pick_dual():
     assert h[[0, 1], [2, 1]].values() == approx(vals[[0, 1]][:, [2, 1]])
 
 
+@pytest.mark.filterwarnings("ignore:List indexing selection is experimental")
 def test_pick_multiaxis():
     h = bh.Histogram(
         bh.axis.StrCategory(["a", "b", "c"]),
