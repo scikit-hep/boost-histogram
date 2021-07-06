@@ -803,30 +803,28 @@ class Histogram:
         reduced = self._hist.reduce(*slices)
 
         if pick_set:
-            my_slice = [
-                copy.copy(pick_set.get(i, slice(None))) for i in range(reduced.rank())
-            ]
-            logger.debug("Slices for picking sets: %s", my_slice)
+            slice_dict = copy.deepcopy(pick_set)
+            logger.debug("Slices for picking sets: %s", pick_set)
             axes = [reduced.axis(i) for i in range(reduced.rank())]
-            for i in range(reduced.rank()):
-                if i in pick_set:
-                    ax = reduced.axis(i)
-                    if ax.traits_continuous:
-                        raise RuntimeError(
-                            f"Axis {i} is not a categorical axis, cannot pick with list"
-                        )
-                    if ax.traits_overflow and ax.size not in pick_set[i]:
-                        my_slice[i].append(ax.size)  # type: ignore
-
-                    new_axis = axes[i].__class__(
-                        [axes[i].value(j) for j in pick_set[i]]
+            for i in pick_set:
+                ax = reduced.axis(i)
+                if ax.traits_ordered:
+                    raise RuntimeError(
+                        f"Axis {i} is not a categorical axis, cannot pick with list"
                     )
-                    new_axis.metadata = axes[i].metadata
-                    axes[i] = new_axis
+                if ax.traits_overflow and ax.size not in pick_set[i]:
+                    slice_dict[i].append(ax.size)
+
+                new_axis = axes[i].__class__([axes[i].value(j) for j in pick_set[i]])
+                new_axis.metadata = axes[i].metadata
+                axes[i] = new_axis
 
             logger.debug("Axes: %s", axes)
             new_reduced = reduced.__class__(axes)
-            new_reduced.view(flow=True)[...] = reduced.view(flow=True)[tuple(my_slice)]
+            reduced_view = reduced.view(flow=True)
+            for key, value in slice_dict.items():
+                reduced_view = np.take(reduced_view, value, axis=key)
+            new_reduced.view(flow=True)[...] = reduced_view
             reduced = new_reduced
 
         if pick_each:
