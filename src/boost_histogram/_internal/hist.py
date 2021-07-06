@@ -56,8 +56,10 @@ logger = logging.getLogger(__name__)
 
 CppAxis = NewType("CppAxis", object)
 
-InnerIndexing = Union[SupportsIndex, Callable[[Axis], int], slice, "ellipsis"]
-IndexingWithMapping = Union[InnerIndexing, Mapping[int, InnerIndexing]]
+SimpleIndexing = Union[SupportsIndex, slice]
+InnerIndexing = Union[SimpleIndexing, Callable[[Axis], int], "ellipsis"]
+FullInnerIndexing = Union[InnerIndexing, List[InnerIndexing]]
+IndexingWithMapping = Union[FullInnerIndexing, Mapping[int, FullInnerIndexing]]
 IndexingExpr = Union[IndexingWithMapping, Tuple[IndexingWithMapping, ...]]
 
 T = TypeVar("T")
@@ -583,6 +585,26 @@ class Histogram:
                 ret += f" ({outer} with flow)"
         return ret
 
+    def _compute_uhi_index(self, index: InnerIndexing, axis: int) -> SimpleIndexing:
+        """
+        Converts an expression that contains UHI locators to one that does not.
+        """
+        # Support sum and rebin directly
+        if index is sum or hasattr(index, "factor"):  # type: ignore
+            index = slice(None, None, index)
+
+        # General locators
+        # Note that MyPy doesn't like these very much - the fix
+        # will be to properly set input types
+        elif callable(index):
+            index = index(self.axes[axis])
+        elif isinstance(index, SupportsIndex):
+            if abs(int(index)) >= self._hist.axis(axis).size:
+                raise IndexError("histogram index is out of range")
+            index %= self._hist.axis(axis).size
+
+        return index  # type: ignore
+
     def _compute_commonindex(
         self, index: IndexingExpr
     ) -> List[Union[SupportsIndex, slice, Mapping[int, Union[SupportsIndex, slice]]]]:
@@ -614,18 +636,11 @@ class Histogram:
 
         # Allow [bh.loc(...)] to work
         for i in range(len(indexes)):
-            # Support sum and rebin directly
-            if indexes[i] is sum or hasattr(indexes[i], "factor"):
-                indexes[i] = slice(None, None, indexes[i])
-            # General locators
-            # Note that MyPy doesn't like these very much - the fix
-            # will be to properly set input types
-            elif callable(indexes[i]):
-                indexes[i] = indexes[i](self.axes[i])
-            elif hasattr(indexes[i], "__index__"):
-                if abs(indexes[i]) >= hist.axis(i).size:
-                    raise IndexError("histogram index is out of range")
-                indexes[i] %= hist.axis(i).size
+            # Support list of UHI indexers
+            if isinstance(indexes[i], list):
+                indexes[i] = [self._compute_uhi_index(index, i) for index in indexes[i]]
+            else:
+                indexes[i] = self._compute_uhi_index(indexes[i], i)
 
         return indexes
 

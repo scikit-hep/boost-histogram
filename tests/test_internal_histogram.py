@@ -263,12 +263,12 @@ def test_int_cat_hist():
 
 def test_int_cat_hist_pick_several():
     h = bh.Histogram(
-        bh.axis.IntCategory([1, 2, 3], __dict__={"xval": 5}), storage=bh.storage.Int64()
+        bh.axis.IntCategory([1, 2, 7], __dict__={"xval": 5}), storage=bh.storage.Int64()
     )
 
     h.fill(1, weight=8)
     h.fill(2, weight=7)
-    h.fill(3, weight=6)
+    h.fill(7, weight=6)
 
     assert h.view() == approx(np.array([8, 7, 6]))
     assert h.sum() == 21
@@ -277,8 +277,12 @@ def test_int_cat_hist_pick_several():
     assert h[[2, 0]].values() == approx(np.array([6, 8]))
     assert h[[1]].values() == approx(np.array([7]))
 
-    assert tuple(h[[0, 2]].axes[0]) == (1, 3)
-    assert tuple(h[[2, 0]].axes[0]) == (3, 1)
+    assert h[[bh.loc(1), bh.loc(7)]].values() == approx(np.array([8, 6]))
+    assert h[[bh.loc(7), bh.loc(1)]].values() == approx(np.array([6, 8]))
+    assert h[[bh.loc(2)]].values() == approx(np.array([7]))
+
+    assert tuple(h[[0, 2]].axes[0]) == (1, 7)
+    assert tuple(h[[2, 0]].axes[0]) == (7, 1)
     assert tuple(h[[1]].axes[0]) == (2,)
 
     assert h.axes[0].xval == 5
@@ -294,4 +298,13 @@ def test_str_cat_pick_several():
     assert h[[0, 1, 2]].values() == approx(np.array([0.75, 0.5, 0.25]))
     assert h[[2, 1, 0]].values() == approx(np.array([0.25, 0.5, 0.75]))
     assert h[[1, 0]].values() == approx(np.array([0.5, 0.75]))
+
+    assert h[[bh.loc("a"), bh.loc("b"), bh.loc("c")]].values() == approx(
+        np.array([0.75, 0.5, 0.25])
+    )
+    assert h[[bh.loc("c"), bh.loc("b"), bh.loc("a")]].values() == approx(
+        np.array([0.25, 0.5, 0.75])
+    )
+    assert h[[bh.loc("b"), bh.loc("a")]].values() == approx(np.array([0.5, 0.75]))
+
     assert tuple(h[[1, 0]].axes[0]) == ("b", "a")
