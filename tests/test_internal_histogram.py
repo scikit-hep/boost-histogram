@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 from numpy.testing import assert_allclose, assert_array_equal
+from pytest import approx
 
 import boost_histogram as bh
 
@@ -258,3 +259,106 @@ def test_int_cat_hist():
 
     with pytest.raises(RuntimeError):
         h.fill(0.5)
+
+
+@pytest.mark.filterwarnings("ignore:List indexing selection is experimental")
+def test_int_cat_hist_pick_several():
+    h = bh.Histogram(
+        bh.axis.IntCategory([1, 2, 7], __dict__={"xval": 5}), storage=bh.storage.Int64()
+    )
+
+    h.fill(1, weight=8)
+    h.fill(2, weight=7)
+    h.fill(7, weight=6)
+
+    assert h.view() == approx(np.array([8, 7, 6]))
+    assert h.sum() == 21
+
+    assert h[[0, 2]].values() == approx(np.array([8, 6]))
+    assert h[[2, 0]].values() == approx(np.array([6, 8]))
+    assert h[[1]].values() == approx(np.array([7]))
+
+    assert h[[bh.loc(1), bh.loc(7)]].values() == approx(np.array([8, 6]))
+    assert h[[bh.loc(7), bh.loc(1)]].values() == approx(np.array([6, 8]))
+    assert h[[bh.loc(2)]].values() == approx(np.array([7]))
+
+    assert tuple(h[[0, 2]].axes[0]) == (1, 7)
+    assert tuple(h[[2, 0]].axes[0]) == (7, 1)
+    assert tuple(h[[1]].axes[0]) == (2,)
+
+    assert h.axes[0].xval == 5
+    assert h[[0]].axes[0].xval == 5
+    assert h[[0, 1, 2]].axes[0].xval == 5
+
+
+@pytest.mark.filterwarnings("ignore:List indexing selection is experimental")
+def test_str_cat_pick_several():
+    h = bh.Histogram(bh.axis.StrCategory(["a", "b", "c"]))
+
+    h.fill(["a", "a", "a", "b", "b", "c"], weight=0.25)
+
+    assert h[[0, 1, 2]].values() == approx(np.array([0.75, 0.5, 0.25]))
+    assert h[[2, 1, 0]].values() == approx(np.array([0.25, 0.5, 0.75]))
+    assert h[[1, 0]].values() == approx(np.array([0.5, 0.75]))
+
+    assert h[[bh.loc("a"), bh.loc("b"), bh.loc("c")]].values() == approx(
+        np.array([0.75, 0.5, 0.25])
+    )
+    assert h[[bh.loc("c"), bh.loc("b"), bh.loc("a")]].values() == approx(
+        np.array([0.25, 0.5, 0.75])
+    )
+    assert h[[bh.loc("b"), bh.loc("a")]].values() == approx(np.array([0.5, 0.75]))
+
+    assert tuple(h[[1, 0]].axes[0]) == ("b", "a")
+
+
+@pytest.mark.filterwarnings("ignore:List indexing selection is experimental")
+def test_pick_invalid():
+    h = bh.Histogram(bh.axis.Regular(10, 0, 1))
+    with pytest.raises(RuntimeError):
+        h[[0, 1]]
+
+    h = bh.Histogram(bh.axis.Integer(0, 10))
+    with pytest.raises(RuntimeError):
+        h[[0, 1]]
+
+
+@pytest.mark.filterwarnings("ignore:List indexing selection is experimental")
+def test_str_cat_pick_dual():
+    h = bh.Histogram(
+        bh.axis.StrCategory(["a", "b", "c"]), bh.axis.StrCategory(["d", "e", "f"])
+    )
+    vals = np.arange(9).reshape(3, 3)
+    h.values()[...] = vals
+
+    assert h[[0], [0]].values() == approx(vals[[0]][:, [0]])
+    assert h[[1], [2]].values() == approx(vals[[1]][:, [2]])
+    assert h[[1], [0, 1]].values() == approx(vals[[1]][:, [0, 1]])
+    assert h[[0, 1], [1]].values() == approx(vals[[0, 1]][:, [1]])
+    assert h[[0, 1], [0, 1]].values() == approx(vals[[0, 1]][:, [0, 1]])
+    assert h[[0, 1], [2, 1]].values() == approx(vals[[0, 1]][:, [2, 1]])
+
+
+@pytest.mark.filterwarnings("ignore:List indexing selection is experimental")
+def test_pick_multiaxis():
+    h = bh.Histogram(
+        bh.axis.StrCategory(["a", "b", "c"]),
+        bh.axis.IntCategory([-5, 0, 10]),
+        bh.axis.Regular(5, 0, 1),
+        bh.axis.StrCategory(["d", "e", "f"]),
+        storage=bh.storage.Int64(),
+    )
+
+    h.fill("b", -5, 0.65, "f")
+    h.fill("b", -5, 0.65, "e")
+
+    mini = h[[bh.loc("b"), 2], [1, bh.loc(-5)], sum, bh.loc("f")]
+
+    assert mini.ndim == 2
+    assert tuple(mini.axes[0]) == ("b", "c")
+    assert tuple(mini.axes[1]) == (0, -5)
+
+    assert h[[1, 2], [0, 1], sum, bh.loc("f")].sum() == 1
+    assert h[[1, 2], [1, 0], sum, bh.loc("f")].sum() == 1
+
+    assert mini.values() == approx(np.array(((0, 1), (0, 0))))

@@ -1,3 +1,4 @@
+import collections.abc
 import copy
 import logging
 import threading
@@ -55,8 +56,10 @@ logger = logging.getLogger(__name__)
 
 CppAxis = NewType("CppAxis", object)
 
-InnerIndexing = Union[SupportsIndex, Callable[[Axis], int], slice, "ellipsis"]
-IndexingWithMapping = Union[InnerIndexing, Mapping[int, InnerIndexing]]
+SimpleIndexing = Union[SupportsIndex, slice]
+InnerIndexing = Union[SimpleIndexing, Callable[[Axis], int], "ellipsis"]
+FullInnerIndexing = Union[InnerIndexing, List[InnerIndexing]]
+IndexingWithMapping = Union[FullInnerIndexing, Mapping[int, FullInnerIndexing]]
 IndexingExpr = Union[IndexingWithMapping, Tuple[IndexingWithMapping, ...]]
 
 T = TypeVar("T")
@@ -582,6 +585,26 @@ class Histogram:
                 ret += f" ({outer} with flow)"
         return ret
 
+    def _compute_uhi_index(self, index: InnerIndexing, axis: int) -> SimpleIndexing:
+        """
+        Converts an expression that contains UHI locators to one that does not.
+        """
+        # Support sum and rebin directly
+        if index is sum or hasattr(index, "factor"):  # type: ignore
+            index = slice(None, None, index)
+
+        # General locators
+        # Note that MyPy doesn't like these very much - the fix
+        # will be to properly set input types
+        elif callable(index):
+            index = index(self.axes[axis])
+        elif isinstance(index, SupportsIndex):
+            if abs(int(index)) >= self._hist.axis(axis).size:
+                raise IndexError("histogram index is out of range")
+            index %= self._hist.axis(axis).size
+
+        return index  # type: ignore
+
     def _compute_commonindex(
         self, index: IndexingExpr
     ) -> List[Union[SupportsIndex, slice, Mapping[int, Union[SupportsIndex, slice]]]]:
@@ -613,18 +636,11 @@ class Histogram:
 
         # Allow [bh.loc(...)] to work
         for i in range(len(indexes)):
-            # Support sum and rebin directly
-            if indexes[i] is sum or hasattr(indexes[i], "factor"):
-                indexes[i] = slice(None, None, indexes[i])
-            # General locators
-            # Note that MyPy doesn't like these very much - the fix
-            # will be to properly set input types
-            elif callable(indexes[i]):
-                indexes[i] = indexes[i](self.axes[i])
-            elif hasattr(indexes[i], "__index__"):
-                if abs(indexes[i]) >= hist.axis(i).size:
-                    raise IndexError("histogram index is out of range")
-                indexes[i] %= hist.axis(i).size
+            # Support list of UHI indexers
+            if isinstance(indexes[i], list):
+                indexes[i] = [self._compute_uhi_index(index, i) for index in indexes[i]]
+            else:
+                indexes[i] = self._compute_uhi_index(indexes[i], i)
 
         return indexes
 
@@ -729,6 +745,7 @@ class Histogram:
         integrations: Set[int] = set()
         slices: List[_core.algorithm.reduce_command] = []
         pick_each: Dict[int, int] = dict()
+        pick_set: Dict[int, List[int]] = dict()
 
         # Compute needed slices and projections
         for i, ind in enumerate(indexes):
@@ -736,6 +753,9 @@ class Histogram:
                 pick_each[i] = ind.__index__() + (  # type: ignore
                     1 if self.axes[i].traits.underflow else 0
                 )
+                continue
+            elif isinstance(ind, collections.abc.Sequence):
+                pick_set[i] = list(ind)
                 continue
             elif not isinstance(ind, slice):
                 raise IndexError(
@@ -782,17 +802,45 @@ class Histogram:
         logger.debug("Reduce with %s", slices)
         reduced = self._hist.reduce(*slices)
 
+        if pick_set:
+            warnings.warn(
+                "List indexing selection is experimental. Removed bins are not placed in overflow."
+            )
+            logger.debug("Slices for picking sets: %s", pick_set)
+            axes = [reduced.axis(i) for i in range(reduced.rank())]
+            reduced_view = reduced.view(flow=True)
+            for i in pick_set:
+                selection = copy.copy(pick_set[i])
+                ax = reduced.axis(i)
+                if ax.traits_ordered:
+                    raise RuntimeError(
+                        f"Axis {i} is not a categorical axis, cannot pick with list"
+                    )
+
+                if ax.traits_overflow and ax.size not in pick_set[i]:
+                    selection.append(ax.size)
+
+                new_axis = axes[i].__class__([axes[i].value(j) for j in pick_set[i]])
+                new_axis.metadata = axes[i].metadata
+                axes[i] = new_axis
+                reduced_view = np.take(reduced_view, selection, axis=i)
+
+            logger.debug("Axes: %s", axes)
+            new_reduced = reduced.__class__(axes)
+            new_reduced.view(flow=True)[...] = reduced_view
+            reduced = new_reduced
+
         if pick_each:
-            my_slice = tuple(
+            tuple_slice = tuple(
                 pick_each.get(i, slice(None)) for i in range(reduced.rank())
             )
-            logger.debug("Slices: %s", my_slice)
+            logger.debug("Slices for pick each: %s", tuple_slice)
             axes = [
                 reduced.axis(i) for i in range(reduced.rank()) if i not in pick_each
             ]
             logger.debug("Axes: %s", axes)
             new_reduced = reduced.__class__(axes)
-            new_reduced.view(flow=True)[...] = reduced.view(flow=True)[my_slice]
+            new_reduced.view(flow=True)[...] = reduced.view(flow=True)[tuple_slice]
             reduced = new_reduced
             integrations = {i - sum(j <= i for j in pick_each) for i in integrations}
 
