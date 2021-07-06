@@ -263,7 +263,7 @@ void register_accumulators(py::module& accumulators) {
         ;
 
     using mean = accumulators::mean<double>;
-    PYBIND11_NUMPY_DTYPE(mean, count, value, sum_of_deltas_squared);
+    PYBIND11_NUMPY_DTYPE(mean, count, value, _sum_of_deltas_squared);
 
     register_accumulator<mean>(accumulators, "Mean", py::buffer_protocol())
         .def_buffer(make_buffer<mean>())
@@ -275,7 +275,7 @@ void register_accumulators(py::module& accumulators) {
 
         .def_readonly("count", &mean::count)
         .def_readonly("value", &mean::value)
-        .def_readonly("sum_of_deltas_squared", &mean::sum_of_deltas_squared)
+        .def_readonly("_sum_of_deltas_squared", &mean::_sum_of_deltas_squared)
 
         .def_property_readonly("variance", &mean::variance)
 
@@ -311,11 +311,11 @@ void register_accumulators(py::module& accumulators) {
                      return self.count;
                  else if(key.equal(py::str("value")))
                      return self.value;
-                 else if(key.equal(py::str("sum_of_deltas_squared")))
-                     return self.sum_of_deltas_squared;
+                 else if(key.equal(py::str("_sum_of_deltas_squared")))
+                     return self._sum_of_deltas_squared;
                  else
                      throw py::key_error(
-                         py::str("{0} not one of count, value, sum_of_deltas_squared")
+                         py::str("{0} not one of count, value, _sum_of_deltas_squared")
                              .format(key));
              })
         .def("__setitem__",
@@ -324,17 +324,17 @@ void register_accumulators(py::module& accumulators) {
                      self.count = value;
                  else if(key.equal(py::str("value")))
                      self.value = value;
-                 else if(key.equal(py::str("sum_of_deltas_squared")))
-                     self.sum_of_deltas_squared = value;
+                 else if(key.equal(py::str("_sum_of_deltas_squared")))
+                     self._sum_of_deltas_squared = value;
                  else
                      throw py::key_error(
-                         py::str("{0} not one of count, value, sum_of_deltas_squared")
+                         py::str("{0} not one of count, value, _sum_of_deltas_squared")
                              .format(key));
              })
 
         .def("_ipython_key_completions_",
              [](py::object /* self */) {
-                 return py::make_tuple("count", "value", "sum_of_deltas_squared");
+                 return py::make_tuple("count", "value", "_sum_of_deltas_squared");
              })
 
         ;

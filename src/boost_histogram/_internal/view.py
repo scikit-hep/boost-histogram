@@ -219,20 +219,20 @@ class WeightedMeanView(View):
             )
 
 
-@fields("count", "value", "sum_of_deltas_squared")
+@fields("count", "value", "_sum_of_deltas_squared")
 class MeanView(View):
     __slots__ = ()
     _PARENT = Mean
 
     count: np.ndarray
     value: np.ndarray
-    sum_of_deltas_squared: np.ndarray
+    _sum_of_deltas_squared: np.ndarray
 
     # Variance is a computation
     @property
     def variance(self) -> np.ndarray:
         with np.errstate(divide="ignore", invalid="ignore"):
-            return self["sum_of_deltas_squared"] / (self["count"] - 1)  # type: ignore
+            return self["_sum_of_deltas_squared"] / (self["count"] - 1)  # type: ignore
 
 
 def _to_view(
