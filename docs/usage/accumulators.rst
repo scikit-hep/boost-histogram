@@ -101,7 +101,7 @@ Mean
 
 This accumulator is contained in the Mean storage, and supports Views. It
 provides three values; ``.count``, ``.value``, and ``.variance``. Internally,
-the variance is stored as ``sum_of_deltas_squared``, which is used to compute
+the variance is stored as ``_sum_of_deltas_squared``, which is used to compute
 ``variance``.
 
 For example, you could compute the mean of the following values::

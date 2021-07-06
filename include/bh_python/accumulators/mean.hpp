@@ -33,21 +33,21 @@ struct mean {
          const value_type& variance) noexcept
         : count(n)
         , value(mean)
-        , sum_of_deltas_squared(variance * (n - 1)) {}
+        , _sum_of_deltas_squared(variance * (n - 1)) {}
 
     mean(const value_type& sum,
          const value_type& mean,
-         const value_type& sum_of_deltas_squared,
+         const value_type& _sum_of_deltas_squared,
          bool /* Tag to trigger python internal constructor */)
         : count(sum)
         , value(mean)
-        , sum_of_deltas_squared(sum_of_deltas_squared) {}
+        , _sum_of_deltas_squared(_sum_of_deltas_squared) {}
 
     void operator()(const value_type& x) noexcept {
         count += static_cast<value_type>(1);
         const auto delta = x - value;
         value += delta / count;
-        sum_of_deltas_squared += delta * (x - value);
+        _sum_of_deltas_squared += delta * (x - value);
     }
 
     void operator()(const boost::histogram::weight_type<value_type>& w,
@@ -55,7 +55,7 @@ struct mean {
         count += w.value;
         const auto delta = x - value;
         value += w.value * delta / count;
-        sum_of_deltas_squared += w.value * delta * (x - value);
+        _sum_of_deltas_squared += w.value * delta * (x - value);
     }
 
     mean& operator+=(const mean& rhs) noexcept {
@@ -69,8 +69,8 @@ struct mean {
 
         count += rhs.count;
         value = (n1 * mu1 + n2 * mu2) / count;
-        sum_of_deltas_squared += rhs.sum_of_deltas_squared;
-        sum_of_deltas_squared
+        _sum_of_deltas_squared += rhs._sum_of_deltas_squared;
+        _sum_of_deltas_squared
             += n1 * (value - mu1) * (value - mu1) + n2 * (value - mu2) * (value - mu2);
 
         return *this;
@@ -78,29 +78,31 @@ struct mean {
 
     mean& operator*=(const value_type& s) noexcept {
         value *= s;
-        sum_of_deltas_squared *= s * s;
+        _sum_of_deltas_squared *= s * s;
         return *this;
     }
 
     bool operator==(const mean& rhs) const noexcept {
         return count == rhs.count && value == rhs.value
-               && sum_of_deltas_squared == rhs.sum_of_deltas_squared;
+               && _sum_of_deltas_squared == rhs._sum_of_deltas_squared;
     }
 
     bool operator!=(const mean& rhs) const noexcept { return !operator==(rhs); }
 
-    value_type variance() const noexcept { return sum_of_deltas_squared / (count - 1); }
+    value_type variance() const noexcept {
+        return _sum_of_deltas_squared / (count - 1);
+    }
 
     template <class Archive>
     void serialize(Archive& ar, unsigned) {
         ar& boost::make_nvp("count", count);
         ar& boost::make_nvp("value", value);
-        ar& boost::make_nvp("sum_of_deltas_squared", sum_of_deltas_squared);
+        ar& boost::make_nvp("_sum_of_deltas_squared", _sum_of_deltas_squared);
     }
 
     value_type count{};
     value_type value{};
-    value_type sum_of_deltas_squared{};
+    value_type _sum_of_deltas_squared{};
 };
 
 } // namespace accumulators

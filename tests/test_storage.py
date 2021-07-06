@@ -98,7 +98,7 @@ def test_setting_profile():
 
     assert b["value"][0] == h[0].value
     assert b["count"][0] == h[0].count
-    assert b["sum_of_deltas_squared"][0] == h[0].sum_of_deltas_squared
+    assert b["_sum_of_deltas_squared"][0] == h[0]._sum_of_deltas_squared
 
     h[0] = bh.accumulators.Mean(count=6, value=3, variance=2)
     assert h[0].count == 6
@@ -109,20 +109,20 @@ def test_setting_profile():
 
     assert b["value"][0] == h[0].value
     assert b["count"][0] == h[0].count
-    assert b["sum_of_deltas_squared"][0] == h[0].sum_of_deltas_squared
+    assert b["_sum_of_deltas_squared"][0] == h[0]._sum_of_deltas_squared
 
     assert b[0]["value"] == a[0]["value"]
     assert b[0]["count"] == a[0]["count"]
-    assert b[0]["sum_of_deltas_squared"] == a[0]["sum_of_deltas_squared"]
+    assert b[0]["_sum_of_deltas_squared"] == a[0]["_sum_of_deltas_squared"]
 
     assert b[0]["value"] == a["value"][0]
     assert b[0]["count"] == a["count"][0]
-    assert b[0]["sum_of_deltas_squared"] == a["sum_of_deltas_squared"][0]
+    assert b[0]["_sum_of_deltas_squared"] == a["_sum_of_deltas_squared"][0]
 
     assert_array_equal(a.view().value, b.view()["value"])
     assert_array_equal(a.view().count, b.view()["count"])
     assert_array_equal(
-        a.view().sum_of_deltas_squared, b.view()["sum_of_deltas_squared"]
+        a.view()._sum_of_deltas_squared, b.view()["_sum_of_deltas_squared"]
     )
 
 
