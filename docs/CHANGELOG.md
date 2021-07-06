@@ -1,10 +1,27 @@
 # What's new in boost-histogram
 
-## UPCOMING
+## Version 1.1
 
+#### User changes
+* Experimentally support list selection on categorical axes [#577][]
+* Support Python 3.8 on Apple Silicon [#600][]
+* Scaling and addition with a scalar affect flow bins too [#580][]
+* Change `sum_of_deltas_squared` to `_sum_of_deltas_squared` (was an implementation detail) [#602][]
+
+#### Bug fixes
 * Fix "picking" on a flow bin [#576][]
+* Better error message on getattr [#596][]
+
+#### Developer changes
+* Test on Python 3.10 beta releases [#600][]
+* Provide a CMakeLists for quick standalone Boost.Histogram C++ experiments [#591][]
+* Adding logging with PyTest failure output [#575][]
 
 [#576]: https://github.com/scikit-hep/boost-histogram/pull/576
+[#580]: https://github.com/scikit-hep/boost-histogram/pull/580
+[#591]: https://github.com/scikit-hep/boost-histogram/pull/591
+[#596]: https://github.com/scikit-hep/boost-histogram/pull/596
+[#600]: https://github.com/scikit-hep/boost-histogram/pull/600
 
 
 ## Version 1.0
