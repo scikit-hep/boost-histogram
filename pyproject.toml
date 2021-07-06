@@ -80,3 +80,9 @@ ignore = [
     "src/boost_histogram/version.py",
     "tests/.pytest_cache/**",
 ]
+
+
+[tool.cibuildwheel]
+test-extras = "test"
+test-command = "pytest {project}/tests"
+test-skip = ["pp*macos*", "pp*win*", "*universal2:arm64"]
