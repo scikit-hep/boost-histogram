@@ -86,3 +86,4 @@ ignore = [
 test-extras = "test"
 test-command = "pytest {project}/tests"
 test-skip = ["pp*macos*", "pp*win*", "*universal2:arm64"]
+skip = ["pp*-manylinux_i686"]  # not supported by NumPy
