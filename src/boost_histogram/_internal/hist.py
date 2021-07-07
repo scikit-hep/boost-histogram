@@ -150,8 +150,8 @@ class Histogram:
     def __init__(
         self,
         *axes: Union[Axis, CppAxis],
-        storage: Storage,
-        metadata: Any = None,
+        storage: Storage = ...,
+        metadata: Any = ...,
     ) -> None:
         ...
 
