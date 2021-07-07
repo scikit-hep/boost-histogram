@@ -186,19 +186,19 @@ platforms have wheels provided in boost-histogram:
 
 | System | Arch | Python versions | PyPy versions |
 |---------|-----|------------------|--------------|
-| ManyLinux1 (custom GCC 9.2) | 32 & 64-bit | 3.6, 3.7, 3.8 | |
-| ManyLinux2010 | 32 & 64-bit | 3.6, 3.7, 3.8, 3.9 | 7.3: 3.6, 3.7 |
+| ManyLinux1 (custom GCC 9.2) | 32 & 64-bit | 3.7, 3.8 | |
+| ManyLinux2010 | 32 & 64-bit | 3.6, 3.7, 3.8, 3.9 | (64-bit) 7.3: 3.7 |
 | ManyLinux2014 | ARM64 | 3.6, 3.7, 3.8, 3.9 | |
-| macOS 10.9+ | 64-bit | 3.6, 3.7, 3.8, 3.9 | 7.3: 3.6, 3.7 |
-| macOS Universal2 | Arm64 | 3.9 | |
-| Windows | 32 & 64-bit | 3.6, 3.7, 3.8, 3.9 | (32 bit) 7.3: 3.6, 3.7 |
+| macOS 10.9+ | 64-bit | 3.6, 3.7, 3.8, 3.9 | 7.3: 3.7 |
+| macOS Universal2 | Arm64 | 3.8, 3.9 | |
+| Windows | 32 & 64-bit | 3.6, 3.7, 3.8, 3.9 | (64-bit) 7.3: 3.7 |
 
 
 * manylinux1: Using a custom docker container with GCC 9 to produce. Anything running Python 3.9 should be compatible with manylinux2010, so manylinux1 not provided for Python 3.9 (like NumPy).
 * manylinux2010: Requires pip 10+.
-* PyPy 7.3.x: Supported for both pypy3.6 and pypy3.7 variants on all platforms.
+* PyPy 7.3.x: Supports the officially supported pypy3.7 on all Intel platforms.
 * ARM on Linux is supported for newer Python versions via `manylinux2014`. PowerPC or IBM-Z available on request, or `manylinux_2_24`.
-* macOS Universal2 wheels for Apple Silicon and Intel provided for Python 3.9 (requires Pip 21.0.1).
+* macOS Universal2 wheels for Apple Silicon and Intel provided for Python 3.8+ (requires Pip 21.0.1 or newer).
 
 If you are on a Linux system that is not part of the "many" in manylinux, such as Alpine or ClearLinux, building from source is usually fine, since the compilers on those systems are often quite new. It will just take longer to install when it is using the sdist instead of a wheel. All dependencies are header-only and included.
 
