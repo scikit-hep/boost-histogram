@@ -17,12 +17,14 @@
 * Provide a CMakeLists for quick standalone Boost.Histogram C++ experiments [#591][]
 * Adding logging with PyTest failure output [#575][]
 
+[#575]: https://github.com/scikit-hep/boost-histogram/pull/575
 [#576]: https://github.com/scikit-hep/boost-histogram/pull/576
+[#577]: https://github.com/scikit-hep/boost-histogram/pull/577
 [#580]: https://github.com/scikit-hep/boost-histogram/pull/580
 [#591]: https://github.com/scikit-hep/boost-histogram/pull/591
 [#596]: https://github.com/scikit-hep/boost-histogram/pull/596
 [#600]: https://github.com/scikit-hep/boost-histogram/pull/600
-
+[#602]: https://github.com/scikit-hep/boost-histogram/pull/602
 
 ## Version 1.0
 
