@@ -1,6 +1,6 @@
 ci:
-  skip:
-  - docker-clang-format
+  autoupdate_commit_msg: "chore: update pre-commit hooks"
+  autofix_commit_msg: "style: pre-commit fixes"
 
 repos:
 - repo: https://github.com/psf/black
@@ -83,12 +83,10 @@ repos:
 
 - repo: local
   hooks:
-  - id: docker-clang-format
-    name: Docker Clang Format
-    language: docker_image
-    types:
-    - c++
-    entry: unibeautify/clang-format:latest
-    args:
-    - -style=file
-    - -i
+  - id: clang-format
+    name: Clang Format
+    language: conda
+    types: [c++]
+    entry: clang-format
+    args: [-style=file, -i]
+    additional_dependencies: [--channel=conda-forge, clang-tools==12.0.1]
