@@ -11,8 +11,8 @@
 Welcome to boost-histogram's documentation!
 ===========================================
 
-|Gitter| |Build Status| |Actions Status| |Documentation Status| |DOI|
-|Code style: black| |PyPI version| |Conda-Forge| |Scikit-HEP|
+|Actions Status| |Documentation Status| |Code style: black| |PyPI version| |Conda-Forge|
+|PyPI platforms| |DOI| |GitHub Discussion| |Gitter| |Scikit-HEP|
 
 Boost-histogram (`source <https://github.com/scikit-hep/boost-histogram>`__) is
 a Python package providing Python bindings for Boost.Histogram_ (`source
@@ -106,21 +106,23 @@ Indices and tables
 * :ref:`search`
 
 .. _Boost.Histogram: https://www.boost.org/doc/libs/release/libs/histogram/doc/html/index.html
-.. |Gitter| image:: https://badges.gitter.im/HSF/PyHEP-histogramming.svg
-   :target: https://gitter.im/HSF/PyHEP-histogramming?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
-.. |Build Status| image:: https://dev.azure.com/scikit-hep/boost-histogram/_apis/build/status/bh-tests?branchName=develop
-   :target: https://dev.azure.com/scikit-hep/boost-histogram/_build/latest?definitionId=2&branchName=develop
 .. |Actions Status| image:: https://github.com/scikit-hep/boost-histogram/workflows/Tests/badge.svg
    :target: https://github.com/scikit-hep/boost-histogram/actions
 .. |Documentation Status| image:: https://readthedocs.org/projects/boost-histogram/badge/?version=latest
    :target: https://boost-histogram.readthedocs.io/en/latest/?badge=latest
-.. |DOI| image:: https://zenodo.org/badge/148885351.svg
-   :target: https://zenodo.org/badge/latestdoi/148885351
 .. |Code style: black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
    :target: https://github.com/ambv/black
 .. |PyPI version| image:: https://badge.fury.io/py/boost-histogram.svg
-   :target: https://pypi.org/project/boost-histogram/
+   :target: https://pypi.org/project/boost-histogram
 .. |Conda-Forge| image:: https://img.shields.io/conda/vn/conda-forge/boost-histogram
    :target: https://github.com/conda-forge/boost-histogram-feedstock
+.. |PyPI platforms| image:: https://img.shields.io/pypi/pyversions/boost-histogram
+   :target: https://pypi.org/project/boost-histogram/
+.. |DOI| image:: https://zenodo.org/badge/148885351.svg
+   :target: https://zenodo.org/badge/latestdoi/148885351
+.. |GitHub Discussion| image:: https://img.shields.io/static/v1?label=Discussions&message=Ask&color=blue&logo=github
+   :target: https://github.com/scikit-hep/boost-histogram/discussions
+.. |Gitter| image:: https://badges.gitter.im/HSF/PyHEP-histogramming.svg
+   :target: https://gitter.im/HSF/PyHEP-histogramming?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
 .. |Scikit-HEP| image:: https://scikit-hep.org/assets/images/Scikit--HEP-Project-blue.svg
    :target: https://scikit-hep.org/
