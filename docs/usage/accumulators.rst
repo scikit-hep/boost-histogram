@@ -37,7 +37,7 @@ showing how non-accurate sums fail to produce the obvious answer, 2.0::
     print(f"{sum(values) = } (simple)")
     print(f"{math.fsum(values) = }")
     print(f"{np.sum(values) = } (pairwise)")
-    print(f{bh.accumulators.Sum().fill(values) = }")
+    print(f"{bh.accumulators.Sum().fill(values) = }")
 
 .. code:: text
 
