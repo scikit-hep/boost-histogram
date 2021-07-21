@@ -53,12 +53,12 @@ orders of values::
 
     values = [1., 1e100, 1e50, 1., -1e50, -1e100]
     print(f"{math.fsum(values) = }")
-    print(f{bh.accumulators.Sum().fill(values) = }")
+    print(f"{bh.accumulators.Sum().fill(values) = }")
 
 .. code:: text
 
     math.fsum(values) = 2.0
-    bh.accumulators.Sum().fill(values) = Sum(0)
+    bh.accumulators.Sum().fill(values) = Sum(0 + 0)    
 
 You should note that this is a highly contrived example and the Sum accumulator
 should still outperform simple and pairwise summation methods for a minimal
