@@ -41,10 +41,10 @@ showing how non-accurate sums fail to produce the obvious answer, 2.0::
 
 .. code:: text
 
-    sum(values) = 0.0
+    sum(values) = 0.0 (simple)
     math.fsum(values) = 2.0
-    np.sum(values) = 0.0
-    bh.accumulators.Sum().fill(values) = Sum(2)
+    np.sum(values) = 0.0 (pairwise)
+    bh.accumulators.Sum().fill(values) = Sum(0 + 2)
 
 
 Note that this is still intended for performance and does not guarantee
