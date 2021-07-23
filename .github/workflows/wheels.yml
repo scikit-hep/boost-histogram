@@ -79,16 +79,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-latest]
+        os: [windows-latest, macos-latest, ubuntu-latest]
         arch: [auto64]
         build: ["*"]
 
         include:
           - os: ubuntu-latest
-            arch: auto
-            build: "pp*"
-            CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
-            CIBW_MANYLINUX_I686_IMAGE: manylinux2010
+            arch: auto32
+            build: "*"
 
           - os: ubuntu-latest
             type: ManyLinux1
