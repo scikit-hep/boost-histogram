@@ -3,7 +3,7 @@
 Storages
 ========
 
-There are several storage to choose from. To select a storage, pass the
+There are several storages to choose from. To select a storage, pass the
 ``storage=bh.storage.`` argument when making a histogram.
 
 Simple storages
