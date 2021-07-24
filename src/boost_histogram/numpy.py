@@ -38,7 +38,7 @@ def histogramdd(
 
     if normed is not None:
         raise KeyError(
-            "normed=True is not recommended for use in Numpy, and is not supported in boost-histogram; use density=True instead"
+            "normed=True is not recommended for use in NumPy, and is not supported in boost-histogram; use density=True instead"
         )
     if density and histogram is not None:
         raise KeyError(

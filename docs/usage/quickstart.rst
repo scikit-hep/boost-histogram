@@ -64,10 +64,10 @@ should give arrays, but single values work as well:
 Slicing and rebinning
 ---------------------
 
-You can slice into a histogram using bin coordinates
-or data coordinates using ``bh.loc(v)``. You can also
-rebin with ``bh.rebin(n)`` or remove an entire axis
-using ``bh.sum`` as the third slice argument:
+You can slice into a histogram using bin coordinates or data coordinates using
+``bh.loc(v)``. You can also rebin with ``bh.rebin(n)`` or remove an entire axis
+using ``sum`` (technically as the third slice argument, though it is allowed by
+itself as well):
 
 .. code:: python3
 
@@ -76,7 +76,7 @@ using ``bh.sum`` as the third slice argument:
         bh.axis.Regular(10, 0, 1),
         bh.axis.Regular(10, 0, 1),
     )
-    mini = hist[1:5, bh.loc(0.2) : bh.loc(0.9), :: bh.sum]
+    mini = hist[1:5, bh.loc(0.2) : bh.loc(0.9), sum]
     # Will be 4 bins x 7 bins
 
 See :ref:`usage-indexing`.
@@ -84,7 +84,7 @@ See :ref:`usage-indexing`.
 Accessing the contents
 ----------------------
 
-You can use ``hist.values()`` to get a Numpy array from any histogram. You can
+You can use ``hist.values()`` to get a NumPy array from any histogram. You can
 get the variances with ``hist.variances()``, though if you fill an unweighted
 storage with weights, this will return None, as you no longer can compute the
 variances correctly (please use a weighted storage if you need to). You can

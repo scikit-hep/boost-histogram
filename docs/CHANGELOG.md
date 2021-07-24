@@ -15,7 +15,7 @@
 #### Developer changes
 * Test on Python 3.10 beta releases [#600][]
 * Provide a CMakeLists for quick standalone Boost.Histogram C++ experiments [#591][]
-* Adding logging with PyTest failure output [#575][]
+* Adding logging with pytest failure output [#575][]
 
 [#575]: https://github.com/scikit-hep/boost-histogram/pull/575
 [#576]: https://github.com/scikit-hep/boost-histogram/pull/576
@@ -130,7 +130,7 @@ Python 2, and mostly equivalent in API to 1.0.
 * Supports converting user histogram objects that provide a
   `_to_boost_histogram_` method. [#483][]
 * A `view=True` parameter must now be passed to get a View instead of a standard
-  NumPy values arrray from `to_numpy()`. [#498][]
+  NumPy values array from `to_numpy()`. [#498][]
 
 #### Bug fixes
 
@@ -484,7 +484,7 @@ library. Using Boost 1.72 release.
 * Properties on accumulator views now resolve correctly [#273][]
 * Division of a histogram by a number is supported again [#278][]
 * Setting a histogram with length one slice fixed [#279][]
-* Numpy functions now work with Numpy ints in `bins=` [#282][]
+* NumPy functions now work with NumPy ints in `bins=` [#282][]
 * In-place addition avoids a copy [#284][]
 
 [#273]: https://github.com/scikit-hep/boost-histogram/pull/273
@@ -524,7 +524,7 @@ transition existing 0.5.x code to the new API.
 * `h.axes` now has the functions from axis as well. [#183][]
 * `bh.project` has become `bh.sum` [#185][]
 * `.reduce(...)` and the reducers in `bh.algorithm` have been removed in favor of dictionary based UHI slicing [#259][]
-* `bh.numpy` module interface updates, `histogram=bh.Histogram` replaces cryptic `bh=True`, and `density=True` is now supported in Numpy mode [#256][]
+* `bh.numpy` module interface updates, `histogram=bh.Histogram` replaces cryptic `bh=True`, and `density=True` is now supported in NumPy mode [#256][]
 * Added `hist.copy()` [#218][] and `hist.shape` [#264][]
 * Signatures are much nicer in Python 3 [#188][]
 * Reprs are better, various properties like `__module__` are now set correctly [#200][]

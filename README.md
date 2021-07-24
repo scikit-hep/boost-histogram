@@ -48,7 +48,7 @@ hist.fill(
     [0.1, 0.4, 0.9],
 )
 
-# Numpy array view into histogram counts, no overflow bins
+# NumPy array view into histogram counts, no overflow bins
 values = hist.values()
 
 # Make a new histogram with just the second axis, summing over the first, and
@@ -142,7 +142,7 @@ histograms can be plotted via any compatible library, such as [mplhep][].
         * `v = h[{0:b}]`: All actions can be represented by `axis:item` dictionary instead of by position (mostly useful for slicing)
     * Slicing to get histogram or set array of values
         * `h2 = h[a:b]`: Access a slice of a histogram, cut portions go to flow bins if present
-        * `h2 = h[:, ...]`: Using `:` and `...` supported just like Numpy
+        * `h2 = h[:, ...]`: Using `:` and `...` supported just like NumPy
         * `h2 = h[::sum]`: Third item in slice is the "action"
         * `h[...] = array`: Set the bin contents, either include or omit flow bins
     * Special accessors

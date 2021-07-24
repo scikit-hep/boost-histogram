@@ -10,7 +10,7 @@ h = bh.Histogram(
     bh.axis.Regular(10, -3, 3, metadata="x"), bh.axis.Regular(10, -3, 3, metadata="y")
 )
 
-# Generate some Numpy arrays with data to fill into histogram,
+# Generate some NumPy arrays with data to fill into histogram,
 # in this case normal distributed random numbers in x and y
 x_data = np.random.randn(1000)
 y_data = 0.5 * np.random.randn(1000)
@@ -18,7 +18,7 @@ y_data = 0.5 * np.random.randn(1000)
 # Fill histogram with numpy arrays, this is very fast
 h.fill(x_data, y_data)
 
-# Get representations of the bin edges as Numpy arrays
+# Get representations of the bin edges as NumPy arrays
 x = h.axes[0].edges
 y = h.axes[1].edges
 

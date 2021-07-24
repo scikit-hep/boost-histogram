@@ -82,13 +82,20 @@ repos:
   - id: check-manifest
     stages: [manual]
 
+- repo: https://github.com/codespell-project/codespell
+  rev: v2.1.0
+  hooks:
+  - id: codespell
+    args: ["-L", "hist,nd,circularly,ba"]
+    exclude: ^(notebooks/xarray.ipynb|notebooks/BoostHistogramHandsOn.ipynb)$
+
 - repo: local
   hooks:
-  - id: disallow-pybind
-    name: Disallow PyBind (dual caps)
+  - id: disallow-caps
+    name: Disallow improper capitalization
     language: pygrep
-    entry: PyBind
-    exclude: .pre-commit.*.yaml
+    entry: PyBind|Numpy|Cmake|CCache|Github|PyTest
+    exclude: .pre-commit-config.yaml
 
 - repo: local
   hooks:

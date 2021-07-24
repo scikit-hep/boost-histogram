@@ -88,7 +88,7 @@ def test_metadata(axis, args, opt, kwargs):
 
 
 # The point of this ABC is to force all the tests listed here to be implemented
-# for each axis type. PyTest instantiates these test classes for us, so missing
+# for each axis type. Pytest instantiates these test classes for us, so missing
 # one really does fail the test.
 class Axis(abc.ABC):
     @abc.abstractmethod
