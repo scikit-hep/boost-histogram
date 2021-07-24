@@ -156,7 +156,7 @@ Views
 -----
 
 Most of the accumulators (except Sum) support a View. This is what is returned from
-a histogram when ``.view()`` is requested. This is a structured Numpy ndarray, with a few small
-additions to make them easier to work with. Like a Numpy recarray, you can access the fields with
+a histogram when ``.view()`` is requested. This is a structured NumPy ndarray, with a few small
+additions to make them easier to work with. Like a NumPy recarray, you can access the fields with
 attributes; you can even access (but not set) computed attributes like ``.variance``. A view will
 also return an accumulator instance if you select a single item.

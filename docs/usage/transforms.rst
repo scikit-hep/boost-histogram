@@ -38,7 +38,7 @@ transformed axis, and this will be 15-90 times slower than a compiled method, li
        10, 1, 4, transform=bh.axis.transform.Function(ftype(math.log), ftype(math.exp))
    )
 
-   # Pure Python: Numpy (90x slower)
+   # Pure Python: NumPy (90x slower)
    bh.axis.Regular(
        10, 1, 4, transform=bh.axis.transform.Function(ftype(np.log), ftype(np.exp))
    )
@@ -152,7 +152,7 @@ That's it.
 Using Numba
 ^^^^^^^^^^^
 
-The same procedure works for numba decorators. Numpy only supports functions, not builtins like ``math.log``,
+The same procedure works for numba decorators. NumPy only supports functions, not builtins like ``math.log``,
 so if you want to pass those, you'll need to wrap them in a lambda function or add a bit of logic to the convert
 function. Here are your options:
 

@@ -24,7 +24,7 @@ class View(np.ndarray):
             return sliced  # type: ignore
 
     def __repr__(self) -> str:
-        # Numpy starts the ndarray class name with "array", so we replace it
+        # NumPy starts the ndarray class name with "array", so we replace it
         # with our class name
         return f"{self.__class__.__name__}(\n      " + repr(self.view(np.ndarray))[6:]
 

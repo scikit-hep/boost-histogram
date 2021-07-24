@@ -25,7 +25,7 @@ struct func_transform {
     py::object _forward_converted; // Held for reference counting if conversion makes a
                                    // new object (ctypes does not bump the refcount)
     py::object _inverse_converted;
-    py::object _convert_ob; // Called before computing tranform if not None
+    py::object _convert_ob; // Called before computing transform if not None
     py::str _name;          // Optional name (uses repr from objects otherwise)
 
     /// Convert an object into a std::function. Can handle ctypes
@@ -84,7 +84,7 @@ struct func_transform {
                                        src);
             }
 
-            // Note that each error is slighly different just to help with debugging
+            // Note that each error is slightly different just to help with debugging
             throw py::type_error("Only ctypes double(double) and C++ functions allowed "
                                  "(must be stateless)");
         }

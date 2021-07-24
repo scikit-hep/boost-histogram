@@ -733,7 +733,7 @@ def test_pickle_bool():
     assert_array_equal(a.view(), b.view())
 
 
-# Numpy tests
+# NumPy tests
 
 
 def test_numpy_conversion_0():

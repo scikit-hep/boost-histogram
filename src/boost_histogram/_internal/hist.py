@@ -648,7 +648,7 @@ class Histogram:
         self, flow: bool = False, *, dd: bool = False, view: bool = False
     ) -> Union[Tuple[np.ndarray, ...], Tuple[np.ndarray, Tuple[np.ndarray, ...]]]:
         """
-        Convert to a Numpy style tuple of return arrays. Edges are converted to
+        Convert to a NumPy style tuple of return arrays. Edges are converted to
         match NumPy standards, with upper edge inclusive, unlike
         boost-histogram, where upper edge is exclusive.
 

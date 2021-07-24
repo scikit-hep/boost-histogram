@@ -43,7 +43,7 @@ virtual environment, etc. See :ref:`usage-installation` for more details. An exa
    hist.fill([.3, .5, .2],
              [.1, .4, .9])
 
-   # Numpy array view into histogram counts, no overflow bins
+   # NumPy array view into histogram counts, no overflow bins
    counts = hist.view()
 
 See :ref:`usage-quickstart` for more.
