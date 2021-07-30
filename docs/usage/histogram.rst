@@ -19,7 +19,7 @@ The summing accumulators (not ``Mean()`` and ``WeightedMean())``) support thread
 Data
 ^^^^
 
-The primary value from a histogram is always available as ``.value()``. The variance is available as ``.variances()``, unless you fill an unweighed histogram with weights, which will cause this to be return None, since the variance is no longer computable (use a weighted storage instead if you need the variances). The counts are available as ``.counts()``. If the histogram is weighted, ``.counts()`` returns the effective counts; see `UHI <https://uhi.readthedocs.io/en/latest/plotting.html#the-full-protocol-version-1-follows>`_ for details.
+The primary values from a histogram are always available as ``.values()``. The variances are available as ``.variances()``, unless you fill an unweighed histogram with weights, which will cause this to return None, since the variances are no longer computable (use a weighted storage instead if you need the variances). The counts are available as ``.counts()``. If the histogram is weighted, ``.counts()`` returns the effective counts; see `UHI <https://uhi.readthedocs.io/en/latest/plotting.html#the-full-protocol-version-1-follows>`_ for details.
 
 Views
 ^^^^^
