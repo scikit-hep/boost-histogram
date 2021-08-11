@@ -65,7 +65,9 @@ IndexingExpr = Union[IndexingWithMapping, Tuple[IndexingWithMapping, ...]]
 T = TypeVar("T")
 
 
-def _fill_cast(value: T, *, inner: bool = False) -> Union[T, np.ndarray, Tuple[T, ...]]:
+def _fill_cast(
+    value: T, *, inner: bool = False
+) -> Union[T, "np.typing.NDArray[Any]", Tuple[T, ...]]:
     """
     Convert to NumPy arrays. Some buffer objects do not get converted by forcecast.
     If not called by itself (inner=False), then will work through one level of tuple/list.
@@ -297,13 +299,13 @@ class Histogram:
 
     def view(
         self, flow: bool = False
-    ) -> Union[np.ndarray, WeightedSumView, WeightedMeanView, MeanView]:
+    ) -> Union["np.typing.NDArray[Any]", WeightedSumView, WeightedMeanView, MeanView]:
         """
         Return a view into the data, optionally with overflow turned on.
         """
         return _to_view(self._hist.view(flow))
 
-    def __array__(self) -> np.ndarray:
+    def __array__(self) -> "np.typing.NDArray[Any]":
         return self.view(False)
 
     def __eq__(self, other: Any) -> bool:
@@ -312,11 +314,15 @@ class Histogram:
     def __ne__(self, other: Any) -> bool:
         return (not hasattr(other, "_hist")) or self._hist != other._hist
 
-    def __add__(self: H, other: Union["Histogram", np.ndarray, float]) -> H:
+    def __add__(
+        self: H, other: Union["Histogram", "np.typing.NDArray[Any]", float]
+    ) -> H:
         result = self.copy(deep=False)
         return result.__iadd__(other)
 
-    def __iadd__(self: H, other: Union["Histogram", np.ndarray, float]) -> H:
+    def __iadd__(
+        self: H, other: Union["Histogram", "np.typing.NDArray[Any]", float]
+    ) -> H:
         if isinstance(other, (int, float)) and other == 0:
             return self
         self._compute_inplace_op("__iadd__", other)
@@ -326,36 +332,52 @@ class Histogram:
 
         return self
 
-    def __radd__(self: H, other: Union["Histogram", np.ndarray, float]) -> H:
+    def __radd__(
+        self: H, other: Union["Histogram", "np.typing.NDArray[Any]", float]
+    ) -> H:
         return self + other
 
     # If these fail, the underlying object throws the correct error
-    def __mul__(self: H, other: Union["Histogram", np.ndarray, float]) -> H:
+    def __mul__(
+        self: H, other: Union["Histogram", "np.typing.NDArray[Any]", float]
+    ) -> H:
         result = self.copy(deep=False)
         return result._compute_inplace_op("__imul__", other)
 
-    def __rmul__(self: H, other: Union["Histogram", np.ndarray, float]) -> H:
+    def __rmul__(
+        self: H, other: Union["Histogram", "np.typing.NDArray[Any]", float]
+    ) -> H:
         return self * other
 
-    def __truediv__(self: H, other: Union["Histogram", np.ndarray, float]) -> H:
+    def __truediv__(
+        self: H, other: Union["Histogram", "np.typing.NDArray[Any]", float]
+    ) -> H:
         result = self.copy(deep=False)
         return result._compute_inplace_op("__itruediv__", other)
 
-    def __div__(self: H, other: Union["Histogram", np.ndarray, float]) -> H:
+    def __div__(
+        self: H, other: Union["Histogram", "np.typing.NDArray[Any]", float]
+    ) -> H:
         result = self.copy(deep=False)
         return result._compute_inplace_op("__idiv__", other)
 
-    def __idiv__(self: H, other: Union["Histogram", np.ndarray, float]) -> H:
+    def __idiv__(
+        self: H, other: Union["Histogram", "np.typing.NDArray[Any]", float]
+    ) -> H:
         return self._compute_inplace_op("__idiv__", other)
 
-    def __itruediv__(self: H, other: Union["Histogram", np.ndarray, float]) -> H:
+    def __itruediv__(
+        self: H, other: Union["Histogram", "np.typing.NDArray[Any]", float]
+    ) -> H:
         return self._compute_inplace_op("__itruediv__", other)
 
-    def __imul__(self: H, other: Union["Histogram", np.ndarray, float]) -> H:
+    def __imul__(
+        self: H, other: Union["Histogram", "np.typing.NDArray[Any]", float]
+    ) -> H:
         return self._compute_inplace_op("__imul__", other)
 
     def _compute_inplace_op(
-        self: H, name: str, other: Union["Histogram", np.ndarray, float]
+        self: H, name: str, other: Union["Histogram", "np.typing.NDArray[Any]", float]
     ) -> H:
         # Also takes CppHistogram, but that confuses mypy because it's hard to pick out
         if isinstance(other, Histogram):
@@ -442,26 +464,26 @@ class Histogram:
         }:
             raise RuntimeError("Mean histograms do not support threaded filling")
 
-        data = [np.array_split(a, threads) for a in args_ars]
+        data = [np.array_split(a, threads) for a in args_ars]  # type: ignore
 
         if weight is None or np.isscalar(weight):
             assert threads is not None
             weights = [weight_ars] * threads
         else:
-            weights = np.array_split(weight_ars, threads)
+            weights = np.array_split(weight_ars, threads)  # type: ignore
 
         if sample_ars is None or np.isscalar(sample_ars):
             assert threads is not None
             samples = [sample_ars] * threads
         else:
-            samples = np.array_split(sample_ars, threads)
+            samples = np.array_split(sample_ars, threads)  # type: ignore
 
         if self._hist._storage_type is _core.storage.atomic_int64:
 
             def fun(
                 weight: Optional[ArrayLike],
                 sample: Optional[ArrayLike],
-                *args: np.ndarray,
+                *args: "np.typing.NDArray[Any]",
             ) -> None:
                 self._hist.fill(*args, weight=weight, sample=sample)
 
@@ -471,7 +493,7 @@ class Histogram:
             def fun(
                 weight: Optional[ArrayLike],
                 sample: Optional[ArrayLike],
-                *args: np.ndarray,
+                *args: "np.typing.NDArray[Any]",
             ) -> None:
                 local_hist = self._hist.__copy__()
                 local_hist.reset()
@@ -646,7 +668,10 @@ class Histogram:
 
     def to_numpy(
         self, flow: bool = False, *, dd: bool = False, view: bool = False
-    ) -> Union[Tuple[np.ndarray, ...], Tuple[np.ndarray, Tuple[np.ndarray, ...]]]:
+    ) -> Union[
+        Tuple["np.typing.NDArray[Any]", ...],
+        Tuple["np.typing.NDArray[Any]", Tuple["np.typing.NDArray[Any]", ...]],
+    ]:
         """
         Convert to a NumPy style tuple of return arrays. Edges are converted to
         match NumPy standards, with upper edge inclusive, unlike
@@ -887,7 +912,7 @@ class Histogram:
         if (
             value.ndim > 0
             and len(view.dtype) > 0  # type: ignore
-            and len(value.dtype) == 0  # type: ignore
+            and len(value.dtype) == 0
             and len(view.dtype) == value.shape[-1]  # type: ignore
         ):
             value_shape = value.shape[:-1]
@@ -984,7 +1009,7 @@ class Histogram:
         else:
             return Kind.COUNT
 
-    def values(self, flow: bool = False) -> np.ndarray:
+    def values(self, flow: bool = False) -> "np.typing.NDArray[Any]":
         """
         Returns the accumulated values. The counts for simple histograms, the
         sum of weights for weighted histograms, the mean for profiles, etc.
@@ -995,7 +1020,7 @@ class Histogram:
         :param flow: Enable flow bins. Not part of PlottableHistogram, but
         included for consistency with other methods and flexibility.
 
-        :return: np.ndarray[np.float64]
+        :return: "np.typing.NDArray[Any]"[np.float64]
         """
 
         view = self.view(flow)
@@ -1005,7 +1030,7 @@ class Histogram:
         else:
             return view.value  # type: ignore
 
-    def variances(self, flow: bool = False) -> Optional[np.ndarray]:
+    def variances(self, flow: bool = False) -> Optional["np.typing.NDArray[Any]"]:
         """
         Returns the estimated variance of the accumulated values. The sum of squared
         weights for weighted histograms, the variance of samples for profiles, etc.
@@ -1026,7 +1051,7 @@ class Histogram:
         :param flow: Enable flow bins. Not part of PlottableHistogram, but
         included for consistency with other methods and flexibility.
 
-        :return: np.ndarray[np.float64]
+        :return: "np.typing.NDArray[Any]"[np.float64]
         """
 
         view = self.view(flow)
@@ -1053,7 +1078,7 @@ class Histogram:
         else:
             return view.variance  # type: ignore
 
-    def counts(self, flow: bool = False) -> np.ndarray:
+    def counts(self, flow: bool = False) -> "np.typing.NDArray[Any]":
         """
         Returns the number of entries in each bin for an unweighted
         histogram or profile and an effective number of entries (defined below)
@@ -1073,7 +1098,7 @@ class Histogram:
         The larger the spread in weights, the smaller it is, but it is always 0
         if filled 0 times, and 1 if filled once, and more than 1 otherwise.
 
-        :return: np.ndarray[np.float64]
+        :return: "np.typing.NDArray[Any]"[np.float64]
         """
 
         view = self.view(flow)

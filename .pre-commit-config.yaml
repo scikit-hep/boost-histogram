@@ -75,7 +75,7 @@ repos:
   - id: mypy
     files: src
     args: []
-    additional_dependencies: [numpy==1.20.*, uhi, types-dataclasses]
+    additional_dependencies: [numpy==1.21.*, uhi, types-dataclasses]
 
 - repo: https://github.com/mgedmin/check-manifest
   rev: "0.46"
