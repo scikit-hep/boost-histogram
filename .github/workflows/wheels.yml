@@ -46,7 +46,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        python: [36, 37, 38, 39]
+        python: [36, 37, 38, 39, 310]
         arch: [aarch64]
     steps:
 
@@ -58,7 +58,7 @@ jobs:
       with:
         platforms: all
 
-    - uses: pypa/cibuildwheel@v2.0.1
+    - uses: pypa/cibuildwheel@v2.1.1
       env:
         CIBW_BUILD: cp${{ matrix.python }}-*
         CIBW_ARCHS: ${{ matrix.arch }}
@@ -108,7 +108,7 @@ jobs:
       with:
         submodules: true
 
-    - uses: pypa/cibuildwheel@v2.0.1
+    - uses: pypa/cibuildwheel@v2.1.1
       env:
         CIBW_BUILD: ${{ matrix.build }}
         CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.CIBW_MANYLINUX_I686_IMAGE }}
