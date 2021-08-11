@@ -49,11 +49,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.6", "3.9", "pypy3"]
+        python-version: ["3.6", "3.9", "3.10-dev", "pypy3"]
         include:
         - python-version: "3.8"
           cmake-extras: "-DCMAKE_CXX_STANDARD=17"
-        - python-version: "3.10-dev"
 
     name: CMake Python ${{ matrix.python-version }}
 
@@ -96,7 +95,6 @@ jobs:
       env:
         CIBW_BUILD: cp38-win_amd64 cp310-manylinux_i686 cp37-macosx_x86_64
         CIBW_BUILD_VERBOSITY: 1
-        CIBW_PRERELEASE_PYTHONS: 1
 
     - uses: actions/upload-artifact@v2
       with:
