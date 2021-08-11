@@ -17,12 +17,12 @@ class ArrayTuple(tuple):  # type: ignore
 
     def __getattr__(self, name: str) -> Any:
         if name in self._REDUCTIONS:
-            return partial(getattr(np, name), np.broadcast_arrays(*self))
+            return partial(getattr(np, name), np.broadcast_arrays(*self))  # type: ignore
         else:
             return self.__class__(getattr(a, name) for a in self)
 
     def __dir__(self) -> List[str]:
-        names = dir(self.__class__) + dir(np.ndarray)
+        names = dir(self.__class__) + dir("np.typing.NDArray[Any]")
         return sorted(n for n in names if not n.startswith("_"))
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
@@ -34,7 +34,7 @@ class ArrayTuple(tuple):  # type: ignore
         Use this method to broadcast them out into their full memory
         representation.
         """
-        return self.__class__(np.broadcast_arrays(*self))
+        return self.__class__(np.broadcast_arrays(*self))  # type: ignore
 
 
 B = TypeVar("B", bound="AxesTuple")
@@ -56,17 +56,17 @@ class AxesTuple(tuple):  # type: ignore
     @property
     def centers(self) -> ArrayTuple:
         gen = (s.centers for s in self)
-        return ArrayTuple(np.meshgrid(*gen, **self._MGRIDOPTS))
+        return ArrayTuple(np.meshgrid(*gen, **self._MGRIDOPTS))  # type: ignore
 
     @property
     def edges(self) -> ArrayTuple:
         gen = (s.edges for s in self)
-        return ArrayTuple(np.meshgrid(*gen, **self._MGRIDOPTS))
+        return ArrayTuple(np.meshgrid(*gen, **self._MGRIDOPTS))  # type: ignore
 
     @property
     def widths(self) -> ArrayTuple:
         gen = (s.widths for s in self)
-        return ArrayTuple(np.meshgrid(*gen, **self._MGRIDOPTS))
+        return ArrayTuple(np.meshgrid(*gen, **self._MGRIDOPTS))  # type: ignore
 
     def value(self, *indexes: float) -> Tuple[float, ...]:
         if len(indexes) != len(self):

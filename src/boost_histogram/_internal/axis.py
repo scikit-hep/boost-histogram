@@ -248,18 +248,18 @@ class Axis:
         return self.bin(i)
 
     @property
-    def edges(self) -> np.ndarray:
+    def edges(self) -> "np.typing.NDArray[Any]":
         return self._ax.edges  # type: ignore
 
     @property
-    def centers(self) -> np.ndarray:
+    def centers(self) -> "np.typing.NDArray[Any]":
         """
         An array of bin centers.
         """
         return self._ax.centers  # type: ignore
 
     @property
-    def widths(self) -> np.ndarray:
+    def widths(self) -> "np.typing.NDArray[Any]":
         """
         An array of bin widths.
         """
