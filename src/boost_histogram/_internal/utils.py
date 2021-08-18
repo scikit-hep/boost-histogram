@@ -1,5 +1,17 @@
+import itertools
+import sys
 import typing
-from typing import Callable, ClassVar, Iterator, Optional, Set, Type, TypeVar
+from typing import (
+    Any,
+    Callable,
+    ClassVar,
+    Iterator,
+    Optional,
+    Set,
+    Tuple,
+    Type,
+    TypeVar,
+)
 
 import boost_histogram
 
@@ -176,3 +188,16 @@ def _walk_subclasses(cls: Type[object]) -> Iterator[Type[object]]:
         # user subclasses to work
         yield from _walk_subclasses(base)
         yield base
+
+
+def zip_strict(*args: Any) -> Iterator[Tuple[Any, ...]]:
+    if sys.version_info >= (3, 10):
+        yield from zip(*args, strict=True)
+        return
+
+    marker = object()
+    for each in itertools.zip_longest(*args, fillvalue=marker):
+        for val in each:
+            if val is marker:
+                raise ValueError("zip() arguments are not the same length")
+        yield each
