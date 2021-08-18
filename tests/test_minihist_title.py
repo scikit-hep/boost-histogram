@@ -170,3 +170,9 @@ def test_hist_name_set():
 
     hist_1.axes.label = ("one", "two")
     assert hist_1.axes.label == ("one", "two")
+
+    with pytest.raises(ValueError):
+        hist_1.axes.label = ("one",)
+
+    with pytest.raises(ValueError):
+        hist_1.axes.label = ("one", "two", "three")

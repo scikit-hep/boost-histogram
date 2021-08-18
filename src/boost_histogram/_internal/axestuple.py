@@ -4,7 +4,7 @@ from typing import Any, List, Tuple, TypeVar
 import numpy as np
 
 from .axis import Axis
-from .utils import set_module
+from .utils import set_module, zip_strict
 
 A = TypeVar("A", bound="ArrayTuple")
 
@@ -100,7 +100,7 @@ class AxesTuple(tuple):  # type: ignore
         try:
             return super().__setattr__(attr, values)
         except AttributeError:
-            self.__class__(s.__setattr__(attr, v) for s, v in zip(self, values))
+            self.__class__(s.__setattr__(attr, v) for s, v in zip_strict(self, values))
 
     value.__doc__ = Axis.value.__doc__
     index.__doc__ = Axis.index.__doc__
