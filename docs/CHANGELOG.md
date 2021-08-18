@@ -2,6 +2,18 @@
 
 ## Version 1.1
 
+### Version 1.1.1
+
+#### User changes
+* Python 3.10 officially supported, with wheels.
+
+#### Bug fixes
+* Support custom setters on AxesTuple subclasses. [#627][]
+
+[#627]: https://github.com/scikit-hep/boost-histogram/pull/627
+
+### Version 1.1.0
+
 #### User changes
 * Experimentally support list selection on categorical axes [#577][]
 * Support Python 3.8 on Apple Silicon [#600][]

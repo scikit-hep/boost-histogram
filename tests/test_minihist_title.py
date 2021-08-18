@@ -41,6 +41,11 @@ class NamedAxesTuple(bh.axis.AxesTuple):
         """
         return tuple(ax.name for ax in self)
 
+    @name.setter
+    def name(self, values):
+        for ax, val in zip(self, values):
+            ax._ax.metadata["name"] = f"test: {val}"
+
 
 # When you subclass Histogram or an Axes, you should register your family so
 # boost-histogram will know what to convert C++ objects into.
@@ -152,3 +157,16 @@ def test_access():
 
     assert hist_conv.axes["a"] == hist_conv.axes[0]
     assert hist_conv.axes["b"] == hist_conv.axes[1]
+
+
+def test_hist_name_set():
+    hist_1 = CustomHist(Regular(10, 0, 1, name="a"), Regular(20, 0, 4, name="b"))
+
+    hist_1.axes.name = ("c", "d")
+    assert hist_1.axes.name == ("test: c", "test: d")
+
+    with pytest.raises(AttributeError):
+        hist_1.axes[0].name = "a"
+
+    hist_1.axes.label = ("one", "two")
+    assert hist_1.axes.label == ("one", "two")
