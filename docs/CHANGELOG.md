@@ -9,6 +9,7 @@
 
 #### Bug fixes
 * Support custom setters on AxesTuple subclasses. [#627][]
+* Throw an error when an AxesTuple setter is the wrong length (inspired by zip strict in Python 3.10) [#627][]
 
 [#627]: https://github.com/scikit-hep/boost-histogram/pull/627
 
