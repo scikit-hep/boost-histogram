@@ -325,12 +325,12 @@ class TestRegular(Axis):
 
         assert a.index(-1) == 2
         assert a.index(0.99) == -1
-        assert a.index(1.0) == 0
+        assert a.index(1.001) == 0
         assert a.index(9.99) == 0
-        assert a.index(10.0) == 1
+        assert a.index(10.01) == 1
         assert a.index(99.9) == 1
-        assert a.index(100) == 2
-        assert a.index(1000) == 2
+        assert a.index(100.01) == 2
+        assert a.index(1000.1) == 2
 
         assert a.bin(0)[0] == approx(1e0)
         assert a.bin(1)[0] == approx(1e1)
