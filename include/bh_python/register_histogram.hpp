@@ -30,22 +30,6 @@
 #include <tuple>
 #include <vector>
 
-namespace boost {
-namespace histogram {
-namespace detail {
-
-using _atomic_type = histogram<vector_axis_variant, storage::atomic_int64>;
-
-template <>
-struct has_operator_rdiv_impl<_atomic_type, _atomic_type> : detect_base {
-    using type = mp11::mp_false;
-};
-
-} // namespace detail
-} // namespace histogram
-} // namespace boost
-// bh::detail::has_operator_rdiv<histogram_t, histogram_t>{}
-
 template <class S>
 auto register_histogram(py::module& m, const char* name, const char* desc) {
     using histogram_t = bh::histogram<vector_axis_variant, S>;
