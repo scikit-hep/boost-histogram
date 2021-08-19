@@ -197,6 +197,8 @@ class TestRegular(Axis):
         assert a != bh.axis.Regular(3, 1.0, 2.0)
         assert a != bh.axis.Regular(4, 1.1, 2.0)
         assert a != bh.axis.Regular(4, 1.0, 2.1)
+        assert a != object()
+        assert not (a == object())  # __eq__ and __ne__ are separately implemented
 
         # metadata compare
         assert bh.axis.Regular(1, 2, 3, metadata=1) == bh.axis.Regular(
