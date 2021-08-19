@@ -186,12 +186,12 @@ platforms have wheels provided in boost-histogram:
 
 | System | Arch | Python versions | PyPy versions |
 |---------|-----|------------------|--------------|
-| ManyLinux1 (custom GCC 9.2) | 32 & 64-bit | 3.7, 3.8 | |
-| ManyLinux2010 | 32 & 64-bit | 3.6, 3.7, 3.8, 3.9 | (64-bit) 7.3: 3.7 |
-| ManyLinux2014 | ARM64 | 3.6, 3.7, 3.8, 3.9 | |
-| macOS 10.9+ | 64-bit | 3.6, 3.7, 3.8, 3.9 | 7.3: 3.7 |
-| macOS Universal2 | Arm64 | 3.8, 3.9 | |
-| Windows | 32 & 64-bit | 3.6, 3.7, 3.8, 3.9 | (64-bit) 7.3: 3.7 |
+| ManyLinux1 (custom GCC 9.2) | 32 & 64-bit | 3.6, 3.7, 3.8 | |
+| ManyLinux2010 | 32 & 64-bit | 3.6, 3.7, 3.8, 3.9, 3.10 | (64-bit) 7.3: 3.7 |
+| ManyLinux2014 | ARM64 | 3.6, 3.7, 3.8, 3.9, 3.10 | |
+| macOS 10.9+ | 64-bit | 3.6, 3.7, 3.8, 3.9, 3.10 | 7.3: 3.7 |
+| macOS Universal2 | Arm64 | 3.8, 3.9, 3.10 | |
+| Windows | 32 & 64-bit | 3.6, 3.7, 3.8, 3.9, 3.10 | (64-bit) 7.3: 3.7 |
 
 
 * manylinux1: Using a custom docker container with GCC 9 to produce. Anything running Python 3.9 should be compatible with manylinux2010, so manylinux1 not provided for Python 3.9 (like NumPy).
