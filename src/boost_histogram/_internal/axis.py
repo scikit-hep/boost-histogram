@@ -138,10 +138,10 @@ class Axis:
         return self._ax.bin(index)  # type: ignore
 
     def __eq__(self, other: Any) -> bool:
-        return self._ax == other._ax  # type: ignore
+        return hasattr(other, "_ax") and self._ax == other._ax
 
     def __ne__(self, other: Any) -> bool:
-        return self._ax != other._ax  # type: ignore
+        return (not hasattr(other, "_ax")) or self._ax != other._ax
 
     @classmethod
     def _convert_cpp(cls: Type[T], cpp_object: Any) -> T:
