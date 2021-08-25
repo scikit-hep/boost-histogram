@@ -95,7 +95,7 @@ jobs:
         submodules: true
 
     - uses: docker/setup-qemu-action@v1.2.0
-      if: matrix.platform == "crosslinux"
+      if: matrix.platform == 'crosslinux'
       with:
         platforms: all
 
