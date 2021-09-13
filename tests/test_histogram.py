@@ -152,12 +152,8 @@ def test_fill_1d(flow):
         assert get(h, bh.overflow) == 1
 
 
-@pytest.mark.parametrize(
-    "storage",
-    [bh.storage.Int64, bh.storage.Double, bh.storage.Unlimited, bh.storage.AtomicInt64],
-)
-def test_setting(storage):
-    h = bh.Histogram(bh.axis.Regular(10, 0, 1), storage=storage())
+def test_setting(count_single_storage):
+    h = bh.Histogram(bh.axis.Regular(10, 0, 1), storage=count_single_storage())
     h[bh.underflow] = 1
     h[0] = 2
     h[1] = 3
@@ -1284,3 +1280,12 @@ def test_sum_empty_axis():
     )
     assert hist.sum().value == 0
     assert "Str" in repr(hist)
+
+
+# Issue 618
+def test_negative_fill(count_storage):
+    h = bh.Histogram(bh.axis.Integer(0, 3), storage=count_storage())
+    h.fill(1, weight=-1)
+
+    answer = np.array([0, -1, 0])
+    assert h.values() == approx(answer)
