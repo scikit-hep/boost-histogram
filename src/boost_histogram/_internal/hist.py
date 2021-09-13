@@ -337,6 +337,23 @@ class Histogram:
     ) -> H:
         return self + other
 
+    def __sub__(
+        self: H, other: Union["Histogram", "np.typing.NDArray[Any]", float]
+    ) -> H:
+        result = self.copy(deep=False)
+        return result.__isub__(other)
+
+    def __isub__(
+        self: H, other: Union["Histogram", "np.typing.NDArray[Any]", float]
+    ) -> H:
+        if isinstance(other, (int, float)) and other == 0:
+            return self
+        self._compute_inplace_op("__isub__", other)
+
+        self.axes = self._generate_axes_()
+
+        return self
+
     # If these fail, the underlying object throws the correct error
     def __mul__(
         self: H, other: Union["Histogram", "np.typing.NDArray[Any]", float]

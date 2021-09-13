@@ -65,9 +65,14 @@ def test_view_add(v):
     assert_allclose(v2.value, [2, 5, 4, 3])
     assert_allclose(v2.variance, [4, 7, 6, 5])
 
-    v += 2
-    assert_allclose(v.value, [2, 5, 4, 3])
-    assert_allclose(v.variance, [4, 7, 6, 5])
+    v2 = v.copy()
+    v2 += 2
+    assert_allclose(v2.value, [2, 5, 4, 3])
+    assert_allclose(v2.variance, [4, 7, 6, 5])
+
+    v2 = v + v
+    assert_allclose(v2.value, v.value * 2)
+    assert_allclose(v2.variance, v.variance * 2)
 
 
 def test_view_sub(v):
@@ -83,9 +88,14 @@ def test_view_sub(v):
     assert_allclose(v2.value, [1, -2, -1, 0])
     assert_allclose(v2.variance, [1, 4, 3, 2])
 
-    v -= 2
-    assert_allclose(v.value, [-2, 1, 0, -1])
-    assert_allclose(v.variance, [4, 7, 6, 5])
+    v2 = v.copy()
+    v2 -= 2
+    assert_allclose(v2.value, [-2, 1, 0, -1])
+    assert_allclose(v2.variance, [4, 7, 6, 5])
+
+    v2 = v - v
+    assert_allclose(v2.value, [0, 0, 0, 0])
+    assert_allclose(v2.variance, v.variance * 2)
 
 
 def test_view_unary(v):

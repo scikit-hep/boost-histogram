@@ -97,6 +97,9 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
     def_optionally(hist,
                    bh::detail::has_operator_rmul<histogram_t, histogram_t>{},
                    py::self *= py::self);
+    def_optionally(hist,
+                   bh::detail::has_operator_rsub<histogram_t, histogram_t>{},
+                   py::self -= py::self);
 #ifdef __clang__
 #pragma GCC diagnostic pop
 #endif

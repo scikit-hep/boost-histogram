@@ -130,14 +130,14 @@ class WeightedSumView(View):
 
             # Addition of two views
             if input_0.dtype == input_1.dtype:
-                if ufunc in {np.add}:
+                if ufunc in {np.add, np.subtract}:
                     ufunc(
                         input_0["value"],
                         input_1["value"],
                         out=result["value"],
                         **kwargs,
                     )
-                    ufunc(
+                    np.add(
                         input_0["variance"],
                         input_1["variance"],
                         out=result["variance"],
