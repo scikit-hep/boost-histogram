@@ -6,14 +6,24 @@
 
 #### User changes
 * Python 3.10 officially supported, with wheels.
+* Support subtraction on histograms [#636][]
 
 #### Bug fixes
 * Support custom setters on AxesTuple subclasses. [#627][]
 * Throw an error when an AxesTuple setter is the wrong length (inspired by zip strict in Python 3.10) [#627][]
 * Fix error thrown on comparison with axis and non-axis object [#631][]
+* Static typing no longer thinks `storage=` is required [#604][]
 
+#### Developer changes
+* Support NumPy 1.21 for static type checking [#625][]
+* Use newer Boost 1.77 and Boost.Histogram 1.77+1 [#594][]
+
+[#594]: https://github.com/scikit-hep/boost-histogram/pull/594
+[#604]: https://github.com/scikit-hep/boost-histogram/pull/604
+[#625]: https://github.com/scikit-hep/boost-histogram/pull/625
 [#627]: https://github.com/scikit-hep/boost-histogram/pull/627
 [#631]: https://github.com/scikit-hep/boost-histogram/pull/631
+[#636]: https://github.com/scikit-hep/boost-histogram/pull/636
 
 ### Version 1.1.0
 
