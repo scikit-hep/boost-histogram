@@ -7,6 +7,7 @@
 #### User changes
 * Python 3.10 officially supported, with wheels.
 * Support subtraction on histograms [#636][]
+* Integer histograms are now signed [#636][]
 
 #### Bug fixes
 * Support custom setters on AxesTuple subclasses. [#627][]

@@ -43,3 +43,16 @@ def metadata(request):
 )
 def count_storage(request):
     return request.param
+
+
+@pytest.fixture(
+    params=(
+        bh.storage.Double,
+        bh.storage.Int64,
+        bh.storage.AtomicInt64,
+        bh.storage.Unlimited,
+    ),
+    ids=("Double", "Int64", "AtomicInt64", "Unlimited"),
+)
+def count_single_storage(request):
+    return request.param
