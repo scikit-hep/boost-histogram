@@ -404,8 +404,6 @@ def test_add_2d_w(flow):
 
 
 def test_sub_2d(flow, count_storage):
-    if count_storage in {bh.storage.AtomicInt64, bh.storage.Weight}:
-        pytest.skip("Storage does not support subtraction")
 
     h0 = bh.Histogram(
         bh.axis.Integer(-1, 2, underflow=flow, overflow=flow),
@@ -423,15 +421,16 @@ def test_sub_2d(flow, count_storage):
 
     m = h0.values(flow=True).copy()
 
-    h = h0.copy()
-    h -= h0
-    assert h.values(flow=True) == approx(m * 0)
+    if count_storage not in {bh.storage.AtomicInt64, bh.storage.Weight}:
+        h = h0.copy()
+        h -= h0
+        assert h.values(flow=True) == approx(m * 0)
 
-    h -= h0
-    assert h.values(flow=True) == approx(-m)
+        h -= h0
+        assert h.values(flow=True) == approx(-m)
 
-    h2 = h0 - (h0 + h0 + h0)
-    assert h2.values(flow=True) == approx(-2 * m)
+        h2 = h0 - (h0 + h0 + h0)
+        assert h2.values(flow=True) == approx(-2 * m)
 
     h3 = h0 - h0.view(flow=True) * 4
     assert h3.values(flow=True) == approx(-3 * m)
