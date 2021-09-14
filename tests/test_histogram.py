@@ -1,23 +1,17 @@
 import functools
 import operator
+import pickle
 import sys
+from collections import OrderedDict
 from io import BytesIO
 
+import env
 import numpy as np
 import pytest
 from numpy.testing import assert_array_equal
 from pytest import approx
 
 import boost_histogram as bh
-
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
-
-from collections import OrderedDict
-
-import env
 
 
 def test_init():
