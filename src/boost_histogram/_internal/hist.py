@@ -841,16 +841,32 @@ class Histogram:
                 assert isinstance(stop, int)
                 slices.append(_core.algorithm.slice_and_rebin(i, start, stop, merge))
 
-        if slices:
-            logger.debug("Reduce with %s", slices)
-            reduced = self._hist.reduce(*slices)
-        elif pick_set or pick_each or integrations:
-            # Can avoid a copy in these cases, will be copied anyway
-            logger.debug("Reduce is empty, but picking or slicing, so no copy needed")
+        # Will be updated below
+        if slices or pick_set or pick_each or integrations:
             reduced = self._hist
         else:
-            logger.debug("Reduce is empty, just making a copy")
+            logger.debug("Reduce actions are all empty, just making a copy")
             reduced = copy.copy(self._hist)
+
+        if pick_each:
+            tuple_slice = tuple(
+                pick_each.get(i, slice(None)) for i in range(reduced.rank())
+            )
+            logger.debug("Slices for pick each: %s", tuple_slice)
+            axes = [
+                reduced.axis(i) for i in range(reduced.rank()) if i not in pick_each
+            ]
+            logger.debug("Axes: %s", axes)
+            new_reduced = reduced.__class__(axes)
+            new_reduced.view(flow=True)[...] = reduced.view(flow=True)[tuple_slice]
+            reduced = new_reduced
+            integrations = {i - sum(j <= i for j in pick_each) for i in integrations}
+            for slice_ in slices:
+                slice_.iaxis -= sum(j <= slice_.iaxis for j in pick_each)
+
+        if slices:
+            logger.debug("Reduce with %s", slices)
+            reduced = reduced.reduce(*slices)
 
         if pick_set:
             warnings.warn(
@@ -879,20 +895,6 @@ class Histogram:
             new_reduced = reduced.__class__(axes)
             new_reduced.view(flow=True)[...] = reduced_view
             reduced = new_reduced
-
-        if pick_each:
-            tuple_slice = tuple(
-                pick_each.get(i, slice(None)) for i in range(reduced.rank())
-            )
-            logger.debug("Slices for pick each: %s", tuple_slice)
-            axes = [
-                reduced.axis(i) for i in range(reduced.rank()) if i not in pick_each
-            ]
-            logger.debug("Axes: %s", axes)
-            new_reduced = reduced.__class__(axes)
-            new_reduced.view(flow=True)[...] = reduced.view(flow=True)[tuple_slice]
-            reduced = new_reduced
-            integrations = {i - sum(j <= i for j in pick_each) for i in integrations}
 
         if integrations:
             projections = [i for i in range(reduced.rank()) if i not in integrations]

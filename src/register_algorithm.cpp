@@ -10,6 +10,7 @@
 void register_algorithms(py::module& algorithm) {
     py::class_<bh::algorithm::reduce_command>(algorithm, "reduce_command")
         .def(py::init<bh::algorithm::reduce_command>())
+        .def_readwrite("iaxis", &bh::algorithm::reduce_command::iaxis)
         .def("__repr__", [](const bh::algorithm::reduce_command& self) {
             using range_t = bh::algorithm::reduce_command::range_t;
 

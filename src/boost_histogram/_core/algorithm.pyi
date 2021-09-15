@@ -2,6 +2,7 @@ import enum
 import typing
 
 class reduce_command:
+    iaxis: int
     def __repr__(self) -> str: ...
 
 class slice_mode(enum.Enum):
