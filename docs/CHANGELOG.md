@@ -1,8 +1,8 @@
 # What's new in boost-histogram
 
-## Version 1.1
+## Version 1.2
 
-### Version 1.1.1
+### Version 1.2.0
 
 #### User changes
 * Python 3.10 officially supported, with wheels.
@@ -11,6 +11,7 @@
 
 #### Bug fixes
 * Support custom setters on AxesTuple subclasses. [#627][]
+* Faster picking if slices are not also used [#645][]
 * Throw an error when an AxesTuple setter is the wrong length (inspired by zip strict in Python 3.10) [#627][]
 * Fix error thrown on comparison with axis and non-axis object [#631][]
 * Static typing no longer thinks `storage=` is required [#604][]
@@ -26,7 +27,10 @@
 [#627]: https://github.com/scikit-hep/boost-histogram/pull/627
 [#631]: https://github.com/scikit-hep/boost-histogram/pull/631
 [#636]: https://github.com/scikit-hep/boost-histogram/pull/636
+[#645]: https://github.com/scikit-hep/boost-histogram/pull/645
 [#647]: https://github.com/scikit-hep/boost-histogram/pull/647
+
+## Version 1.1
 
 ### Version 1.1.0
 
