@@ -11,7 +11,7 @@
 
 #### Bug fixes
 * Support custom setters on AxesTuple subclasses. [#627][]
-* Faster picking if slices are not also used [#645][]
+* Faster picking if slices are not also used [#645][] or if they are [#648][] (1000x or more in some cases)
 * Throw an error when an AxesTuple setter is the wrong length (inspired by zip strict in Python 3.10) [#627][]
 * Fix error thrown on comparison with axis and non-axis object [#631][]
 * Static typing no longer thinks `storage=` is required [#604][]
@@ -29,6 +29,7 @@
 [#636]: https://github.com/scikit-hep/boost-histogram/pull/636
 [#645]: https://github.com/scikit-hep/boost-histogram/pull/645
 [#647]: https://github.com/scikit-hep/boost-histogram/pull/647
+[#648]: https://github.com/scikit-hep/boost-histogram/pull/648
 
 ## Version 1.1
 

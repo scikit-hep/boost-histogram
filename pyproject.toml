@@ -11,7 +11,7 @@ write_to = "src/boost_histogram/version.py"
 
 [tool.pytest.ini_options]
 junit_family = "xunit2"
-addopts = "--benchmark-disable -Wd --strict-markers"
+addopts = "--benchmark-disable -Wd --strict-markers -ra"
 xfail_strict = true
 testpaths = ["tests"]
 required_plugins = ["pytest-benchmark"]
