@@ -24,8 +24,20 @@ The primary values from a histogram are always available as ``.values()``. The v
 Views
 ^^^^^
 
-While Histograms do conform to the Python buffer protocol, the best way to get access to the raw contents of a histogram as a NumPy array is with ``.view()``. This way you can optionally pass ``flow=True`` to get the flow bins, and if you have an accumulator storage, you will get a View, which is a slightly augmented ndarrray subclass (see :ref:`usage-accumulators`).
+While Histograms do conform to the Python buffer protocol, the best way to get access to the raw contents of a histogram as a NumPy array is with ``.view()``. This way you can optionally pass ``flow=True`` to get the flow bins, and if you have an accumulator storage, you will get a View, which is a slightly augmented ndarrray subclass (see :ref:`usage-accumulators`). Views support setting as well for non-computed properties; you can use an expression like this to set the values of an accumulator storage:
 
+.. code:: python3
+
+   h.view().value = values
+
+
+You can also used stacked arrays (N+1 dimensional) to set a histogram's contents. This is especially useful if you need to set a computed value, like variance on a Mean/WeightedMean storage, which cannot be set using the above method:
+
+.. code:: python3
+
+   h[...] = np.stack([values, variances], axis=-1)
+
+If you leave endpoints off (such as with ``...`` above), then you can match the size with or without flow bins.
 
 Operations
 ^^^^^^^^^^

@@ -159,4 +159,8 @@ Most of the accumulators (except Sum) support a View. This is what is returned f
 a histogram when ``.view()`` is requested. This is a structured NumPy ndarray, with a few small
 additions to make them easier to work with. Like a NumPy recarray, you can access the fields with
 attributes; you can even access (but not set) computed attributes like ``.variance``. A view will
-also return an accumulator instance if you select a single item.
+also return an accumulator instance if you select a single item. You can set a view's contents
+with a stacked array, and each item in the stack will be used for the (computed) values that a
+normal constructor would take. For example, WeighedMean can take an array with a final
+dimension four long, with ``sum_of_weights``, ``sum_of_weights_squared``, ``value``, and ``variance``
+elements, even though several of these values are computed from the internal representation.
