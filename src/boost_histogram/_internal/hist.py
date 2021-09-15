@@ -841,8 +841,16 @@ class Histogram:
                 assert isinstance(stop, int)
                 slices.append(_core.algorithm.slice_and_rebin(i, start, stop, merge))
 
-        logger.debug("Reduce with %s", slices)
-        reduced = self._hist.reduce(*slices)
+        if slices:
+            logger.debug("Reduce with %s", slices)
+            reduced = self._hist.reduce(*slices)
+        elif pick_set or pick_each or integrations:
+            # Can avoid a copy in these cases, will be copied anyway
+            logger.debug("Reduce is empty, but picking or slicing, so no copy needed")
+            reduced = self._hist
+        else:
+            logger.debug("Reduce is empty, just making a copy")
+            reduced = copy.copy(self._hist)
 
         if pick_set:
             warnings.warn(
