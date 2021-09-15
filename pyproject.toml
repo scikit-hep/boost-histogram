@@ -84,5 +84,5 @@ ignore = [
 [tool.cibuildwheel]
 test-extras = "test"
 test-command = "pytest {project}/tests"
-test-skip = ["pp*macos*", "pp*win*", "*universal2:arm64"]
+test-skip = ["pp*macos*", "pp*win*", "*universal2:arm64", "cp310*macos*"]
 skip = ["pp*-manylinux_i686"]  # not supported by NumPy
