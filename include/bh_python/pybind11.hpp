@@ -45,7 +45,7 @@ std::string shift_to_string(const T& x) {
 }
 
 template <class Obj>
-void unchecked_set_impl(std::true_type, py::tuple& tup, ssize_t i, Obj&& obj) {
+void unchecked_set_impl(std::true_type, py::tuple& tup, py::ssize_t i, Obj&& obj) {
     // PyTuple_SetItem steals a reference to 'val'
     if(PyTuple_SetItem(tup.ptr(), i, obj.release().ptr()) != 0) {
         throw py::error_already_set();
@@ -53,7 +53,7 @@ void unchecked_set_impl(std::true_type, py::tuple& tup, ssize_t i, Obj&& obj) {
 }
 
 template <class T>
-void unchecked_set_impl(std::false_type, py::tuple& tup, ssize_t i, T&& t) {
+void unchecked_set_impl(std::false_type, py::tuple& tup, py::ssize_t i, T&& t) {
     unchecked_set_impl(std::true_type{}, tup, i, py::cast(std::forward<T>(t)));
 }
 
@@ -62,6 +62,6 @@ template <class T>
 void unchecked_set(py::tuple& tup, std::size_t i, T&& t) {
     unchecked_set_impl(std::is_base_of<py::object, std::decay_t<T>>{},
                        tup,
-                       static_cast<ssize_t>(i),
+                       static_cast<py::ssize_t>(i),
                        std::forward<T>(t));
 }

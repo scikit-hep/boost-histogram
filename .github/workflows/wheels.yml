@@ -19,7 +19,7 @@ on:
 
 env:
   SETUPTOOLS_SCM_PRETEND_VERSION: ${{ github.event.inputs.overrideVersion }}
-  CIBW_ENVIRONMENT: "PIP_ONLY_BINARY=numpy SETUPTOOLS_SCM_PRETEND_VERSION=${{ github.event.inputs.overrideVersion }}"
+  CIBW_ENVIRONMENT: "PIP_PREFER_BINARY=1 SETUPTOOLS_SCM_PRETEND_VERSION=${{ github.event.inputs.overrideVersion }}"
 
 jobs:
   build_sdist:
@@ -81,12 +81,16 @@ jobs:
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
         arch: [auto64]
-        build: ["*"]
+        build: ["?p3?-* *macos* *win*"]
+        CIBW_MANYLINUX_X86_64_IMAGE: [manylinux2010]
+        CIBW_MANYLINUX_I686_IMAGE: [manylinux2010]
 
         include:
           - os: ubuntu-latest
             arch: auto32
-            build: "*"
+            build: "?p3?-*"
+            CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
+            CIBW_MANYLINUX_I686_IMAGE: manylinux2010
 
           - os: ubuntu-latest
             type: ManyLinux1
@@ -94,6 +98,13 @@ jobs:
             build: "cp{36,37,38}-*"
             CIBW_MANYLINUX_X86_64_IMAGE: skhep/manylinuxgcc-x86_64
             CIBW_MANYLINUX_I686_IMAGE: skhep/manylinuxgcc-i686
+
+          - os: ubuntu-latest
+            type: ManyLinux2014
+            arch: auto
+            build: "cp310-*"
+            CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
+            CIBW_MANYLINUX_I686_IMAGE: manylinux2014
 
           - os: macos-latest
             arch: universal2
