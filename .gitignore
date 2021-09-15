@@ -34,6 +34,7 @@
 # Build directories
 /*build*
 /docs/_build/*
+/examples/*/*build*
 /pip-wheel-metadata/*
 
 # Outputs
@@ -56,6 +57,7 @@
 *.swp
 *~
 *.clangd
+/.cache/*
 compile_commands.json
 
 # Venvs such as /.env
@@ -68,12 +70,14 @@ compile_commands.json
 /node_modules/*
 /yarn.lock
 /package.json
+/package-lock.json
 
 # Testing
 /.benchmarks/*
+/.hypothesis/*
 
 # PyCharm
-.idea
+/.idea/*
 
-# All-contributors
-package-lock.json
+# VSCode
+/.vscode/*

@@ -3,14 +3,19 @@
 
 import pickle
 from pathlib import Path
+from typing import Optional
 
 import typer
 
 import boost_histogram as bh
 
+DIR = Path(__file__).parent.resolve()
+
 
 def make_pickle(
-    output: Path = typer.Argument(..., exists=False), *, protocol: int = 2  # noqa: B008
+    output: Optional[Path] = typer.Argument(None, exists=False),  # noqa: B008
+    *,
+    protocol: int = 2,
 ):
     """
     Make a pickle file with the current boost-histogram for use in tests.
@@ -18,7 +23,10 @@ def make_pickle(
 
     VER = tuple(map(int, bh.__version__.split(".")))
 
-    h1 = bh.Histogram(bh.axis.Regular(31, -15, 15))
+    if output is None:
+        output = DIR / f"bh_{bh.__version__}.pkl"
+
+    h1 = bh.Histogram(bh.axis.Regular(31, -15, 15), storage=bh.storage.Int64())
     h2 = bh.Histogram(
         bh.axis.Integer(0, 5, metadata={"hello": "world"}), storage=bh.storage.Weight()
     )

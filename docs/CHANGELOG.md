@@ -18,6 +18,7 @@
 #### Developer changes
 * Support NumPy 1.21 for static type checking [#625][]
 * Use newer Boost 1.77 and Boost.Histogram 1.77+1 [#594][]
+* Provide nox support [#647][]
 
 [#594]: https://github.com/scikit-hep/boost-histogram/pull/594
 [#604]: https://github.com/scikit-hep/boost-histogram/pull/604
@@ -25,6 +26,7 @@
 [#627]: https://github.com/scikit-hep/boost-histogram/pull/627
 [#631]: https://github.com/scikit-hep/boost-histogram/pull/631
 [#636]: https://github.com/scikit-hep/boost-histogram/pull/636
+[#647]: https://github.com/scikit-hep/boost-histogram/pull/647
 
 ### Version 1.1.0
 
