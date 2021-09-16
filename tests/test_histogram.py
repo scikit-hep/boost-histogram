@@ -1,23 +1,17 @@
 import functools
 import operator
+import pickle
 import sys
+from collections import OrderedDict
 from io import BytesIO
 
+import env
 import numpy as np
 import pytest
 from numpy.testing import assert_array_equal
 from pytest import approx
 
 import boost_histogram as bh
-
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
-
-from collections import OrderedDict
-
-import env
 
 
 def test_init():
@@ -152,12 +146,8 @@ def test_fill_1d(flow):
         assert get(h, bh.overflow) == 1
 
 
-@pytest.mark.parametrize(
-    "storage",
-    [bh.storage.Int64, bh.storage.Double, bh.storage.Unlimited, bh.storage.AtomicInt64],
-)
-def test_setting(storage):
-    h = bh.Histogram(bh.axis.Regular(10, 0, 1), storage=storage())
+def test_setting(count_single_storage):
+    h = bh.Histogram(bh.axis.Regular(10, 0, 1), storage=count_single_storage())
     h[bh.underflow] = 1
     h[0] = 2
     h[1] = 3
@@ -401,6 +391,50 @@ def test_add_2d_w(flow):
     for i in range(-flow, h.axes[0].size + flow):
         for j in range(-flow, h.axes[1].size + flow):
             assert h[bh.tag.at(i), bh.tag.at(j)] == 2 * m[i][j]
+
+
+def test_sub_2d(flow, count_storage):
+
+    h0 = bh.Histogram(
+        bh.axis.Integer(-1, 2, underflow=flow, overflow=flow),
+        bh.axis.Regular(4, -2, 2, underflow=flow, overflow=flow),
+        storage=count_storage(),
+    )
+
+    h0.fill(-1, -2)
+    h0.fill(-1, -1)
+    h0.fill(0, 0)
+    h0.fill(0, 1)
+    h0.fill(1, 0)
+    h0.fill(3, -1)
+    h0.fill(0, -3)
+
+    m = h0.values(flow=True).copy()
+
+    if count_storage not in {bh.storage.AtomicInt64, bh.storage.Weight}:
+        h = h0.copy()
+        h -= h0
+        assert h.values(flow=True) == approx(m * 0)
+
+        h -= h0
+        assert h.values(flow=True) == approx(-m)
+
+        h2 = h0 - (h0 + h0 + h0)
+        assert h2.values(flow=True) == approx(-2 * m)
+
+    h3 = h0 - h0.view(flow=True) * 4
+    assert h3.values(flow=True) == approx(-3 * m)
+
+    h4 = h0.copy()
+    h4 -= h0.view(flow=True) * 5
+    assert h4.values(flow=True) == approx(-4 * m)
+
+    h5 = h0.copy()
+    h5 -= 2
+    assert h5.values(flow=True) == approx(m - 2)
+
+    h6 = h0 - 3
+    assert h6.values(flow=True) == approx(m - 3)
 
 
 def test_repr():
@@ -733,7 +767,7 @@ def test_pickle_bool():
     assert_array_equal(a.view(), b.view())
 
 
-# Numpy tests
+# NumPy tests
 
 
 def test_numpy_conversion_0():
@@ -1240,3 +1274,12 @@ def test_sum_empty_axis():
     )
     assert hist.sum().value == 0
     assert "Str" in repr(hist)
+
+
+# Issue 618
+def test_negative_fill(count_storage):
+    h = bh.Histogram(bh.axis.Integer(0, 3), storage=count_storage())
+    h.fill(1, weight=-1)
+
+    answer = np.array([0, -1, 0])
+    assert h.values() == approx(answer)

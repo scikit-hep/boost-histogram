@@ -8,7 +8,7 @@ import boost_histogram as bh
 DIR = os.path.abspath(os.path.dirname(__file__))
 
 
-@pytest.mark.parametrize("version", ["0.10.2", "0.6.2", "0.11.1"])
+@pytest.mark.parametrize("version", ["0.10.2", "0.6.2", "0.11.1", "1.1.0"])
 def test_read_pickle(version):
 
     filename = os.path.join(DIR, "pickles", f"bh_{version}.pkl")
@@ -21,7 +21,9 @@ def test_read_pickle(version):
     h2 = d["h2"]
     h3 = d["h3"]
 
-    assert h1._storage_type == bh.storage.Double
+    assert h1._storage_type == (
+        bh.storage.Double if version[0] == "0" else bh.storage.Int64
+    )
     assert h2._storage_type == bh.storage.Weight
     assert h3._storage_type == bh.storage.Double
 

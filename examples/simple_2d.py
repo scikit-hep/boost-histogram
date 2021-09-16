@@ -10,12 +10,12 @@ h = bh.Histogram(
     bh.axis.Regular(20, -3, 3, metadata="x"), bh.axis.Regular(20, -3, 3, metadata="y")
 )
 
-# Generate some Numpy arrays with data to fill into histogram,
+# Generate some NumPy arrays with data to fill into histogram,
 # in this case normal distributed random numbers in x and y
 x = np.random.randn(1_000)
 y = 0.5 * np.random.randn(1_000)
 
-# Fill histogram with Numpy arrays, this is very fast
+# Fill histogram with NumPy arrays, this is very fast
 h.fill(x, y)
 
 # Get numpy.histogram compatible representation of the histogram

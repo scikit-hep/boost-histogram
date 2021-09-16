@@ -1,6 +1,6 @@
 import pytest
 
-import boost_histogram  # noqa: F401
+import boost_histogram as bh
 
 
 @pytest.fixture(params=(False, True), ids=("no_growth", "growth"))
@@ -28,4 +28,31 @@ def flow(request):
     ids=("no_metadata", "str_metadata", "int_metadata", "dict_metadata"),
 )
 def metadata(request):
+    return request.param
+
+
+@pytest.fixture(
+    params=(
+        bh.storage.Double,
+        bh.storage.Int64,
+        bh.storage.AtomicInt64,
+        bh.storage.Weight,
+        bh.storage.Unlimited,
+    ),
+    ids=("Double", "Int64", "AtomicInt64", "Weight", "Unlimited"),
+)
+def count_storage(request):
+    return request.param
+
+
+@pytest.fixture(
+    params=(
+        bh.storage.Double,
+        bh.storage.Int64,
+        bh.storage.AtomicInt64,
+        bh.storage.Unlimited,
+    ),
+    ids=("Double", "Int64", "AtomicInt64", "Unlimited"),
+)
+def count_single_storage(request):
     return request.param

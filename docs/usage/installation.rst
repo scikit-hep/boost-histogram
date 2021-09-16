@@ -79,7 +79,7 @@ are dictated by Boost.Histogram’s C++ requirements: gcc >= 5.5, clang >=
 3.8, msvc >= 14.1. You should have a version of pip less than 2-3 years
 old (10+).
 
-Numpy is downloaded during the build (enables multithreaded builds).
+NumPy is downloaded during the build (enables multithreaded builds).
 Boost is not required or needed (this only depends on included
 header-only dependencies).This library is under active development; you
 can install directly from GitHub if you would like.

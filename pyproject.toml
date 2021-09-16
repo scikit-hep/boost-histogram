@@ -1,9 +1,8 @@
 [build-system]
 requires = [
-    "setuptools>=42",
+    "setuptools>=45",
     "wheel",
-    "toml",
-    "setuptools_scm>=4.1.2"
+    "setuptools_scm[toml]>=4.1.2"
 ]
 build-backend = "setuptools.build_meta"
 
@@ -12,7 +11,7 @@ write_to = "src/boost_histogram/version.py"
 
 [tool.pytest.ini_options]
 junit_family = "xunit2"
-addopts = "--benchmark-disable -Wd --strict-markers"
+addopts = "--benchmark-disable -Wd --strict-markers -ra"
 xfail_strict = true
 testpaths = ["tests"]
 required_plugins = ["pytest-benchmark"]
@@ -85,5 +84,5 @@ ignore = [
 [tool.cibuildwheel]
 test-extras = "test"
 test-command = "pytest {project}/tests"
-test-skip = ["pp*macos*", "pp*win*", "*universal2:arm64"]
+test-skip = ["pp*macos*", "pp*win*", "*universal2:arm64", "cp310*macos*"]
 skip = ["pp*-manylinux_i686"]  # not supported by NumPy

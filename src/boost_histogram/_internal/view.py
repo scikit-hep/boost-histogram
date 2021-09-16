@@ -6,11 +6,11 @@ from ..accumulators import Mean, WeightedMean, WeightedSum
 from .typing import ArrayLike, StrIndex, Ufunc
 
 
-class View(np.ndarray):
+class View(np.ndarray):  # type: ignore
     __slots__ = ()
     _FIELDS: ClassVar[Tuple[str, ...]]
 
-    def __getitem__(self, ind: StrIndex) -> np.ndarray:
+    def __getitem__(self, ind: StrIndex) -> "np.typing.NDArray[Any]":
         sliced = super().__getitem__(ind)
 
         # If the shape is empty, return the parent type
@@ -24,7 +24,7 @@ class View(np.ndarray):
             return sliced  # type: ignore
 
     def __repr__(self) -> str:
-        # Numpy starts the ndarray class name with "array", so we replace it
+        # NumPy starts the ndarray class name with "array", so we replace it
         # with our class name
         return f"{self.__class__.__name__}(\n      " + repr(self.view(np.ndarray))[6:]
 
@@ -97,13 +97,13 @@ class WeightedSumView(View):
     __slots__ = ()
     _PARENT = WeightedSum
 
-    value: np.ndarray
-    variance: np.ndarray
+    value: "np.typing.NDArray[Any]"
+    variance: "np.typing.NDArray[Any]"
 
     # Could be implemented on master View
     def __array_ufunc__(
         self, ufunc: Ufunc, method: str, *inputs: Any, **kwargs: Any
-    ) -> np.ndarray:
+    ) -> "np.typing.NDArray[Any]":
 
         # This one is defined for record arrays, so just use it
         # (Doesn't get picked up the pass-through)
@@ -130,14 +130,14 @@ class WeightedSumView(View):
 
             # Addition of two views
             if input_0.dtype == input_1.dtype:
-                if ufunc in {np.add}:
+                if ufunc in {np.add, np.subtract}:
                     ufunc(
                         input_0["value"],
                         input_1["value"],
                         out=result["value"],
                         **kwargs,
                     )
-                    ufunc(
+                    np.add(
                         input_0["variance"],
                         input_1["variance"],
                         out=result["variance"],
@@ -205,13 +205,13 @@ class WeightedMeanView(View):
     __slots__ = ()
     _PARENT = WeightedMean
 
-    sum_of_weights: np.ndarray
-    sum_of_weights_squared: np.ndarray
-    value: np.ndarray
-    _sum_of_weighted_deltas_squared: np.ndarray
+    sum_of_weights: "np.typing.NDArray[Any]"
+    sum_of_weights_squared: "np.typing.NDArray[Any]"
+    value: "np.typing.NDArray[Any]"
+    _sum_of_weighted_deltas_squared: "np.typing.NDArray[Any]"
 
     @property
-    def variance(self) -> np.ndarray:
+    def variance(self) -> "np.typing.NDArray[Any]":
         with np.errstate(divide="ignore", invalid="ignore"):
             return self["_sum_of_weighted_deltas_squared"] / (  # type: ignore
                 self["sum_of_weights"]
@@ -224,20 +224,20 @@ class MeanView(View):
     __slots__ = ()
     _PARENT = Mean
 
-    count: np.ndarray
-    value: np.ndarray
-    _sum_of_deltas_squared: np.ndarray
+    count: "np.typing.NDArray[Any]"
+    value: "np.typing.NDArray[Any]"
+    _sum_of_deltas_squared: "np.typing.NDArray[Any]"
 
     # Variance is a computation
     @property
-    def variance(self) -> np.ndarray:
+    def variance(self) -> "np.typing.NDArray[Any]":
         with np.errstate(divide="ignore", invalid="ignore"):
-            return self["_sum_of_deltas_squared"] / (self["count"] - 1)  # type: ignore
+            return self["_sum_of_deltas_squared"] / (self["count"] - 1)
 
 
 def _to_view(
-    item: np.ndarray, value: bool = False
-) -> Union[np.ndarray, WeightedSumView, WeightedMeanView, MeanView]:
+    item: "np.typing.NDArray[Any]", value: bool = False
+) -> Union["np.typing.NDArray[Any]", WeightedSumView, WeightedMeanView, MeanView]:
     for cls in View.__subclasses__():
         if cls._FIELDS == item.dtype.names:
             ret = item.view(cls)

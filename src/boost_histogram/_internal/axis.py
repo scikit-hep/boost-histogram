@@ -138,10 +138,10 @@ class Axis:
         return self._ax.bin(index)  # type: ignore
 
     def __eq__(self, other: Any) -> bool:
-        return self._ax == other._ax  # type: ignore
+        return hasattr(other, "_ax") and self._ax == other._ax
 
     def __ne__(self, other: Any) -> bool:
-        return self._ax != other._ax  # type: ignore
+        return (not hasattr(other, "_ax")) or self._ax != other._ax
 
     @classmethod
     def _convert_cpp(cls: Type[T], cpp_object: Any) -> T:
@@ -248,18 +248,18 @@ class Axis:
         return self.bin(i)
 
     @property
-    def edges(self) -> np.ndarray:
+    def edges(self) -> "np.typing.NDArray[Any]":
         return self._ax.edges  # type: ignore
 
     @property
-    def centers(self) -> np.ndarray:
+    def centers(self) -> "np.typing.NDArray[Any]":
         """
         An array of bin centers.
         """
         return self._ax.centers  # type: ignore
 
     @property
-    def widths(self) -> np.ndarray:
+    def widths(self) -> "np.typing.NDArray[Any]":
         """
         An array of bin widths.
         """

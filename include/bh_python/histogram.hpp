@@ -20,8 +20,8 @@ namespace pybind11 {
 /// The descriptor for atomic_* is the same as the descriptor for *, as long this uses
 /// standard layout
 template <class T>
-struct format_descriptor<bh::accumulators::thread_safe<T>> : format_descriptor<T> {
-    static_assert(std::is_standard_layout<bh::accumulators::thread_safe<T>>::value, "");
+struct format_descriptor<bh::accumulators::count<T, true>> : format_descriptor<T> {
+    static_assert(std::is_standard_layout<bh::accumulators::count<T, true>>::value, "");
 };
 
 } // namespace pybind11
@@ -31,11 +31,11 @@ namespace detail {
 template <class Axes, class T>
 py::buffer_info make_buffer_impl(const Axes& axes, bool flow, T* ptr) {
     // strides are in bytes
-    auto shape     = bh::detail::make_stack_buffer<ssize_t>(axes);
-    auto strides   = bh::detail::make_stack_buffer<ssize_t>(axes);
-    ssize_t stride = sizeof(T);
-    unsigned rank  = 0;
-    char* start    = reinterpret_cast<char*>(ptr);
+    auto shape         = bh::detail::make_stack_buffer<py::ssize_t>(axes);
+    auto strides       = bh::detail::make_stack_buffer<py::ssize_t>(axes);
+    py::ssize_t stride = sizeof(T);
+    unsigned rank      = 0;
+    char* start        = reinterpret_cast<char*>(ptr);
     bh::detail::for_each_axis(axes, [&](const auto& axis) {
         const bool underflow
             = bh::axis::traits::options(axis) & bh::axis::option::underflow;

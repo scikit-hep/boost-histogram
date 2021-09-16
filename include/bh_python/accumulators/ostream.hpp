@@ -79,7 +79,7 @@ std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>&
 template <class CharT, class Traits, class T>
 std::basic_ostream<CharT, Traits>&
 operator<<(std::basic_ostream<CharT, Traits>& os,
-           const ::boost::histogram::accumulators::thread_safe<T>& x) {
+           const ::boost::histogram::accumulators::count<T, true>& x) {
     os << x.load();
     return os;
 }

@@ -17,9 +17,13 @@ on:
     types:
       - published
 
+concurrency:
+  group: wheels-${{ github.head_ref }}
+  cancel-in-progress: true
+
 env:
   SETUPTOOLS_SCM_PRETEND_VERSION: ${{ github.event.inputs.overrideVersion }}
-  CIBW_ENVIRONMENT: "PIP_ONLY_BINARY=numpy SETUPTOOLS_SCM_PRETEND_VERSION=${{ github.event.inputs.overrideVersion }}"
+  CIBW_ENVIRONMENT: "PIP_PREFER_BINARY=1 SETUPTOOLS_SCM_PRETEND_VERSION=${{ github.event.inputs.overrideVersion }}"
 
 jobs:
   build_sdist:
@@ -34,7 +38,7 @@ jobs:
       run: pipx run build --sdist
 
     - name: Check metadata
-      run: pipx run twine check dist/*
+      run: pipx run twine check --strict dist/*
 
     - uses: actions/upload-artifact@v2
       with:
@@ -46,7 +50,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        python: [36, 37, 38, 39]
+        python: [36, 37, 38, 39, 310]
         arch: [aarch64]
     steps:
 
@@ -58,7 +62,7 @@ jobs:
       with:
         platforms: all
 
-    - uses: pypa/cibuildwheel@v2.0.0a4
+    - uses: pypa/cibuildwheel@v2.1.2
       env:
         CIBW_BUILD: cp${{ matrix.python }}-*
         CIBW_ARCHS: ${{ matrix.arch }}
@@ -79,14 +83,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-latest]
+        os: [windows-latest, macos-latest, ubuntu-latest]
         arch: [auto64]
-        build: ["*"]
+        build: ["?p3?-* *macos* *win*"]
+        CIBW_MANYLINUX_X86_64_IMAGE: [manylinux2010]
+        CIBW_MANYLINUX_I686_IMAGE: [manylinux2010]
 
         include:
           - os: ubuntu-latest
-            arch: auto
-            build: "pp*"
+            arch: auto32
+            build: "?p3?-*"
             CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
             CIBW_MANYLINUX_I686_IMAGE: manylinux2010
 
@@ -96,6 +102,13 @@ jobs:
             build: "cp{36,37,38}-*"
             CIBW_MANYLINUX_X86_64_IMAGE: skhep/manylinuxgcc-x86_64
             CIBW_MANYLINUX_I686_IMAGE: skhep/manylinuxgcc-i686
+
+          - os: ubuntu-latest
+            type: ManyLinux2014
+            arch: auto
+            build: "cp310-*"
+            CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
+            CIBW_MANYLINUX_I686_IMAGE: manylinux2014
 
           - os: macos-latest
             arch: universal2
@@ -110,7 +123,7 @@ jobs:
       with:
         submodules: true
 
-    - uses: pypa/cibuildwheel@v2.0.0a4
+    - uses: pypa/cibuildwheel@v2.1.2
       env:
         CIBW_BUILD: ${{ matrix.build }}
         CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.CIBW_MANYLINUX_I686_IMAGE }}

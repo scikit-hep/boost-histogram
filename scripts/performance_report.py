@@ -72,7 +72,7 @@ print(table_spacer)
 base = print_timer(
     setup_1d,
     "h, _ = np.histogram(vals, bins=bins, range=ranges)",
-    name="Numpy",
+    name="NumPy",
     storage="uint64",
     fill="",
     flow="no",
@@ -163,7 +163,7 @@ print(table_spacer)
 base = print_timer(
     setup_2d,
     "H, *ledges = np.histogram2d(*vals, bins=bins, range=ranges)",
-    name="Numpy",
+    name="NumPy",
     storage="uint64",
     fill="",
     flow="no",

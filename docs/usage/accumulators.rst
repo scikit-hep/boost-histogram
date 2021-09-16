@@ -37,14 +37,14 @@ showing how non-accurate sums fail to produce the obvious answer, 2.0::
     print(f"{sum(values) = } (simple)")
     print(f"{math.fsum(values) = }")
     print(f"{np.sum(values) = } (pairwise)")
-    print(f{bh.accumulators.Sum().fill(values) = }")
+    print(f"{bh.accumulators.Sum().fill(values) = }")
 
 .. code:: text
 
-    sum(values) = 0.0
+    sum(values) = 0.0 (simple)
     math.fsum(values) = 2.0
-    np.sum(values) = 0.0
-    bh.accumulators.Sum().fill(values) = Sum(2)
+    np.sum(values) = 0.0 (pairwise)
+    bh.accumulators.Sum().fill(values) = Sum(0 + 2)
 
 
 Note that this is still intended for performance and does not guarantee
@@ -53,12 +53,12 @@ orders of values::
 
     values = [1., 1e100, 1e50, 1., -1e50, -1e100]
     print(f"{math.fsum(values) = }")
-    print(f{bh.accumulators.Sum().fill(values) = }")
+    print(f"{bh.accumulators.Sum().fill(values) = }")
 
 .. code:: text
 
     math.fsum(values) = 2.0
-    bh.accumulators.Sum().fill(values) = Sum(0)
+    bh.accumulators.Sum().fill(values) = Sum(0 + 0)
 
 You should note that this is a highly contrived example and the Sum accumulator
 should still outperform simple and pairwise summation methods for a minimal
@@ -156,7 +156,11 @@ Views
 -----
 
 Most of the accumulators (except Sum) support a View. This is what is returned from
-a histogram when ``.view()`` is requested. This is a structured Numpy ndarray, with a few small
-additions to make them easier to work with. Like a Numpy recarray, you can access the fields with
+a histogram when ``.view()`` is requested. This is a structured NumPy ndarray, with a few small
+additions to make them easier to work with. Like a NumPy recarray, you can access the fields with
 attributes; you can even access (but not set) computed attributes like ``.variance``. A view will
-also return an accumulator instance if you select a single item.
+also return an accumulator instance if you select a single item. You can set a view's contents
+with a stacked array, and each item in the stack will be used for the (computed) values that a
+normal constructor would take. For example, WeighedMean can take an array with a final
+dimension four long, with ``sum_of_weights``, ``sum_of_weights_squared``, ``value``, and ``variance``
+elements, even though several of these values are computed from the internal representation.

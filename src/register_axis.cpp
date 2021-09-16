@@ -55,7 +55,7 @@ void register_axes(py::module& mod) {
              "bins"_a,
              "start"_a,
              "stop"_a,
-             "tranform"_a)
+             "transform"_a)
         .def_property_readonly("transform", [](const axis::regular_trans& self) {
             return self.transform();
         });

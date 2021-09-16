@@ -20,7 +20,7 @@ jobs:
     - uses: actions/setup-python@v1
       with:
         python-version: '3.8'
-    - name: Pre-install Numpy
+    - name: Pre-install NumPy
       run: python -m pip install -r dev-requirements.txt nbconvert ipykernel
     - name: Install kernel
       run: python -m ipykernel install --user --name boost-hist

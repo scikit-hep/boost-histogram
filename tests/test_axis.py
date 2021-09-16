@@ -88,7 +88,7 @@ def test_metadata(axis, args, opt, kwargs):
 
 
 # The point of this ABC is to force all the tests listed here to be implemented
-# for each axis type. PyTest instantiates these test classes for us, so missing
+# for each axis type. Pytest instantiates these test classes for us, so missing
 # one really does fail the test.
 class Axis(abc.ABC):
     @abc.abstractmethod
@@ -197,6 +197,8 @@ class TestRegular(Axis):
         assert a != bh.axis.Regular(3, 1.0, 2.0)
         assert a != bh.axis.Regular(4, 1.1, 2.0)
         assert a != bh.axis.Regular(4, 1.0, 2.1)
+        assert a != object()
+        assert not (a == object())  # __eq__ and __ne__ are separately implemented
 
         # metadata compare
         assert bh.axis.Regular(1, 2, 3, metadata=1) == bh.axis.Regular(
@@ -325,12 +327,12 @@ class TestRegular(Axis):
 
         assert a.index(-1) == 2
         assert a.index(0.99) == -1
-        assert a.index(1.0) == 0
+        assert a.index(1.001) == 0
         assert a.index(9.99) == 0
-        assert a.index(10.0) == 1
+        assert a.index(10.01) == 1
         assert a.index(99.9) == 1
-        assert a.index(100) == 2
-        assert a.index(1000) == 2
+        assert a.index(100.01) == 2
+        assert a.index(1000.1) == 2
 
         assert a.bin(0)[0] == approx(1e0)
         assert a.bin(1)[0] == approx(1e1)

@@ -19,13 +19,25 @@ The summing accumulators (not ``Mean()`` and ``WeightedMean())``) support thread
 Data
 ^^^^
 
-The primary value from a histogram is always available as ``.value()``. The variance is available as ``.variances()``, unless you fill an unweighed histogram with weights, which will cause this to be return None, since the variance is no longer computable (use a weighted storage instead if you need the variances). The counts are available as ``.counts()``. If the histogram is weighted, ``.counts()`` returns the effective counts; see `UHI <https://uhi.readthedocs.io/en/latest/plotting.html#the-full-protocol-version-1-follows>`_ for details.
+The primary values from a histogram are always available as ``.values()``. The variances are available as ``.variances()``, unless you fill an unweighed histogram with weights, which will cause this to return None, since the variances are no longer computable (use a weighted storage instead if you need the variances). The counts are available as ``.counts()``. If the histogram is weighted, ``.counts()`` returns the effective counts; see `UHI <https://uhi.readthedocs.io/en/latest/plotting.html#the-full-protocol-version-1-follows>`_ for details.
 
 Views
 ^^^^^
 
-While Histograms do conform to the Python buffer protocol, the best way to get access to the raw contents of a histogram as a NumPy array is with ``.view()``. This way you can optionally pass ``flow=True`` to get the flow bins, and if you have an accumulator storage, you will get a View, which is a slightly augmented ndarrray subclass (see :ref:`usage-accumulators`).
+While Histograms do conform to the Python buffer protocol, the best way to get access to the raw contents of a histogram as a NumPy array is with ``.view()``. This way you can optionally pass ``flow=True`` to get the flow bins, and if you have an accumulator storage, you will get a View, which is a slightly augmented ndarrray subclass (see :ref:`usage-accumulators`). Views support setting as well for non-computed properties; you can use an expression like this to set the values of an accumulator storage:
 
+.. code:: python3
+
+   h.view().value = values
+
+
+You can also used stacked arrays (N+1 dimensional) to set a histogram's contents. This is especially useful if you need to set a computed value, like variance on a Mean/WeightedMean storage, which cannot be set using the above method:
+
+.. code:: python3
+
+   h[...] = np.stack([values, variances], axis=-1)
+
+If you leave endpoints off (such as with ``...`` above), then you can match the size with or without flow bins.
 
 Operations
 ^^^^^^^^^^

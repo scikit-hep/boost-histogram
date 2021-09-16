@@ -38,7 +38,7 @@ def histogramdd(
 
     if normed is not None:
         raise KeyError(
-            "normed=True is not recommended for use in Numpy, and is not supported in boost-histogram; use density=True instead"
+            "normed=True is not recommended for use in NumPy, and is not supported in boost-histogram; use density=True instead"
         )
     if density and histogram is not None:
         raise KeyError(
@@ -67,7 +67,7 @@ def histogramdd(
         if np.issubdtype(type(b), np.integer):
             if r is None:
                 # Nextafter may affect bin edges slightly
-                r = (np.min(a[n]), np.max(a[n]))
+                r = (np.amin(a[n]), np.amax(a[n]))
             cpp_ax = _core.axis.regular_numpy(b, r[0], r[1])
             new_ax = _cast(None, cpp_ax, _axis.Axis)
             axs.append(new_ax)
@@ -183,6 +183,6 @@ for f, n in zip(
     lets you set the number of threads to fill with (0 for auto, None for 1).
     """
 
-    f.__doc__ = H.format(n.__name__) + n.__doc__
+    f.__doc__ = H.format(n.__name__) + (n.__doc__ or "")
 
 del f, n, H

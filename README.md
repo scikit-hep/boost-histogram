@@ -48,7 +48,7 @@ hist.fill(
     [0.1, 0.4, 0.9],
 )
 
-# Numpy array view into histogram counts, no overflow bins
+# NumPy array view into histogram counts, no overflow bins
 values = hist.values()
 
 # Make a new histogram with just the second axis, summing over the first, and
@@ -142,7 +142,7 @@ histograms can be plotted via any compatible library, such as [mplhep][].
         * `v = h[{0:b}]`: All actions can be represented by `axis:item` dictionary instead of by position (mostly useful for slicing)
     * Slicing to get histogram or set array of values
         * `h2 = h[a:b]`: Access a slice of a histogram, cut portions go to flow bins if present
-        * `h2 = h[:, ...]`: Using `:` and `...` supported just like Numpy
+        * `h2 = h[:, ...]`: Using `:` and `...` supported just like NumPy
         * `h2 = h[::sum]`: Third item in slice is the "action"
         * `h[...] = array`: Set the bin contents, either include or omit flow bins
     * Special accessors
@@ -186,12 +186,12 @@ platforms have wheels provided in boost-histogram:
 
 | System | Arch | Python versions | PyPy versions |
 |---------|-----|------------------|--------------|
-| ManyLinux1 (custom GCC 9.2) | 32 & 64-bit | 3.7, 3.8 | |
-| ManyLinux2010 | 32 & 64-bit | 3.6, 3.7, 3.8, 3.9 | (64-bit) 7.3: 3.7 |
-| ManyLinux2014 | ARM64 | 3.6, 3.7, 3.8, 3.9 | |
-| macOS 10.9+ | 64-bit | 3.6, 3.7, 3.8, 3.9 | 7.3: 3.7 |
-| macOS Universal2 | Arm64 | 3.8, 3.9 | |
-| Windows | 32 & 64-bit | 3.6, 3.7, 3.8, 3.9 | (64-bit) 7.3: 3.7 |
+| ManyLinux1 (custom GCC 9.2) | 32 & 64-bit | 3.6, 3.7, 3.8 | |
+| ManyLinux2010 | 32 & 64-bit | 3.6, 3.7, 3.8, 3.9, 3.10 | (64-bit) 7.3: 3.7 |
+| ManyLinux2014 | ARM64 | 3.6, 3.7, 3.8, 3.9, 3.10 | |
+| macOS 10.9+ | 64-bit | 3.6, 3.7, 3.8, 3.9, 3.10 | 7.3: 3.7 |
+| macOS Universal2 | Arm64 | 3.8, 3.9, 3.10 | |
+| Windows | 32 & 64-bit | 3.6, 3.7, 3.8, 3.9, 3.10 | (64-bit) 7.3: 3.7 |
 
 
 * manylinux1: Using a custom docker container with GCC 9 to produce. Anything running Python 3.9 should be compatible with manylinux2010, so manylinux1 not provided for Python 3.9 (like NumPy).
@@ -255,6 +255,7 @@ We would like to acknowledge the contributors that made this project possible ([
   <tr>
     <td align="center"><a href="https://keybase.io/kgizdov"><img src="https://avatars.githubusercontent.com/u/3164953?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Konstantin Gizdov</b></sub></a><br /><a href="#platform-kgizdov" title="Packaging/porting to new platform">📦</a> <a href="https://github.com/scikit-hep/boost-histogram/issues?q=author%3Akgizdov" title="Bug reports">🐛</a></td>
     <td align="center"><a href="http://theoryandpractice.org"><img src="https://avatars.githubusercontent.com/u/4458890?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Kyle Cranmer</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/commits?author=cranmer" title="Documentation">📖</a></td>
+    <td align="center"><a href="http://amangoel.me"><img src="https://avatars.githubusercontent.com/u/10528392?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Aman Goel</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/commits?author=amangoel185" title="Documentation">📖</a> <a href="https://github.com/scikit-hep/boost-histogram/commits?author=amangoel185" title="Code">💻</a></td>
   </tr>
 </table>
 
