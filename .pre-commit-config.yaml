@@ -89,4 +89,4 @@ repos:
     types: [c++]
     entry: clang-format
     args: [-style=file, -i]
-    additional_dependencies: [--channel=conda-forge, clang-tools==12.0.1]
+    additional_dependencies: [--channel=conda-forge, clang-format==12.0.1]
