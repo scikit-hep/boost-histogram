@@ -81,12 +81,7 @@ repos:
     entry: PyBind|Numpy|Cmake|CCache|Github|PyTest
     exclude: .pre-commit-config.yaml
 
-- repo: local
+- repo: https://github.com/henryiii/conda-clang-format
+  rev: v12.0.1
   hooks:
   - id: clang-format
-    name: Clang Format
-    language: conda
-    types: [c++]
-    entry: clang-format
-    args: [-style=file, -i]
-    additional_dependencies: [--channel=conda-forge, clang-format==12.0.1]
