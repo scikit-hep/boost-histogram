@@ -29,7 +29,7 @@ repos:
     additional_dependencies: [pyyaml]
 
 - repo: https://github.com/asottile/pyupgrade
-  rev: v2.26.0
+  rev: v2.28.0
   hooks:
   - id: pyupgrade
     args: [--py36-plus]
@@ -61,7 +61,7 @@ repos:
     additional_dependencies: [numpy==1.21.*, uhi, types-dataclasses]
 
 - repo: https://github.com/mgedmin/check-manifest
-  rev: "0.46"
+  rev: "0.47"
   hooks:
   - id: check-manifest
     stages: [manual]
