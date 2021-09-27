@@ -1276,10 +1276,18 @@ def test_sum_empty_axis():
     assert "Str" in repr(hist)
 
 
-# Issue 618
+# Issue #618
 def test_negative_fill(count_storage):
     h = bh.Histogram(bh.axis.Integer(0, 3), storage=count_storage())
     h.fill(1, weight=-1)
 
     answer = np.array([0, -1, 0])
     assert h.values() == approx(answer)
+
+
+# Issue #589
+def test_underfill_growth():
+    h = bh.Histogram(bh.axis.Regular(10, 0, 1, growth=True))
+    h.fill(2)
+    h.fill(-1)
+    assert h.sum() == 2
