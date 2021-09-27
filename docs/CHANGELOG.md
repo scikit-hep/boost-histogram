@@ -2,6 +2,13 @@
 
 ## Version 1.2
 
+### Version 1.2.1
+
+#### Bug fixes
+* Fixed single-element negative growth fill [#654][]
+
+[#654]: https://github.com/scikit-hep/boost-histogram/pull/654
+
 ### Version 1.2.0
 
 #### User changes
