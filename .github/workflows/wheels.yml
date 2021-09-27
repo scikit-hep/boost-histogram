@@ -62,9 +62,9 @@ jobs:
       with:
         platforms: all
 
-    - uses: pypa/cibuildwheel@v2.1.2
+    - uses: pypa/cibuildwheel@v2.2.0a1
       env:
-        CIBW_BUILD: cp${{ matrix.python }}-*
+        CIBW_BUILD: cp${{ matrix.python }}-manylinux_*
         CIBW_ARCHS: ${{ matrix.arch }}
 
     - name: Verify clean directory
@@ -99,7 +99,7 @@ jobs:
           - os: ubuntu-latest
             type: ManyLinux1
             arch: auto
-            build: "cp{36,37,38}-*"
+            build: "cp{36,37,38}-manylinux*"
             CIBW_MANYLINUX_X86_64_IMAGE: skhep/manylinuxgcc-x86_64
             CIBW_MANYLINUX_I686_IMAGE: skhep/manylinuxgcc-i686
 
@@ -123,7 +123,7 @@ jobs:
       with:
         submodules: true
 
-    - uses: pypa/cibuildwheel@v2.1.2
+    - uses: pypa/cibuildwheel@v2.2.0a1
       env:
         CIBW_BUILD: ${{ matrix.build }}
         CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.CIBW_MANYLINUX_I686_IMAGE }}
