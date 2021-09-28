@@ -81,15 +81,7 @@ repos:
     entry: PyBind|Numpy|Cmake|CCache|Github|PyTest
     exclude: .pre-commit-config.yaml
 
-- repo: local
+- repo: https://github.com/ssciwr/clang-format-precommit
+  rev: 2976f337d89114b56aa138197ee9bf862978409c
   hooks:
    - id: clang-format
-     name: Clang Format
-     language: python
-     types:
-     - c++
-     entry: clang-format
-     additional_dependencies: [clang-format==12.*]
-     args:
-     - -style=file
-     - -i
