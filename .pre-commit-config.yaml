@@ -89,7 +89,7 @@ repos:
      types:
      - c++
      entry: clang-format
-     additional_dependencies: [clang-format==1.21.*]
+     additional_dependencies: [clang-format==12.*]
      args:
      - -style=file
      - -i
