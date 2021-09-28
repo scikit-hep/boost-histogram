@@ -82,6 +82,6 @@ repos:
     exclude: .pre-commit-config.yaml
 
 - repo: https://github.com/ssciwr/clang-format-precommit
-  rev: 2976f337d89114b56aa138197ee9bf862978409c
+  rev: v12.0.1
   hooks:
    - id: clang-format
