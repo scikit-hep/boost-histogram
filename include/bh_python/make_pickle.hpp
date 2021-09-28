@@ -60,8 +60,8 @@
 #include <vector>
 
 template <class T,
-          class = decltype(
-              std::declval<T&>().serialize(std::declval<std::nullptr_t&>(), 0))>
+          class = decltype(std::declval<T&>().serialize(std::declval<std::nullptr_t&>(),
+                                                        0))>
 struct has_method_serialize_impl {};
 
 template <class T>
