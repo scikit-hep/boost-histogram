@@ -4,10 +4,18 @@
 
 ### Version 1.2.1
 
+#### User changes
+* musllinux wheels now provided along with manylinux [#656][]
+
 #### Bug fixes
 * Fixed single-element negative growth fill [#654][]
 
+#### Developer changes
+* No longer require Docker for clang-format, runs online too [#610][]
+
+[#610]: https://github.com/scikit-hep/boost-histogram/pull/610
 [#654]: https://github.com/scikit-hep/boost-histogram/pull/654
+[#656]: https://github.com/scikit-hep/boost-histogram/pull/656
 
 ### Version 1.2.0
 
