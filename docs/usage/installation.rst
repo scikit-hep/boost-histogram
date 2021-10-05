@@ -36,29 +36,8 @@ Supported platforms
 Binaries available:
 ^^^^^^^^^^^^^^^^^^^
 
-These are the supported platforms for which wheels are produced:
-
-=========================== =========== ==================
-System                      Arch        Python versions
-=========================== =========== ==================
-ManyLinux1 (custom GCC 9.2) 64 & 32-bit 3.6, 3.7, 3.8
-ManyLinux2010               64-bit      3.6, 3.7, 3.8, 3.9
-macOS 10.9+                 64-bit      3.6, 3.7, 3.8, 3.9
-Windows                     64 & 32-bit 3.6, 3.7, 3.8, 3.9
-=========================== =========== ==================
-
--  manylinux1: Using a custom docker container with GCC 9.2; should work
-   but can't be called directly other compiled extensions unless they do
-   the same thing (think that’s the main caveat). Supporting 32 bits
-   because it’s there.
--  manylinux2010: Requires pip 10+ and a version of Linux newer than
-   2010 (CentOS 6+)
-
-If you are on a Linux system that is not part of the "many" in
-manylinux, such as Alpine or ClearLinux, building from source is usually
-fine, since the compilers on those systems are often quite new. It will
-just take a little longer to install when it’s using the sdist instead
-of a wheel.
+The supported platforms are listed in the README - All common linux
+machines, all common macOS versions, and all common Windows versions.
 
 Conda-Forge
 ^^^^^^^^^^^

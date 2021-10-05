@@ -12,10 +12,12 @@
 
 #### Developer changes
 * No longer require Docker for clang-format, runs online too [#610][]
+* Using pybind11 2.8.0 [#658][]
 
 [#610]: https://github.com/scikit-hep/boost-histogram/pull/610
 [#654]: https://github.com/scikit-hep/boost-histogram/pull/654
 [#656]: https://github.com/scikit-hep/boost-histogram/pull/656
+[#658]: https://github.com/scikit-hep/boost-histogram/pull/658
 
 ### Version 1.2.0
 
