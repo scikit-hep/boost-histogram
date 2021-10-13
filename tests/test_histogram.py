@@ -972,7 +972,7 @@ def test_fill_with_sequence_1():
 
     a = bh.Histogram(bh.axis.Integer(0, 3), storage=bh.storage.Weight())
     v = fa(-1, 0, 1, 2, 3, 4)
-    w = fa(2, 3, 4, 5, 6, 7)  # noqa
+    w = fa(2, 3, 4, 5, 6, 7)
     a.fill(v, weight=w)
     a.fill((0, 1), weight=(2, 3))
 

@@ -434,7 +434,7 @@ class Histogram:
         weight: Optional[ArrayLike] = None,
         sample: Optional[ArrayLike] = None,
         threads: Optional[int] = None,
-    ) -> H:  # noqa: C901
+    ) -> H:
         """
         Insert data into the histogram.
 

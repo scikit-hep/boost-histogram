@@ -6,11 +6,11 @@ Accumulators
 Common properties
 -----------------
 
-All accumulators can be filled like a histogram. You just call `.fill` with
+All accumulators can be filled like a histogram. You just call ``.fill`` with
 values, and this looks and behaves like filling a single-bin or "scalar"
 histogram. Like histograms, the fill is inplace.
 
-All accumulators have a `.value` property as well, which gives the primary
+All accumulators have a ``.value`` property as well, which gives the primary
 value being accumulated.
 
 Types
@@ -121,7 +121,7 @@ For example, you could compute the mean of the following values::
     smooth = Mean(count=10, value=10, variance=0)
     rough =  Mean(count=10, value=10, variance=810)
 
-You can add a `weight=` keyword when filling, with either a single value
+You can add a ``weight=`` keyword when filling, with either a single value
 or a matching length array of values.
 
 You can call a Mean with a value or with another Mean to fill inplace, as well.
@@ -146,7 +146,7 @@ For example, you could compute the mean of the following values::
 
     wm = WeightedMean(sum_of_weights=20, sum_of_weights_squared=40, value=10, variance=810)
 
-You can add a `weight=` keyword when filling, with either a single value or a
+You can add a ``weight=`` keyword when filling, with either a single value or a
 matching length array of values.
 
 You can call a WeightedMean with a value or with another WeightedMean to fill
