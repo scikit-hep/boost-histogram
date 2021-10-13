@@ -62,7 +62,7 @@ jobs:
       with:
         platforms: all
 
-    - uses: pypa/cibuildwheel@v2.2.0a1
+    - uses: henryiii/cibuildwheel@919e34b730455b774af3c6347645b7a338fe7f42
       env:
         CIBW_BUILD: cp${{ matrix.python }}-manylinux_*
         CIBW_ARCHS: ${{ matrix.arch }}
@@ -85,16 +85,12 @@ jobs:
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
         arch: [auto64]
-        build: ["?p3?-* *macos* *win*"]
-        CIBW_MANYLINUX_X86_64_IMAGE: [manylinux2010]
-        CIBW_MANYLINUX_I686_IMAGE: [manylinux2010]
+        build: ["*"]
 
         include:
           - os: ubuntu-latest
             arch: auto32
-            build: "?p3?-*"
-            CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
-            CIBW_MANYLINUX_I686_IMAGE: manylinux2010
+            build: "*"
 
           - os: ubuntu-latest
             type: ManyLinux1
@@ -102,13 +98,6 @@ jobs:
             build: "cp{36,37,38}-manylinux*"
             CIBW_MANYLINUX_X86_64_IMAGE: skhep/manylinuxgcc-x86_64
             CIBW_MANYLINUX_I686_IMAGE: skhep/manylinuxgcc-i686
-
-          - os: ubuntu-latest
-            type: ManyLinux2014
-            arch: auto
-            build: "cp310-*"
-            CIBW_MANYLINUX_X86_64_IMAGE: manylinux2014
-            CIBW_MANYLINUX_I686_IMAGE: manylinux2014
 
           - os: macos-latest
             arch: universal2
@@ -123,7 +112,7 @@ jobs:
       with:
         submodules: true
 
-    - uses: pypa/cibuildwheel@v2.2.0a1
+    - uses: henryiii/cibuildwheel@919e34b730455b774af3c6347645b7a338fe7f42
       env:
         CIBW_BUILD: ${{ matrix.build }}
         CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.CIBW_MANYLINUX_I686_IMAGE }}
