@@ -80,6 +80,8 @@ ignore = [
     "tests/.pytest_cache/**",
 ]
 
+[tool.pycln]
+all = true
 
 [tool.cibuildwheel]
 test-extras = "test"

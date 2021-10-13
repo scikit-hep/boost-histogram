@@ -34,7 +34,7 @@ def histogramdd(
     np = _np  # Hidden to keep module clean
 
     # TODO: Might be a bug in MyPy? This should type
-    cls: Type[_hist.Histogram] = _hist.Histogram if histogram is None else histogram  # type: ignore
+    cls: Type[_hist.Histogram] = _hist.Histogram if histogram is None else histogram  # type: ignore[assignment]
 
     if normed is not None:
         raise KeyError(
@@ -53,7 +53,7 @@ def histogramdd(
 
     # Integer bins: all the same
     try:
-        bins = (int(bins),) * rank  # type: ignore
+        bins = (int(bins),) * rank  # type: ignore[arg-type]
     except TypeError:
         pass
     assert not isinstance(bins, int)

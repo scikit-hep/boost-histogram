@@ -73,9 +73,9 @@ def _fill_cast(
     If not called by itself (inner=False), then will work through one level of tuple/list.
     """
     if value is None or isinstance(value, (str, bytes)):
-        return value  # type: ignore
+        return value  # type: ignore[return-value]
     elif not inner and isinstance(value, (tuple, list)):
-        return tuple(_fill_cast(a, inner=True) for a in value)  # type: ignore
+        return tuple(_fill_cast(a, inner=True) for a in value)  # type: ignore[misc]
     elif hasattr(value, "__iter__") or hasattr(value, "__array__"):
         return np.asarray(value)
     else:
@@ -86,9 +86,9 @@ def _arg_shortcut(item: Union[Tuple[int, float, float], Axis, CppAxis]) -> CppAx
     if isinstance(item, tuple) and len(item) == 3:
         msg = "Developer shortcut: will be removed in a future version"
         warnings.warn(msg, FutureWarning)
-        return _core.axis.regular_uoflow(item[0], item[1], item[2])  # type: ignore
+        return _core.axis.regular_uoflow(item[0], item[1], item[2])  # type: ignore[return-value]
     elif isinstance(item, Axis):
-        return item._ax  # type: ignore
+        return item._ax  # type: ignore[no-any-return]
     else:
         raise TypeError("Only axes supported in histogram constructor")
 
@@ -116,7 +116,7 @@ H = TypeVar("H", bound="Histogram")
 
 # We currently do not cast *to* a histogram, but this is consistent
 # and could be used later.
-@register(_histograms)  # type: ignore
+@register(_histograms)  # type: ignore[arg-type]
 @set_module("boost_histogram")
 class Histogram:
     # Note this is a __slots__ __dict__ class!
@@ -192,13 +192,13 @@ class Histogram:
         # support that too
         if len(axes) == 1 and isinstance(axes[0], Histogram):
             # Special case - we can recursively call __init__ here
-            self.__init__(axes[0]._hist)  # type: ignore
+            self.__init__(axes[0]._hist)  # type: ignore[misc]
             self._from_histogram_object(axes[0])
             return
 
         # Support objects that provide a to_boost method, like Uproot
         elif len(axes) == 1 and hasattr(axes[0], "_to_boost_histogram_"):
-            self.__init__(axes[0]._to_boost_histogram_())  # type: ignore
+            self.__init__(axes[0]._to_boost_histogram_())  # type: ignore[misc, union-attr, union-attr, union-attr]
             return
 
         if storage is None:
@@ -216,7 +216,7 @@ class Histogram:
                 raise KeyError("Only storages allowed in storage argument")
 
         # Allow a tuple to represent a regular axis
-        axes = tuple(_arg_shortcut(arg) for arg in axes)  # type: ignore
+        axes = tuple(_arg_shortcut(arg) for arg in axes)  # type: ignore[arg-type]
 
         if len(axes) > _core.hist._axes_limit:
             raise IndexError(
@@ -295,7 +295,7 @@ class Histogram:
         """
         Number of axes (dimensions) of the histogram.
         """
-        return self._hist.rank()  # type: ignore
+        return self._hist.rank()  # type: ignore[no-any-return]
 
     def view(
         self, flow: bool = False
@@ -401,7 +401,7 @@ class Histogram:
             getattr(self._hist, name)(other._hist)
         elif isinstance(other, tuple(_histograms)):
             getattr(self._hist, name)(other)
-        elif hasattr(other, "shape") and other.shape:  # type: ignore
+        elif hasattr(other, "shape") and other.shape:  # type: ignore[union-attr]
             assert not isinstance(other, float)
             if len(other.shape) != self.ndim:
                 raise ValueError(
@@ -434,7 +434,7 @@ class Histogram:
         weight: Optional[ArrayLike] = None,
         sample: Optional[ArrayLike] = None,
         threads: Optional[int] = None,
-    ) -> H:  # noqa: C901
+    ) -> H:
         """
         Insert data into the histogram.
 
@@ -481,19 +481,19 @@ class Histogram:
         }:
             raise RuntimeError("Mean histograms do not support threaded filling")
 
-        data = [np.array_split(a, threads) for a in args_ars]  # type: ignore
+        data = [np.array_split(a, threads) for a in args_ars]  # type: ignore[no-untyped-call]
 
         if weight is None or np.isscalar(weight):
             assert threads is not None
             weights = [weight_ars] * threads
         else:
-            weights = np.array_split(weight_ars, threads)  # type: ignore
+            weights = np.array_split(weight_ars, threads)  # type: ignore[no-untyped-call]
 
         if sample_ars is None or np.isscalar(sample_ars):
             assert threads is not None
             samples = [sample_ars] * threads
         else:
-            samples = np.array_split(sample_ars, threads)  # type: ignore
+            samples = np.array_split(sample_ars, threads)  # type: ignore[no-untyped-call]
 
         if self._hist._storage_type is _core.storage.atomic_int64:
 
@@ -553,7 +553,7 @@ class Histogram:
 
     @property
     def _storage_type(self) -> Type[Storage]:
-        return cast(self, self._hist._storage_type, Storage)  # type: ignore
+        return cast(self, self._hist._storage_type, Storage)  # type: ignore[return-value]
 
     def _reduce(self: H, *args: Any) -> H:
         return self._new_hist(self._hist.reduce(*args))
@@ -629,7 +629,7 @@ class Histogram:
         Converts an expression that contains UHI locators to one that does not.
         """
         # Support sum and rebin directly
-        if index is sum or hasattr(index, "factor"):  # type: ignore
+        if index is sum or hasattr(index, "factor"):  # type: ignore[comparison-overlap]
             index = slice(None, None, index)
 
         # General locators
@@ -642,7 +642,7 @@ class Histogram:
                 raise IndexError("histogram index is out of range")
             index %= self._hist.axis(axis).size
 
-        return index  # type: ignore
+        return index  # type: ignore[return-value]
 
     def _compute_commonindex(
         self, index: IndexingExpr
@@ -660,7 +660,7 @@ class Histogram:
         # Support dict access
         if hasattr(index, "items"):
             indexes = [slice(None)] * hist.rank()
-            for k, v in index.items():  # type: ignore
+            for k, v in index.items():  # type: ignore[union-attr, union-attr, union-attr, union-attr, union-attr, union-attr]
                 indexes[k] = v
 
         # Normalize -> h[i] == h[i,]
@@ -747,20 +747,20 @@ class Histogram:
         Check to see if the histogram has any non-default values.
         You can use flow=True to check flow bins too.
         """
-        return self._hist.empty(flow)  # type: ignore
+        return self._hist.empty(flow)  # type: ignore[no-any-return]
 
     def sum(self, flow: bool = False) -> Union[float, Accumulator]:
         """
         Compute the sum over the histogram bins (optionally including the flow bins).
         """
-        return self._hist.sum(flow)  # type: ignore
+        return self._hist.sum(flow)  # type: ignore[no-any-return]
 
     @property
     def size(self) -> int:
         """
         Total number of bins in the histogram (including underflow/overflow).
         """
-        return self._hist.size()  # type: ignore
+        return self._hist.size()  # type: ignore[no-any-return]
 
     @property
     def shape(self) -> Tuple[int, ...]:
@@ -780,7 +780,7 @@ class Histogram:
         # But don't try *dict!
         if not hasattr(indexes, "items"):
             try:
-                return self._hist.at(*indexes)  # type: ignore
+                return self._hist.at(*indexes)  # type: ignore[no-any-return]
             except RuntimeError:
                 pass
 
@@ -792,7 +792,7 @@ class Histogram:
         # Compute needed slices and projections
         for i, ind in enumerate(indexes):
             if hasattr(ind, "__index__"):
-                pick_each[i] = ind.__index__() + (  # type: ignore
+                pick_each[i] = ind.__index__() + (  # type: ignore[union-attr, union-attr]
                     1 if self.axes[i].traits.underflow else 0
                 )
                 continue
@@ -938,9 +938,9 @@ class Histogram:
         # Support raw arrays for accumulators, the final dimension is the constructor values
         if (
             value.ndim > 0
-            and len(view.dtype) > 0  # type: ignore
+            and len(view.dtype) > 0  # type: ignore[arg-type]
             and len(value.dtype) == 0
-            and len(view.dtype) == value.shape[-1]  # type: ignore
+            and len(view.dtype) == value.shape[-1]  # type: ignore[arg-type]
         ):
             value_shape = value.shape[:-1]
             value_ndim = value.ndim - 1
@@ -1007,7 +1007,7 @@ class Histogram:
             else:
                 indexes[n] = request + has_underflow
 
-        view[tuple(indexes)] = value  # type: ignore
+        view[tuple(indexes)] = value  # type: ignore[arg-type]
 
     def project(self: H, *args: int) -> Union[H, float, Accumulator]:
         """
@@ -1052,10 +1052,10 @@ class Histogram:
 
         view = self.view(flow)
         # TODO: Might be a NumPy typing bug
-        if len(view.dtype) == 0:  # type: ignore
+        if len(view.dtype) == 0:  # type: ignore[arg-type]
             return view
         else:
-            return view.value  # type: ignore
+            return view.value  # type: ignore[union-attr]
 
     def variances(self, flow: bool = False) -> Optional["np.typing.NDArray[Any]"]:
         """
@@ -1082,28 +1082,28 @@ class Histogram:
         """
 
         view = self.view(flow)
-        if len(view.dtype) == 0:  # type: ignore
+        if len(view.dtype) == 0:  # type: ignore[arg-type]
             if self._variance_known:
                 return view
             else:
                 return None
         elif hasattr(view, "sum_of_weights"):
-            return np.divide(  # type: ignore
-                view.variance,  # type: ignore
-                view.sum_of_weights,  # type: ignore
-                out=np.full(view.sum_of_weights.shape, np.nan),  # type: ignore
-                where=view.sum_of_weights > 1,  # type: ignore
+            return np.divide(  # type: ignore[no-any-return]
+                view.variance,  # type: ignore[union-attr]
+                view.sum_of_weights,  # type: ignore[union-attr, union-attr, union-attr]
+                out=np.full(view.sum_of_weights.shape, np.nan),  # type: ignore[union-attr, union-attr, union-attr]
+                where=view.sum_of_weights > 1,  # type: ignore[union-attr, union-attr, union-attr]
             )
 
         elif hasattr(view, "count"):
-            return np.divide(  # type: ignore
-                view.variance,  # type: ignore
-                view.count,  # type: ignore
-                out=np.full(view.count.shape, np.nan),  # type: ignore
-                where=view.count > 1,  # type: ignore
+            return np.divide(  # type: ignore[no-any-return]
+                view.variance,  # type: ignore[union-attr]
+                view.count,  # type: ignore[union-attr, union-attr, union-attr]
+                out=np.full(view.count.shape, np.nan),  # type: ignore[union-attr, union-attr, union-attr]
+                where=view.count > 1,  # type: ignore[union-attr, union-attr, union-attr]
             )
         else:
-            return view.variance  # type: ignore
+            return view.variance  # type: ignore[union-attr]
 
     def counts(self, flow: bool = False) -> "np.typing.NDArray[Any]":
         """
@@ -1130,19 +1130,19 @@ class Histogram:
 
         view = self.view(flow)
 
-        if len(view.dtype) == 0:  # type: ignore
+        if len(view.dtype) == 0:  # type: ignore[arg-type]
             return view
         elif hasattr(view, "sum_of_weights"):
-            return np.divide(  # type: ignore
-                view.sum_of_weights ** 2,  # type: ignore
-                view.sum_of_weights_squared,  # type: ignore
-                out=np.zeros_like(view.sum_of_weights, dtype=np.float64),  # type: ignore
-                where=view.sum_of_weights_squared != 0,  # type: ignore
+            return np.divide(  # type: ignore[no-any-return]
+                view.sum_of_weights ** 2,  # type: ignore[union-attr, union-attr, union-attr]
+                view.sum_of_weights_squared,  # type: ignore[union-attr, union-attr, union-attr]
+                out=np.zeros_like(view.sum_of_weights, dtype=np.float64),  # type: ignore[union-attr, union-attr, union-attr]
+                where=view.sum_of_weights_squared != 0,  # type: ignore[union-attr, union-attr, union-attr]
             )
         elif hasattr(view, "count"):
-            return view.count  # type: ignore
+            return view.count  # type: ignore[union-attr, union-attr, union-attr]
         else:
-            return view.value  # type: ignore
+            return view.value  # type: ignore[union-attr]
 
 
 if TYPE_CHECKING:

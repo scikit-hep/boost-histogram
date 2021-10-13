@@ -10,14 +10,14 @@ A = TypeVar("A", bound="ArrayTuple")
 
 
 @set_module("boost_histogram.axis")
-class ArrayTuple(tuple):  # type: ignore
+class ArrayTuple(tuple):  # type: ignore[type-arg]
     __slots__ = ()
     # This is an exhaustive list as of NumPy 1.19
     _REDUCTIONS = {"sum", "any", "all", "min", "max", "prod"}
 
     def __getattr__(self, name: str) -> Any:
         if name in self._REDUCTIONS:
-            return partial(getattr(np, name), np.broadcast_arrays(*self))  # type: ignore
+            return partial(getattr(np, name), np.broadcast_arrays(*self))  # type: ignore[no-untyped-call]
         else:
             return self.__class__(getattr(a, name) for a in self)
 
@@ -34,14 +34,14 @@ class ArrayTuple(tuple):  # type: ignore
         Use this method to broadcast them out into their full memory
         representation.
         """
-        return self.__class__(np.broadcast_arrays(*self))  # type: ignore
+        return self.__class__(np.broadcast_arrays(*self))  # type: ignore[no-untyped-call]
 
 
 B = TypeVar("B", bound="AxesTuple")
 
 
 @set_module("boost_histogram.axis")
-class AxesTuple(tuple):  # type: ignore
+class AxesTuple(tuple):  # type: ignore[type-arg]
     __slots__ = ()
     _MGRIDOPTS = {"sparse": True, "indexing": "ij"}
 
@@ -56,17 +56,17 @@ class AxesTuple(tuple):  # type: ignore
     @property
     def centers(self) -> ArrayTuple:
         gen = (s.centers for s in self)
-        return ArrayTuple(np.meshgrid(*gen, **self._MGRIDOPTS))  # type: ignore
+        return ArrayTuple(np.meshgrid(*gen, **self._MGRIDOPTS))  # type: ignore[no-untyped-call]
 
     @property
     def edges(self) -> ArrayTuple:
         gen = (s.edges for s in self)
-        return ArrayTuple(np.meshgrid(*gen, **self._MGRIDOPTS))  # type: ignore
+        return ArrayTuple(np.meshgrid(*gen, **self._MGRIDOPTS))  # type: ignore[no-untyped-call]
 
     @property
     def widths(self) -> ArrayTuple:
         gen = (s.widths for s in self)
-        return ArrayTuple(np.meshgrid(*gen, **self._MGRIDOPTS))  # type: ignore
+        return ArrayTuple(np.meshgrid(*gen, **self._MGRIDOPTS))  # type: ignore[no-untyped-call]
 
     def value(self, *indexes: float) -> Tuple[float, ...]:
         if len(indexes) != len(self):
@@ -82,7 +82,7 @@ class AxesTuple(tuple):  # type: ignore
             )
         return tuple(self[i].bin(indexes[i]) for i in range(len(indexes)))
 
-    def index(self, *values: float) -> Tuple[float, ...]:  # type: ignore
+    def index(self, *values: float) -> Tuple[float, ...]:  # type: ignore[override, override]
         if len(values) != len(self):
             raise IndexError(
                 "Must have the same number of arguments as the number of axes"

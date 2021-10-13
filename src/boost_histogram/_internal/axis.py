@@ -113,7 +113,7 @@ class Axis:
         """
 
         if not _isstr(value):
-            return self._ax.index(value)  # type: ignore
+            return self._ax.index(value)  # type: ignore[no-any-return]
         else:
             raise TypeError(
                 "index({value}) cannot be a string for a numerical axis".format(
@@ -126,7 +126,7 @@ class Axis:
         Return the value(s) given an (fractional) index (or indices).
         """
 
-        return self._ax.value(index)  # type: ignore
+        return self._ax.value(index)  # type: ignore[no-any-return]
 
     def bin(self, index: float) -> Union[int, str, Tuple[float, float]]:
         """
@@ -135,7 +135,7 @@ class Axis:
         non-continuous axis, when given an index.
         """
 
-        return self._ax.bin(index)  # type: ignore
+        return self._ax.bin(index)  # type: ignore[no-any-return]
 
     def __eq__(self, other: Any) -> bool:
         return hasattr(other, "_ax") and self._ax == other._ax
@@ -151,12 +151,12 @@ class Axis:
         return nice_ax
 
     def __len__(self) -> int:
-        return self._ax.size  # type: ignore
+        return self._ax.size  # type: ignore[no-any-return]
 
     def __iter__(
         self,
     ) -> Union[Iterator[float], Iterator[str], Iterator[Tuple[float, float]]]:
-        return self._ax.__iter__()  # type: ignore
+        return self._ax.__iter__()  # type: ignore[no-any-return]
 
     def _process_loc(
         self, start: Optional[AxCallOrInt], stop: Optional[AxCallOrInt]
@@ -221,14 +221,14 @@ class Axis:
         """
         Return number of bins excluding under- and overflow.
         """
-        return self._ax.size  # type: ignore
+        return self._ax.size  # type: ignore[no-any-return]
 
     @property
     def extent(self) -> int:
         """
         Return number of bins including under- and overflow.
         """
-        return self._ax.extent  # type: ignore
+        return self._ax.extent  # type: ignore[no-any-return]
 
     def __getitem__(self, i: AxCallOrInt) -> Union[int, str, Tuple[float, float]]:
         """
@@ -249,21 +249,21 @@ class Axis:
 
     @property
     def edges(self) -> "np.typing.NDArray[Any]":
-        return self._ax.edges  # type: ignore
+        return self._ax.edges  # type: ignore[no-any-return]
 
     @property
     def centers(self) -> "np.typing.NDArray[Any]":
         """
         An array of bin centers.
         """
-        return self._ax.centers  # type: ignore
+        return self._ax.centers  # type: ignore[no-any-return]
 
     @property
     def widths(self) -> "np.typing.NDArray[Any]":
         """
         An array of bin widths.
         """
-        return self._ax.widths  # type: ignore
+        return self._ax.widths  # type: ignore[no-any-return]
 
 
 # Contains all common methods and properties for Regular axes
@@ -669,7 +669,7 @@ class StrCategory(BaseCategory, family=boost_histogram):
         """
 
         if _isstr(value):
-            return self._ax.index(value)  # type: ignore
+            return self._ax.index(value)  # type: ignore[no-any-return]
         else:
             raise TypeError(
                 "index({value}) must be a string or iterable of strings for a StrCategory axis".format(

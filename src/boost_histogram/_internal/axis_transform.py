@@ -39,21 +39,21 @@ class AxisTransform:
     def _produce(self, bins: int, start: float, stop: float) -> Any:
         # Note: this is an ABC; _type must be defined on children
         # These can be fixed later with a Protocol
-        return self.__class__._type(bins, start, stop)  # type: ignore
+        return self.__class__._type(bins, start, stop)  # type: ignore[attr-defined]
 
     def __init__(self) -> None:
         "Create a new transform instance"
         # Note: this comes from family
-        (cpp_class,) = self._types  # type: ignore
+        (cpp_class,) = self._types  # type: ignore[attr-defined]
         self._this = cpp_class()
 
     def forward(self, value: float) -> float:
         "Compute the forward transform"
-        return self._this.forward(value)  # type: ignore
+        return self._this.forward(value)  # type: ignore[no-any-return]
 
     def inverse(self, value: float) -> float:
         "Compute the inverse transform"
-        return self._this.inverse(value)  # type: ignore
+        return self._this.inverse(value)  # type: ignore[no-any-return]
 
 
 @set_module("boost_histogram.axis.transform")
@@ -65,13 +65,13 @@ class Pow(AxisTransform, family=boost_histogram):
     def __init__(self, power: float):
         "Create a new transform instance"
         # Note: this comes from family
-        (cpp_class,) = self._types  # type: ignore
+        (cpp_class,) = self._types  # type: ignore[attr-defined]
         self._this = cpp_class(power)
 
     @property
     def power(self) -> float:
         "The power of the transform"
-        return self._this.power  # type: ignore
+        return self._this.power  # type: ignore[no-any-return]
 
     # This one does need to be a normal method
     def _produce(self, bins: int, start: float, stop: float) -> Any:
@@ -134,7 +134,7 @@ class Function(AxisTransform, family=boost_histogram):
         """
 
         # Note: this comes from family
-        (cpp_class,) = self._types  # type: ignore
+        (cpp_class,) = self._types  # type: ignore[attr-defined]
         self._this = cpp_class(forward, inverse, convert, name)
 
     # This one does need to be a normal method
