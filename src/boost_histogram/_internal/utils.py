@@ -75,17 +75,17 @@ def register(
 
     def add_registration(cls: Type[T]) -> Type[T]:
         if cpp_types is None or len(cpp_types) == 0:
-            cls._types = set()  # type: ignore
+            cls._types = set()  # type: ignore[attr-defined]
             return cls
 
         if not hasattr(cls, "_types"):
-            cls._types = set()  # type: ignore
+            cls._types = set()  # type: ignore[attr-defined]
 
         for cpp_type in cpp_types:
-            if cpp_type in cls._types:  # type: ignore
+            if cpp_type in cls._types:  # type: ignore[attr-defined]
                 raise TypeError(f"You are trying to register {cpp_type} again")
 
-            cls._types.add(cpp_type)  # type: ignore
+            cls._types.add(cpp_type)  # type: ignore[attr-defined]
 
         return cls
 
@@ -99,7 +99,7 @@ def _cast_make_object(canidate_class: T, cpp_object: object, is_class: bool) -> 
         return canidate_class
 
     elif hasattr(canidate_class, "_convert_cpp"):
-        return canidate_class._convert_cpp(cpp_object)  # type: ignore
+        return canidate_class._convert_cpp(cpp_object)  # type: ignore[attr-defined, no-any-return]
 
     # Casting down does not work in pybind11,
     # see https://github.com/pybind/pybind11/issues/1640
@@ -107,7 +107,7 @@ def _cast_make_object(canidate_class: T, cpp_object: object, is_class: bool) -> 
     # _convert_cpp method.
 
     else:
-        return canidate_class(cpp_object)  # type: ignore
+        return canidate_class(cpp_object)  # type: ignore[operator, no-any-return]
 
 
 def cast(self: object, cpp_object: object, parent_class: Type[T]) -> T:
@@ -135,7 +135,7 @@ def cast(self: object, cpp_object: object, parent_class: Type[T]) -> T:
     if self is None:
         family: object = boost_histogram
     else:
-        family = self._family  # type: ignore
+        family = self._family  # type: ignore[attr-defined]
 
     # Convert objects to classes, and remember if we did so
     if isinstance(cpp_object, type):
@@ -161,7 +161,7 @@ def cast(self: object, cpp_object: object, parent_class: Type[T]) -> T:
 
             # Return immediately if the family is right
             if ccf._family is family:
-                return _cast_make_object(ccf, cpp_object, is_class)  # type: ignore
+                return _cast_make_object(ccf, cpp_object, is_class)  # type: ignore[return-value]
 
             # Or remember the class if it was from the main family
             if ccf._family is boost_histogram:
@@ -169,7 +169,7 @@ def cast(self: object, cpp_object: object, parent_class: Type[T]) -> T:
 
     # If no perfect match was registered, return the main family
     if fallback_class is not None:
-        return _cast_make_object(fallback_class, cpp_object, is_class)  # type: ignore
+        return _cast_make_object(fallback_class, cpp_object, is_class)  # type: ignore[return-value]
 
     raise TypeError(
         f"No conversion to {parent_class.__name__} from {cpp_object} found."

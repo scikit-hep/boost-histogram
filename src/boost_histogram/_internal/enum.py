@@ -6,9 +6,9 @@ try:
     from enum import Enum
 except ImportError:
     try:
-        from enum34 import Enum  # type: ignore
+        from enum34 import Enum  # type: ignore[import, no-redef]
     except ImportError:
-        Enum = object  # type: ignore
+        Enum = object  # type: ignore[misc, assignment]
 
 
 # This is a StrEnum as defined in Python 3.10
@@ -22,4 +22,4 @@ class Kind(str, Enum):
     # MyPy claims that the type: ignore is not needed. If we cast, we get the
     # same error as before. But if we cast and type: ignore, it now works.
     # Will report to MyPy. Tested on 0.800.
-    __str__ = cast(Callable[["Kind"], str], str.__str__)  # type: ignore
+    __str__ = cast(Callable[["Kind"], str], str.__str__)  # type: ignore[assignment]
