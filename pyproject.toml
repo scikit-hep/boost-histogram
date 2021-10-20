@@ -88,3 +88,11 @@ test-extras = "test"
 test-command = "pytest {project}/tests"
 test-skip = ["pp*macos*", "pp*win*", "*universal2:arm64", "cp310*macos*", "*musllinux*"]
 skip = ["pp*-manylinux_i686"]  # not supported by NumPy
+manylinux-x86_64-image = "manylinux2014"
+manylinux-i686-image = "manylinux2014"
+
+# Before Python 3.10, manylinux2010 is the most compatible
+[[tool.cibuildwheel.overrides]]
+select = "cp3?-*"
+manylinux-x86_64-image = "manylinux2010"
+manylinux-i686-image = "manylinux2010"
