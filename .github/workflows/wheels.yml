@@ -112,7 +112,7 @@ jobs:
       with:
         submodules: true
 
-    - uses: pypa/cibuildwheel@v2.2.0b1
+    - uses: pypa/cibuildwheel@v2.2.0
       env:
         CIBW_BUILD: ${{ matrix.build }}
         CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.CIBW_MANYLINUX_I686_IMAGE }}
