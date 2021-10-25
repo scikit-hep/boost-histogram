@@ -173,6 +173,7 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
         .def(
             "sum",
             [](const histogram_t& self, bool flow) {
+                py::gil_scoped_release release;
                 return bh::algorithm::sum(
                     self, flow ? bh::coverage::all : bh::coverage::inner);
             },
@@ -181,6 +182,7 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
         .def(
             "empty",
             [](const histogram_t& self, bool flow) {
+                py::gil_scoped_release release;
                 return bh::algorithm::empty(
                     self, flow ? bh::coverage::all : bh::coverage::inner);
             },
@@ -188,12 +190,14 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
 
         .def("reduce",
              [](const histogram_t& self, py::args args) {
+                 py::gil_scoped_release release;
                  return bh::algorithm::reduce(
                      self, py::cast<std::vector<bh::algorithm::reduce_command>>(args));
              })
 
         .def("project",
              [](const histogram_t& self, py::args values) {
+                 py::gil_scoped_release release;
                  return bh::algorithm::project(self,
                                                py::cast<std::vector<unsigned>>(values));
              })
