@@ -44,6 +44,12 @@ repos:
   hooks:
   - id: setup-cfg-fmt
 
+- repo: https://github.com/hadialqattan/pycln
+  rev: v1.0.3
+  hooks:
+  - id: pycln
+    args: [--config=pyproject.toml]
+
 - repo: https://github.com/asottile/yesqa
   rev: v1.3.0
   hooks:
