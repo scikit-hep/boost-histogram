@@ -35,7 +35,7 @@ repos:
     args: [--py36-plus]
 
 - repo: https://github.com/PyCQA/isort
-  rev: 5.10.0
+  rev: 5.10.1
   hooks:
   - id: isort
 
@@ -106,7 +106,7 @@ repos:
   - id: rst-inline-touching-normal
 
 - repo: https://github.com/shellcheck-py/shellcheck-py
-  rev: v0.7.2.1
+  rev: v0.8.0.1
   hooks:
   - id: shellcheck
     exclude: ^docs/notebooks/conf.sh$
