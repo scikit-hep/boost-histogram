@@ -23,7 +23,8 @@ concurrency:
 
 env:
   SETUPTOOLS_SCM_PRETEND_VERSION: ${{ github.event.inputs.overrideVersion }}
-  CIBW_ENVIRONMENT: "PIP_PREFER_BINARY=1 SETUPTOOLS_SCM_PRETEND_VERSION=${{ github.event.inputs.overrideVersion }}"
+  CIBW_ENVIRONMENT_PASS: SETUPTOOLS_SCM_PRETEND_VERSION
+  CIBW_ENVIRONMENT: "PIP_PREFER_BINARY=1"
 
 jobs:
   build_sdist:
