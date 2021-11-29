@@ -23,7 +23,8 @@ concurrency:
 
 env:
   SETUPTOOLS_SCM_PRETEND_VERSION: ${{ github.event.inputs.overrideVersion }}
-  CIBW_ENVIRONMENT: "PIP_PREFER_BINARY=1 SETUPTOOLS_SCM_PRETEND_VERSION=${{ github.event.inputs.overrideVersion }}"
+  CIBW_ENVIRONMENT_PASS: SETUPTOOLS_SCM_PRETEND_VERSION
+  CIBW_ENVIRONMENT: "PIP_PREFER_BINARY=1"
 
 jobs:
   build_sdist:
@@ -62,7 +63,7 @@ jobs:
       with:
         platforms: all
 
-    - uses: pypa/cibuildwheel@v2.2.2
+    - uses: pypa/cibuildwheel@v2.3.0
       env:
         CIBW_BUILD: cp${{ matrix.python }}-manylinux_*
         CIBW_ARCHS: ${{ matrix.arch }}
@@ -112,7 +113,7 @@ jobs:
       with:
         submodules: true
 
-    - uses: pypa/cibuildwheel@v2.2.2
+    - uses: pypa/cibuildwheel@v2.3.0
       env:
         CIBW_BUILD: ${{ matrix.build }}
         CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.CIBW_MANYLINUX_I686_IMAGE }}
