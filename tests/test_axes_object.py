@@ -1,9 +1,19 @@
 import numpy as np
+import pytest
 
 import boost_histogram as bh
 
 
-def test_axes_all_at_once():
+@pytest.fixture
+def h():
+    return bh.Histogram(
+        bh.axis.Regular(10, 0, 10, metadata=2),
+        bh.axis.Integer(0, 5, metadata="hi"),
+        bh.axis.StrCategory(["HI", "HO"]),
+    )
+
+
+def test_axes_basics(h):
     h = bh.Histogram(
         bh.axis.Regular(10, 0, 10, metadata=2),
         bh.axis.Integer(0, 5, metadata="hi"),
@@ -22,6 +32,8 @@ def test_axes_all_at_once():
 
     assert h.axes.metadata == (None, 3, "bye")
 
+
+def test_axes_centers(h):
     centers = h.axes.centers
     answers = np.ogrid[0.5:10, 0.5:5, 0.5:2]
     full_answers = np.mgrid[0.5:10, 0.5:5, 0.5:2]
@@ -33,6 +45,8 @@ def test_axes_all_at_once():
         np.testing.assert_allclose(centers.flatten()[i], answers[i].flatten())
         np.testing.assert_allclose(h.axes[i].centers, answers[i].ravel())
 
+
+def test_axes_edges(h):
     edges = h.axes.edges
     answers = np.ogrid[0:11, 0:6, 0:3]
     full_answers = np.mgrid[0:11, 0:6, 0:3]
@@ -44,6 +58,8 @@ def test_axes_all_at_once():
         np.testing.assert_allclose(edges.ravel()[i], answers[i].ravel())
         np.testing.assert_allclose(h.axes[i].edges, answers[i].ravel())
 
+
+def test_axes_widths(h):
     widths = h.axes.widths
     answers = np.ogrid[1:1:10j, 1:1:5j, 1:1:2j]
     full_answers = np.mgrid[1:1:10j, 1:1:5j, 1:1:2j]
@@ -54,3 +70,12 @@ def test_axes_all_at_once():
         np.testing.assert_allclose(widths.T[i], answers[i].T)
         np.testing.assert_allclose(widths.ravel()[i], answers[i].ravel())
         np.testing.assert_allclose(h.axes[i].widths, answers[i].ravel())
+
+
+def test_axis_misconstuct():
+    inp = [bh.axis.Regular(12, 0, 1)]
+    ok = bh.axis.AxesTuple(inp)
+    assert ok[0] == inp[0]
+
+    with pytest.raises(TypeError):
+        bh.axis.AxesTuple(inp[0])

@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Any, List, Tuple, TypeVar
+from typing import Any, Iterable, List, Tuple, Type, TypeVar
 
 import numpy as np
 
@@ -44,6 +44,15 @@ B = TypeVar("B", bound="AxesTuple")
 class AxesTuple(tuple):  # type: ignore[type-arg]
     __slots__ = ()
     _MGRIDOPTS = {"sparse": True, "indexing": "ij"}
+
+    def __new__(cls: Type[B], __iterable: Iterable[Axis]) -> B:
+        self = super().__new__(cls, __iterable)  # type: ignore[arg-type]
+        for item in self:
+            if not isinstance(item, Axis):
+                raise TypeError(
+                    f"Only an iterable of Axis supported in AxesTuple, got {item}"
+                )
+        return self
 
     @property
     def size(self) -> Tuple[int, ...]:
@@ -93,14 +102,15 @@ class AxesTuple(tuple):  # type: ignore[type-arg]
         result = super().__getitem__(item)
         return self.__class__(result) if isinstance(result, tuple) else result
 
-    def __getattr__(self, attr: str) -> Any:
-        return self.__class__(getattr(s, attr) for s in self)
+    def __getattr__(self, attr: str) -> Tuple[Any, ...]:
+        return tuple(getattr(s, attr) for s in self)
 
     def __setattr__(self, attr: str, values: Any) -> None:
         try:
             return super().__setattr__(attr, values)
         except AttributeError:
-            self.__class__(s.__setattr__(attr, v) for s, v in zip_strict(self, values))
+            for s, v in zip_strict(self, values):
+                s.__setattr__(attr, v)
 
     value.__doc__ = Axis.value.__doc__
     index.__doc__ = Axis.index.__doc__
