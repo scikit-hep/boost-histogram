@@ -45,14 +45,12 @@ class AxesTuple(tuple):  # type: ignore[type-arg]
     __slots__ = ()
     _MGRIDOPTS = {"sparse": True, "indexing": "ij"}
 
-    def __new__(cls: Type[B], __iterable: Iterable[Axis]) -> B:
-        self = super().__new__(cls, __iterable)  # type: ignore[arg-type]
+    def __init__(self, __iterable: Iterable[Axis]) -> None:
         for item in self:
             if not isinstance(item, Axis):
                 raise TypeError(
                     f"Only an iterable of Axis supported in AxesTuple, got {item}"
                 )
-        return self
 
     @property
     def size(self) -> Tuple[int, ...]:
