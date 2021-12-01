@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Any, Iterable, List, Tuple, Type, TypeVar
+from typing import Any, Iterable, List, Tuple, TypeVar
 
 import numpy as np
 
