@@ -4,7 +4,7 @@ ci:
 
 repos:
 - repo: https://github.com/psf/black
-  rev: 21.11b1
+  rev: 21.12b0
   hooks:
   - id: black-jupyter
 
@@ -66,7 +66,7 @@ repos:
     additional_dependencies: *flake8-dependencies
 
 - repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v0.910-1
+  rev: v0.920
   hooks:
   - id: mypy
     files: src
@@ -112,7 +112,7 @@ repos:
   - id: rst-inline-touching-normal
 
 - repo: https://github.com/shellcheck-py/shellcheck-py
-  rev: v0.8.0.1
+  rev: v0.8.0.2
   hooks:
   - id: shellcheck
     exclude: ^docs/notebooks/conf.sh$
