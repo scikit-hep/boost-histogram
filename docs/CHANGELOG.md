@@ -2,6 +2,18 @@
 
 ## Version 1.2
 
+### Version 1.2.2
+
+#### User changes
+
+* PyPy 3.8 now supported. [#677][]
+* The GIL is released a little more often now. [#662][]
+* AxesTuple does not allow construction of non-axes. [#680][]
+
+[#662]: https://github.com/scikit-hep/boost-histogram/pull/662
+[#677]: https://github.com/scikit-hep/boost-histogram/pull/677
+[#680]: https://github.com/scikit-hep/boost-histogram/pull/680
+
 ### Version 1.2.1
 
 #### User changes
