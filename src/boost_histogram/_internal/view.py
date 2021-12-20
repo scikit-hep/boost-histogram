@@ -242,7 +242,7 @@ def _to_view(
         if cls._FIELDS == item.dtype.names:
             ret = item.view(cls)
             if value and ret.shape:
-                return ret.value  # type: ignore[no-any-return]
+                return ret.value  # type: ignore[no-any-return,attr-defined]
             else:
-                return ret  # type: ignore[no-any-return]
+                return ret
     return item
