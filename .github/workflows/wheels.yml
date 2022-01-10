@@ -144,7 +144,7 @@ jobs:
     - name: List all files
       run: ls -lh dist
 
-    - uses: pypa/gh-action-pypi-publish@v1.4.2
+    - uses: pypa/gh-action-pypi-publish@v1.5.0
       if: github.event_name == 'release' && github.event.action == 'published'
       with:
         password: ${{ secrets.pypi_password }}
