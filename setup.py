@@ -49,9 +49,9 @@ ext_modules = [
 
 
 extras = {
-    "test": ["pytest", "pytest-benchmark", "cloudpickle", "hypothesis >=6.0"],
+    "test": ["pytest>=6.0", "pytest-benchmark", "cloudpickle", "hypothesis>=6.0"],
     "docs": [
-        "Sphinx~=3.0",
+        "Sphinx>=4.0",
         "myst_parser>=0.13",
         "sphinx-book-theme>=0.0.33",
         "nbsphinx",
