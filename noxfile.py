@@ -6,16 +6,16 @@ nox.options.sessions = ["lint", "tests"]
 
 
 @nox.session(python=ALL_PYTHONS)
-def tests(session):
+def tests(session: nox.Session) -> None:
     """
     Run the unit and regular tests.
     """
     session.install(".[test]")
-    session.run("pytest")
+    session.run("pytest", *session.posargs)
 
 
 @nox.session
-def docs(session):
+def docs(session: nox.Session) -> None:
     """
     Build the docs. Pass "serve" to serve.
     """
@@ -33,16 +33,16 @@ def docs(session):
 
 
 @nox.session
-def lint(session):
+def lint(session: nox.Session) -> None:
     """
     Run the linter.
     """
     session.install("pre-commit")
-    session.run("pre-commit", "run", "--all-files")
+    session.run("pre-commit", "run", "--all-files", *session.posargs)
 
 
 @nox.session
-def make_pickle(session):
+def make_pickle(session: nox.Session) -> None:
     """
     Make a pickle file for this version
     """
