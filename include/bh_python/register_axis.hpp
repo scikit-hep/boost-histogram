@@ -30,32 +30,62 @@
 #include <utility>
 #include <vector>
 
+#ifdef __cpp_noexcept_function_type
+#define BHP_NOEXCEPT_17 noexcept
+#else
+#define BHP_NOEXCEPT_17
+#endif
+
+template <class T>
+auto vectorize_index(T input) {
+    return py::vectorize(input);
+}
+
+#ifdef __cpp_noexcept_function_type
+#define BHP_NOEXCEPT_17 noexcept
+#else
+#define BHP_NOEXCEPT_17
+#endif
+
 // we overload vectorize index for category axis
-template <class Options>
-auto vectorize(int (bh::axis::category<std::string, metadata_t, Options>::*pindex)(
-    const std::string&) const) {
-    return [pindex](const bh::axis::category<std::string, metadata_t, Options>& self,
+template <class T, class Options>
+auto vectorize_index(int (bh::axis::category<T, metadata_t, Options>::*pindex)(const T&)
+                         const BHP_NOEXCEPT_17) {
+    return [pindex](const bh::axis::category<T, metadata_t, Options>& self,
                     py::object arg) -> py::object {
         auto index = std::mem_fn(pindex);
 
-        if(detail::is_value<std::string>(arg))
-            return py::cast(index(self, detail::special_cast<std::string>(arg)));
+        if(detail::is_value<T>(arg)) {
+            auto index_value = index(self, detail::special_cast<T>(arg));
+            if(index_value >= self.size())
+                throw std::out_of_range("index out of range");
+            return py::cast(index_value);
+        }
 
         auto indices = array_like<int>(arg);
-        auto values  = detail::special_cast<detail::c_array_t<std::string>>(arg);
+        auto values  = detail::special_cast<detail::c_array_t<T>>(arg);
 
         auto ip = indices.mutable_data();
         auto vp = values.data();
-        for(std::size_t i = 0, n = values.size(); i < n; ++i)
+        for(std::size_t i = 0, n = values.size(); i < n; ++i) {
             ip[i] = index(self, vp[i]);
+            if(ip[i] >= self.size())
+                throw std::out_of_range("index out of range");
+        }
 
         return std::move(indices);
     };
 }
 
+template <class T>
+auto vectorize_value(T input) {
+    return py::vectorize(input);
+}
+
 // we overload vectorize value for category axis
 template <class R, class U, class Options>
-auto vectorize(R (bh::axis::category<U, metadata_t, Options>::*pvalue)(int) const) {
+auto vectorize_value(R (bh::axis::category<U, metadata_t, Options>::*pvalue)(int)
+                         const) {
     return [pvalue](const bh::axis::category<U, metadata_t, Options>& self,
                     py::object arg) -> py::object {
         auto value = std::mem_fn(pvalue);
@@ -85,14 +115,12 @@ auto vectorize(R (bh::axis::category<U, metadata_t, Options>::*pvalue)(int) cons
     };
 }
 
+#undef BHP_NOEXCEPT_17
+
 /// Add helpers common to all axis types
 template <class A, class... Args>
 py::class_<A> register_axis(py::module& m, Args&&... args) {
     py::class_<A> ax(m, axis::string_name<A>(), std::forward<Args>(args)...);
-
-    // find our vectorize and pybind11::vectorize
-    using ::vectorize;
-    using py::vectorize;
 
     ax.def("__repr__", &shift_to_string<A>)
 
@@ -214,8 +242,10 @@ py::class_<A> register_axis(py::module& m, Args&&... args) {
         .def_property_readonly("centers", &axis::centers<A>, "Return bin centers")
         .def_property_readonly("widths", &axis::widths<A>, "Return bin widths")
 
-        .def("index", vectorize(&A::index), "Index for value (or values) on the axis")
-        .def("value", vectorize(&A::value), "Value at index (or indices)")
+        .def("index",
+             vectorize_index(&A::index),
+             "Index for value (or values) on the axis")
+        .def("value", vectorize_value(&A::value), "Value at index (or indices)")
 
         .def(make_pickle<A>());
 

@@ -38,6 +38,16 @@ if(NOT BH_RULE_LAUNCH_LINK STREQUAL "")
   set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK "${BH_RULE_LAUNCH_LINK}")
 endif()
 
+# This will force color output at build time if this env variable is set _at
+# configure time_. This is useful for CI.
+if($ENV{FORCE_COLOR})
+  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    add_compile_options(-fdiagnostics-color=always)
+  elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+    add_compile_options(-fcolor-diagnostics)
+  endif()
+endif()
+
 # This is a standard recipe for setting a default build type
 set(default_build_type "Debug")
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)

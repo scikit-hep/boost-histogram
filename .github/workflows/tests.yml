@@ -8,6 +8,9 @@ on:
     - master
     - develop
 
+env:
+  FORCE_COLOR: 3
+
 jobs:
   clang-tidy:
     name: Clang-Tidy

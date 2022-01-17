@@ -1,3 +1,5 @@
+import shutil
+
 import nox
 
 ALL_PYTHONS = ["3.6", "3.7", "3.8", "3.9", "3.10"]
@@ -10,6 +12,8 @@ def tests(session: nox.Session) -> None:
     """
     Run the unit and regular tests.
     """
+
+    shutil.rmtree("build", ignore_errors=True)
     session.install(".[test]")
     session.run("pytest", *session.posargs)
 
