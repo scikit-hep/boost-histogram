@@ -800,11 +800,20 @@ class TestCategory(Axis):
     )
     def test_index(self, ref, growth):
         Cat = bh.axis.StrCategory if isinstance(ref[0], str) else bh.axis.IntCategory
-        a = Cat(ref[:-1], growth=growth)
+        a = Cat(ref, growth=growth)
         for i, r in enumerate(ref):
             assert a.index(r) == i
         assert_array_equal(a.index(ref), [0, 1, 2, 3])
         assert_array_equal(a.index(np.reshape(ref, (2, 2))), [[0, 1], [2, 3]])
+
+        if isinstance(ref[0], str):
+            with pytest.raises(IndexError):
+                a.index("E")
+        else:
+            with pytest.raises(IndexError):
+                a.index(5)
+            with pytest.raises(IndexError):
+                a.index(-2)
 
     @pytest.mark.parametrize("ref", ([1, 2, 3], ("A", "B", "C")))
     def test_value(self, ref, growth):
