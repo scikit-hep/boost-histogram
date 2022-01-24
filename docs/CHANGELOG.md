@@ -1,6 +1,6 @@
 # What's new in boost-histogram
 
-## Version 1.2
+## WIP
 
 ### Version 1.3.0
 
@@ -21,6 +21,8 @@
 [#680]: https://github.com/scikit-hep/boost-histogram/pull/680
 [#689]: https://github.com/scikit-hep/boost-histogram/pull/689
 [#690]: https://github.com/scikit-hep/boost-histogram/pull/690
+
+## Version 1.2
 
 ### Version 1.2.1
 
