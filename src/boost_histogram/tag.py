@@ -1,5 +1,6 @@
 # bh.sum is just the Python sum, so from boost_histogram import * is safe (but
 # not recommended)
+import copy
 from builtins import sum
 from typing import TypeVar, Union
 
@@ -37,20 +38,16 @@ class Locator:
         self.offset = offset
 
     def __add__(self: T, offset: int) -> T:
-        from copy import copy
-
-        other = copy(self)
+        other = copy.copy(self)
         other.offset += offset
         return other
 
     def __sub__(self: T, offset: int) -> T:
-        from copy import copy
-
-        other = copy(self)
+        other = copy.copy(self)
         other.offset -= offset
         return other
 
-    def _print_self_(self) -> str:
+    def _print_self_(self) -> str:  # pylint: disable=no-self-use
         return ""
 
     def __repr__(self) -> str:

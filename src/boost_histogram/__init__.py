@@ -1,7 +1,13 @@
 from . import accumulators, axis, numpy, storage
 from ._internal.enum import Kind
 from ._internal.hist import Histogram, IndexingExpr
-from .tag import loc, overflow, rebin, sum, underflow
+from .tag import (  # pylint: disable=redefined-builtin
+    loc,
+    overflow,
+    rebin,
+    sum,
+    underflow,
+)
 from .version import version as __version__
 
 try:

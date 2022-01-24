@@ -18,8 +18,8 @@ class ArrayTuple(tuple):  # type: ignore[type-arg]
     def __getattr__(self, name: str) -> Any:
         if name in self._REDUCTIONS:
             return partial(getattr(np, name), np.broadcast_arrays(*self))  # type: ignore[no-untyped-call]
-        else:
-            return self.__class__(getattr(a, name) for a in self)
+
+        return self.__class__(getattr(a, name) for a in self)
 
     def __dir__(self) -> List[str]:
         names = dir(self.__class__) + dir("np.typing.NDArray[Any]")
@@ -51,6 +51,7 @@ class AxesTuple(tuple):  # type: ignore[type-arg]
                 raise TypeError(
                     f"Only an iterable of Axis supported in AxesTuple, got {item}"
                 )
+        super().__init__()
 
     @property
     def size(self) -> Tuple[int, ...]:
@@ -105,7 +106,7 @@ class AxesTuple(tuple):  # type: ignore[type-arg]
 
     def __setattr__(self, attr: str, values: Any) -> None:
         try:
-            return super().__setattr__(attr, values)
+            super().__setattr__(attr, values)
         except AttributeError:
             for s, v in zip_strict(self, values):
                 s.__setattr__(attr, v)

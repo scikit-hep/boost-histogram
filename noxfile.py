@@ -42,6 +42,17 @@ def lint(session: nox.Session) -> None:
 
 
 @nox.session
+def pylint(session: nox.Session) -> None:
+    """
+    Run pylint.
+    """
+
+    session.install("pylint")
+    session.install("-e", ".")
+    session.run("pylint", "src")
+
+
+@nox.session
 def make_pickle(session: nox.Session) -> None:
     """
     Make a pickle file for this version

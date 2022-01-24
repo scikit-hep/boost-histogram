@@ -17,13 +17,11 @@ class deprecated:
         @functools.wraps(func)
         def decorated_func(*args: Any, **kwargs: Any) -> Any:
             warnings.warn(
-                "{} is deprecated: {}".format(
-                    self._name or func.__name__, self._reason
-                ),
+                f"{self._name or func.__name__} is deprecated: {self._reason}",
                 category=FutureWarning,
                 stacklevel=2,
             )
             return func(*args, **kwargs)
 
-        decorated_func.__doc__ = "DEPRECATED: " + self._reason + "\n" + func.__doc__
+        decorated_func.__doc__ = f"DEPRECATED: {self._reason}\n{func.__doc__}"
         return decorated_func

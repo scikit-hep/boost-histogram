@@ -25,7 +25,7 @@ from typing import (
 import numpy as np
 
 import boost_histogram
-import boost_histogram._core as _core
+from boost_histogram import _core
 
 from .axestuple import AxesTuple
 from .axis import Axis
@@ -74,12 +74,14 @@ def _fill_cast(
     """
     if value is None or isinstance(value, (str, bytes)):
         return value  # type: ignore[return-value]
-    elif not inner and isinstance(value, (tuple, list)):
+
+    if not inner and isinstance(value, (tuple, list)):
         return tuple(_fill_cast(a, inner=True) for a in value)  # type: ignore[misc]
-    elif hasattr(value, "__iter__") or hasattr(value, "__array__"):
+
+    if hasattr(value, "__iter__") or hasattr(value, "__array__"):
         return np.asarray(value)
-    else:
-        return value
+
+    return value
 
 
 def _arg_shortcut(item: Union[Tuple[int, float, float], Axis, CppAxis]) -> CppAxis:
@@ -87,10 +89,11 @@ def _arg_shortcut(item: Union[Tuple[int, float, float], Axis, CppAxis]) -> CppAx
         msg = "Developer shortcut: will be removed in a future version"
         warnings.warn(msg, FutureWarning)
         return _core.axis.regular_uoflow(item[0], item[1], item[2])  # type: ignore[return-value]
-    elif isinstance(item, Axis):
+
+    if isinstance(item, Axis):
         return item._ax  # type: ignore[no-any-return]
-    else:
-        raise TypeError("Only axes supported in histogram constructor")
+
+    raise TypeError("Only axes supported in histogram constructor")
 
 
 def _expand_ellipsis(indexes: Iterable[Any], rank: int) -> List[Any]:
@@ -98,7 +101,7 @@ def _expand_ellipsis(indexes: Iterable[Any], rank: int) -> List[Any]:
     number_ellipses = indexes.count(Ellipsis)
     if number_ellipses == 0:
         return indexes
-    elif number_ellipses == 1:
+    if number_ellipses == 1:
         index = indexes.index(Ellipsis)
         additional = rank + 1 - len(indexes)
         if additional < 0:
@@ -107,8 +110,7 @@ def _expand_ellipsis(indexes: Iterable[Any], rank: int) -> List[Any]:
         # Fill out the ellipsis with empty slices
         return indexes[:index] + [slice(None)] * additional + indexes[index + 1 :]
 
-    else:
-        raise IndexError("an index can only have a single ellipsis ('...')")
+    raise IndexError("an index can only have a single ellipsis ('...')")
 
 
 H = TypeVar("H", bound="Histogram")
@@ -192,13 +194,13 @@ class Histogram:
         # support that too
         if len(axes) == 1 and isinstance(axes[0], Histogram):
             # Special case - we can recursively call __init__ here
-            self.__init__(axes[0]._hist)  # type: ignore[misc]
+            self.__init__(axes[0]._hist)  # type: ignore[misc] # pylint: disable=non-parent-init-called
             self._from_histogram_object(axes[0])
             return
 
         # Support objects that provide a to_boost method, like Uproot
-        elif len(axes) == 1 and hasattr(axes[0], "_to_boost_histogram_"):
-            self.__init__(axes[0]._to_boost_histogram_())  # type: ignore[misc, union-attr, union-attr, union-attr]
+        if len(axes) == 1 and hasattr(axes[0], "_to_boost_histogram_"):
+            self.__init__(axes[0]._to_boost_histogram_())  # type: ignore[misc, union-attr, union-attr, union-attr] # pylint: disable=non-parent-init-called
             return
 
         if storage is None:
@@ -208,20 +210,18 @@ class Histogram:
 
         # Check for missed parenthesis or incorrect types
         if not isinstance(storage, Storage):
-            if issubclass(storage, Storage):
-                raise KeyError(
-                    "Passing in an initialized storage has been removed. Please add ()."
-                )
-            else:
-                raise KeyError("Only storages allowed in storage argument")
+            msg_storage = (
+                "Passing in an initialized storage has been removed. Please add ()."
+            )
+            msg_unknown = "Only storages allowed in storage argument"
+            raise KeyError(msg_storage if issubclass(storage, Storage) else msg_unknown)
 
         # Allow a tuple to represent a regular axis
         axes = tuple(_arg_shortcut(arg) for arg in axes)  # type: ignore[arg-type]
 
         if len(axes) > _core.hist._axes_limit:
-            raise IndexError(
-                f"Too many axes, must be less than {_core.hist._axes_limit}"
-            )
+            msg = f"Too many axes, must be less than {_core.hist._axes_limit}"
+            raise IndexError(msg)
 
         # Check all available histograms, and if the storage matches, return that one
         for h in _histograms:
@@ -403,27 +403,24 @@ class Histogram:
             getattr(self._hist, name)(other)
         elif hasattr(other, "shape") and other.shape:  # type: ignore[union-attr]
             assert not isinstance(other, float)
+
             if len(other.shape) != self.ndim:
-                raise ValueError(
-                    "Number of dimensions {} must match histogram {}".format(
-                        len(other.shape), self.ndim
-                    )
-                )
-            elif all(a in {b, 1} for a, b in zip(other.shape, self.shape)):
+                msg = f"Number of dimensions {len(other.shape)} must match histogram {self.ndim}"
+                raise ValueError(msg)
+
+            if all(a in {b, 1} for a, b in zip(other.shape, self.shape)):
                 view = self.view(flow=False)
                 getattr(view, name)(other)
             elif all(a in {b, 1} for a, b in zip(other.shape, self.axes.extent)):
                 view = self.view(flow=True)
                 getattr(view, name)(other)
             else:
-                raise ValueError(
-                    "Wrong shape {}, expected {} or {}".format(
-                        other.shape, self.shape, self.axes.extent
-                    )
-                )
+                msg = f"Wrong shape {other.shape}, expected {self.shape} or {self.axes.extent}"
+                raise ValueError(msg)
         else:
             view = self.view(flow=True)
             getattr(view, name)(other)
+
         self._variance_known = False
         return self
 
@@ -601,20 +598,14 @@ class Histogram:
 
     def __repr__(self) -> str:
         newline = "\n  "
+        first_newline = newline if len(self.axes) > 1 else ""
+        storage_newline = (
+            newline if len(self.axes) > 1 else " " if len(self.axes) > 0 else ""
+        )
         sep = "," if len(self.axes) > 0 else ""
-        ret = "{self.__class__.__name__}({newline}".format(
-            self=self, newline=newline if len(self.axes) > 1 else ""
-        )
+        ret = f"{self.__class__.__name__}({first_newline}"
         ret += f",{newline}".join(repr(ax) for ax in self.axes)
-        ret += "{comma}{newline}storage={storage}".format(
-            storage=self._storage_type(),
-            newline=newline
-            if len(self.axes) > 1
-            else " "
-            if len(self.axes) > 0
-            else "",
-            comma=sep,
-        )
+        ret += f"{sep}{storage_newline}storage={self._storage_type()}"  # pylint: disable=not-callable
         ret += ")"
         outer = self.sum(flow=True)
         if outer:
@@ -674,7 +665,8 @@ class Histogram:
             raise IndexError("Wrong number of indices for histogram")
 
         # Allow [bh.loc(...)] to work
-        for i in range(len(indexes)):
+        # TODO: could be nicer making a new list via a comprehension
+        for i in range(len(indexes)):  # pylint: disable=consider-using-enumerate
             # Support list of UHI indexers
             if isinstance(indexes[i], list):
                 indexes[i] = [self._compute_uhi_index(index, i) for index in indexes[i]]
@@ -718,10 +710,7 @@ class Histogram:
         hist, *edges = self._hist.to_numpy(flow)
         hist = self.view(flow=flow) if view else self.values(flow=flow)
 
-        if dd:
-            return (hist, edges)
-        else:
-            return (hist, *edges)
+        return (hist, edges) if dd else (hist, *edges)
 
     def copy(self: H, *, deep: bool = True) -> H:
         """
@@ -730,10 +719,7 @@ class Histogram:
         to avoid making a copy of axis metadata.
         """
 
-        if deep:
-            return copy.deepcopy(self)
-        else:
-            return copy.copy(self)
+        return copy.deepcopy(self) if deep else copy.copy(self)
 
     def reset(self: H) -> H:
         """
@@ -786,8 +772,8 @@ class Histogram:
 
         integrations: Set[int] = set()
         slices: List[_core.algorithm.reduce_command] = []
-        pick_each: Dict[int, int] = dict()
-        pick_set: Dict[int, List[int]] = dict()
+        pick_each: Dict[int, int] = {}
+        pick_set: Dict[int, List[int]] = {}
 
         # Compute needed slices and projections
         for i, ind in enumerate(indexes):
@@ -796,10 +782,12 @@ class Histogram:
                     1 if self.axes[i].traits.underflow else 0
                 )
                 continue
-            elif isinstance(ind, collections.abc.Sequence):
+
+            if isinstance(ind, collections.abc.Sequence):
                 pick_set[i] = list(ind)
                 continue
-            elif not isinstance(ind, slice):
+
+            if not isinstance(ind, slice):
                 raise IndexError(
                     "Must be a slice, an integer, or follow the locator protocol."
                 )
@@ -875,7 +863,7 @@ class Histogram:
             logger.debug("Slices for picking sets: %s", pick_set)
             axes = [reduced.axis(i) for i in range(reduced.rank())]
             reduced_view = reduced.view(flow=True)
-            for i in pick_set:
+            for i in pick_set:  # pylint: disable=consider-using-dict-items
                 selection = copy.copy(pick_set[i])
                 ax = reduced.axis(i)
                 if ax.traits_ordered:
@@ -952,11 +940,8 @@ class Histogram:
         # to allow it (because we do allow broadcasting up dimensions)
         # Instead, we simply require matching dimensions.
         if value_ndim > 0 and value_ndim != sum(isinstance(i, slice) for i in indexes):
-            raise ValueError(
-                "Setting a {}D histogram with a {}D array must have a matching number of dimensions".format(
-                    len(indexes), value_ndim
-                )
-            )
+            msg = f"Setting a {len(indexes)}D histogram with a {value_ndim}D array must have a matching number of dimensions"
+            raise ValueError(msg)
 
         # Here, value_n does not increment with n if this is not a slice
         value_n = 0
@@ -998,9 +983,7 @@ class Histogram:
                     msg = f"Mismatched shapes in dimension {n}"
                     msg += f", {value_shape[n]} != {request_len}"
                     if use_underflow or use_overflow:
-                        msg += " or {}".format(
-                            request_len + use_underflow + use_overflow
-                        )
+                        msg += f" or {request_len + use_underflow + use_overflow}"
                     raise ValueError(msg)
                 indexes[n] = slice(start, stop, request.step)
                 value_n += 1
@@ -1028,13 +1011,12 @@ class Histogram:
 
         :return: Kind
         """
-        if self._hist._storage_type in {
+        mean = self._hist._storage_type in {
             _core.storage.mean,
             _core.storage.weighted_mean,
-        }:
-            return Kind.MEAN
-        else:
-            return Kind.COUNT
+        }
+
+        return Kind.MEAN if mean else Kind.COUNT
 
     def values(self, flow: bool = False) -> "np.typing.NDArray[Any]":
         """
@@ -1054,8 +1036,7 @@ class Histogram:
         # TODO: Might be a NumPy typing bug
         if len(view.dtype) == 0:  # type: ignore[arg-type]
             return view
-        else:
-            return view.value  # type: ignore[union-attr]
+        return view.value  # type: ignore[union-attr]
 
     def variances(self, flow: bool = False) -> Optional["np.typing.NDArray[Any]"]:
         """
@@ -1083,11 +1064,9 @@ class Histogram:
 
         view = self.view(flow)
         if len(view.dtype) == 0:  # type: ignore[arg-type]
-            if self._variance_known:
-                return view
-            else:
-                return None
-        elif hasattr(view, "sum_of_weights"):
+            return view if self._variance_known else None
+
+        if hasattr(view, "sum_of_weights"):
             return np.divide(  # type: ignore[no-any-return]
                 view.variance,  # type: ignore[union-attr]
                 view.sum_of_weights,  # type: ignore[union-attr, union-attr, union-attr]
@@ -1095,15 +1074,15 @@ class Histogram:
                 where=view.sum_of_weights > 1,  # type: ignore[union-attr, union-attr, union-attr]
             )
 
-        elif hasattr(view, "count"):
+        if hasattr(view, "count"):
             return np.divide(  # type: ignore[no-any-return]
                 view.variance,  # type: ignore[union-attr]
                 view.count,  # type: ignore[union-attr, union-attr, union-attr]
                 out=np.full(view.count.shape, np.nan),  # type: ignore[union-attr, union-attr, union-attr]
                 where=view.count > 1,  # type: ignore[union-attr, union-attr, union-attr]
             )
-        else:
-            return view.variance  # type: ignore[union-attr]
+
+        return view.variance  # type: ignore[union-attr]
 
     def counts(self, flow: bool = False) -> "np.typing.NDArray[Any]":
         """
@@ -1132,22 +1111,22 @@ class Histogram:
 
         if len(view.dtype) == 0:  # type: ignore[arg-type]
             return view
-        elif hasattr(view, "sum_of_weights"):
+
+        if hasattr(view, "sum_of_weights"):
             return np.divide(  # type: ignore[no-any-return]
                 view.sum_of_weights ** 2,  # type: ignore[union-attr, union-attr, union-attr]
                 view.sum_of_weights_squared,  # type: ignore[union-attr, union-attr, union-attr]
                 out=np.zeros_like(view.sum_of_weights, dtype=np.float64),  # type: ignore[union-attr, union-attr, union-attr]
                 where=view.sum_of_weights_squared != 0,  # type: ignore[union-attr, union-attr, union-attr]
             )
-        elif hasattr(view, "count"):
+
+        if hasattr(view, "count"):
             return view.count  # type: ignore[union-attr, union-attr, union-attr]
-        else:
-            return view.value  # type: ignore[union-attr]
+
+        return view.value  # type: ignore[union-attr]
 
 
 if TYPE_CHECKING:
-    import typing
-
     from uhi.typing.plottable import PlottableHistogram
 
     _: PlottableHistogram = typing.cast(Histogram, None)
