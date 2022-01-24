@@ -1,4 +1,9 @@
-from ._core.accumulators import Mean, Sum, WeightedMean, WeightedSum
+from ._core.accumulators import (  # pylint: disable=import-error
+    Mean,
+    Sum,
+    WeightedMean,
+    WeightedSum,
+)
 from ._internal.typing import Accumulator
 
 __all__ = ("Sum", "Mean", "WeightedSum", "WeightedMean", "Accumulator")

@@ -16,12 +16,13 @@ class View(np.ndarray):  # type: ignore[type-arg]
         # If the shape is empty, return the parent type
         if not sliced.shape:
             return self._PARENT._make(*sliced)  # type: ignore[attr-defined, no-any-return]
+
         # If the dtype has changed, return a normal array (no longer a record)
-        elif sliced.dtype != self.dtype:
+        if sliced.dtype != self.dtype:
             return np.asarray(sliced)
+
         # Otherwise, no change, return the same View type
-        else:
-            return sliced  # type: ignore[no-any-return]
+        return sliced  # type: ignore[no-any-return]
 
     def __repr__(self) -> str:
         # NumPy starts the ndarray class name with "array", so we replace it
@@ -29,10 +30,8 @@ class View(np.ndarray):  # type: ignore[type-arg]
         return f"{self.__class__.__name__}(\n      " + repr(self.view(np.ndarray))[6:]
 
     def __str__(self) -> str:
-        fields = ", ".join(self._FIELDS)
-        return "{self.__class__.__name__}: ({fields})\n{arr}".format(
-            self=self, fields=fields, arr=self.view(np.ndarray)
-        )
+        my_fields = ", ".join(self._FIELDS)
+        return f"{self.__class__.__name__}: ({my_fields})\n{self.view(np.ndarray)}"
 
     def __setitem__(self, ind: StrIndex, value: ArrayLike) -> None:
         # `.value` really is ["value"] for an record array
@@ -81,11 +80,11 @@ def fields(*names: str) -> Callable[[Type[object]], Type[object]]:
             raise RuntimeError(
                 f"{cls.__name__} already has had a fields decorator applied"
             )
-        fields = []
+        my_fields = []
         for name in names:
-            fields.append(name)
+            my_fields.append(name)
             setattr(cls, name, make_getitem_property(name))
-            cls._FIELDS = tuple(fields)  # type: ignore[attr-defined]
+            cls._FIELDS = tuple(my_fields)  # type: ignore[attr-defined]
 
         return cls
 
@@ -166,7 +165,7 @@ class WeightedSumView(View):
                         )
                     return result.view(self.__class__)  # type: ignore[no-any-return]
 
-                elif ufunc in {np.multiply, np.divide, np.true_divide, np.floor_divide}:
+                if ufunc in {np.multiply, np.divide, np.true_divide, np.floor_divide}:
                     if self.dtype == input_0.dtype:
                         ufunc(input_0["value"], input_1, out=result["value"], **kwargs)
                         ufunc(
@@ -243,6 +242,5 @@ def _to_view(
             ret = item.view(cls)
             if value and ret.shape:
                 return ret.value  # type: ignore[no-any-return,attr-defined]
-            else:
-                return ret
+            return ret
     return item

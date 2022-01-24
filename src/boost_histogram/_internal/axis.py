@@ -14,7 +14,7 @@ from typing import (
     Union,
 )
 
-import numpy as np
+import numpy as np  # pylint: disable=unused-import
 
 import boost_histogram
 
@@ -31,10 +31,9 @@ def _isstr(value: Any) -> bool:
 
     if isinstance(value, (str, bytes)):
         return True
-    elif hasattr(value, "__iter__"):
+    if hasattr(value, "__iter__"):
         return all(_isstr(v) for v in value)
-    else:
-        return False
+    return False
 
 
 def _opts(**kwargs: bool) -> Set[str]:
@@ -87,7 +86,7 @@ class Axis:
             raise KeyError(
                 "Cannot provide metadata by keyword and __dict__, use __dict__ only"
             )
-        elif __dict__ is not None:
+        if __dict__ is not None:
             self._ax.metadata = __dict__
         elif metadata is not None:
             self._ax.metadata["metadata"] = metadata
@@ -112,14 +111,11 @@ class Axis:
         Return the fractional index(es) given a value (or values) on the axis.
         """
 
-        if not _isstr(value):
-            return self._ax.index(value)  # type: ignore[no-any-return]
-        else:
-            raise TypeError(
-                "index({value}) cannot be a string for a numerical axis".format(
-                    value=value
-                )
-            )
+        if _isstr(value):
+            msg = f"index({value}) cannot be a string for a numerical axis"
+            raise TypeError(msg)
+
+        return self._ax.index(value)  # type: ignore[no-any-return]
 
     def value(self, index: float) -> float:
         """
@@ -486,7 +482,8 @@ class Variable(Axis, family=boost_histogram):
         if len(self) > 20:
             ret = [repr(self.edges)]
         else:
-            ret = ["[{}]".format(", ".join(format(v, "g") for v in self.edges))]
+            args = ", ".join(format(v, "g") for v in self.edges)
+            ret = [f"[{args}]"]
 
         if self.traits.growth:
             ret.append("growth=True")
@@ -670,17 +667,15 @@ class StrCategory(BaseCategory, family=boost_histogram):
 
         if _isstr(value):
             return self._ax.index(value)  # type: ignore[no-any-return]
-        else:
-            raise TypeError(
-                "index({value}) must be a string or iterable of strings for a StrCategory axis".format(
-                    value=value
-                )
-            )
+
+        msg = f"index({value}) must be a string or iterable of strings for a StrCategory axis"
+        raise TypeError(msg)
 
     def _repr_args_(self) -> List[str]:
         "Return inner part of signature for use in repr"
 
-        ret = ["[{}]".format(", ".join(repr(c) for c in self))]
+        args = ", ".join(repr(c) for c in self)
+        ret = [f"[{args}]"]
         ret += super()._repr_args_()
         return ret
 
@@ -732,7 +727,8 @@ class IntCategory(BaseCategory, family=boost_histogram):
     def _repr_args_(self) -> List[str]:
         "Return inner part of signature for use in repr"
 
-        ret = ["[{}]".format(", ".join(format(c, "g") for c in self))]
+        args = ", ".join(format(c, "g") for c in self)
+        ret = [f"[{args}]"]
         ret += super()._repr_args_()
         return ret
 

@@ -85,3 +85,28 @@ manylinux-i686-image = "manylinux2014"
 select = "cp3?-*"
 manylinux-x86_64-image = "manylinux2010"
 manylinux-i686-image = "manylinux2010"
+
+[tool.pylint]
+
+master.py-version = "3.6"
+master.extension-pkg-allow-list = ["boost_histogram._core"]
+similarities.ignore-imports = "yes"
+messages_control.disable = [
+  "fixme",
+  "invalid-name",
+  "line-too-long",
+  "missing-class-docstring",
+  "missing-function-docstring",
+  "missing-module-docstring",
+  "no-member",  # C extensions mess with this
+  "protected-access",
+  "too-few-public-methods",
+  "too-many-arguments",
+  "too-many-branches",
+  "too-many-lines",
+  "too-many-locals",
+  "too-many-return-statements",
+  "too-many-statements",
+  "wrong-import-position",
+  "cyclic-import",  # TODO: move files out of _internal
+]

@@ -98,7 +98,7 @@ def _cast_make_object(canidate_class: T, cpp_object: object, is_class: bool) -> 
     if is_class:
         return canidate_class
 
-    elif hasattr(canidate_class, "_convert_cpp"):
+    if hasattr(canidate_class, "_convert_cpp"):
         return canidate_class._convert_cpp(cpp_object)  # type: ignore[attr-defined, no-any-return]
 
     # Casting down does not work in pybind11,
@@ -106,8 +106,7 @@ def _cast_make_object(canidate_class: T, cpp_object: object, is_class: bool) -> 
     # so for now, all non-copy classes must have a
     # _convert_cpp method.
 
-    else:
-        return canidate_class(cpp_object)  # type: ignore[operator, no-any-return]
+    return canidate_class(cpp_object)  # type: ignore[operator, no-any-return]
 
 
 def cast(self: object, cpp_object: object, parent_class: Type[T]) -> T:

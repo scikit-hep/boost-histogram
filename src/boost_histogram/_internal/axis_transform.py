@@ -33,8 +33,8 @@ class AxisTransform:
     def __repr__(self) -> str:
         if hasattr(self, "_this"):
             return repr(self._this)
-        else:
-            return f"{self.__class__.__name__}() # Missing _this, broken class"
+
+        return f"{self.__class__.__name__}() # Missing _this, broken class"
 
     def _produce(self, bins: int, start: float, stop: float) -> Any:
         # Note: this is an ABC; _type must be defined on children
@@ -62,7 +62,7 @@ class Pow(AxisTransform, family=boost_histogram):
     __slots__ = ()
     _type = ca.regular_pow
 
-    def __init__(self, power: float):
+    def __init__(self, power: float):  # pylint: disable=super-init-not-called
         "Create a new transform instance"
         # Note: this comes from family
         (cpp_class,) = self._types  # type: ignore[attr-defined]
@@ -84,7 +84,7 @@ class Function(AxisTransform, family=boost_histogram):
     __slots__ = ()
     _type = ca.regular_trans
 
-    def __init__(
+    def __init__(  # pylint: disable=super-init-not-called
         self, forward: Any, inverse: Any, *, convert: Any = None, name: str = ""
     ):
         """
