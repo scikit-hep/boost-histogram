@@ -2,17 +2,25 @@
 
 ## Version 1.2
 
-### Version 1.2.2
+### Version 1.3.0
 
 #### User changes
 
-* PyPy 3.8 now supported. [#677][]
+* PyPy 3.8 now supported with binary wheels. [#677][]
 * The GIL is released a little more often now. [#662][]
 * AxesTuple does not allow construction of non-axes. [#680][]
+* KeyError is now thrown when accessing a non-existent item in a Category Axis [#689][]
+
+#### Developer changes
+
+* Use PyLint in CI to check for some style issues [#690][]
+
 
 [#662]: https://github.com/scikit-hep/boost-histogram/pull/662
 [#677]: https://github.com/scikit-hep/boost-histogram/pull/677
 [#680]: https://github.com/scikit-hep/boost-histogram/pull/680
+[#689]: https://github.com/scikit-hep/boost-histogram/pull/689
+[#690]: https://github.com/scikit-hep/boost-histogram/pull/690
 
 ### Version 1.2.1
 
