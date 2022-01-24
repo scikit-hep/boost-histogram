@@ -58,7 +58,7 @@ auto vectorize_index(int (bh::axis::category<T, metadata_t, Options>::*pindex)(c
         if(detail::is_value<T>(arg)) {
             auto index_value = index(self, detail::special_cast<T>(arg));
             if(index_value >= self.size())
-                throw std::out_of_range("index out of range");
+                throw pybind11::key_error(py::str("{!r} not in axis").format(arg));
             return py::cast(index_value);
         }
 
@@ -70,7 +70,7 @@ auto vectorize_index(int (bh::axis::category<T, metadata_t, Options>::*pindex)(c
         for(std::size_t i = 0, n = values.size(); i < n; ++i) {
             ip[i] = index(self, vp[i]);
             if(ip[i] >= self.size())
-                throw std::out_of_range("index out of range");
+                throw pybind11::key_error(py::str("{!r} not in axis").format(vp[i]));
         }
 
         return std::move(indices);

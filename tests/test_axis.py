@@ -807,12 +807,12 @@ class TestCategory(Axis):
         assert_array_equal(a.index(np.reshape(ref, (2, 2))), [[0, 1], [2, 3]])
 
         if isinstance(ref[0], str):
-            with pytest.raises(IndexError):
+            with pytest.raises(KeyError):
                 a.index("E")
         else:
-            with pytest.raises(IndexError):
+            with pytest.raises(KeyError):
                 a.index(5)
-            with pytest.raises(IndexError):
+            with pytest.raises(KeyError):
                 a.index(-2)
 
     @pytest.mark.parametrize("ref", ([1, 2, 3], ("A", "B", "C")))
