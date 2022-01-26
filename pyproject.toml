@@ -87,11 +87,12 @@ manylinux-x86_64-image = "manylinux2010"
 manylinux-i686-image = "manylinux2010"
 
 [tool.pylint]
-
 master.py-version = "3.6"
 master.extension-pkg-allow-list = ["boost_histogram._core"]
+reports.output-format = "colorized"
 similarities.ignore-imports = "yes"
 messages_control.disable = [
+  "cyclic-import",  # TODO: move files out of _internal
   "fixme",
   "invalid-name",
   "line-too-long",
@@ -108,5 +109,4 @@ messages_control.disable = [
   "too-many-return-statements",
   "too-many-statements",
   "wrong-import-position",
-  "cyclic-import",  # TODO: move files out of _internal
 ]
