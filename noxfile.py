@@ -53,7 +53,7 @@ def pylint(session: nox.Session) -> None:
 
     session.install("pylint")
     session.install("-e", ".")
-    session.run("pylint", "src")
+    session.run("pylint", "src", *session.posargs)
 
 
 @nox.session
