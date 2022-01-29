@@ -200,7 +200,7 @@ class Histogram:
 
         # Support objects that provide a to_boost method, like Uproot
         if len(axes) == 1 and hasattr(axes[0], "_to_boost_histogram_"):
-            self.__init__(axes[0]._to_boost_histogram_())  # type: ignore[misc, union-attr, union-attr, union-attr] # pylint: disable=non-parent-init-called
+            self.__init__(axes[0]._to_boost_histogram_())  # type: ignore[misc, union-attr] # pylint: disable=non-parent-init-called
             return
 
         if storage is None:
@@ -651,7 +651,7 @@ class Histogram:
         # Support dict access
         if hasattr(index, "items"):
             indexes = [slice(None)] * hist.rank()
-            for k, v in index.items():  # type: ignore[union-attr, union-attr, union-attr, union-attr, union-attr, union-attr]
+            for k, v in index.items():  # type: ignore[union-attr]
                 indexes[k] = v
 
         # Normalize -> h[i] == h[i,]
@@ -778,7 +778,7 @@ class Histogram:
         # Compute needed slices and projections
         for i, ind in enumerate(indexes):
             if hasattr(ind, "__index__"):
-                pick_each[i] = ind.__index__() + (  # type: ignore[union-attr, union-attr]
+                pick_each[i] = ind.__index__() + (  # type: ignore[union-attr]
                     1 if self.axes[i].traits.underflow else 0
                 )
                 continue
@@ -1069,17 +1069,17 @@ class Histogram:
         if hasattr(view, "sum_of_weights"):
             return np.divide(  # type: ignore[no-any-return]
                 view.variance,  # type: ignore[union-attr]
-                view.sum_of_weights,  # type: ignore[union-attr, union-attr, union-attr]
-                out=np.full(view.sum_of_weights.shape, np.nan),  # type: ignore[union-attr, union-attr, union-attr]
-                where=view.sum_of_weights > 1,  # type: ignore[union-attr, union-attr, union-attr]
+                view.sum_of_weights,  # type: ignore[union-attr]
+                out=np.full(view.sum_of_weights.shape, np.nan),  # type: ignore[union-attr]
+                where=view.sum_of_weights > 1,  # type: ignore[union-attr]
             )
 
         if hasattr(view, "count"):
             return np.divide(  # type: ignore[no-any-return]
                 view.variance,  # type: ignore[union-attr]
-                view.count,  # type: ignore[union-attr, union-attr, union-attr]
-                out=np.full(view.count.shape, np.nan),  # type: ignore[union-attr, union-attr, union-attr]
-                where=view.count > 1,  # type: ignore[union-attr, union-attr, union-attr]
+                view.count,  # type: ignore[union-attr]
+                out=np.full(view.count.shape, np.nan),  # type: ignore[union-attr]
+                where=view.count > 1,  # type: ignore[union-attr]
             )
 
         return view.variance  # type: ignore[union-attr]
@@ -1114,14 +1114,14 @@ class Histogram:
 
         if hasattr(view, "sum_of_weights"):
             return np.divide(  # type: ignore[no-any-return]
-                view.sum_of_weights ** 2,  # type: ignore[union-attr, union-attr, union-attr]
-                view.sum_of_weights_squared,  # type: ignore[union-attr, union-attr, union-attr]
-                out=np.zeros_like(view.sum_of_weights, dtype=np.float64),  # type: ignore[union-attr, union-attr, union-attr]
-                where=view.sum_of_weights_squared != 0,  # type: ignore[union-attr, union-attr, union-attr]
+                view.sum_of_weights**2,  # type: ignore[union-attr]
+                view.sum_of_weights_squared,  # type: ignore[union-attr]
+                out=np.zeros_like(view.sum_of_weights, dtype=np.float64),  # type: ignore[union-attr]
+                where=view.sum_of_weights_squared != 0,  # type: ignore[union-attr]
             )
 
         if hasattr(view, "count"):
-            return view.count  # type: ignore[union-attr, union-attr, union-attr]
+            return view.count  # type: ignore[union-attr]
 
         return view.value  # type: ignore[union-attr]
 

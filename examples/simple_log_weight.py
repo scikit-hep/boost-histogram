@@ -17,7 +17,7 @@ for idx, (lower, upper) in enumerate(h.axes[0]):
     val = h[idx]
     print(
         "bin {} [{:g}, {:g}): {} +/- {}".format(
-            idx, lower, upper, val.value, val.variance ** 0.5
+            idx, lower, upper, val.value, val.variance**0.5
         )
     )
 

@@ -54,7 +54,7 @@ def print_timer(setup, statement, name, storage, fill, flow, base=None, n=10):
 
 
 c = multiprocessing.cpu_count()
-counts = [c // 2 ** x for x in reversed(range(int(math.log2(c) + 1)))]
+counts = [c // 2**x for x in reversed(range(int(math.log2(c) + 1)))]
 
 table_header = "| Type  | Storage | Fill | Flow |    Time   | Speedup |"
 table_spacer = "|-------|---------|------|------|-----------|---------|"
