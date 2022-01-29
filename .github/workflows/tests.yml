@@ -44,7 +44,9 @@ jobs:
         submodules: true
 
     - name: Run PyLint
-      run: pipx run nox -s pylint
+      run: |
+        echo "::add-matcher::$GITHUB_WORKSPACE/.github/matchers/pylint.json"
+        pipx run nox -s pylint
 
 
   cmake:
