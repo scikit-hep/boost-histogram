@@ -151,14 +151,14 @@ class WeightedSumView(View):
                         ufunc(input_0["value"], input_1, out=result["value"], **kwargs)
                         np.add(
                             input_0["variance"],
-                            input_1 ** 2,
+                            input_1**2,
                             out=result["variance"],
                             **kwargs,
                         )
                     else:
                         ufunc(input_0, input_1["value"], out=result["value"], **kwargs)
                         np.add(
-                            input_0 ** 2,
+                            input_0**2,
                             input_1["variance"],
                             out=result["variance"],
                             **kwargs,
@@ -170,14 +170,14 @@ class WeightedSumView(View):
                         ufunc(input_0["value"], input_1, out=result["value"], **kwargs)
                         ufunc(
                             input_0["variance"],
-                            input_1 ** 2,
+                            input_1**2,
                             out=result["variance"],
                             **kwargs,
                         )
                     else:
                         ufunc(input_0, input_1["value"], out=result["value"], **kwargs)
                         ufunc(
-                            input_0 ** 2,
+                            input_0**2,
                             input_1["variance"],
                             out=result["variance"],
                             **kwargs,

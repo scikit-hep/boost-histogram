@@ -902,7 +902,7 @@ def test_numpy_conversion_5():
         a.fill(2, 1)
     a1 = a.view()
     assert a1.shape == (3, 2)
-    assert a1[0, 0] == float(2 ** 80)
+    assert a1[0, 0] == float(2**80)
     assert a1[1, 0] == 1
     assert a1[2, 0] == 2
     assert a1[0, 1] == 3

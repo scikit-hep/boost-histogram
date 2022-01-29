@@ -144,14 +144,14 @@ def test_slicing_projection():
 
     h1.fill(X.ravel(), Y.ravel(), Z.ravel())
 
-    assert h1[:: bh.sum, :: bh.sum, :: bh.sum] == 12 ** 3
-    assert h1[0 : len : bh.sum, 0 : len : bh.sum, 0 : len : bh.sum] == 10 ** 3
+    assert h1[:: bh.sum, :: bh.sum, :: bh.sum] == 12**3
+    assert h1[0 : len : bh.sum, 0 : len : bh.sum, 0 : len : bh.sum] == 10**3
     assert h1[0 : bh.overflow : bh.sum, 0 : len : bh.sum, :: bh.sum] == 10 * 10 * 12
     assert h1[:: bh.sum, 0 : len : bh.sum, :: bh.sum] == 10 * 12 * 12
 
     # make sure nothing was modified
-    assert h1.sum() == 10 ** 3
-    assert h1.sum(flow=True) == 12 ** 3
+    assert h1.sum() == 10**3
+    assert h1.sum(flow=True) == 12**3
 
     h2 = h1[0 : 3 : bh.sum, ...]
     assert h2[1, 2] == 3
