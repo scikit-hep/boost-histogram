@@ -193,7 +193,6 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/boost_histogram/version.py")
   string(REGEX MATCH [=[[0-9]+\.[0-9]+\.[0-9]+]=] VERSION_STRING "${VERSION_STRING}")
 else()
   pybind11_find_import(setuptools_scm REQUIRED)
-  pybind11_find_import(toml REQUIRED)
 
   execute_process(
     COMMAND
