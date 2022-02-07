@@ -1,5 +1,7 @@
+import numpy as np
 import pytest
 from numpy.testing import assert_allclose
+from pytest import approx
 
 import boost_histogram as bh
 
@@ -183,3 +185,17 @@ def test_view_assign_wmean():
     assert w[0].sum_of_weights_squared == 1
     assert w.value[0] == 2
     assert w[0].variance == 3
+
+
+# Issue #696
+def test_view_cumsum():
+    h = bh.Histogram(
+        bh.axis.Integer(1, 10, underflow=True, overflow=False),
+        storage=bh.storage.Weight(),
+    )
+    h.fill([2, 3], weight=[1.5, 2.5])
+
+    view = h.view()
+    c_view = np.cumsum(view)
+    assert c_view.value == approx(np.cumsum(view.value))
+    assert c_view.variance == approx(np.cumsum(view.variance))
