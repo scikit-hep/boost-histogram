@@ -144,51 +144,60 @@ class WeightedSumView(View):
                     )
                     return result.view(self.__class__)  # type: ignore[no-any-return]
 
+                # If unsupported, just pass through (will return not implemented)
+                return super().__array_ufunc__(ufunc, method, *inputs, **kwargs)  # type: ignore[misc, no-any-return]
+
             # View with normal value or array
-            else:
-                if ufunc in {np.add, np.subtract}:
-                    if self.dtype == input_0.dtype:
-                        ufunc(input_0["value"], input_1, out=result["value"], **kwargs)
-                        np.add(
-                            input_0["variance"],
-                            input_1**2,
-                            out=result["variance"],
-                            **kwargs,
-                        )
-                    else:
-                        ufunc(input_0, input_1["value"], out=result["value"], **kwargs)
-                        np.add(
-                            input_0**2,
-                            input_1["variance"],
-                            out=result["variance"],
-                            **kwargs,
-                        )
-                    return result.view(self.__class__)  # type: ignore[no-any-return]
+            if ufunc in {np.add, np.subtract}:
+                if self.dtype == input_0.dtype:
+                    ufunc(input_0["value"], input_1, out=result["value"], **kwargs)
+                    np.add(
+                        input_0["variance"],
+                        input_1**2,
+                        out=result["variance"],
+                        **kwargs,
+                    )
+                else:
+                    ufunc(input_0, input_1["value"], out=result["value"], **kwargs)
+                    np.add(
+                        input_0**2,
+                        input_1["variance"],
+                        out=result["variance"],
+                        **kwargs,
+                    )
+                return result.view(self.__class__)  # type: ignore[no-any-return]
 
-                if ufunc in {np.multiply, np.divide, np.true_divide, np.floor_divide}:
-                    if self.dtype == input_0.dtype:
-                        ufunc(input_0["value"], input_1, out=result["value"], **kwargs)
-                        ufunc(
-                            input_0["variance"],
-                            input_1**2,
-                            out=result["variance"],
-                            **kwargs,
-                        )
-                    else:
-                        ufunc(input_0, input_1["value"], out=result["value"], **kwargs)
-                        ufunc(
-                            input_0**2,
-                            input_1["variance"],
-                            out=result["variance"],
-                            **kwargs,
-                        )
+            if ufunc in {np.multiply, np.divide, np.true_divide, np.floor_divide}:
+                if self.dtype == input_0.dtype:
+                    ufunc(input_0["value"], input_1, out=result["value"], **kwargs)
+                    ufunc(
+                        input_0["variance"],
+                        input_1**2,
+                        out=result["variance"],
+                        **kwargs,
+                    )
+                else:
+                    ufunc(input_0, input_1["value"], out=result["value"], **kwargs)
+                    ufunc(
+                        input_0**2,
+                        input_1["variance"],
+                        out=result["variance"],
+                        **kwargs,
+                    )
 
-                    return result.view(self.__class__)  # type: ignore[no-any-return]
+                return result.view(self.__class__)  # type: ignore[no-any-return]
 
         # ufuncs that are allowed to reduce
         if ufunc in {np.add} and method == "reduce" and len(inputs) == 1:
             results = (ufunc.reduce(self[field], **kwargs) for field in self._FIELDS)
             return self._PARENT._make(*results)  # type: ignore[no-any-return]
+
+        # ufuncs that are allowed to accumulate
+        if ufunc in {np.add} and method == "accumulate" and len(inputs) == 1:
+            (result,) = kwargs.pop("out", [np.empty(self.shape, self.dtype)])
+            for field in self._FIELDS:
+                ufunc.accumulate(self[field], out=result[field], **kwargs)
+            return result.view(self.__class__)  # type: ignore[no-any-return]
 
         # If unsupported, just pass through (will return not implemented)
         return super().__array_ufunc__(ufunc, method, *inputs, **kwargs)  # type: ignore[misc, no-any-return]
