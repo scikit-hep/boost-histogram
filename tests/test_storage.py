@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 import pytest
 from numpy.testing import assert_array_equal
@@ -258,3 +260,20 @@ def test_summing_weighted_mean_storage():
     assert s1.sum_of_weights == approx(s2.sum_of_weights)
     assert s1.sum_of_weights_squared == approx(s2.sum_of_weights_squared)
     assert s1.variance == approx(s2.variance)
+
+
+# Raised on Gitter
+def test_UHI_variance_counts():
+    h = bh.Histogram(
+        bh.axis.Regular(bins=1, start=0, stop=1), storage=bh.storage.WeightedMean()
+    )
+    h.fill(0.5, sample=[1], weight=[0.5])
+    h.fill(0.5, sample=[2], weight=[0.4])
+    assert not math.isnan(h.variances()[0])
+
+    h = bh.Histogram(
+        bh.axis.Regular(bins=1, start=0, stop=1), storage=bh.storage.WeightedMean()
+    )
+    h.fill(0.5, sample=[1], weight=[0.5])
+    h.fill(0.5, sample=[1], weight=[0.5])
+    assert not math.isnan(h.variances()[0])

@@ -1067,11 +1067,12 @@ class Histogram:
             return view if self._variance_known else None
 
         if hasattr(view, "sum_of_weights"):
+            valid = view.sum_of_weights**2 > view.sum_of_weights_squared  # type: ignore[union-attr]
             return np.divide(  # type: ignore[no-any-return]
                 view.variance,  # type: ignore[union-attr]
                 view.sum_of_weights,  # type: ignore[union-attr]
                 out=np.full(view.sum_of_weights.shape, np.nan),  # type: ignore[union-attr]
-                where=view.sum_of_weights > 1,  # type: ignore[union-attr]
+                where=valid,
             )
 
         if hasattr(view, "count"):
