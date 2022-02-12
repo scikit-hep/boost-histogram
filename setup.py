@@ -28,6 +28,7 @@ SRC_FILES = [
 
 INCLUDE_DIRS = [
     "include",
+    "extern/pybind11/include",
     "extern/assert/include",
     "extern/config/include",
     "extern/core/include",
@@ -43,6 +44,7 @@ ext_modules = [
         SRC_FILES,
         include_dirs=INCLUDE_DIRS,
         cxx_std=cxx_std,
+        include_pybind11=False,
         extra_compile_args=["/d2FH4-"] if sys.platform.startswith("win32") else [],
     )
 ]
