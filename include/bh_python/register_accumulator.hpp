@@ -20,7 +20,7 @@ template <class CharT, class Traits, class W>
 std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>& os,
                                               const sum<W>& x) {
     if(os.width() == 0)
-        return os << x.large() << " + " << x.small();
+        return os << x.large_part() << " + " << x.small_part();
     return handle_nonzero_width(os, x);
 }
 

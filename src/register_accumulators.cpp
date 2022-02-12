@@ -158,8 +158,8 @@ void register_accumulators(py::module& accumulators) {
             "value"_a,
             "Run over an array with the accumulator")
 
-        .def_property_readonly("_small", &sum::small)
-        .def_property_readonly("_large", &sum::large)
+        .def_property_readonly("_small", &sum::small_part)
+        .def_property_readonly("_large", &sum::large_part)
 
         ;
 
