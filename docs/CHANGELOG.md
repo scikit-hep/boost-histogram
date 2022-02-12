@@ -10,10 +10,16 @@
 * The GIL is released a little more often now. [#662][]
 * AxesTuple does not allow construction of non-axes. [#680][]
 * KeyError is now thrown when accessing a non-existent item in a Category Axis [#689][]
+* WeightedViews now support `np.cumsum` [#699][]
+
+#### Bug fixes
+* Fixed WeightedMean storages producing NaN for .variances() [#695][]
+* Modify local include slightly to enable WebAssembly compilation in Pyodide [#702][]
 
 #### Developer changes
 
 * Use PyLint in CI to check for some style issues [#690][]
+* Developer (CMake) installs no longer require toml [#698][]
 
 
 [#662]: https://github.com/scikit-hep/boost-histogram/pull/662
@@ -21,6 +27,9 @@
 [#680]: https://github.com/scikit-hep/boost-histogram/pull/680
 [#689]: https://github.com/scikit-hep/boost-histogram/pull/689
 [#690]: https://github.com/scikit-hep/boost-histogram/pull/690
+[#695]: https://github.com/scikit-hep/boost-histogram/pull/695
+[#698]: https://github.com/scikit-hep/boost-histogram/pull/698
+[#699]: https://github.com/scikit-hep/boost-histogram/pull/699
 
 ## Version 1.2
 
