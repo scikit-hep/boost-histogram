@@ -13,7 +13,6 @@ write_to = "src/boost_histogram/version.py"
 minversion = "6.0"
 junit_family = "xunit2"
 addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
-filterwarnings = ["error"]
 xfail_strict = true
 testpaths = ["tests"]
 required_plugins = ["pytest-benchmark"]
