@@ -18,8 +18,9 @@ jobs:
     container: silkeh/clang:10
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
       with:
+        fetch-depth: 0
         submodules: true
 
     - name: Install requirements
@@ -39,8 +40,9 @@ jobs:
     name: PyLint
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
       with:
+        fetch-depth: 0
         submodules: true
 
     - name: Run PyLint
@@ -62,8 +64,9 @@ jobs:
     name: CMake Python ${{ matrix.python-version }}
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
       with:
+        fetch-depth: 0
         submodules: true
 
     - uses: actions/setup-python@v2
@@ -92,9 +95,10 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
       with:
         submodules: true
+        fetch-depth: 0
 
     - uses: pypa/cibuildwheel@v2.3.1
       env:

@@ -31,8 +31,9 @@ jobs:
     name: Build SDist
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
       with:
+        fetch-depth: 0
         submodules: true
 
     - name: Build SDist
@@ -55,8 +56,9 @@ jobs:
         arch: [aarch64]
     steps:
 
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
       with:
+        fetch-depth: 0
         submodules: true
 
     - uses: docker/setup-qemu-action@v1.2.0
@@ -109,8 +111,9 @@ jobs:
             build: "*"
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
       with:
+        fetch-depth: 0
         submodules: true
 
     - uses: pypa/cibuildwheel@v2.3.1
