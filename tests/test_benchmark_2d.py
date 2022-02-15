@@ -1,3 +1,5 @@
+import platform
+
 import numpy as np
 import pytest
 from numpy.testing import assert_array_equal
@@ -6,6 +8,10 @@ import boost_histogram as bh
 
 STORAGES = (bh.storage.Int64, bh.storage.Double, bh.storage.Unlimited)
 DTYPES = (np.float64, np.float32, np.int64, np.int32)
+
+# Casting is broken for numpy on ppc64le: https://github.com/numpy/numpy/issues/21062
+if platform.machine() == "ppc64le":
+    DTYPES = (np.float64, np.int64)
 
 bins = (100, 100)
 ranges = ((-1, 1), (-1, 1))

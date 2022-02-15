@@ -1,6 +1,7 @@
 import functools
 import operator
 import pickle
+import platform
 import sys
 from collections import OrderedDict
 from io import BytesIO
@@ -966,6 +967,9 @@ def test_fill_with_sequence_0():
         c[1, 2, 3]
 
 
+@pytest.mark.xfail(
+    platform.machine() == "ppc64le", reason="ppc64le bug (TBD)", strict=False
+)
 def test_fill_with_sequence_1():
     def fa(*args):
         return np.array(args, dtype=float)
@@ -1064,6 +1068,10 @@ def test_fill_with_sequence_3():
     assert_array_equal(h.view(True), [3, 1])
 
 
+@pytest.mark.skipif(
+    platform.machine() == "ppc64le" and sys.version_info < (3, 8),
+    reason="ppc64le segfault",
+)
 def test_fill_with_sequence_4():
     h = bh.Histogram(
         bh.axis.StrCategory([], growth=True), bh.axis.Integer(0, 0, growth=True)
