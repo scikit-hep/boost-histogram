@@ -1,10 +1,24 @@
 # What's new in boost-histogram
 
-## WIP
-
-Nothing yet.
 
 ## Version 1.3
+
+### Version 1.3.1
+
+#### Bug fixes
+
+* Fixed regression with invalid `.project` input causing segfaults. [#708][]
+* Minor skips for specific tests on ppc64le, primarily for a NumPy bug. [#707][]
+* Avoid using EH for program control, better on Pyodide. [#709][]
+* Fix regression with exact float not being accepted for `.index` for `IntCategory`
+  in 1.3.0. Add `hist` nox session to check downstream (manually for the
+  moment). [#710][]
+
+[#707]: https://github.com/scikit-hep/boost-histogram/pull/707
+[#708]: https://github.com/scikit-hep/boost-histogram/pull/708
+[#709]: https://github.com/scikit-hep/boost-histogram/pull/709
+[#710]: https://github.com/scikit-hep/boost-histogram/pull/710
+
 
 ### Version 1.3.0
 
@@ -17,6 +31,7 @@ Nothing yet.
 * WeightedViews now support `np.cumsum` [#699][]
 
 #### Bug fixes
+
 * Fixed WeightedMean storages producing NaN for .variances() [#695][]
 * Modify local include slightly to enable WebAssembly compilation in Pyodide [#702][]
 
@@ -34,6 +49,7 @@ Nothing yet.
 [#695]: https://github.com/scikit-hep/boost-histogram/pull/695
 [#698]: https://github.com/scikit-hep/boost-histogram/pull/698
 [#699]: https://github.com/scikit-hep/boost-histogram/pull/699
+[#702]: https://github.com/scikit-hep/boost-histogram/pull/702
 
 ## Version 1.2
 
