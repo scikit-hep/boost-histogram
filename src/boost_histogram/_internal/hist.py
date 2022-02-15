@@ -776,8 +776,8 @@ class Histogram:
 
         # Compute needed slices and projections
         for i, ind in enumerate(indexes):
-            if hasattr(ind, "__index__"):
-                pick_each[i] = ind.__index__() + (  # type: ignore[union-attr]
+            if isinstance(ind, SupportsIndex):
+                pick_each[i] = ind.__index__() + (
                     1 if self.axes[i].traits.underflow else 0
                 )
                 continue
