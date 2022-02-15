@@ -998,6 +998,11 @@ class Histogram:
         Provided a list of axis numbers, this will produce the histogram over
         those axes only. Flow bins are used if available.
         """
+        for arg in args:
+            if arg < 0 or arg >= self.ndim:
+                raise ValueError(
+                    f"Projection axis must be a valid axis number 0 to {self.ndim-1}, not {arg}"
+                )
 
         return self._new_hist(self._hist.project(*args))
 

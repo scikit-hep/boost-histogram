@@ -590,6 +590,12 @@ def test_project():
     with pytest.raises(ValueError):
         h.project(2, 1)
 
+    with pytest.raises(ValueError):
+        h.project(9)
+
+    with pytest.raises(ValueError):
+        h.project(-1)
+
 
 def test_shrink_1d():
     h = bh.Histogram(bh.axis.Regular(20, 1, 5))

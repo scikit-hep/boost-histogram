@@ -190,16 +190,17 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
 
         .def("reduce",
              [](const histogram_t& self, py::args args) {
+                 auto commands
+                     = py::cast<std::vector<bh::algorithm::reduce_command>>(args);
                  py::gil_scoped_release release;
-                 return bh::algorithm::reduce(
-                     self, py::cast<std::vector<bh::algorithm::reduce_command>>(args));
+                 return bh::algorithm::reduce(self, commands);
              })
 
         .def("project",
              [](const histogram_t& self, py::args values) {
+                 auto cpp_values = py::cast<std::vector<unsigned>>(values);
                  py::gil_scoped_release release;
-                 return bh::algorithm::project(self,
-                                               py::cast<std::vector<unsigned>>(values));
+                 return bh::algorithm::project(self, cpp_values);
              })
 
         .def("fill", &fill<histogram_t>)
