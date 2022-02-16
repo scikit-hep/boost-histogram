@@ -57,10 +57,10 @@ logger = logging.getLogger(__name__)
 CppAxis = NewType("CppAxis", object)
 
 SimpleIndexing = Union[SupportsIndex, slice]
-InnerIndexing = Union[SimpleIndexing, Callable[[Axis], int], "ellipsis"]
+InnerIndexing = Union[SimpleIndexing, Callable[[Axis], int]]
 FullInnerIndexing = Union[InnerIndexing, List[InnerIndexing]]
 IndexingWithMapping = Union[FullInnerIndexing, Mapping[int, FullInnerIndexing]]
-IndexingExpr = Union[IndexingWithMapping, Tuple[IndexingWithMapping, ...]]
+IndexingExpr = Union[IndexingWithMapping, Tuple[IndexingWithMapping, ...], "ellipsis"]
 
 T = TypeVar("T")
 
@@ -621,19 +621,23 @@ class Histogram:
         """
         # Support sum and rebin directly
         if index is sum or hasattr(index, "factor"):  # type: ignore[comparison-overlap]
-            index = slice(None, None, index)
+            return slice(None, None, index)
 
         # General locators
         # Note that MyPy doesn't like these very much - the fix
         # will be to properly set input types
-        elif callable(index):
-            index = index(self.axes[axis])
-        elif isinstance(index, SupportsIndex):
+        if callable(index):
+            return index(self.axes[axis])
+
+        if isinstance(index, float):
+            raise TypeError(f"Index {index} must be an integer, not float")
+
+        if isinstance(index, SupportsIndex):
             if abs(int(index)) >= self._hist.axis(axis).size:
                 raise IndexError("histogram index is out of range")
-            index %= self._hist.axis(axis).size
+            return index % self._hist.axis(axis).size  # type: ignore[no-any-return]
 
-        return index  # type: ignore[return-value]
+        return index
 
     def _compute_commonindex(
         self, index: IndexingExpr
@@ -656,10 +660,10 @@ class Histogram:
 
         # Normalize -> h[i] == h[i,]
         else:
-            if not isinstance(index, tuple):
-                index = (index,)
+            tuple_index = (index,) if not isinstance(index, tuple) else index
+
             # Now a list
-            indexes = _expand_ellipsis(index, hist.rank())
+            indexes = _expand_ellipsis(tuple_index, hist.rank())
 
         if len(indexes) != hist.rank():
             raise IndexError("Wrong number of indices for histogram")
@@ -669,7 +673,7 @@ class Histogram:
         for i in range(len(indexes)):  # pylint: disable=consider-using-enumerate
             # Support list of UHI indexers
             if isinstance(indexes[i], list):
-                indexes[i] = [self._compute_uhi_index(index, i) for index in indexes[i]]
+                indexes[i] = [self._compute_uhi_index(ind, i) for ind in indexes[i]]
             else:
                 indexes[i] = self._compute_uhi_index(indexes[i], i)
 
