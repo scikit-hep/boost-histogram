@@ -74,7 +74,7 @@ all = true
 
 [tool.cibuildwheel]
 test-extras = "test"
-test-command = "pytest {project}/tests"
+test-command = "pytest --benchmark-disable {project}/tests"
 test-skip = ["pp*", "*universal2:arm64", "cp310-*{i686,win32}", "*musllinux*"]
 skip = ["pp*-manylinux_i686"]  # not supported by NumPy
 manylinux-x86_64-image = "manylinux2014"
