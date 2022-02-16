@@ -19,6 +19,28 @@ def tests(session: nox.Session) -> None:
 
 
 @nox.session
+def hist(session: nox.Session) -> None:
+    """
+    Run Hist's test suite
+    """
+    shutil.rmtree("build", ignore_errors=True)
+    session.install(".")
+    tmpdir = session.create_tmp()
+    session.chdir(tmpdir)
+    session.run("git", "clone", "https://github.com/scikit-hep/hist", external=True)
+    session.chdir("hist")
+    with open("setup.cfg", encoding="utf-8") as f:
+        lines = f.readlines()
+    with open("setup.cfg", "w", encoding="utf-8") as f:
+        for line in lines:
+            if "boost-histogram" not in line:
+                f.write(line)
+
+    session.install(".[test,plot]")
+    session.run("pytest", *session.posargs)
+
+
+@nox.session
 def docs(session: nox.Session) -> None:
     """
     Build the docs. Pass "serve" to serve.
