@@ -106,7 +106,7 @@ Category axis
    :alt: Regular axis illustration
    :align: center
 
-.. py:function:: bh.axis.IntCategory([value1, ...], metadata="", grow=False)
+.. py:function:: bh.axis.IntCategory([value1, ...], metadata="", growth=False)
    :noindex:
 
    You should put integers in a category axis; but unlike an integer axis, the integers do not need to be adjacent.
@@ -125,7 +125,7 @@ One use for an IntCategory axis is for an IntEnum:
    :noindex:
 
 
-.. py:function:: bh.axis.StrCategory([str1, ...], metadata="", grow=False)
+.. py:function:: bh.axis.StrCategory([str1, ...], metadata="", growth=False)
    :noindex:
 
    You can put strings in a category axis as well. The fill method supports lists or arrays of strings
