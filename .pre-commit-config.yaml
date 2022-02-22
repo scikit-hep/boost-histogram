@@ -98,6 +98,7 @@ repos:
   rev: v13.0.1
   hooks:
    - id: clang-format
+     types_or: [c++]
 
 - repo: https://github.com/pre-commit/pygrep-hooks
   rev: v1.9.0
