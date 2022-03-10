@@ -743,6 +743,9 @@ class Histogram:
         """
         Compute the sum over the histogram bins (optionally including the flow bins).
         """
+        if any(x == 0 for x in (self.axes.extent if flow else self.axes.size)):
+            return self._storage_type.accumulator()
+
         return self._hist.sum(flow)  # type: ignore[no-any-return]
 
     @property
