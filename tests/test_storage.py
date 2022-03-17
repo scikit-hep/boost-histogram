@@ -277,3 +277,25 @@ def test_UHI_variance_counts():
     h.fill(0.5, sample=[1], weight=[0.5])
     h.fill(0.5, sample=[1], weight=[0.5])
     assert not math.isnan(h.variances()[0])
+
+
+@pytest.mark.parametrize(
+    "storage",
+    [
+        bh.storage.Int64,
+        bh.storage.Double,
+        bh.storage.AtomicInt64,
+        bh.storage.Unlimited,
+        bh.storage.Weight,
+        bh.storage.Mean,
+        bh.storage.WeightedMean,
+    ],
+)
+def test_empty_axis_histogram(storage):
+    h2d = bh.Histogram(
+        bh.axis.Regular(10, 0, 10),
+        bh.axis.StrCategory([], growth=True),
+        storage=storage(),
+    )
+    assert h2d.sum() == h2d._storage_type.accumulator()
+    assert h2d.sum(flow=True) == h2d._storage_type.accumulator()

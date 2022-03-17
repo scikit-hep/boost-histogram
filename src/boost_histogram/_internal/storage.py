@@ -1,5 +1,8 @@
+from typing import ClassVar, Type, Union
+
 import boost_histogram
 
+from .._core import accumulators
 from .._core import storage as store
 from .utils import set_module
 
@@ -15,37 +18,47 @@ class Storage:
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}()"
 
+    accumulator: ClassVar[
+        Union[
+            Type[int],
+            Type[float],
+            Type[accumulators.WeightedMean],
+            Type[accumulators.WeightedSum],
+            Type[accumulators.Mean],
+        ]
+    ]
+
 
 @set_module("boost_histogram.storage")
 class Int64(store.int64, Storage, family=boost_histogram):
-    pass
+    accumulator = int
 
 
 @set_module("boost_histogram.storage")
 class Double(store.double, Storage, family=boost_histogram):
-    pass
+    accumulator = float
 
 
 @set_module("boost_histogram.storage")
 class AtomicInt64(store.atomic_int64, Storage, family=boost_histogram):
-    pass
+    accumulator = int
 
 
 @set_module("boost_histogram.storage")
 class Unlimited(store.unlimited, Storage, family=boost_histogram):
-    pass
+    accumulator = float
 
 
 @set_module("boost_histogram.storage")
 class Weight(store.weight, Storage, family=boost_histogram):
-    pass
+    accumulator = accumulators.WeightedSum
 
 
 @set_module("boost_histogram.storage")
 class Mean(store.mean, Storage, family=boost_histogram):
-    pass
+    accumulator = accumulators.Mean
 
 
 @set_module("boost_histogram.storage")
 class WeightedMean(store.weighted_mean, Storage, family=boost_histogram):
-    pass
+    accumulator = accumulators.WeightedMean
