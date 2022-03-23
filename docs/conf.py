@@ -13,6 +13,7 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
+import os
 import shutil
 import sys
 
@@ -116,18 +117,25 @@ autodoc_mock_imports = ["boost_histogram._core"]
 
 
 def prepare(app):
-    outer = BASEDIR / "notebooks"
-    inner = DIR / "notebooks"
-    notebooks = outer.glob("*.ipynb")
-
+    outer_nb = BASEDIR / "notebooks"
+    inner_nb = DIR / "notebooks"
+    notebooks = outer_nb.glob("*.ipynb")
     for notebook in notebooks:
-        shutil.copy(notebook, inner / notebook.name)
+        shutil.copy(notebook, inner_nb / notebook.name)
+
+    outer_cont = BASEDIR / ".github"
+    inner_cont = DIR
+    contributing = "CONTRIBUTING.md"
+    shutil.copy(outer_cont / contributing, inner_cont / "contributing.md")
 
 
 def clean_up(app, exception):
-    inner = DIR / "notebooks"
-    for notebook in inner.glob("*.ipynb"):
+    inner_nb = DIR / "notebooks"
+    for notebook in inner_nb.glob("*.ipynb"):
         notebook.unlink()
+
+    inner_cont = DIR
+    os.unlink(inner_cont / "contributing.md")
 
 
 def setup(app):
