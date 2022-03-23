@@ -25,8 +25,8 @@ NumPy adaptors
 --------------
 
 You can use boost-histogram as a drop in replacement for NumPy histograms.  All
-three histogram functions (``bh.numpy.histogram``, ``bh.numpy.histgram2d``, and
-``bh.histogram.histogramdd``) are provided. The syntax is identical, though
+three histogram functions (``bh.numpy.histogram``, ``bh.numpy.histgoram2d``, and
+``bh.numpy.histogramdd``) are provided. The syntax is identical, though
 boost-histogram adds three new keyword-only arguments; ``storage=`` to select the
 storage, ``histogram=bh.Histogram`` to produce a boost-histogram instead of a
 tuple, and ``threads=N`` to select a number of threads to fill with.
@@ -46,6 +46,8 @@ If you try the following in an IPython session, you will get:
        np.random.normal(loc=2, scale=.2, size=200_000),
        np.random.normal(loc=8, scale=.2, size=200_000),
    ])
+
+.. code:: python3
 
    %%timeit
    bins, edges = np.histogram(norm_vals, bins=100, range=(0, 10))

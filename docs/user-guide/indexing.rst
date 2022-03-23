@@ -11,10 +11,7 @@ Boost-histogram specific details
 
 Boost-histogram implements ``bh.loc``, ``builtins.sum``, ``bh.rebin``, ``bh.underflow``, and ``bh.overflow`` from the UHI spec. A ``bh.tag.at`` locator is provided as well, which simulates the Boost.Histogram C++ ``.at()`` indexing using the UHI locator protocol.
 
-Boost-histogram allows "picking" using lists, similar to NumPy. If you select
-with multiple lists, boost-histogram instead selects per-axis, rather than
-group-selecting and reducing to a single axis, like NumPy does. You can use
-``bh.loc(...)`` inside these lists.
+Boost-histogram allows "picking" using lists, similar to NumPy. If you select with multiple lists, boost-histogram instead selects per-axis, rather than group-selecting and reducing to a single axis, like NumPy does. You can use ``bh.loc(...)`` inside these lists.
 
 Example::
 
