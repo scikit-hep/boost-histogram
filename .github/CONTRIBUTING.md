@@ -1,5 +1,9 @@
-# Contributing to boost-histogram
+See the [Scikit-HEP Developer introduction][skhep-dev-intro] for a
+detailed description of best practices for developing Scikit-HEP packages.
 
+[skhep-dev-intro]: https://scikit-hep.org/developer/intro
+
+# Contributing
 
 ## Building from source
 
@@ -9,7 +13,6 @@ This repository has dependencies in submodules. Check out the repository like th
 git clone --recursive https://github.com/scikit-hep/boost-histogram.git
 cd boost-histogram
 ```
-
 
 <details><summary>Faster version (click to expand)</summary>
 
@@ -63,7 +66,6 @@ help installing the latest CMake version, [visit this
 page](https://cliutils.gitlab.io/modern-cmake/chapters/intro/installing.html);
 one option is to use pip to install CMake.
 
-
 > Note: Since setuptools uses a subdirectory called `build`, it is *slightly*
 > better to avoid making your CMake directory `build` as well. Also, you will
 > often have multiple CMake directories (`build-release`, `build-debug`, etc.),
@@ -78,7 +80,6 @@ pytest`, and not others, like `pytest`
 for virtual environments).
 
 Here is the recommendation for a CMake install:
-
 
 ```bash
 python3 -m venv env_cmake
@@ -103,7 +104,6 @@ Run the unit tests (requires pytest and NumPy).
 ```bash
 python3 -m pytest
 ```
-
 
 For CMake, you can also use the `test` target from anywhere, or use `python3 -m
 pytest` or `ctest` from the build directory.
@@ -158,7 +158,7 @@ pre-commit run --all-files
 We do not check `check-manifest` every time locally, since it is slow. You can trigger
 this manual check with:
 
-```
+```bash
 pre-commit run --all-files --hook-stage manual check-manifest
 ```
 
@@ -202,7 +202,6 @@ cmake --build build
 
 ## Common tasks
 
-
 <details><summary>Updating dependencies (click to expand)</summary>
 
 This will checkout new versions of the dependencies. Example given using the
@@ -229,12 +228,11 @@ end
 - Make the GitHub release in the GitHub UI. Copy the changelog entries and
   links for that version; this has to be done as part of the release and tag
   procedure for archival tools (Zenodo) to pick them up correctly.
-    - Title should be `"Version <version number>"`
-    - Version tag should be `"v" + major + "." + minor + "." + patch`.
+  - Title should be `"Version <version number>"`
+  - Version tag should be `"v" + major + "." + minor + "." + patch`.
 - GHA will build and send to PyPI for you when you release.
 - Conda-forge will automatically make a PR to update within an hour or so, and
   it will merge automatically if it passes.
-
 
 </details>
 
