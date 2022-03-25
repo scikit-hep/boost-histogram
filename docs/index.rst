@@ -51,22 +51,21 @@ See :ref:`usage-quickstart` for more.
 
 .. toctree::
    :maxdepth: 1
-   :caption: Contents:
+   :caption: User Guide:
 
-   usage/installation
-   usage/quickstart
-   CHANGELOG
-   usage/histogram
-   usage/axes
-   usage/storage
-   usage/accumulators
-   usage/transforms
-   usage/indexing
-   usage/plotting
-   usage/analyses
-   usage/numpy
-   usage/subclassing
-   usage/comparison
+   user-guide/installation
+   user-guide/quickstart
+   user-guide/histogram
+   user-guide/axes
+   user-guide/storage
+   user-guide/accumulators
+   user-guide/transforms
+   user-guide/indexing
+   user-guide/plotting
+   user-guide/analyses
+   user-guide/numpy
+   user-guide/subclassing
+   user-guide/comparison
 
 
 .. toctree::
@@ -80,6 +79,15 @@ See :ref:`usage-quickstart` for more.
   notebooks/xarray
   notebooks/BoostHistogramHandsOn
 
+.. toctree::
+   :maxdepth: 2
+   :titlesonly:
+   :caption: Developers
+   :glob:
+
+   contributing
+   support
+   changelog
 
 .. toctree::
   :caption: API Reference:

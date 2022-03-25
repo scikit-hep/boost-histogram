@@ -1,5 +1,4 @@
-# What's new in boost-histogram
-
+# Changelog
 
 ## Version 1.3
 
@@ -18,7 +17,6 @@
 [#708]: https://github.com/scikit-hep/boost-histogram/pull/708
 [#709]: https://github.com/scikit-hep/boost-histogram/pull/709
 [#710]: https://github.com/scikit-hep/boost-histogram/pull/710
-
 
 ### Version 1.3.0
 
@@ -40,7 +38,6 @@
 * Use PyLint in CI to check for some style issues [#690][]
 * Developer (CMake) installs no longer require toml [#698][]
 
-
 [#662]: https://github.com/scikit-hep/boost-histogram/pull/662
 [#677]: https://github.com/scikit-hep/boost-histogram/pull/677
 [#680]: https://github.com/scikit-hep/boost-histogram/pull/680
@@ -56,12 +53,15 @@
 ### Version 1.2.1
 
 #### User changes
+
 * musllinux wheels now provided along with manylinux [#656][]
 
 #### Bug fixes
+
 * Fixed single-element negative growth fill [#654][]
 
 #### Developer changes
+
 * No longer require Docker for clang-format, runs online too [#610][]
 * Using pybind11 2.8.0 [#658][]
 
@@ -73,11 +73,13 @@
 ### Version 1.2.0
 
 #### User changes
+
 * Python 3.10 officially supported, with wheels.
 * Support subtraction on histograms [#636][]
 * Integer histograms are now signed [#636][]
 
 #### Bug fixes
+
 * Support custom setters on AxesTuple subclasses. [#627][]
 * Faster picking if slices are not also used [#645][] or if they are [#648][] (1000x or more in some cases)
 * Throw an error when an AxesTuple setter is the wrong length (inspired by zip strict in Python 3.10) [#627][]
@@ -85,6 +87,7 @@
 * Static typing no longer thinks `storage=` is required [#604][]
 
 #### Developer changes
+
 * Support NumPy 1.21 for static type checking [#625][]
 * Use newer Boost 1.77 and Boost.Histogram 1.77+1 [#594][]
 * Provide nox support [#647][]
@@ -104,16 +107,19 @@
 ### Version 1.1.0
 
 #### User changes
+
 * Experimentally support list selection on categorical axes [#577][]
 * Support Python 3.8 on Apple Silicon [#600][]
 * Scaling and addition with a scalar affect flow bins too [#580][]
 * Change `sum_of_deltas_squared` to `_sum_of_deltas_squared` (was an implementation detail) [#602][]
 
 #### Bug fixes
+
 * Fix "picking" on a flow bin [#576][]
 * Better error message on getattr [#596][]
 
 #### Developer changes
+
 * Test on Python 3.10 beta releases [#600][]
 * Provide a CMakeLists for quick standalone Boost.Histogram C++ experiments [#591][]
 * Adding logging with pytest failure output [#575][]
@@ -199,7 +205,6 @@ uses, except for subclassing; subclassing histogram components now uses Python
 [#521]: https://github.com/scikit-hep/boost-histogram/pull/521
 [#523]: https://github.com/scikit-hep/boost-histogram/pull/523
 
-
 ## Version 0.13
 
 ### Version 0.13.2
@@ -256,13 +261,11 @@ Python 2, and mostly equivalent in API to 1.0.
 [#505]: https://github.com/scikit-hep/boost-histogram/pull/505
 [#508]: https://github.com/scikit-hep/boost-histogram/pull/508
 
-
 ## Version 0.12
 
 ### Version 0.12.0
 
 Pressing forward to 1.0.
-
 
 #### User changes
 
@@ -284,7 +287,6 @@ Pressing forward to 1.0.
 * Bumped to pybind11 version [#470][]
 * Black formatting used in notebooks too [#470][]
 
-
 #### Upgrade warning
 
 If you are using `Axis.options`, please transition to `Axis.traits`. `traits`
@@ -296,7 +298,6 @@ PlottableProtocol requirements.
 [#475]: https://github.com/scikit-hep/boost-histogram/pull/475
 [#477]: https://github.com/scikit-hep/boost-histogram/pull/477
 [#479]: https://github.com/scikit-hep/boost-histogram/pull/479
-
 
 ## Version 0.11
 
@@ -319,7 +320,6 @@ Also cleans up SDists a bit. [#467][]
 [#443]: https://github.com/scikit-hep/boost-histogram/pull/443
 [#467]: https://github.com/scikit-hep/boost-histogram/pull/467
 
-
 ### Version 0.11.0
 
 A release focused on preparing for the upcoming Hist 2.0 release.
@@ -337,11 +337,11 @@ A release focused on preparing for the upcoming Hist 2.0 release.
 * Scalar ND fill fixed [#453][]
 
 #### Developer changes
+
 * Updated to Boost 1.74 [#442][]
 * CMake installs version.py now too [#449][]
 * Updated setuptools infrastructure no longer requires NumPy [#451][]
 * Some basic clang-tidy checks are now being run [#455][]
-
 
 [#442]: https://github.com/scikit-hep/boost-histogram/pull/442
 [#445]: https://github.com/scikit-hep/boost-histogram/pull/445
@@ -352,7 +352,6 @@ A release focused on preparing for the upcoming Hist 2.0 release.
 [#453]: https://github.com/scikit-hep/boost-histogram/pull/453
 [#455]: https://github.com/scikit-hep/boost-histogram/pull/455
 [#456]: https://github.com/scikit-hep/boost-histogram/pull/456
-
 
 ## Version 0.10
 
@@ -418,6 +417,7 @@ usability when plotting and indexing.
 [#424]: https://github.com/scikit-hep/boost-histogram/pull/424
 
 ## Version 0.9
+
 ### Version 0.9.0
 
 This version was released just before PyHEP 2020. Several important fixes were made,
@@ -449,6 +449,7 @@ along with a few new features to better support downstream projects.
 [#406]: https://github.com/scikit-hep/boost-histogram/pull/406
 
 ## Version 0.8
+
 ### Version 0.8.0
 
 This version was released just before SciPy 2020 and Boost 1.74. Highlights
@@ -509,8 +510,8 @@ on Boost.Histogram's C++ tools for actions like cropping.
 [#392]: https://github.com/scikit-hep/boost-histogram/pull/392
 [#393]: https://github.com/scikit-hep/boost-histogram/pull/393
 
-
 ## Version 0.7
+
 ### Version 0.7.0
 
 This version removes deprecated functionality, and has several backend
@@ -534,7 +535,7 @@ use. Several small bugs have been fixed.
 #### Developer changes
 
 * Build system update, higher requirements for developers (only) [#314][]
-    * Version is now obtained from `setuptools_scm`, no longer stored in repo
+  * Version is now obtained from `setuptools_scm`, no longer stored in repo
 * Removed `futures` requirement for Python 2 tests
 * Updated Boost.Histogram, cleaner code with fewer workarounds
 
@@ -544,7 +545,6 @@ use. Several small bugs have been fixed.
 [#317]: https://github.com/scikit-hep/boost-histogram/pull/317
 [#320]: https://github.com/scikit-hep/boost-histogram/pull/320
 [#325]: https://github.com/scikit-hep/boost-histogram/pull/325
-
 
 ## Version 0.6
 
@@ -595,10 +595,7 @@ library. Using Boost 1.72 release.
 [#282]: https://github.com/scikit-hep/boost-histogram/pull/282
 [#284]: https://github.com/scikit-hep/boost-histogram/pull/284
 
-
-
 ### Version 0.6.0
-
 
 This version fills out most of the remaining features missing from the 0.5.x
 series.  You can now use all the storages without the original caveats; even
@@ -609,7 +606,6 @@ The API has changed considerably, providing a more consistent experience in
 Python. Most of the classic API still works in this release, but will issue a
 warning and will be removed from the next release. Please use this release to
 transition existing 0.5.x code to the new API.
-
 
 #### User changes
 
@@ -649,7 +645,6 @@ transition existing 0.5.x code to the new API.
 * Removed log and sqrt special axes types[#231][]
 * Family and registration added, new casting system [#200][]
 
-
 [#183]: https://github.com/scikit-hep/boost-histogram/pull/183
 [#185]: https://github.com/scikit-hep/boost-histogram/pull/185
 [#188]: https://github.com/scikit-hep/boost-histogram/pull/188
@@ -673,7 +668,6 @@ transition existing 0.5.x code to the new API.
 [#259]: https://github.com/scikit-hep/boost-histogram/pull/259
 [#264]: https://github.com/scikit-hep/boost-histogram/pull/264
 
-
 ## Version 0.5
 
 ### Version 0.5.2
@@ -694,7 +688,6 @@ transition existing 0.5.x code to the new API.
 * Serialization code shared with Boost.Histogram [#166][]
 * Avoid unused PEP 517 isolation for now [#171][] (may return with proper PEP 518 support eventually)
 
-
 [#162]: https://github.com/scikit-hep/boost-histogram/pull/162
 [#163]: https://github.com/scikit-hep/boost-histogram/pull/163
 [#164]: https://github.com/scikit-hep/boost-histogram/pull/164
@@ -703,7 +696,6 @@ transition existing 0.5.x code to the new API.
 [#168]: https://github.com/scikit-hep/boost-histogram/pull/168
 [#170]: https://github.com/scikit-hep/boost-histogram/pull/170
 [#171]: https://github.com/scikit-hep/boost-histogram/pull/171
-
 
 ### Version 0.5.1
 
@@ -718,13 +710,10 @@ transition existing 0.5.x code to the new API.
 * Fixed a bug in the sdist missing Boost.Variant2 [#154][]
 * Fixed filling on strided inputs [#158][]
 
-
-
 [#150]: https://github.com/scikit-hep/boost-histogram/pull/150
 [#154]: https://github.com/scikit-hep/boost-histogram/pull/154
 [#158]: https://github.com/scikit-hep/boost-histogram/pull/158
 [#159]: https://github.com/scikit-hep/boost-histogram/pull/159
-
 
 ### Version 0.5.0
 
