@@ -26,7 +26,7 @@ Other members of the boost-histogram family include:
 * [Hist][]: The first-party analyst-friendly histogram library that extends
   boost-histogram with named axes, many new shortcuts including UHI+, plotting
   shortcuts, and more.
-* [UHI][]: Specification for Histogram library interop, expecially for plotting.
+* [UHI][]: Specification for Histogram library interop, especially for plotting.
 * [mplhep][]: Plotting extension for matplotlib with support for UHI histograms.
 * [histoprint][]: Histogram display library for the command line with support for UHI.
 * [dask-histogram][]: Dask support for boost-histogram.
