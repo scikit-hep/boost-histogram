@@ -21,11 +21,21 @@ source]), a C++14 library. This is one of the [fastest libraries][] for
 histogramming, while still providing the power of a full histogram object. See
 [what's new](./docs/CHANGELOG.md).
 
-For end users interested in analysis, see [Hist][], a first-party
-analyst-friendly histogram library that extends boost-histogram with named
-axes, many new shortcuts including UHI+, plotting shortcuts, and more.
+Other members of the boost-histogram family include:
+
+* [Hist][]: The first-party analyst-friendly histogram library that extends
+  boost-histogram with named axes, many new shortcuts including UHI+, plotting
+  shortcuts, and more.
+* [UHI][]: Specification for Histogram library interop, expecially for plotting.
+* [mplhep][]: Plotting extension for matplotlib with support for UHI histograms.
+* [histoprint][]: Histogram display library for the command line with support for UHI.
+* [dask-histogram][]: Dask support for boost-histogram.
 
 [uhi]: https://uhi.readthedocs.io
+[dask-histogram]: https://dask-histogram.readthedocs.io/en/stable/
+[mplhep]: https://mplhep.readthedocs.io/en/latest/
+[histoprint]: https://github.com/scikit-hep/histoprint
+
 ## Usage
 
 ![Slideshow of features. See expandable text below if the image is not readable.](https://github.com/scikit-hep/boost-histogram/raw/develop/docs/_images/banner.gif)
