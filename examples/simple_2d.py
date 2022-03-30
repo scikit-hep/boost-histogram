@@ -12,11 +12,11 @@ h = bh.Histogram(
 
 # Generate some NumPy arrays with data to fill into histogram,
 # in this case normal distributed random numbers in x and y
-x = np.random.randn(1_000)
-y = 0.5 * np.random.randn(1_000)
+x_data = np.random.randn(1_000)
+y_data = 0.5 * np.random.randn(1_000)
 
 # Fill histogram with NumPy arrays, this is very fast
-h.fill(x, y)
+h.fill(x_data, y_data)
 
 # Get numpy.histogram compatible representation of the histogram
 w, x, y = h.to_numpy()

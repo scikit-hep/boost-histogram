@@ -1,7 +1,7 @@
 [build-system]
 requires = [
-    "setuptools>=45",
-    "setuptools_scm[toml]>=4.1.2"
+  "setuptools>=45",
+  "setuptools_scm[toml]>=4.1.2",
 ]
 build-backend = "setuptools.build_meta"
 
@@ -11,7 +11,13 @@ write_to = "src/boost_histogram/version.py"
 [tool.pytest.ini_options]
 minversion = "6.0"
 junit_family = "xunit2"
-addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
+addopts = [
+  "-ra",
+  "--showlocals",
+  "--strict-markers",
+  "--strict-config",
+  "--import-mode=importlib",
+]
 filterwarnings = ["error"]
 xfail_strict = true
 testpaths = ["tests"]
@@ -22,60 +28,66 @@ log_cli_level = "DEBUG"
 profile = "black"
 
 [tool.mypy]
-warn_unused_configs = true
 python_version = "3.6"
-files = "src"
+files = ["src"]
 strict = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+disallow_untyped_calls = false
+
+[[tool.mypy.overrides]]
+module = ["matplotlib.*", "typer"]
+ignore_missing_imports = true
 
 [tool.check-manifest]
 ignore = [
-    ".all-contributorsrc",
-    ".clang-format",
-    ".cmake-format.yaml",
-    ".pre-commit-config.yaml",
-    ".pre-commit-nodocker.yaml",
-    ".readthedocs.yml",
-    ".clang-tidy",
-    "examples/**",
-    "notebooks/**",
-    "docs/**",
-    "scripts/**",
-    "dev-requirements.txt",
-    "extern/**/*.py",
-    "extern/**/*.md",
-    "extern/**/*.rst",
-    "extern/**/*.toml",
-    "extern/*/checks/**",
-    "extern/*/test/**",
-    "extern/*/benchmark/**",
-    "extern/*/doc/**",
-    "extern/*/examples/**",
-    "extern/*/tools/**",
-    "extern/pybind11/docs/**",
-    "extern/pybind11/tests/**",
-    "CMakeLists.txt",
-    "extern/*/README.md",
-    "CONTRIBUTING.md",
-    "Jamfile",
-    "configure",
-    "*.clang_complete",
-    "*.html",
-    "*.in",
-    "*.json",
-    "*.yml",
-    "src/boost_histogram/_core.*",
-    "src/boost_histogram/version.py",
-    "tests/.pytest_cache/**",
+  ".all-contributorsrc",
+  ".clang-format",
+  ".cmake-format.yaml",
+  ".pre-commit-config.yaml",
+  ".pre-commit-nodocker.yaml",
+  ".readthedocs.yml",
+  ".clang-tidy",
+  "examples/**",
+  "notebooks/**",
+  "docs/**",
+  "scripts/**",
+  "dev-requirements.txt",
+  "extern/**/*.py",
+  "extern/**/*.md",
+  "extern/**/*.rst",
+  "extern/**/*.toml",
+  "extern/*/checks/**",
+  "extern/*/test/**",
+  "extern/*/benchmark/**",
+  "extern/*/doc/**",
+  "extern/*/examples/**",
+  "extern/*/tools/**",
+  "extern/pybind11/docs/**",
+  "extern/pybind11/tests/**",
+  "CMakeLists.txt",
+  "extern/*/README.md",
+  "CONTRIBUTING.md",
+  "Jamfile",
+  "configure",
+  "*.clang_complete",
+  "*.html",
+  "*.in",
+  "*.json",
+  "*.yml",
+  "src/boost_histogram/_core.*",
+  "src/boost_histogram/version.py",
+  "tests/.pytest_cache/**",
 ]
-
-[tool.pycln]
-all = true
 
 [tool.cibuildwheel]
 test-extras = "test"
 test-command = "pytest --benchmark-disable {project}/tests"
 test-skip = ["pp*", "*universal2:arm64", "cp310-*{i686,win32}", "*musllinux*"]
-skip = ["pp*-manylinux_i686"]  # not supported by NumPy
+skip = ["pp*-manylinux_i686"] # not supported by NumPy
 manylinux-x86_64-image = "manylinux2014"
 manylinux-i686-image = "manylinux2014"
 
@@ -91,14 +103,14 @@ master.extension-pkg-allow-list = ["boost_histogram._core"]
 reports.output-format = "colorized"
 similarities.ignore-imports = "yes"
 messages_control.disable = [
-  "cyclic-import",  # TODO: move files out of _internal
+  "cyclic-import", # TODO: move files out of _internal
   "fixme",
   "invalid-name",
   "line-too-long",
   "missing-class-docstring",
   "missing-function-docstring",
   "missing-module-docstring",
-  "no-member",  # C extensions mess with this
+  "no-member", # C extensions mess with this
   "protected-access",
   "too-few-public-methods",
   "too-many-arguments",

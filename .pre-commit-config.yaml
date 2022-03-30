@@ -48,7 +48,7 @@ repos:
   rev: v1.2.5
   hooks:
   - id: pycln
-    args: [--config=pyproject.toml]
+    args: [--all]
 
 - repo: https://github.com/asottile/yesqa
   rev: v1.3.0
@@ -69,9 +69,8 @@ repos:
   rev: v0.942
   hooks:
   - id: mypy
-    files: src
-    args: [--show-error-codes]
-    additional_dependencies: [numpy==1.21.*, uhi, types-dataclasses]
+    files: ^src
+    additional_dependencies: [numpy==1.21.*, pytest, uhi, types-dataclasses]
 
 - repo: https://github.com/mgedmin/check-manifest
   rev: "0.48"
