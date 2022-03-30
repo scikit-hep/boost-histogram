@@ -2,6 +2,15 @@
 
 ## Version 1.3
 
+### WIP
+
+* Patch broken sum with fully empty (0 bin) axis [#718][]
+* Fix zero range `bh.numpy.histogram` to match `numpy.histogram` behavior [#721][]
+
+[#718]: https://github.com/scikit-hep/boost-histogram/pull/718
+[#721]: https://github.com/scikit-hep/boost-histogram/pull/721
+
+
 ### Version 1.3.1
 
 #### Bug fixes

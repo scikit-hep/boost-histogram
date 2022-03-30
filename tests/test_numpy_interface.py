@@ -2,6 +2,7 @@ import copy
 
 import numpy as np
 import pytest
+from pytest import approx
 
 import boost_histogram as bh
 
@@ -165,6 +166,35 @@ def test_histogram_weights():
     x = np.array([0.3, 0.3, 0.1, 0.8, 0.34, 0.03, 0.32, 0.65])
     weights = np.array([0.4, 0.5, 0.22, 0.65, 0.32, 0.01, 0.23, 1.98])
     h1, edges = np.histogram(x, weights=weights)
-    bh_h1, edges = bh.numpy.histogram(x, weights=weights)
+    bh_h1, bh_edges = bh.numpy.histogram(x, weights=weights)
 
-    np.testing.assert_array_almost_equal(h1, bh_h1)
+    assert bh_h1 == approx(h1)
+    assert bh_edges == approx(edges)
+
+
+def test_histogram_nans():
+    x = np.array([0, 1, 2, 3, np.nan])
+
+    with pytest.raises(ValueError):
+        np.histogram(x)
+
+    with pytest.raises(ValueError):
+        bh.numpy.histogram(x)
+
+
+def test_histogram_all_zeros():
+    x = np.array([0, 0, 0, 0, 0, 0])
+    h1, edges = np.histogram(x)
+    bh_h1, bh_edges = bh.numpy.histogram(x)
+
+    assert bh_h1 == approx(h1)
+    assert bh_edges == approx(edges)
+
+
+def test_histogram_all_ones():
+    x = np.array([0, 0, 0, 0, 0, 0])
+    h1, edges = np.histogram(x)
+    bh_h1, bh_edges = bh.numpy.histogram(x)
+
+    assert bh_h1 == approx(h1)
+    assert bh_edges == approx(edges)
