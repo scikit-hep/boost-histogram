@@ -15,7 +15,7 @@ h2.fill(0.5)
 h3 = h1 + h2
 h4 = h3 * 2
 
-print(f"{h4[0] = }, {h4[1] = }")
+print(f"h4[0] = {h4[0]}, h4[1] = {h4[1]}")
 
 h4_saved = Path("h4_saved.pkl")
 

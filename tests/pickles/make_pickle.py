@@ -16,7 +16,7 @@ def make_pickle(
     output: Optional[Path] = typer.Argument(None, exists=False),  # noqa: B008
     *,
     protocol: int = 2,
-):
+) -> None:
     """
     Make a pickle file with the current boost-histogram for use in tests.
     """
