@@ -1,6 +1,7 @@
 import copy
 import ctypes
 import math
+import platform
 from pickle import dumps, loads
 
 import numpy as np
@@ -9,7 +10,6 @@ from numpy.testing import assert_almost_equal, assert_array_equal
 
 import boost_histogram as bh
 
-from .env import PYPY
 
 ftype = ctypes.CFUNCTYPE(ctypes.c_double, ctypes.c_double)
 
@@ -198,7 +198,7 @@ def test_numpy_edge(copy_fn):
     assert ax2.index(1) == 9
 
 
-@pytest.mark.skipif(PYPY, reason="Not remotely supported on PyPY, hangs forever")
+@pytest.mark.skipif(platform.python_implementation() == "PyPy", reason="Not remotely supported on PyPY, hangs forever")
 @pytest.mark.parametrize("mod", (np, math))
 def test_pickle_transforms(mod, copy_fn):
     ax1 = bh.axis.Regular(
