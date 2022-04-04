@@ -2,13 +2,16 @@
 
 ## Version 1.3
 
-### WIP
+### Version 1.3.2
 
+* Include PyPy 3.9 binary wheels [#730][]
 * Patch broken sum with fully empty (0 bin) axis [#718][]
 * Fix zero range `bh.numpy.histogram` to match `numpy.histogram` behavior [#721][]
+* Minor cleanup and further removal of a little Python 2 back-compat code.
 
 [#718]: https://github.com/scikit-hep/boost-histogram/pull/718
 [#721]: https://github.com/scikit-hep/boost-histogram/pull/721
+[#730]: https://github.com/scikit-hep/boost-histogram/pull/730
 
 
 ### Version 1.3.1
