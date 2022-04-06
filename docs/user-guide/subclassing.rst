@@ -35,12 +35,13 @@ Mixins are recommended if you want to provide functionality to a collection of
 different subclasses, like ``Axis``.
 
 There are customization hooks provided for subclasses as well.
-``self._generate_axis_()`` is called to produce an ``AxesTuple``, so you can
-override that if you customize ``AxesTuple``. ``_import_bh_`` and
-``_export_bh_`` are called when converting an object between histogram
-libraries. ``cls._export_bh(self)`` is called from the outgoing class (being
+``self._generate_axes_()`` is called to produce an ``AxesTuple``, so you can
+override that if you customize ``AxesTuple``.
+
+``_import_bh_`` and ``_export_bh_`` are called when converting an object between histogram
+libraries. ``cls._export_bh_(self)`` is called from the outgoing class (being
 converted from), and ``self._import_bh_()`` is called afterward on the incoming
 class (being converted to). So if ``h1`` is an instance of ``H1``, and ``H2``
 is the new class, then ``H2(h1)`` calls ``H1._export_bh_(h2)`` and then
-``h2._import_bh()`` before returning ``h2``. The internal repr building for axes is
+``h2._import_bh_()`` before returning ``h2``. The internal repr building for axes is
 a list produced by ``_repr_args_`` representing each item in the repr.
