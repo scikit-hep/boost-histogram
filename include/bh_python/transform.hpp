@@ -107,7 +107,7 @@ struct func_transform {
     func_transform(const func_transform&)     = default;
     func_transform(func_transform&&) noexcept = default;
 
-    func_transform& operator=(const func_transform&) = default;
+    func_transform& operator=(const func_transform&)     = default;
     func_transform& operator=(func_transform&&) noexcept = default;
 
     double forward(double x) const { return _forward(x); }
