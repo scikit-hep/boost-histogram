@@ -235,7 +235,7 @@ python -m pip install git+https://github.com/scikit-hep/boost-histogram.git@deve
 
 ## Developing
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for details on how to set up a development environment.
+See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for details on how to set up a development environment.
 
 
 ## Contributors
