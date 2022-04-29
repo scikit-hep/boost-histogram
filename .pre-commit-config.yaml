@@ -66,11 +66,11 @@ repos:
     additional_dependencies: *flake8-dependencies
 
 - repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v0.942
+  rev: v0.950
   hooks:
   - id: mypy
     files: ^src
-    additional_dependencies: [numpy==1.21.*, pytest, uhi, types-dataclasses]
+    additional_dependencies: [numpy==1.22.*, pytest, uhi, types-dataclasses]
 
 - repo: https://github.com/mgedmin/check-manifest
   rev: "0.48"

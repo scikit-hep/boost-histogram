@@ -81,7 +81,7 @@ def histogramdd(
             new_ax = _cast(None, cpp_ax, _axis.Axis)
             axs.append(new_ax)
         else:
-            barr = np.asarray(b, dtype=np.double)
+            barr: "np.typing.NDArray[Any]" = np.asarray(b, dtype=np.double)
             barr[-1] = np.nextafter(barr[-1], np.finfo("d").max)
             axs.append(_axis.Variable(barr))
 

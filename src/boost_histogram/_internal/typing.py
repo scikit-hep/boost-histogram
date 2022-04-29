@@ -2,9 +2,9 @@ import sys
 from typing import TYPE_CHECKING, Any, Tuple, Union
 
 if sys.version_info < (3, 8):
-    from typing_extensions import Protocol, SupportsIndex
+    from typing_extensions import Literal, Protocol, SupportsIndex, TypedDict
 else:
-    from typing import Protocol, SupportsIndex
+    from typing import Literal, Protocol, SupportsIndex, TypedDict
 
 if TYPE_CHECKING:
     from builtins import ellipsis
@@ -32,6 +32,8 @@ __all__ = (
     "Ufunc",
     "StdIndex",
     "StrIndex",
+    "Literal",
+    "TypedDict",
 )
 
 

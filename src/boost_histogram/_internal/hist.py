@@ -478,19 +478,23 @@ class Histogram:
         }:
             raise RuntimeError("Mean histograms do not support threaded filling")
 
-        data = [np.array_split(a, threads) for a in args_ars]  # type: ignore[no-untyped-call]
+        data: "List[List[np.typing.NDArray[Any]]]" = [
+            np.array_split(a, threads) for a in args_ars
+        ]
 
+        weights: "List[Any]"
         if weight is None or np.isscalar(weight):
             assert threads is not None
             weights = [weight_ars] * threads
         else:
-            weights = np.array_split(weight_ars, threads)  # type: ignore[no-untyped-call]
+            weights = np.array_split(weight_ars, threads)
 
+        samples: "List[Any]"
         if sample_ars is None or np.isscalar(sample_ars):
             assert threads is not None
             samples = [sample_ars] * threads
         else:
-            samples = np.array_split(sample_ars, threads)  # type: ignore[no-untyped-call]
+            samples = np.array_split(sample_ars, threads)
 
         if self._hist._storage_type is _core.storage.atomic_int64:
 
@@ -933,7 +937,7 @@ class Histogram:
         if (
             value.ndim > 0
             and len(view.dtype) > 0  # type: ignore[arg-type]
-            and len(value.dtype) == 0
+            and len(value.dtype) == 0  # type: ignore[arg-type]
             and len(view.dtype) == value.shape[-1]  # type: ignore[arg-type]
         ):
             value_shape = value.shape[:-1]
