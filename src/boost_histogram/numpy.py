@@ -1,8 +1,9 @@
+import typing
 from functools import reduce
 from operator import mul
-from typing import TYPE_CHECKING, Any, List, Optional, Sequence, Tuple, Type, Union
+from typing import Any, List, Optional, Sequence, Tuple, Type, Union
 
-if TYPE_CHECKING:
+if typing.TYPE_CHECKING:
     from numpy.typing import ArrayLike
 else:
     ArrayLike = object
@@ -25,7 +26,7 @@ def __dir__() -> List[str]:
 
 def histogramdd(
     a: Tuple[ArrayLike, ...],
-    bins: Union[int, Tuple[int, ...]] = 10,
+    bins: "Union[int, Tuple[int, ...], Tuple[np.typing.NDArray[Any], ...]]" = 10,
     range: Optional[  # pylint: disable=redefined-builtin
         Sequence[Union[None, Tuple[float, float]]]
     ] = None,
@@ -53,8 +54,8 @@ def histogramdd(
         )
 
     # Odd NumPy design here. Oh well.
-    if isinstance(a, np.ndarray):
-        a = a.T
+    if isinstance(a, np.ndarray):  # type: ignore[unreachable]
+        a = a.T  # type: ignore[unreachable]
 
     rank = len(a)
 
@@ -77,7 +78,7 @@ def histogramdd(
                 r = (np.amin(a[n]), np.amax(a[n]))
                 if r[0] == r[1]:
                     r = (r[0] - 0.5, r[1] + 0.5)
-            cpp_ax = _core.axis.regular_numpy(b, r[0], r[1])
+            cpp_ax = _core.axis.regular_numpy(typing.cast(int, b), r[0], r[1])
             new_ax = _cast(None, cpp_ax, _axis.Axis)
             axs.append(new_ax)
         else:
@@ -136,7 +137,7 @@ def histogram2d(
 
 def histogram(
     a: ArrayLike,
-    bins: int = 10,
+    bins: "Union[int, str, np.typing.NDArray[Any]]" = 10,
     range: Optional[Tuple[float, float]] = None,  # pylint: disable=redefined-builtin
     normed: None = None,
     weights: Optional[ArrayLike] = None,
@@ -153,7 +154,7 @@ def histogram(
     if storage is None:
         storage = (
             _storage.Double()
-            if weights is not None or normed or density
+            if weights is not None or normed or density  # type: ignore[redundant-expr]
             else _storage.Int64()
         )
 
@@ -165,9 +166,11 @@ def histogram(
             )
         bins = np.histogram_bin_edges(a, bins, range, weights)
 
+    # TODO: make sure all types work at runtime (type ignore below)
+    # I think it's safe and the union is in the wrong place
     result = histogramdd(
         (a,),
-        (bins,),
+        (bins,),  # type: ignore[arg-type]
         (range,),
         normed,
         weights,

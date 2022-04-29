@@ -72,7 +72,7 @@ def _fill_cast(
     Convert to NumPy arrays. Some buffer objects do not get converted by forcecast.
     If not called by itself (inner=False), then will work through one level of tuple/list.
     """
-    if value is None or isinstance(value, (str, bytes)):
+    if value is None or isinstance(value, (str, bytes)):  # type: ignore[redundant-expr]
         return value  # type: ignore[return-value]
 
     if not inner and isinstance(value, (tuple, list)):
@@ -204,13 +204,13 @@ class Histogram:
             return
 
         if storage is None:
-            storage = Double()
+            storage = Double()  # type: ignore[unreachable]
 
         self.metadata = metadata
 
         # Check for missed parenthesis or incorrect types
         if not isinstance(storage, Storage):
-            msg_storage = (
+            msg_storage = (  # type: ignore[unreachable]
                 "Passing in an initialized storage has been removed. Please add ()."
             )
             msg_unknown = "Only storages allowed in storage argument"
@@ -226,7 +226,7 @@ class Histogram:
         # Check all available histograms, and if the storage matches, return that one
         for h in _histograms:
             if isinstance(storage, h._storage_type):
-                self._hist = h(axes, storage)
+                self._hist = h(axes, storage)  # type: ignore[unreachable]
                 self.axes = self._generate_axes_()
                 return
 
@@ -633,7 +633,7 @@ class Histogram:
         if callable(index):
             return index(self.axes[axis])
 
-        if isinstance(index, float):
+        if isinstance(index, float):  # type: ignore[unreachable]
             raise TypeError(f"Index {index} must be an integer, not float")
 
         if isinstance(index, SupportsIndex):
