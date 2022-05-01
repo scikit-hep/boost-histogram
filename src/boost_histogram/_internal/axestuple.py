@@ -4,9 +4,15 @@ from typing import Any, Iterable, List, Tuple, TypeVar
 import numpy as np
 
 from .axis import Axis
+from .typing import Literal, TypedDict
 from .utils import set_module, zip_strict
 
 A = TypeVar("A", bound="ArrayTuple")
+
+
+class MGridOpts(TypedDict):
+    sparse: bool
+    indexing: Literal["ij", "xy"]
 
 
 @set_module("boost_histogram.axis")
@@ -17,7 +23,7 @@ class ArrayTuple(tuple):  # type: ignore[type-arg]
 
     def __getattr__(self, name: str) -> Any:
         if name in self._REDUCTIONS:
-            return partial(getattr(np, name), np.broadcast_arrays(*self))  # type: ignore[no-untyped-call]
+            return partial(getattr(np, name), np.broadcast_arrays(*self))
 
         return self.__class__(getattr(a, name) for a in self)
 
@@ -34,7 +40,7 @@ class ArrayTuple(tuple):  # type: ignore[type-arg]
         Use this method to broadcast them out into their full memory
         representation.
         """
-        return self.__class__(np.broadcast_arrays(*self))  # type: ignore[no-untyped-call]
+        return self.__class__(np.broadcast_arrays(*self))
 
 
 B = TypeVar("B", bound="AxesTuple")
@@ -43,7 +49,7 @@ B = TypeVar("B", bound="AxesTuple")
 @set_module("boost_histogram.axis")
 class AxesTuple(tuple):  # type: ignore[type-arg]
     __slots__ = ()
-    _MGRIDOPTS = {"sparse": True, "indexing": "ij"}
+    _MGRIDOPTS: MGridOpts = {"sparse": True, "indexing": "ij"}
 
     def __init__(self, __iterable: Iterable[Axis]) -> None:
         for item in self:
@@ -64,17 +70,17 @@ class AxesTuple(tuple):  # type: ignore[type-arg]
     @property
     def centers(self) -> ArrayTuple:
         gen = (s.centers for s in self)
-        return ArrayTuple(np.meshgrid(*gen, **self._MGRIDOPTS))  # type: ignore[no-untyped-call]
+        return ArrayTuple(np.meshgrid(*gen, **self._MGRIDOPTS))
 
     @property
     def edges(self) -> ArrayTuple:
         gen = (s.edges for s in self)
-        return ArrayTuple(np.meshgrid(*gen, **self._MGRIDOPTS))  # type: ignore[no-untyped-call]
+        return ArrayTuple(np.meshgrid(*gen, **self._MGRIDOPTS))
 
     @property
     def widths(self) -> ArrayTuple:
         gen = (s.widths for s in self)
-        return ArrayTuple(np.meshgrid(*gen, **self._MGRIDOPTS))  # type: ignore[no-untyped-call]
+        return ArrayTuple(np.meshgrid(*gen, **self._MGRIDOPTS))
 
     def value(self, *indexes: float) -> Tuple[float, ...]:
         if len(indexes) != len(self):

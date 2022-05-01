@@ -72,7 +72,7 @@ def _fill_cast(
     Convert to NumPy arrays. Some buffer objects do not get converted by forcecast.
     If not called by itself (inner=False), then will work through one level of tuple/list.
     """
-    if value is None or isinstance(value, (str, bytes)):
+    if value is None or isinstance(value, (str, bytes)):  # type: ignore[redundant-expr]
         return value  # type: ignore[return-value]
 
     if not inner and isinstance(value, (tuple, list)):
@@ -204,13 +204,13 @@ class Histogram:
             return
 
         if storage is None:
-            storage = Double()
+            storage = Double()  # type: ignore[unreachable]
 
         self.metadata = metadata
 
         # Check for missed parenthesis or incorrect types
         if not isinstance(storage, Storage):
-            msg_storage = (
+            msg_storage = (  # type: ignore[unreachable]
                 "Passing in an initialized storage has been removed. Please add ()."
             )
             msg_unknown = "Only storages allowed in storage argument"
@@ -226,7 +226,7 @@ class Histogram:
         # Check all available histograms, and if the storage matches, return that one
         for h in _histograms:
             if isinstance(storage, h._storage_type):
-                self._hist = h(axes, storage)
+                self._hist = h(axes, storage)  # type: ignore[unreachable]
                 self.axes = self._generate_axes_()
                 return
 
@@ -478,19 +478,23 @@ class Histogram:
         }:
             raise RuntimeError("Mean histograms do not support threaded filling")
 
-        data = [np.array_split(a, threads) for a in args_ars]  # type: ignore[no-untyped-call]
+        data: "List[List[np.typing.NDArray[Any]]]" = [
+            np.array_split(a, threads) for a in args_ars
+        ]
 
+        weights: "List[Any]"
         if weight is None or np.isscalar(weight):
             assert threads is not None
             weights = [weight_ars] * threads
         else:
-            weights = np.array_split(weight_ars, threads)  # type: ignore[no-untyped-call]
+            weights = np.array_split(weight_ars, threads)
 
+        samples: "List[Any]"
         if sample_ars is None or np.isscalar(sample_ars):
             assert threads is not None
             samples = [sample_ars] * threads
         else:
-            samples = np.array_split(sample_ars, threads)  # type: ignore[no-untyped-call]
+            samples = np.array_split(sample_ars, threads)
 
         if self._hist._storage_type is _core.storage.atomic_int64:
 
@@ -629,7 +633,7 @@ class Histogram:
         if callable(index):
             return index(self.axes[axis])
 
-        if isinstance(index, float):
+        if isinstance(index, float):  # type: ignore[unreachable]
             raise TypeError(f"Index {index} must be an integer, not float")
 
         if isinstance(index, SupportsIndex):
@@ -933,7 +937,7 @@ class Histogram:
         if (
             value.ndim > 0
             and len(view.dtype) > 0  # type: ignore[arg-type]
-            and len(value.dtype) == 0
+            and len(value.dtype) == 0  # type: ignore[arg-type]
             and len(view.dtype) == value.shape[-1]  # type: ignore[arg-type]
         ):
             value_shape = value.shape[:-1]

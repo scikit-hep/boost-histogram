@@ -335,7 +335,7 @@ class Regular(Axis, family=boost_histogram):
 
             if (
                 not isinstance(transform, AxisTransform)
-                and AxisTransform in transform.__bases__
+                and AxisTransform in transform.__bases__  # type: ignore[unreachable]
             ):
                 raise TypeError(f"You must pass an instance, use {transform}()")
 
