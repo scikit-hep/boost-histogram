@@ -29,7 +29,7 @@ repos:
     additional_dependencies: [pyyaml]
 
 - repo: https://github.com/asottile/pyupgrade
-  rev: v2.32.0
+  rev: v2.32.1
   hooks:
   - id: pyupgrade
     args: [--py36-plus]
@@ -45,7 +45,7 @@ repos:
   - id: setup-cfg-fmt
 
 - repo: https://github.com/hadialqattan/pycln
-  rev: v1.3.1
+  rev: v1.3.2
   hooks:
   - id: pycln
     args: [--all]
@@ -94,7 +94,7 @@ repos:
     exclude: .pre-commit-config.yaml
 
 - repo: https://github.com/pre-commit/mirrors-clang-format
-  rev: v14.0.1
+  rev: v14.0.3
   hooks:
    - id: clang-format
      types_or: [c++]
