@@ -332,8 +332,8 @@ class Histogram:
 
         return self
 
-    def __radd__(
-        self: H, other: Union["Histogram", "np.typing.NDArray[Any]", float]
+    def __radd__(  # type: ignore[misc]
+        self: H, other: Union["np.typing.NDArray[Any]", float]
     ) -> H:
         return self + other
 
@@ -361,8 +361,8 @@ class Histogram:
         result = self.copy(deep=False)
         return result._compute_inplace_op("__imul__", other)
 
-    def __rmul__(
-        self: H, other: Union["Histogram", "np.typing.NDArray[Any]", float]
+    def __rmul__(  # type: ignore[misc]
+        self: H, other: Union["np.typing.NDArray[Any]", float]
     ) -> H:
         return self * other
 
@@ -465,12 +465,12 @@ class Histogram:
         weight_ars = _fill_cast(weight)
         sample_ars = _fill_cast(sample)
 
+        if threads == 0:
+            threads = cpu_count()
+
         if threads is None or threads == 1:
             self._hist.fill(*args_ars, weight=weight_ars, sample=sample_ars)
             return self
-
-        if threads == 0:
-            threads = cpu_count()
 
         if self._hist._storage_type in {
             _core.storage.mean,
@@ -478,8 +478,9 @@ class Histogram:
         }:
             raise RuntimeError("Mean histograms do not support threaded filling")
 
-        data: "List[List[np.typing.NDArray[Any]]]" = [
-            np.array_split(a, threads) for a in args_ars
+        data: "List[Union[List[np.typing.NDArray[Any]], List[str]]]" = [
+            np.array_split(a, threads) if not isinstance(a, str) else [a] * threads  # type: ignore[arg-type, list-item]
+            for a in args_ars
         ]
 
         weights: "List[Any]"
@@ -487,14 +488,14 @@ class Histogram:
             assert threads is not None
             weights = [weight_ars] * threads
         else:
-            weights = np.array_split(weight_ars, threads)
+            weights = np.array_split(weight_ars, threads)  # type: ignore[arg-type]
 
         samples: "List[Any]"
         if sample_ars is None or np.isscalar(sample_ars):
             assert threads is not None
             samples = [sample_ars] * threads
         else:
-            samples = np.array_split(sample_ars, threads)
+            samples = np.array_split(sample_ars, threads)  # type: ignore[arg-type]
 
         if self._hist._storage_type is _core.storage.atomic_int64:
 
@@ -1083,7 +1084,7 @@ class Histogram:
 
         if hasattr(view, "sum_of_weights"):
             valid = view.sum_of_weights**2 > view.sum_of_weights_squared  # type: ignore[union-attr]
-            return np.divide(  # type: ignore[no-any-return]
+            return np.divide(
                 view.variance,  # type: ignore[union-attr]
                 view.sum_of_weights,  # type: ignore[union-attr]
                 out=np.full(view.sum_of_weights.shape, np.nan),  # type: ignore[union-attr]
@@ -1091,7 +1092,7 @@ class Histogram:
             )
 
         if hasattr(view, "count"):
-            return np.divide(  # type: ignore[no-any-return]
+            return np.divide(
                 view.variance,  # type: ignore[union-attr]
                 view.count,  # type: ignore[union-attr]
                 out=np.full(view.count.shape, np.nan),  # type: ignore[union-attr]
@@ -1129,7 +1130,7 @@ class Histogram:
             return view
 
         if hasattr(view, "sum_of_weights"):
-            return np.divide(  # type: ignore[no-any-return]
+            return np.divide(
                 view.sum_of_weights**2,  # type: ignore[union-attr]
                 view.sum_of_weights_squared,  # type: ignore[union-attr]
                 out=np.zeros_like(view.sum_of_weights, dtype=np.float64),  # type: ignore[union-attr]

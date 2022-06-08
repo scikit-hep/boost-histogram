@@ -241,7 +241,7 @@ class MeanView(View):
     @property
     def variance(self) -> "np.typing.NDArray[Any]":
         with np.errstate(divide="ignore", invalid="ignore"):  # type: ignore[arg-type]
-            return self["_sum_of_deltas_squared"] / (self["count"] - 1)
+            return self["_sum_of_deltas_squared"] / (self["count"] - 1)  # type: ignore[no-any-return]
 
 
 def _to_view(
