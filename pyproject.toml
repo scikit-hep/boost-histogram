@@ -100,8 +100,8 @@ manylinux-x86_64-image = "manylinux2010"
 manylinux-i686-image = "manylinux2010"
 
 [tool.pylint]
-master.py-version = "3.6"
-master.extension-pkg-allow-list = ["boost_histogram._core"]
+main.py-version = "3.6"
+main.extension-pkg-allow-list = ["boost_histogram._core"]
 reports.output-format = "colorized"
 similarities.ignore-imports = "yes"
 messages_control.disable = [

@@ -513,7 +513,7 @@ class Histogram:
                 sample: Optional[ArrayLike],
                 *args: "np.typing.NDArray[Any]",
             ) -> None:
-                local_hist = self._hist.__copy__()
+                local_hist = copy.copy(self._hist)
                 local_hist.reset()
                 local_hist.fill(*args, weight=weight, sample=sample)
                 with sum_lock:

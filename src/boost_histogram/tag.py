@@ -47,7 +47,7 @@ class Locator:
         other.offset -= offset
         return other
 
-    def _print_self_(self) -> str:  # pylint: disable=no-self-use
+    def _print_self_(self) -> str:
         return ""
 
     def __repr__(self) -> str:
