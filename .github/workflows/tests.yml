@@ -100,7 +100,7 @@ jobs:
         submodules: true
         fetch-depth: 0
 
-    - uses: pypa/cibuildwheel@2.5.0
+    - uses: pypa/cibuildwheel@2.6.1
       env:
         CIBW_BUILD: cp38-win_amd64 cp310-manylinux_i686 cp37-macosx_x86_64
         CIBW_BUILD_VERBOSITY: 1
