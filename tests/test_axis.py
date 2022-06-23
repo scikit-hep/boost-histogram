@@ -839,6 +839,26 @@ class TestCategory(Axis):
         assert_allclose(a.centers, [0.5, 1.5, 2.5])
         assert_allclose(a.widths, [1, 1, 1])
 
+    def test_slicing(self, growth):
+        Cat = bh.axis.StrCategory
+        ref = ["a", "b", "c", "d", "e"]
+
+        a = Cat(ref, growth=growth)
+        b = a[1:3]
+        assert list(a)[1:3] == list(b)
+        assert a.__dict__ == b.__dict__
+        assert a.traits.growth == b.traits.growth
+
+    def test_empty_slice(self, growth):
+        Cat = bh.axis.StrCategory
+        ref = ["a", "b", "c", "d", "e"]
+        a = Cat(ref, growth=growth)
+        if growth:
+            assert a[0:0] == Cat([], growth=True)
+        else:
+            with pytest.raises(RuntimeError):
+                a[0:0]
+
 
 class TestBoolean:
     def test_init(self):
