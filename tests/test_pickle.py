@@ -2,12 +2,10 @@ import copy
 import ctypes
 import math
 import platform
+from pytest import approx
 from pickle import dumps, loads
-
 import numpy as np
 import pytest
-from numpy.testing import assert_almost_equal, assert_array_equal
-
 import boost_histogram as bh
 
 ftype = ctypes.CFUNCTYPE(ctypes.c_double, ctypes.c_double)
@@ -86,7 +84,7 @@ def test_axes(axis, args, opts, copy_fn):
     orig = axis(*args, **opts)
     new = copy_fn(orig)
     assert new == orig
-    np.testing.assert_array_equal(new.centers, orig.centers)
+    assert new.centers == approx(orig.centers)
 
 
 @pytest.mark.parametrize("axis,args,opts", axes_creations)
@@ -97,7 +95,7 @@ def test_metadata_str(axis, args, opts, copy_fn):
     assert new.metadata == orig.metadata
     new.metadata = orig.metadata
     assert new == orig
-    np.testing.assert_array_equal(new.centers, orig.centers)
+    assert new.centers == approx(orig.centers)
 
 
 # Special test: Deepcopy should change metadata id, copy should not
@@ -162,7 +160,7 @@ def test_storage(benchmark, copy_fn, storage, extra):
         hist.fill(x, weight=np.arange(2 * n + 4) + 1, sample=np.arange(2 * n + 4) + 1)
 
     new = benchmark(copy_fn, hist)
-    assert_array_equal(hist.view(True), new.view(True))
+    assert  hist.view(True) == approx(new.view(True))
     assert new == hist
 
 
@@ -213,8 +211,8 @@ def test_pickle_transforms(mod, copy_fn):
     ax3 = bh.axis.Regular(100, 1, 100, transform=bh.axis.transform.log)
 
     assert ax1 == ax2
-    assert_array_equal(ax1.centers, ax2.centers)
-    assert_almost_equal(ax2.centers, ax3.centers, decimal=10)
+    assert ax1.centers == approx(ax2.centers)
+    assert ax2.centers == approx(ax3.centers)
 
 
 def test_hist_axes_reference(copy_fn):
