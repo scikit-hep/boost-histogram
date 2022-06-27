@@ -1,7 +1,9 @@
 import copy
+
 import numpy as np
 import pytest
 from pytest import approx
+
 import boost_histogram as bh
 
 np113 = tuple(int(x) for x in np.__version__.split(".")[:2]) >= (1, 13)
