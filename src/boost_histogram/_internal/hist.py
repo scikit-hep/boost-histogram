@@ -253,8 +253,7 @@ class Histogram:
 
         self = cls.__new__(cls)
         if isinstance(_hist, tuple(_histograms)):
-            assert isinstance(_hist, CppHistogram)
-            self._from_histogram_cpp(_hist)
+            self._from_histogram_cpp(_hist)  # type: ignore[arg-type]
             if other is not None:
                 return cls._clone(self, other=other, memo=memo)
             return self
