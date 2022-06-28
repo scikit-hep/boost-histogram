@@ -38,9 +38,7 @@ def test_copy():
     class MyHist(bh.Histogram):
         def __init__(self, var, bins, weight, **kwargs):
             super().__init__(
-                bh.axis.Regular(*bins),
-                storage=bh.storage.Weight(),
-                **kwargs
+                bh.axis.Regular(*bins), storage=bh.storage.Weight(), **kwargs
             )
 
             self.fill(var, weight=weight)
@@ -50,4 +48,4 @@ def test_copy():
     w = [1, 0.5, 1]
     hist = MyHist(v, b, w)
 
-    hist2 = hist.copy()
+    hist.copy()

@@ -9,6 +9,7 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
+    ClassVar,
     Dict,
     Iterable,
     List,
@@ -129,7 +130,10 @@ class Histogram:
     )
     # .metadata and ._variance_known are part of the dict
 
-    _family: object = boost_histogram
+    _family: ClassVar[object] = boost_histogram
+
+    axes: AxesTuple
+    _hist: CppHistogram
 
     def __init_subclass__(cls, *, family: Optional[object] = None) -> None:
         """
@@ -185,7 +189,8 @@ class Histogram:
 
         # Allow construction from a raw histogram object (internal)
         if len(axes) == 1 and isinstance(axes[0], tuple(_histograms)):
-            self._from_histogram_cpp(axes[0])
+            cpp_hist: CppHistogram = axes[0]  # type: ignore[assignment]
+            self._from_histogram_cpp(cpp_hist)
             if metadata:
                 self.metadata = metadata
             return
@@ -193,14 +198,15 @@ class Histogram:
         # If we construct with another Histogram as the only positional argument,
         # support that too
         if len(axes) == 1 and isinstance(axes[0], Histogram):
-            self._from_histogram_object(axes[0])
+            normal_hist: Histogram = axes[0]
+            self._from_histogram_object(normal_hist)
             if metadata:
                 self.metadata = metadata
             return
 
         # Support objects that provide a to_boost method, like Uproot
         if len(axes) == 1 and hasattr(axes[0], "_to_boost_histogram_"):
-            self._from_histogram_object(axes[0]._to_boost_histogram_())  # type: ignore[misc, union-attr]
+            self._from_histogram_object(axes[0]._to_boost_histogram_())  # type: ignore[union-attr]
             return
 
         if storage is None:
@@ -233,7 +239,13 @@ class Histogram:
         raise TypeError("Unsupported storage")
 
     @classmethod
-    def _clone(cls: Type[H], _hist: "Histogram | CppHistogram", *, other: "Histogram" = None, memo: Any = NOTHING) -> H:
+    def _clone(
+        cls: Type[H],
+        _hist: "Histogram | CppHistogram",
+        *,
+        other: "Histogram | None" = None,
+        memo: Any = NOTHING,
+    ) -> H:
         """
         Clone a histogram (possibly of a different base). Does not trigger __init__.
         This will copy data from `other=` if non-None, otherwise metadata gets copied from the input.
@@ -241,10 +253,13 @@ class Histogram:
 
         self = cls.__new__(cls)
         if isinstance(_hist, tuple(_histograms)):
+            assert isinstance(_hist, CppHistogram)
             self._from_histogram_cpp(_hist)
             if other is not None:
                 return cls._clone(self, other=other, memo=memo)
             return self
+
+        assert isinstance(_hist, Histogram)
 
         if other is None:
             other = _hist
@@ -269,7 +284,6 @@ class Histogram:
         """
         return self.__class__._clone(_hist, other=self, memo=memo)
 
-
     def _from_histogram_cpp(self, other: CppHistogram) -> None:
         """
         Import a Cpp histogram.
@@ -278,7 +292,6 @@ class Histogram:
         self._hist = other
         self.metadata = None
         self.axes = self._generate_axes_()
-
 
     def _from_histogram_object(self, other: "Histogram") -> None:
         """
@@ -323,7 +336,7 @@ class Histogram:
         """
         Number of axes (dimensions) of the histogram.
         """
-        return self._hist.rank()  # type: ignore[no-any-return]
+        return self._hist.rank()
 
     def view(
         self, flow: bool = False
@@ -497,7 +510,7 @@ class Histogram:
             threads = cpu_count()
 
         if threads is None or threads == 1:
-            self._hist.fill(*args_ars, weight=weight_ars, sample=sample_ars)
+            self._hist.fill(*args_ars, weight=weight_ars, sample=sample_ars)  # type: ignore[arg-type]
             return self
 
         if self._hist._storage_type in {
@@ -668,7 +681,7 @@ class Histogram:
         if isinstance(index, SupportsIndex):
             if abs(int(index)) >= self._hist.axis(axis).size:
                 raise IndexError("histogram index is out of range")
-            return index % self._hist.axis(axis).size  # type: ignore[no-any-return]
+            return int(index) % self._hist.axis(axis).size
 
         return index
 
@@ -747,7 +760,7 @@ class Histogram:
         hist, *edges = self._hist.to_numpy(flow)
         hist = self.view(flow=flow) if view else self.values(flow=flow)
 
-        return (hist, edges) if dd else (hist, *edges)
+        return (hist, edges) if dd else (hist, *edges)  # type: ignore[return-value]
 
     def copy(self: H, *, deep: bool = True) -> H:
         """
@@ -770,7 +783,7 @@ class Histogram:
         Check to see if the histogram has any non-default values.
         You can use flow=True to check flow bins too.
         """
-        return self._hist.empty(flow)  # type: ignore[no-any-return]
+        return self._hist.empty(flow)
 
     def sum(self, flow: bool = False) -> Union[float, Accumulator]:
         """
@@ -786,7 +799,7 @@ class Histogram:
         """
         Total number of bins in the histogram (including underflow/overflow).
         """
-        return self._hist.size()  # type: ignore[no-any-return]
+        return self._hist.size()
 
     @property
     def shape(self) -> Tuple[int, ...]:
@@ -807,7 +820,7 @@ class Histogram:
         if not hasattr(indexes, "items") and all(
             isinstance(a, SupportsIndex) for a in indexes
         ):
-            return self._hist.at(*indexes)  # type: ignore[no-any-return]
+            return self._hist.at(*indexes)  # type: ignore[no-any-return, arg-type]
 
         integrations: Set[int] = set()
         slices: List[_core.algorithm.reduce_command] = []
@@ -913,7 +926,7 @@ class Histogram:
                 if ax.traits_overflow and ax.size not in pick_set[i]:
                     selection.append(ax.size)
 
-                new_axis = axes[i].__class__([axes[i].value(j) for j in pick_set[i]])
+                new_axis = axes[i].__class__([axes[i].value(j) for j in pick_set[i]])  # type: ignore[call-arg]
                 new_axis.metadata = axes[i].metadata
                 axes[i] = new_axis
                 reduced_view = np.take(reduced_view, selection, axis=i)
