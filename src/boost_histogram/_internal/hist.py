@@ -22,7 +22,9 @@ from typing import (
     Union,
 )
 
+import re
 import numpy as np
+from pytest import approx
 
 import boost_histogram
 from boost_histogram import _core
@@ -296,6 +298,24 @@ class Histogram:
         Number of axes (dimensions) of the histogram.
         """
         return self._hist.rank()  # type: ignore[no-any-return]
+
+    def compare(self, hist2):
+        if (self.view().shape == approx(hist2.view().shape)):
+            if (self.view() == approx(hist2.view())):
+                if (self.variances() == approx(hist2.variances())):
+                    if (re.search("(?<=storage=).*", str(self.view))[0].split('(')[0] == re.search("(?<=storage=).*", str(hist2.view))[0].split('(')[0]):
+                        if (list(map(str, [i for i in self.axes]))==list(map(str, [i for i in hist2.axes]))):
+                            return True
+                        else:
+                            assert list(map(str, [i for i in self.axes]))==list(map(str, [i for i in hist2.axes])), "The axes are not equal."
+                    else:
+                        assert re.search("(?<=storage=).*", str(self.view))[0].split('(')[0] == re.search("(?<=storage=).*", str(hist2.view))[0].split('(')[0], "The storage type is not equal."
+                else:
+                    assert self.variances() == approx(hist2.variances()), "The histogram contents are not equal."
+            else:
+                assert self.view() == approx(hist2.view()), "The histogram contents are not equal."
+        else:
+            assert self.view().shape == approx(hist2.view().shape), "The histogram dimensions are not equal."
 
     def view(
         self, flow: bool = False
