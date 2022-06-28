@@ -126,6 +126,7 @@ histograms can be plotted via any compatible library, such as [mplhep][].
   * `/=`: Divide by a scaler (not all storages) (`hist / scalar` supported too)
   * `.kind`: Either `bh.Kind.COUNT` or `bh.Kind.MEAN`, depending on storage
   * `.sum(flow=False)`: The total count of all bins
+  * `.compare(second_hist)`: Compare the histogram with another histogram
   * `.project(ax1, ax2, ...)`: Project down to listed axis (numbers). Can also reorder axes.
   * `.to_numpy(flow=False, view=False)`: Convert to a NumPy style tuple (with or without under/overflow bins)
   * `.view(flow=False)`: Get a view on the bin contents (with or without under/overflow bins)
