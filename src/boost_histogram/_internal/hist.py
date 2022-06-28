@@ -185,22 +185,22 @@ class Histogram:
 
         # Allow construction from a raw histogram object (internal)
         if len(axes) == 1 and isinstance(axes[0], tuple(_histograms)):
-            self._hist: Any = axes[0]
-            self.metadata = metadata
-            self.axes = self._generate_axes_()
+            self._from_histogram_cpp(axes[0])
+            if metadata:
+                self.metadata = metadata
             return
 
         # If we construct with another Histogram as the only positional argument,
         # support that too
         if len(axes) == 1 and isinstance(axes[0], Histogram):
-            # Special case - we can recursively call __init__ here
-            self.__init__(axes[0]._hist)  # type: ignore[misc] # pylint: disable=non-parent-init-called
             self._from_histogram_object(axes[0])
+            if metadata:
+                self.metadata = metadata
             return
 
         # Support objects that provide a to_boost method, like Uproot
         if len(axes) == 1 and hasattr(axes[0], "_to_boost_histogram_"):
-            self.__init__(axes[0]._to_boost_histogram_())  # type: ignore[misc, union-attr] # pylint: disable=non-parent-init-called
+            self._from_histogram_object(axes[0]._to_boost_histogram_())  # type: ignore[misc, union-attr]
             return
 
         if storage is None:
@@ -231,6 +231,54 @@ class Histogram:
                 return
 
         raise TypeError("Unsupported storage")
+
+    @classmethod
+    def _clone(cls: Type[H], _hist: "Histogram | CppHistogram", *, other: "Histogram" = None, memo: Any = NOTHING) -> H:
+        """
+        Clone a histogram (possibly of a different base). Does not trigger __init__.
+        This will copy data from `other=` if non-None, otherwise metadata gets copied from the input.
+        """
+
+        self = cls.__new__(cls)
+        if isinstance(_hist, tuple(_histograms)):
+            self._from_histogram_cpp(_hist)
+            if other is not None:
+                return cls._clone(self, other=other, memo=memo)
+            return self
+
+        if other is None:
+            other = _hist
+
+        self._from_histogram_object(_hist)
+
+        if memo is NOTHING:
+            self.__dict__ = copy.copy(other.__dict__)
+        else:
+            self.__dict__ = copy.deepcopy(other.__dict__, memo)
+
+        for ax in self.axes:
+            if memo is NOTHING:
+                ax.__dict__ = copy.copy(ax._ax.metadata)
+            else:
+                ax.__dict__ = copy.deepcopy(ax._ax.metadata, memo)
+        return self
+
+    def _new_hist(self: H, _hist: CppHistogram, memo: Any = NOTHING) -> H:
+        """
+        Return a new histogram given a new _hist, copying current metadata.
+        """
+        return self.__class__._clone(_hist, other=self, memo=memo)
+
+
+    def _from_histogram_cpp(self, other: CppHistogram) -> None:
+        """
+        Import a Cpp histogram.
+        """
+        self._variance_known = True
+        self._hist = other
+        self.metadata = None
+        self.axes = self._generate_axes_()
+
 
     def _from_histogram_object(self, other: "Histogram") -> None:
         """
@@ -269,26 +317,6 @@ class Histogram:
         """
 
         return AxesTuple(self._axis(i) for i in range(self.ndim))
-
-    def _new_hist(self: H, _hist: CppHistogram, memo: Any = NOTHING) -> H:
-        """
-        Return a new histogram given a new _hist, copying metadata.
-        """
-
-        other = self.__class__(_hist)
-        if memo is NOTHING:
-            other.__dict__ = copy.copy(self.__dict__)
-        else:
-            other.__dict__ = copy.deepcopy(self.__dict__, memo)
-        other.axes = other._generate_axes_()
-
-        for ax in other.axes:
-            if memo is NOTHING:
-                ax.__dict__ = copy.copy(ax._ax.metadata)
-            else:
-                ax.__dict__ = copy.deepcopy(ax._ax.metadata, memo)
-
-        return other
 
     @property
     def ndim(self) -> int:
