@@ -1,7 +1,9 @@
 import numpy as np
 import pytest
 from pytest import approx
+
 import boost_histogram as bh
+
 
 @pytest.fixture
 def h():
@@ -44,6 +46,7 @@ def test_axes_centers(h):
         assert centers.flatten()[i] == approx(answers[i].flatten())
         assert h.axes[i].centers == approx(answers[i].ravel())
 
+
 def test_axes_edges(h):
     edges = h.axes.edges
     answers = np.ogrid[0:11, 0:6, 0:3]
@@ -56,6 +59,7 @@ def test_axes_edges(h):
         assert edges.ravel()[i] == approx(answers[i].ravel())
         assert h.axes[i].edges == approx(answers[i].ravel())
 
+
 def test_axes_widths(h):
     widths = h.axes.widths
     answers = np.ogrid[1:1:10j, 1:1:5j, 1:1:2j]
@@ -67,6 +71,7 @@ def test_axes_widths(h):
         assert widths.T[i] == approx(answers[i].T)
         assert widths.ravel()[i] == approx(answers[i].ravel())
         assert h.axes[i].widths == approx(answers[i].ravel())
+
 
 def test_axis_misconstuct():
     inp = [bh.axis.Regular(12, 0, 1)]

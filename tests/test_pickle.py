@@ -2,10 +2,12 @@ import copy
 import ctypes
 import math
 import platform
-from pytest import approx
 from pickle import dumps, loads
+
 import numpy as np
 import pytest
+from pytest import approx
+
 import boost_histogram as bh
 
 ftype = ctypes.CFUNCTYPE(ctypes.c_double, ctypes.c_double)
@@ -160,7 +162,7 @@ def test_storage(benchmark, copy_fn, storage, extra):
         hist.fill(x, weight=np.arange(2 * n + 4) + 1, sample=np.arange(2 * n + 4) + 1)
 
     new = benchmark(copy_fn, hist)
-    assert  hist.view(True) == approx(new.view(True))
+    assert hist.view(True) == approx(new.view(True))
     assert new == hist
 
 
