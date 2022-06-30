@@ -2,6 +2,14 @@
 
 ## Version 1.3
 
+### WIP
+
+#### Bug Fixes
+
+* Avoid the constructor when creating new histograms from existing ones. [#759][]
+
+[#759]: https://github.com/scikit-hep/boost-histogram/pull/759
+
 ### Version 1.3.2
 
 * Include PyPy 3.9 binary wheels [#730][]
