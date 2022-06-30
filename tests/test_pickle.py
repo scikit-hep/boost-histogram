@@ -162,7 +162,7 @@ def test_storage(benchmark, copy_fn, storage, extra):
         hist.fill(x, weight=np.arange(2 * n + 4) + 1, sample=np.arange(2 * n + 4) + 1)
 
     new = benchmark(copy_fn, hist)
-    assert hist.view(True) == approx(new.view(True))
+    assert np.asarray(hist.view(True)) == approx(np.asarray(new.view(True)))
     assert new == hist
 
 
