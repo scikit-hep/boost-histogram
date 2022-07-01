@@ -338,7 +338,7 @@ class Histogram:
         """
         return self._hist.rank()
 
-    def compare2(self, hist2: "Histogram") -> str:
+    def compare(self, hist2: "Histogram") -> str:
         if not (np.allclose(self.view().shape, hist2.view().shape)):
             return f"The histogram dimensions [\033[91m {str(self.view().shape)} and {str(hist2.view().shape)} \033[0m] are not equal."
         if not (np.allclose(self.view(), hist2.view())):
