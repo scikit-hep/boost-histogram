@@ -339,29 +339,13 @@ class Histogram:
         return self._hist.rank()
 
     def compare(self, hist2):
-        if np.allclose(self.view().shape, hist2.view().shape):
-            if np.allclose(self.view(), hist2.view()):
-                if np.allclose(self.variances(), hist2.variances()):
-                    if (
-                        re.search("(?<=storage=).*", str(self.view))[0].split("(")[0]
-                        == re.search("(?<=storage=).*", str(hist2.view))[0].split("(")[
-                            0
-                        ]
-                    ):
-                        if list(map(str, [i for i in self.axes])) == list(
-                            map(str, [i for i in hist2.axes])
-                        ):
+        if (np.allclose(self.view().shape, hist2.view().shape)):
+            if (np.allclose(self.view(), hist2.view())):
+                if (np.allclose(self.variances(), hist2.variances())):
+                    if (re.search("(?<=storage=).*", str(self.view))[0].split('(')[0] == re.search("(?<=storage=).*", str(hist2.view))[0].split('(')[0]):
+                        if (list(self.axes)==list(hist2.axes)):
                             return True
-                        else:
-                            return False
-                    else:
-                        return False
-                else:
-                    return False
-            else:
-                return False
-        else:
-            return False
+        return False
 
     def view(
         self, flow: bool = False
