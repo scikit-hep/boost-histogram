@@ -338,7 +338,7 @@ class Histogram:
         """
         return self._hist.rank()
 
-    def compare(self, hist2):
+    def compare(self, hist2) -> bool:
         if np.allclose(self.view().shape, hist2.view().shape):
             if np.allclose(self.view(), hist2.view()):
                 if np.allclose(self.variances(), hist2.variances()):
