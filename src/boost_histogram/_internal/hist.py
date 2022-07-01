@@ -337,82 +337,21 @@ class Histogram:
         Number of axes (dimensions) of the histogram.
         """
         return self._hist.rank()
-
-    def compare(self, hist2: "Histogram") -> str:
-        if np.allclose(self.view().shape, hist2.view().shape):
-            if np.allclose(self.view(), hist2.view()):
-                if np.allclose(self.variances(), hist2.variances()):
-                    if (
-                        re.search("(?<=storage=).*", str(self.view))[0].split("(")[0]
-                        == re.search("(?<=storage=).*", str(hist2.view))[0].split("(")[
-                            0
-                        ]
-                    ):
-                        if list(self.axes) == list(hist2.axes):
-                            return ""
-                        else:
-                            return (
-                                "The axes ["
-                                + "\033[91m"
-                                + str(list(self.axes))
-                                + " and "
-                                + str(list(hist2.axes))
-                                + "\033[0m"
-                                + "] are not equal."
-                            )
-                    else:
-                        return (
-                            "The storage types ["
-                            + "\033[91m"
-                            + str(
-                                re.search("(?<=storage=).*", str(self.view))[0].split(
-                                    "("
-                                )[0]
-                            )
-                            + " and "
-                            + str(
-                                re.search("(?<=storage=).*", str(hist2.view))[0].split(
-                                    "("
-                                )[0]
-                            )
-                            + "\033[0m"
-                            + "] are not equal."
-                        )
-                else:
-                    return (
-                        "The histogram contents : \n"
-                        + "\033[91m"
-                        + str(self.variances())
-                        + "\033[0m"
-                        + "\nand\n"
-                        + "\033[91m"
-                        + str(hist2.variances())
-                        + "\033[0m"
-                        + "\nare not equal."
-                    )
-            else:
-                return (
-                    "The histogram contents : \n"
-                    + "\033[91m"
-                    + str(self.view())
-                    + "\033[0m"
-                    + "\nand\n"
-                    + "\033[91m"
-                    + str(hist2.view())
-                    + "\033[0m"
-                    + "\nare not equal."
-                )
-        else:
-            return (
-                "The histogram dimensions ["
-                + "\033[91m"
-                + str(self.view().shape)
-                + " and "
-                + str(hist2.view().shape)
-                + "\033[0m"
-                + "] are not equal."
-            )
-
+    
+    def compare2(self, hist2: "Histogram") -> str:
+        if not (np.allclose(self.view().shape, hist2.view().shape)):
+            return f"The histogram dimensions [\033[91m {str(self.view().shape)} and {str(hist2.view().shape)} \033[0m] are not equal."
+        if not (np.allclose(self.view(), hist2.view())):
+            return f"The histogram contents : \n \033[91m {str(self.view())} \033[0m \nand\n \033[91m {str(hist2.view())} \033[0m \nare not equal."
+        if not (np.allclose(self.variances(), hist2.variances())):
+            return f"The histogram contents : \n \033[91m {str(self.variances())} \033[0m \nand\n \033[91m {str(hist2.variances())} \033[0m \nare not equal."
+        if not (re.search("(?<=storage=).*", str(self.view))[0].split('(')[0] == re.search("(?<=storage=).*", str(hist2.view))[0].split('(')[0]):
+            temp1, temp2 = str(re.search("(?<=storage=).*", str(self.view))[0].split('(')[0]), str(re.search("(?<=storage=).*", str(hist2.view))[0].split('(')[0])
+            return f"The storage types [\033[91m {temp1} and {temp2} \033[0m] are not equal."
+        if not (list(self.axes)==list(hist2.axes)):
+            return f"The axes [\033[91m {str(list(self.axes))} and {str(list(hist2.axes))} \033[0m] are not equal."
+        return ""
+    
     def view(
         self, flow: bool = False
     ) -> Union["np.typing.NDArray[Any]", WeightedSumView, WeightedMeanView, MeanView]:
