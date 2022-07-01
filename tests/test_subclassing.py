@@ -32,3 +32,20 @@ def test_subclass_hist_only():
 
     assert type(h) == MyHist
     assert type(h.axes[0]) == bh.axis.Regular
+
+
+def test_copy():
+    class MyHist(bh.Histogram):
+        def __init__(self, var, bins, weight, **kwargs):
+            super().__init__(
+                bh.axis.Regular(*bins), storage=bh.storage.Weight(), **kwargs
+            )
+
+            self.fill(var, weight=weight)
+
+    b = (2, 0, 1)
+    v = [0.1, 0.5, 0.9]
+    w = [1, 0.5, 1]
+    hist = MyHist(v, b, w)
+
+    hist.copy()
