@@ -338,7 +338,7 @@ class Histogram:
         """
         return self._hist.rank()
 
-    def compare(self, hist2: "Histogram") -> bool:
+    def compare(self, hist2: "Histogram") -> str:
         if (np.allclose(self.view().shape, hist2.view().shape)):
             if (np.allclose(self.view(), hist2.view())):
                 if (np.allclose(self.variances(), hist2.variances())):
@@ -353,8 +353,8 @@ class Histogram:
                     return "The histogram contents : \n" + "\033[91m" + str(self.variances()) + "\033[0m" + "\nand\n" + "\033[91m" + str(hist2.variances()) + "\033[0m" + "\nare not equal."
             else:
                 return "The histogram contents : \n" + "\033[91m" + str(self.view()) + "\033[0m" + "\nand\n" + "\033[91m" + str(hist2.view()) + "\033[0m" + "\nare not equal."
-            else:
-                return "The histogram dimensions [" + "\033[91m" + str(self.view().shape) + " and " + str(hist2.view().shape) + "\033[0m" + "] are not equal."
+        else:
+            return "The histogram dimensions [" + "\033[91m" + str(self.view().shape) + " and " + str(hist2.view().shape) + "\033[0m" + "] are not equal."
 
     def view(
         self, flow: bool = False
