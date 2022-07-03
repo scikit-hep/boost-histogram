@@ -1,7 +1,6 @@
 import collections.abc
 import copy
 import logging
-import re
 import threading
 import typing
 import warnings
@@ -343,17 +342,8 @@ class Histogram:
             return f"The histogram dimensions [{self.view().shape} and {hist2.view().shape}] are not equal."
         if not np.allclose(self.view(), hist2.view()):
             return f"The histogram contents :\n {self.view()} \nand\n {hist2.view()} \nare not equal."
-        if not np.allclose(self.variances(), hist2.variances()):
-            return f"The histogram contents :\n {self.variances()} \nand\n {hist2.variances()} \nare not equal."
-        if (
-            re.search("(?<=storage=).*", str(self.view))[0].split("(")[0]
-            != re.search("(?<=storage=).*", str(hist2.view))[0].split("(")[0]
-        ):
-            temp1, temp2 = (
-                re.search("(?<=storage=).*", str(self.view))[0].split("(")[0],
-                re.search("(?<=storage=).*", str(hist2.view))[0].split("(")[0],
-            )
-            return f"The storage types ({temp1} and {temp2}) are not equal."
+        if self._storage_type != hist2._storage_type:
+            return f"The storage types ({str(self._storage_type).split('.')[-1][:-2]} and {str(hist2._storage_type).split('.')[-1][:-2]}) are not equal."
         if list(self.axes) != list(hist2.axes):
             return f"The axes :\n {list(self.axes)} \nand\n {list(hist2.axes)} \nare not equal."
         return ""
