@@ -343,7 +343,7 @@ class Histogram:
         if not np.allclose(self.view(), hist2.view()):
             return f"The histogram contents :\n {self.view()} \nand\n {hist2.view()} \nare not equal."
         if self._storage_type != hist2._storage_type:
-            return f"The storage types ({str(self._storage_type).split('.')[-1][:-2]} and {str(hist2._storage_type).split('.')[-1][:-2]}) are not equal."
+            return f"The storage types ({str(self._storage_type).rsplit('.', maxsplit=1)[-1][:-2]} and {str(hist2._storage_type).rsplit('.', maxsplit=1)[-1][:-2]}) are not equal."
         if list(self.axes) != list(hist2.axes):
             return f"The axes :\n {list(self.axes)} \nand\n {list(hist2.axes)} \nare not equal."
         return ""
