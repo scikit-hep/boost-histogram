@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from numpy.testing import assert_almost_equal, assert_array_equal
+from pytest import approx
 
 import boost_histogram as bh
 
@@ -24,7 +24,7 @@ def test_threads(benchmark, threads, storage):
     hist_linear.fill(vals)
     hist_result = benchmark(fillit, hist_atomic, vals, threads=threads)
 
-    assert_array_equal(hist_linear, hist_result)
+    assert hist_linear == approx(hist_result)
 
 
 @pytest.mark.parametrize("threads", [1, 4, 7], ids=lambda x: f"threads={x}")
@@ -41,7 +41,7 @@ def test_threaded_builtin(threads, storage):
     hist_atomic1.fill(vals)
     hist_atomic2.fill(vals, threads=threads)
 
-    assert_array_equal(hist_atomic1, hist_atomic2)
+    assert hist_atomic1 == approx(hist_atomic2)
 
 
 @pytest.mark.parametrize("threads", [1, 4, 7], ids=lambda x: f"threads={x}")
@@ -51,7 +51,7 @@ def test_threaded_numpy(threads):
     hist_1, _ = bh.numpy.histogram(vals)
     hist_2, _ = bh.numpy.histogram(vals, threads=threads)
 
-    assert_array_equal(hist_1, hist_2)
+    assert hist_1 == approx(hist_2)
 
 
 @pytest.mark.parametrize("threads", [1, 4, 7], ids=lambda x: f"threads={x}")
@@ -64,7 +64,7 @@ def test_threaded_weights(threads):
     hist_1.fill(x, y, weight=weights)
     hist_2.fill(x, y, weight=weights, threads=threads)
 
-    assert_almost_equal(hist_1.view(), hist_2.view())
+    assert np.asarray(hist_1.view()) == approx(np.asarray(hist_2.view()))
 
 
 @pytest.mark.parametrize("threads", [1, 4, 7], ids=lambda x: f"threads={x}")
@@ -81,8 +81,8 @@ def test_threaded_weight_storage(threads):
     hist_1.fill(x, y, weight=weights)
     hist_2.fill(x, y, weight=weights, threads=threads)
 
-    assert_almost_equal(hist_1.view().value, hist_2.view().value)
-    assert_almost_equal(hist_1.view().variance, hist_2.view().variance)
+    assert np.asarray(hist_1.view().value) == approx(np.asarray(hist_2.view().value))
+    assert np.asarray(hist_1.view().variance) == approx(np.asarray(hist_2.view().variance))
 
 
 def test_no_profile():
