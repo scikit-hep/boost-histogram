@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from pytest import approx
 
 import boost_histogram as bh
 
