@@ -1,6 +1,5 @@
 import numpy as np
 import pytest
-from numpy.testing import assert_array_equal
 
 import boost_histogram as bh
 
@@ -37,10 +36,10 @@ def test_1d_set_array():
     h = bh.Histogram(bh.axis.Regular(10, 0, 1))
 
     h[...] = np.arange(10)
-    assert_array_equal(h.view(), np.arange(10))
+    assert np.asarray(h.view()) == approx(np.asarray(np.arange(10)))
 
     h[...] = np.arange(12)
-    assert_array_equal(h.view(flow=True), np.arange(12))
+    assert np.asarray(h.view(flow=True)) == approx(np.asarray(np.arange(12)))
 
     with pytest.raises(ValueError):
         h[...] = np.arange(9)
@@ -50,17 +49,17 @@ def test_1d_set_array():
         h[...] = np.arange(13)
 
     h[...] = 1
-    assert_array_equal(h.view(), np.ones(10))
+    assert np.asarray(h.view()) == approx(np.asarray(np.ones(10)))
 
 
 def test_2d_set_array():
     h = bh.Histogram(bh.axis.Regular(10, 0, 1), bh.axis.Regular(10, 0, 1))
 
     h[...] = np.arange(10).reshape(-1, 1)
-    assert_array_equal(h.view()[:, 2], np.arange(10))
+    assert np.asarray(h.view()[:, 2]) == approx(np.asarray(np.arange(10)))
 
     h[...] = np.arange(12).reshape(-1, 1)
-    assert_array_equal(h.view(flow=True)[:, 3], np.arange(12))
+    assert np.asarray(h.view(flow=True)[:, 3]) == approx(np.asarray(np.arange(12)))
 
     with pytest.raises(ValueError):
         h[...] = np.arange(9).reshape(-1, 1)
@@ -70,7 +69,7 @@ def test_2d_set_array():
         h[...] = np.arange(13).reshape(-1, 1)
 
     h[...] = 1
-    assert_array_equal(h.view(), np.ones((10, 10)))
+    assert np.asarray(h.view()) == approx(np.asarray(np.ones((10, 10))))
 
 
 def test_weighted_set_shortcut():
@@ -106,27 +105,27 @@ def test_set_special_dtype(storage, default):
 
     arr = np.full((10, 1), default)
     h[...] = arr
-    assert_array_equal(h.view()[:, 1:2], arr)
+    assert np.asarray(h.view()[:, 1:2]) == approx(np.asarray(arr))
 
     arr = np.full((12, 1), default)
     h[...] = arr
-    assert_array_equal(h.view(flow=True)[:, 2:3], arr)
+    assert np.asarray(h.view(flow=True)[:, 2:3]) == approx(np.asarray(arr))
 
     arr = np.full((10, 10), default)
     h[...] = arr
-    assert_array_equal(h.view(), arr)
+    assert np.asarray(h.view()) == approx(np.asarray(arr))
 
     arr = np.full((10, 12), default)
     h[...] = arr
-    assert_array_equal(h.view(flow=True)[1:11, :], arr)
+    assert np.asarray(h.view(flow=True)[1:11, :]) == approx(np.asarray(arr))
 
     arr = np.full((12, 10), default)
     h[...] = arr
-    assert_array_equal(h.view(flow=True)[:, 1:11], arr)
+    assert np.asarray(h.view(flow=True)[:, 1:11]) == approx(np.asarray(arr))
 
     arr = np.full((12, 12), default)
     h[...] = arr
-    assert_array_equal(h.view(flow=True), arr)
+    assert np.asarray(h.view(flow=True)) == approx(np.asarray(arr))
 
     with pytest.raises(ValueError):
         arr = np.full((9, 1), default)
