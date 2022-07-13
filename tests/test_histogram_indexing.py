@@ -1,6 +1,5 @@
 import numpy as np
 import pytest
-from numpy.testing import assert_array_equal
 from pytest import approx
 
 import boost_histogram as bh
@@ -182,7 +181,7 @@ def test_mix_value_with_slice():
     assert h[3, 4, False] == 0
 
     assert np.asarray(h[:, :, True].view()) == approx(np.asarray(vals[:, :, 0]))
-    assert np.asarray(h[:, :, False].view()) == approx(np.assarray(0))
+    assert np.asarray(h[:, :, False].view()) == approx(np.asarray(0))
 
 
 def test_mix_value_with_slice_2():
@@ -202,7 +201,7 @@ def test_mix_value_with_slice_2():
     assert np.asarray(h[:, :, False].view()) == approx(np.asarray(0))
 
     h2 = h[bh.rebin(2), bh.rebin(5), :]
-    assert_array_equal(h2.shape, (5, 2, 2))
+    assert h2.shape == approx((5, 2, 2))
 
 
 def test_one_sided_slice():
@@ -280,9 +279,9 @@ def test_singleflow_slicing():
     assert h[1, 0] == 4
     assert h[1, 1] == 5
 
-    assert_array_equal(h[:, 1 : 3 : bh.sum], vals[:, 1:3].sum(axis=1))
-    assert_array_equal(h[{1: slice(1, 3, bh.sum)}], vals[:, 1:3].sum(axis=1))
-    assert_array_equal(h[1 : 3 : bh.sum, :], vals[1:3, :].sum(axis=0))
+    assert h[:, 1 : 3 : bh.sum] == approx(vals[:, 1:3].sum(axis=1))
+    assert h[{1: slice(1, 3, bh.sum)}] == approx(vals[:, 1:3].sum(axis=1))
+    assert h[1 : 3 : bh.sum, :] == approx(vals[1:3, :].sum(axis=0))
 
 
 def test_pick_str_category():
@@ -384,7 +383,7 @@ def test_axes_tuple():
     (before,) = h.axes.centers[:1]
     (after,) = h.axes[:1].centers
 
-    assert_array_equal(before, after)
+    assert before == approx(after)
 
 
 def test_axes_tuple_Nd():
@@ -397,8 +396,8 @@ def test_axes_tuple_Nd():
     b1, b2 = h.axes.centers[1:3]
     a1, a2 = h.axes[1:3].centers
 
-    assert_array_equal(b1.flatten(), a1.flatten())
-    assert_array_equal(b2.flatten(), a2.flatten())
+    assert b1.flatten() == approx(a1.flatten())
+    assert b2.flatten() == approx(a2.flatten())
 
     assert b1.ndim == 3
     assert a1.ndim == 2
