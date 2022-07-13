@@ -1,5 +1,5 @@
 import numpy as np
-from numpy.testing import assert_allclose
+from pytest import approx
 
 import boost_histogram as bh
 
@@ -14,9 +14,9 @@ def test_plottable_histogram_mean_int():
 
     h[...] = np.stack([COUNTS, VALUES, VARIANCES]).T
 
-    assert_allclose(COUNTS, h.counts())
-    assert_allclose(VALUES, h.values())
-    assert_allclose(VARIANCES / COUNTS, h.variances())
+    assert COUNTS == approx(h.counts())
+    assert VALUES == approx(h.values())
+    assert (VARIANCES / COUNTS) == approx(h.variances())
 
     assert h.kind == bh.Kind.MEAN
     assert h.kind == "MEAN"
@@ -38,9 +38,9 @@ def test_plottible_histogram_weight_reg():
 
     h[...] = np.stack([VALUES, VARIANCES]).T
 
-    assert_allclose(VALUES, h.counts())
-    assert_allclose(VALUES, h.values())
-    assert_allclose(VARIANCES, h.variances())
+    assert VALUES == approx(h.counts())
+    assert VALUES == approx(h.values())
+    assert VARIANCES == approx(h.variances())
 
     assert h.kind == bh.Kind.COUNT
     assert h.kind == "COUNT"
@@ -48,10 +48,10 @@ def test_plottible_histogram_weight_reg():
     assert len(h.axes) == 1
     assert h.axes[0] == h.axes[0]
 
-    assert_allclose(h.axes[0][0], (0, 1))
-    assert_allclose(h.axes[0][1], (1, 2))
-    assert_allclose(h.axes[0][2], (2, 3))
-    assert_allclose(h.axes[0][3], (3, 4))
+    assert h.axes[0][0] == approx((0, 1))
+    assert h.axes[0][1] == approx((1, 2))
+    assert h.axes[0][2] == approx((2, 3))
+    assert h.axes[0][3] == approx((3, 4))
 
     assert not h.axes[0].traits.discrete
     assert not h.axes[0].traits.circular
@@ -66,9 +66,9 @@ def test_plottible_histogram_simple_var():
     # are doing. At least if you change it inplace.
     h.view()[...] = VALUES
 
-    assert_allclose(VALUES, h.counts())
-    assert_allclose(VALUES, h.values())
-    assert_allclose(VALUES, h.variances())
+    assert VALUES == approx(h.counts())
+    assert VALUES == approx(h.values())
+    assert VALUES == approx(h.variances())
 
     assert h.kind == bh.Kind.COUNT
     assert h.kind == "COUNT"
@@ -76,18 +76,18 @@ def test_plottible_histogram_simple_var():
     assert len(h.axes) == 1
     assert h.axes[0] == h.axes[0]
 
-    assert_allclose(h.axes[0][0], (0, 1))
-    assert_allclose(h.axes[0][1], (1, 2))
-    assert_allclose(h.axes[0][2], (2, 3))
-    assert_allclose(h.axes[0][3], (3, 4))
+    assert h.axes[0][0] == approx((0, 1))
+    assert h.axes[0][1] == approx((1, 2))
+    assert h.axes[0][2] == approx((2, 3))
+    assert h.axes[0][3] == approx((3, 4))
 
     assert not h.axes[0].traits.discrete
     assert not h.axes[0].traits.circular
 
     h.fill([1], weight=0)
 
-    assert_allclose(VALUES, h.counts())
-    assert_allclose(VALUES, h.values())
+    assert VALUES == approx(h.counts())
+    assert VALUES == approx(h.values())
     assert h.variances() is None
 
 
@@ -97,16 +97,16 @@ def test_plottible_histogram_simple_var_invalidate_inplace():
 
     h2 = h * 1
 
-    assert_allclose(VALUES, h.counts())
-    assert_allclose(VALUES, h.values())
-    assert_allclose(VALUES, h.variances())
+    assert VALUES == approx(h.counts())
+    assert VALUES == approx(h.values())
+    assert VALUES == approx(h.variances())
 
-    assert_allclose(VALUES, h2.counts())
-    assert_allclose(VALUES, h2.values())
+    assert VALUES == approx(h2.counts())
+    assert VALUES == approx(h2.values())
     assert h2.variances() is None
 
     h *= 1
 
-    assert_allclose(VALUES, h.counts())
-    assert_allclose(VALUES, h.values())
+    assert VALUES == approx(h.counts())
+    assert VALUES == approx(h.values())
     assert h.variances() is None
