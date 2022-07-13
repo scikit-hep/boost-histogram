@@ -181,8 +181,8 @@ def test_mix_value_with_slice():
     assert h[1, 1, True] == 11
     assert h[3, 4, False] == 0
 
-    assert_array_equal(h[:, :, True].view(), vals[:, :, 0])
-    assert_array_equal(h[:, :, False].view(), 0)
+    assert np.asarray(h[:, :, True].view()) == approx(np.asarray(vals[:, :, 0]))
+    assert np.asarray(h[:, :, False].view()) == approx(np.assarray(0))
 
 
 def test_mix_value_with_slice_2():
@@ -198,8 +198,8 @@ def test_mix_value_with_slice_2():
     assert h[1, 1, True] == 11
     assert h[3, 4, False] == 0
 
-    assert_array_equal(h[:, :, True].view(), vals)
-    assert_array_equal(h[:, :, False].view(), 0)
+    assert np.asarray(h[:, :, True].view()) == approx(np.asarray(vals))
+    assert np.asarray(h[:, :, False].view()) == approx(np.asarray(0))
 
     h2 = h[bh.rebin(2), bh.rebin(5), :]
     assert_array_equal(h2.shape, (5, 2, 2))
@@ -213,7 +213,7 @@ def test_one_sided_slice():
     assert h[bh.tag.at(-1) : bh.tag.at(5) : sum] == 6  # keeps underflow, keeps overflow
 
     # check that slicing without bh.sum adds removed counts to flow bins
-    assert_array_equal(h[1:3].view(True), [2, 1, 1, 2])
+    assert np.asarray(h[1:3].view(True)) == approx(np.asarray([2, 1, 1, 2]))
 
     assert h[0::sum] == 5  # removes underflow, keeps overflow
     assert h[:4:sum] == 5  # removes overflow, keeps underflow
@@ -263,8 +263,8 @@ def test_noflow_slicing():
     assert h[3, 4, False] == 0
     assert h[{0: 3, 1: 4, 2: False}] == 0
 
-    assert_array_equal(h[:, :, True].view(), vals)
-    assert_array_equal(h[:, :, False].view(), 0)
+    assert np.asarray(h[:, :, True].view()) == approx(np.asarray(vals))
+    assert np.asarray(h[:, :, False].view()) == approx(np.asarray(0))
 
 
 def test_singleflow_slicing():
@@ -302,9 +302,9 @@ def test_pick_str_category():
     assert h[1, 1, bh.loc("on")] == 11
     assert h[3, 4, bh.loc("maybe")] == 0
 
-    assert_array_equal(h[:, :, bh.loc("on")].view(), vals)
-    assert_array_equal(h[{2: bh.loc("on")}].view(), vals)
-    assert_array_equal(h[:, :, bh.loc("off")].view(), 0)
+    assert np.asarray(h[:, :, bh.loc("on")].view()) == approx(np.asarray(vals))
+    assert np.asarray(h[{2: bh.loc("on")}].view()) == approx(np.asarray(vals))
+    assert np.asarray(h[:, :, bh.loc("off")].view()) == approx(np.asarray(0))
 
 
 def test_string_requirement():
@@ -346,10 +346,10 @@ def test_pick_int_category():
     assert h[3, 4, bh.loc(7)] == 0
     assert h[3, 4, bh.loc(12)] == 134
 
-    assert_array_equal(h[:, :, bh.loc(3)].view(), vals)
-    assert_array_equal(h[{2: bh.loc(3)}].view(), vals)
-    assert_array_equal(h[:, :, bh.loc(5)].view(), vals + 1)
-    assert_array_equal(h[:, :, bh.loc(7)].view(), 0)
+    assert np.asarray(h[:, :, bh.loc(3)].view()) == approx(np.asarray(vals))
+    assert np.asarray(h[{2: bh.loc(3)}].view()) == approx(np.asarray(vals))
+    assert np.asarray(h[:, :, bh.loc(5)].view()) == approx(np.asarray(vals + 1))
+    assert np.asarray(h[:, :, bh.loc(7)].view()) == approx(np.asarray(0))
 
 
 @pytest.mark.parametrize(
