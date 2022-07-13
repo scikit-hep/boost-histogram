@@ -344,7 +344,10 @@ class Histogram:
         Return a view into the data, optionally with overflow turned on.
         """
         return _to_view(self._hist.view(flow))
-
+    
+    def storageType(self) -> str:
+        return str(self._storage_type).rsplit('.', maxsplit=1)[-1][:-2]
+    
     def __array__(self) -> "np.typing.NDArray[Any]":
         return self.view(False)
 
