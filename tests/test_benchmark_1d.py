@@ -2,6 +2,7 @@ import platform
 
 import numpy as np
 import pytest
+from pytest import approx
 from numpy.testing import assert_allclose, assert_array_equal
 
 import boost_histogram as bh
@@ -31,7 +32,7 @@ answer = {t: np.histogram(vals[t], bins=bins, range=ranges)[0] for t in DTYPES}
 @pytest.mark.parametrize("dtype", vals)
 def test_numpy_1d(benchmark, dtype):
     result, _ = benchmark(np.histogram, vals[dtype], bins=bins, range=ranges)
-    assert_array_equal(result, answer[dtype])
+    assert result == approx(answer[dtype])
 
 
 def make_and_run_hist(flow, storage, vals):
@@ -47,4 +48,4 @@ def make_and_run_hist(flow, storage, vals):
 @pytest.mark.parametrize("storage", STORAGES)
 def test_boost_1d(benchmark, flow, storage, dtype):
     result = benchmark(make_and_run_hist, flow, storage, vals[dtype])
-    assert_allclose(result[:-1], answer[dtype][:-1], atol=2)
+    assert result[:-1] == approx(answer[dtype][:-1], atol=2)
