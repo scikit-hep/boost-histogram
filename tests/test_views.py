@@ -1,6 +1,5 @@
 import numpy as np
 import pytest
-from numpy.testing import assert_allclose
 from pytest import approx
 
 import boost_histogram as bh
@@ -14,115 +13,115 @@ def v():
 
 
 def test_basic_view(v):
-    assert_allclose(v.value, [0, 3, 2, 1])
-    assert_allclose(v.variance, [0, 3, 2, 1])
+    assert np.asarray(v.value) == approx(np.asarray([0, 3, 2, 1]))
+    assert np.asarray(v.variance) == approx(np.asarray([0, 3, 2, 1]))
 
 
 def test_view_mul(v):
     v2 = v * 2
-    assert_allclose(v2.value, [0, 6, 4, 2])
-    assert_allclose(v2.variance, [0, 12, 8, 4])
+    assert np.asarray(v2.value) == approx(np.asarray([0, 6, 4, 2]))
+    assert np.asarray(v2.variance) == approx(np.asarray([0, 12, 8, 4]))
 
     v2 = 2 * v
-    assert_allclose(v2.value, [0, 6, 4, 2])
-    assert_allclose(v2.variance, [0, 12, 8, 4])
+    assert np.asarray(v2.value) == approx(np.asarray([0, 6, 4, 2]))
+    assert np.asarray(v2.variance) == approx(np.asarray([0, 12, 8, 4]))
 
     v2 = v * (-2)
-    assert_allclose(v2.value, [0, -6, -4, -2])
-    assert_allclose(v2.variance, [0, 12, 8, 4])
+    assert np.asarray(v2.value) == approx(np.asarray([0, -6, -4, -2]))
+    assert np.asarray(v2.variance) == approx(np.asarray([0, 12, 8, 4]))
 
     v *= 2
-    assert_allclose(v.value, [0, 6, 4, 2])
-    assert_allclose(v.variance, [0, 12, 8, 4])
+    assert np.asarray(v.value) == approx(np.asarray([0, 6, 4, 2]))
+    assert np.asarray(v.variance) == approx(np.asarray([0, 12, 8, 4]))
 
 
 def test_view_div(v):
     v2 = v / 2
-    assert_allclose(v2.value, [0, 1.5, 1, 0.5])
-    assert_allclose(v2.variance, [0, 0.75, 0.5, 0.25])
+    assert np.asarray(v2.value) == approx(np.asarray([0, 1.5, 1, 0.5]))
+    assert np.asarray(v2.variance) == approx(np.asarray([0, 0.75, 0.5, 0.25]))
 
     v2 = v / (-0.5)
-    assert_allclose(v2.value, [0, -6, -4, -2])
-    assert_allclose(v2.variance, [0, 12, 8, 4])
+    assert np.asarray(v2.value) == approx(np.asarray([0, -6, -4, -2]))
+    assert np.asarray(v2.variance) == approx(np.asarray([0, 12, 8, 4]))
 
     v2 = 1 / v[1:]
-    assert_allclose(v2.value, [1 / 3, 1 / 2, 1])
-    assert_allclose(v2.variance, [1 / 3, 1 / 2, 1])
+    assert np.asarray(v2.value) == approx(np.asarray([1 / 3, 1 / 2, 1]))
+    assert np.asarray(v2.variance) == approx(np.asarray([1 / 3, 1 / 2, 1]))
 
     v /= 0.5
-    assert_allclose(v.value, [0, 6, 4, 2])
-    assert_allclose(v.variance, [0, 12, 8, 4])
+    assert np.asarray(v.value) == approx(np.asarray([0, 6, 4, 2]))
+    assert np.asarray(v.variance) == approx(np.asarray([0, 12, 8, 4]))
 
 
 def test_view_add(v):
     v2 = v + 1
-    assert_allclose(v2.value, [1, 4, 3, 2])
-    assert_allclose(v2.variance, [1, 4, 3, 2])
+    assert np.asarray(v2.value) == approx(np.asarray([1, 4, 3, 2]))
+    assert np.asarray(v2.variance) == approx(np.asarray([1, 4, 3, 2]))
 
     v2 = v + 2
-    assert_allclose(v2.value, [2, 5, 4, 3])
-    assert_allclose(v2.variance, [4, 7, 6, 5])
+    assert np.asarray(v2.value) == approx(np.asarray([2, 5, 4, 3]))
+    assert np.asarray(v2.variance) == approx(np.asarray([4, 7, 6, 5]))
 
     v2 = 2 + v
-    assert_allclose(v2.value, [2, 5, 4, 3])
-    assert_allclose(v2.variance, [4, 7, 6, 5])
+    assert np.asarray(v2.value) == approx(np.asarray([2, 5, 4, 3]))
+    assert np.asarray(v2.variance) == approx(np.asarray([4, 7, 6, 5]))
 
     v2 = v.copy()
     v2 += 2
-    assert_allclose(v2.value, [2, 5, 4, 3])
-    assert_allclose(v2.variance, [4, 7, 6, 5])
+    assert np.asarray(v2.value) == approx(np.asarray([2, 5, 4, 3]))
+    assert np.asarray(v2.variance) == approx(np.asarray([4, 7, 6, 5]))
 
     v2 = v + v
-    assert_allclose(v2.value, v.value * 2)
-    assert_allclose(v2.variance, v.variance * 2)
+    assert np.asarray(v2.value) == approx(np.asarray(v.value * 2))
+    assert np.asarray(v2.variance) == approx(np.asarray(v.variance * 2))
 
 
 def test_view_sub(v):
     v2 = v - 1
-    assert_allclose(v2.value, [-1, 2, 1, 0])
-    assert_allclose(v2.variance, [1, 4, 3, 2])
+    assert np.asarray(v2.value) == approx(np.asarray([-1, 2, 1, 0]))
+    assert np.asarray(v2.variance) == approx(np.asarray([1, 4, 3, 2]))
 
     v2 = v - 2
-    assert_allclose(v2.value, [-2, 1, 0, -1])
-    assert_allclose(v2.variance, [4, 7, 6, 5])
+    assert np.asarray(v2.value) == approx(np.asarray([-2, 1, 0, -1]))
+    assert np.asarray(v2.variance) == approx(np.asarray([4, 7, 6, 5]))
 
     v2 = 1 - v
-    assert_allclose(v2.value, [1, -2, -1, 0])
-    assert_allclose(v2.variance, [1, 4, 3, 2])
+    assert np.asarray(v2.value) == approx(np.asarray([1, -2, -1, 0]))
+    assert np.asarray(v2.variance) == approx(np.asarray([1, 4, 3, 2]))
 
     v2 = v.copy()
     v2 -= 2
-    assert_allclose(v2.value, [-2, 1, 0, -1])
-    assert_allclose(v2.variance, [4, 7, 6, 5])
+    assert np.asarray(v2.value) == approx(np.asarray([-2, 1, 0, -1]))
+    assert np.asarray(v2.variance) == approx(np.asarray([4, 7, 6, 5]))
 
     v2 = v - v
-    assert_allclose(v2.value, [0, 0, 0, 0])
-    assert_allclose(v2.variance, v.variance * 2)
+    assert np.asarray(v2.value) == approx(np.asarray([0, 0, 0, 0]))
+    assert np.asarray(v2.variance) == approx(np.asarray(v.variance * 2))
 
 
 def test_view_unary(v):
     v2 = +v
-    assert_allclose(v.value, v2.value)
-    assert_allclose(v.variance, v2.variance)
+    assert np.asarray(v.value) == approx(np.asarray(v2.value))
+    assert np.asarray(v.variance) == approx(np.asarray(v2.variance))
 
     v2 = -v
-    assert_allclose(-v.value, v2.value)
-    assert_allclose(v.variance, v2.variance)
+    assert np.asarray(-v.value) == approx(np.asarray(v2.value))
+    assert np.asarray(v.variance) == approx(np.asarray(v2.variance))
 
 
 def test_view_add_same(v):
     v2 = v + v
 
-    assert_allclose(v.value * 2, v2.value)
-    assert_allclose(v.variance * 2, v2.variance)
+    assert np.asarray(v.value * 2) == approx(np.asarray(v2.value))
+    assert np.asarray(v.variance * 2) == approx(np.asarray(v2.variance))
 
     v2 = v + v[1]
-    assert_allclose(v.value + 3, v2.value)
-    assert_allclose(v.variance + 3, v2.variance)
+    assert np.asarray(v.value + 3) == approx(np.asarray(v2.value))
+    assert np.asarray(v.variance + 3) == approx(np.asarray(v2.variance))
 
     v2 = v + bh.accumulators.WeightedSum(5, 6)
-    assert_allclose(v.value + 5, v2.value)
-    assert_allclose(v.variance + 6, v2.variance)
+    assert np.asarray(v.value + 5) == approx(np.asarray(v2.value))
+    assert np.asarray(v.variance + 6) == approx(np.asarray(v2.variance))
 
     with pytest.raises(TypeError):
         v2 = v + bh.accumulators.WeightedMean(1, 2, 5, 6)
@@ -131,8 +130,8 @@ def test_view_add_same(v):
 def test_view_assign(v):
     v[...] = [[4, 1], [5, 2], [6, 1], [7, 2]]
 
-    assert_allclose(v.value, [4, 5, 6, 7])
-    assert_allclose(v.variance, [1, 2, 1, 2])
+    assert np.asarray(v.value) == approx(np.asarray([4, 5, 6, 7]))
+    assert np.asarray(v.variance) == approx(np.asarray([1, 2, 1, 2]))
 
 
 def test_view_assign_mean():
@@ -140,9 +139,9 @@ def test_view_assign_mean():
     m = h.copy().view()
 
     h[...] = [[10, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]]
-    assert_allclose(h.view().count, [10, 4, 7, 10])
-    assert_allclose(h.view().value, [2, 5, 8, 11])
-    assert_allclose(h.view().variance, [3, 6, 9, 12])
+    assert np.asarray(h.view().count) == approx(np.asarray([10, 4, 7, 10]))
+    assert np.asarray(h.view().value) == approx(np.asarray([2, 5, 8, 11]))
+    assert np.asarray(h.view().variance) == approx(np.asarray([3, 6, 9, 12]))
 
     # Make sure this really was a copy
     assert m.count[0] != 10
@@ -150,9 +149,9 @@ def test_view_assign_mean():
     # Assign directly on view
     m[...] = [[10, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]]
 
-    assert_allclose(m.count, [10, 4, 7, 10])
-    assert_allclose(m.value, [2, 5, 8, 11])
-    assert_allclose(m.variance, [3, 6, 9, 12])
+    assert np.asarray(m.count) == approx(np.asarray([10, 4, 7, 10]))
+    assert np.asarray(m.value) == approx(np.asarray([2, 5, 8, 11]))
+    assert np.asarray(m.variance) == approx(np.asarray([3, 6, 9, 12]))
     # Note: if counts <= 1, variance is undefined
 
 
@@ -163,10 +162,10 @@ def test_view_assign_wmean():
 
     h[...] = [[10, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]
 
-    assert_allclose(h.view().sum_of_weights, [10, 5, 9, 13])
-    assert_allclose(h.view().sum_of_weights_squared, [2, 6, 10, 14])
-    assert_allclose(h.view().value, [3, 7, 11, 15])
-    assert_allclose(h.view().variance, [4, 8, 12, 16])
+    assert np.asarray(h.view().sum_of_weights) == approx(np.asarray([10, 5, 9, 13]))
+    assert np.asarray(h.view().sum_of_weights_squared) == approx(np.asarray([2, 6, 10, 14]))
+    assert np.asarray(h.view().value) == approx(np.asarray([3, 7, 11, 15]))
+    assert np.asarray(h.view().variance) == approx(np.asarray([4, 8, 12, 16]))
 
     # Make sure this really was a copy
     assert w.sum_of_weights[0] != 10
@@ -174,10 +173,10 @@ def test_view_assign_wmean():
     # Assign directly on view
     w[...] = [[10, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]
 
-    assert_allclose(w.sum_of_weights, [10, 5, 9, 13])
-    assert_allclose(w.sum_of_weights_squared, [2, 6, 10, 14])
-    assert_allclose(w.value, [3, 7, 11, 15])
-    assert_allclose(w.variance, [4, 8, 12, 16])
+    assert np.asarray(w.sum_of_weights) == approx(np.asarray([10, 5, 9, 13]))
+    assert np.asarray(w.sum_of_weights_squared) == approx(np.asarray([2, 6, 10, 14]))
+    assert np.asarray(w.value) == approx(np.asarray([3, 7, 11, 15]))
+    assert np.asarray(w.variance) == approx(np.asarray([4, 8, 12, 16]))
     # Note: if sum_of_weights <= 1, variance is undefined
 
     w[0] = [9, 1, 2, 3]
