@@ -3,7 +3,6 @@ import platform
 import numpy as np
 import pytest
 from pytest import approx
-from numpy.testing import assert_allclose, assert_array_equal
 
 import boost_histogram as bh
 
