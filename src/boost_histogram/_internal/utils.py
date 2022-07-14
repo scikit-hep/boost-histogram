@@ -200,3 +200,16 @@ def zip_strict(*args: Any) -> Iterator[Tuple[Any, ...]]:
             if val is marker:
                 raise ValueError("zip() arguments are not the same length")
         yield each
+
+def compare(self: "Histogram", hist2: "Histogram", **kwargs) -> str:
+    if not np.allclose(self.view().shape, hist2.view().shape, **kwargs):
+        return False
+    if not np.allclose(self.view(), hist2.view(), **kwargs):
+        return False
+    if not np.allclose(self.to_numpy()[1], hist2.to_numpy()[1], **kwargs):
+        return False
+    if self._storage_type != hist2._storage_type:
+        return False
+    if list(self.axes) != list(hist2.axes):
+        return False
+    return True
