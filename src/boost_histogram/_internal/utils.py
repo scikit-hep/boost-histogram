@@ -213,3 +213,17 @@ def compare(self: "Histogram", hist2: "Histogram", **kwargs) -> str:
     if list(self.axes) != list(hist2.axes):
         return False
     return True
+
+"""
+def test_compare(self: "Histogram", hist2: "Histogram", **kwargs) -> str:
+    if not np.allclose(self.view().shape, hist2.view().shape, **kwargs):
+        assert self.view().shape == hist2.view().shape, 'The dimensions are not similar.'
+    if not np.allclose(self.view(), hist2.view(), **kwargs):
+        assert self.view() == hist2.view(), 'The contents are not similar.'
+    if not np.allclose(self.to_numpy()[1], hist2.to_numpy()[1], **kwargs):
+        assert self.to_numpy()[1] == hist2.to_numpy()[1], 'The edges are not similar.'
+    if self._storage_type != hist2._storage_type:
+        assert str(self._storage_type).split('.')[-1][:-2] == str(hist2._storage_type).split('.')[-1][:-2], 'The storages are not similar.'
+    if list(self.axes) != list(hist2.axes):
+        assert list(self.axes) == list(hist2.axes), 'The edges are not similar'
+"""
