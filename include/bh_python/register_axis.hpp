@@ -249,7 +249,7 @@ py::class_<A> register_axis(py::module& m, Args&&... args) {
                 };
 
                 iterator begin(ax, 0), end(ax, ax.size());
-                return py::make_iterator(begin, end);
+                return py::make_iterator(std::move(begin), std::move(end));
             },
             py::keep_alive<0, 1>())
 
