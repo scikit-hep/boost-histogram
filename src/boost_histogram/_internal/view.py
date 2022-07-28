@@ -103,84 +103,106 @@ class WeightedSumView(View):
     def __array_ufunc__(
         self, ufunc: Ufunc, method: str, *inputs: Any, **kwargs: Any
     ) -> "np.typing.NDArray[Any]":
-
-        # This one is defined for record arrays, so just use it
-        # (Doesn't get picked up the pass-through)
-        if ufunc is np.equal and method == "__call__" and len(inputs) == 2:
-            return ufunc(np.asarray(inputs[0]), np.asarray(inputs[1]), **kwargs)  # type: ignore[no-any-return]
+        # Avoid infinite recursion
+        raw_inputs = [np.asarray(x) for x in inputs]
 
         # Support unary + and -
         if (
             method == "__call__"
-            and len(inputs) == 1
+            and len(raw_inputs) == 1
             and ufunc in {np.negative, np.positive}
         ):
-            (result,) = kwargs.pop("out", [np.empty(self.shape, self.dtype)])
+            (result,) = (
+                kwargs.pop("out")
+                if "out" in kwargs
+                else [np.empty(self.shape, self.dtype)]
+            )
 
-            ufunc(inputs[0]["value"], out=result["value"], **kwargs)
-            result["variance"] = inputs[0]["variance"]
+            ufunc(raw_inputs[0]["value"], out=result["value"], **kwargs)
+            result["variance"] = raw_inputs[0]["variance"]
             return result.view(self.__class__)  # type: ignore[no-any-return]
 
-        if method == "__call__" and len(inputs) == 2:
-            input_0: "np.typing.NDArray[Any]" = np.asarray(inputs[0])
-            input_1: "np.typing.NDArray[Any]" = np.asarray(inputs[1])
-
-            (result,) = kwargs.pop("out", [np.empty(self.shape, self.dtype)])
+        if method == "__call__" and len(raw_inputs) == 2:
+            (result,) = (
+                kwargs.pop("out")
+                if "out" in kwargs
+                else [np.empty(self.shape, self.dtype)]
+            )
 
             # Addition of two views
-            if input_0.dtype == input_1.dtype:
+            if raw_inputs[0].dtype == raw_inputs[1].dtype:
                 if ufunc in {np.add, np.subtract}:
                     ufunc(
-                        input_0["value"],
-                        input_1["value"],
+                        raw_inputs[0]["value"],
+                        raw_inputs[1]["value"],
                         out=result["value"],
                         **kwargs,
                     )
                     np.add(
-                        input_0["variance"],
-                        input_1["variance"],
+                        raw_inputs[0]["variance"],
+                        raw_inputs[1]["variance"],
                         out=result["variance"],
                         **kwargs,
                     )
                     return result.view(self.__class__)  # type: ignore[no-any-return]
 
                 # If unsupported, just pass through (will return not implemented)
-                return super().__array_ufunc__(ufunc, method, *inputs, **kwargs)  # type: ignore[no-any-return]
+                return super().__array_ufunc__(ufunc, method, *raw_inputs, **kwargs)  # type: ignore[no-any-return]
 
             # View with normal value or array
             if ufunc in {np.add, np.subtract}:
-                if self.dtype == input_0.dtype:
-                    ufunc(input_0["value"], input_1, out=result["value"], **kwargs)
+                if self.dtype == raw_inputs[0].dtype:
+                    ufunc(
+                        raw_inputs[0]["value"],
+                        raw_inputs[1],
+                        out=result["value"],
+                        **kwargs,
+                    )
                     np.add(
-                        input_0["variance"],
-                        input_1**2,
+                        raw_inputs[0]["variance"],
+                        raw_inputs[1] ** 2,
                         out=result["variance"],
                         **kwargs,
                     )
                 else:
-                    ufunc(input_0, input_1["value"], out=result["value"], **kwargs)
+                    ufunc(
+                        raw_inputs[0],
+                        raw_inputs[1]["value"],
+                        out=result["value"],
+                        **kwargs,
+                    )
                     np.add(
-                        input_0**2,
-                        input_1["variance"],
+                        raw_inputs[0] ** 2,
+                        raw_inputs[1]["variance"],
                         out=result["variance"],
                         **kwargs,
                     )
                 return result.view(self.__class__)  # type: ignore[no-any-return]
 
             if ufunc in {np.multiply, np.divide, np.true_divide, np.floor_divide}:
-                if self.dtype == input_0.dtype:
-                    ufunc(input_0["value"], input_1, out=result["value"], **kwargs)
+                if self.dtype == raw_inputs[0].dtype:
                     ufunc(
-                        input_0["variance"],
-                        input_1**2,
+                        raw_inputs[0]["value"],
+                        raw_inputs[1],
+                        out=result["value"],
+                        **kwargs,
+                    )
+                    ufunc(
+                        raw_inputs[0]["variance"],
+                        raw_inputs[1] ** 2,
                         out=result["variance"],
                         **kwargs,
                     )
                 else:
-                    ufunc(input_0, input_1["value"], out=result["value"], **kwargs)
                     ufunc(
-                        input_0**2,
-                        input_1["variance"],
+                        raw_inputs[0],
+                        raw_inputs[1]["value"],
+                        out=result["value"],
+                        **kwargs,
+                    )
+                    ufunc(
+                        raw_inputs[0] ** 2,
+                        raw_inputs[1]["variance"],
                         out=result["variance"],
                         **kwargs,
                     )
@@ -188,19 +210,23 @@ class WeightedSumView(View):
                 return result.view(self.__class__)  # type: ignore[no-any-return]
 
         # ufuncs that are allowed to reduce
-        if ufunc in {np.add} and method == "reduce" and len(inputs) == 1:
+        if ufunc in {np.add} and method == "reduce" and len(raw_inputs) == 1:
             results = (ufunc.reduce(self[field], **kwargs) for field in self._FIELDS)
             return self._PARENT._make(*results)  # type: ignore[no-any-return]
 
         # ufuncs that are allowed to accumulate
-        if ufunc in {np.add} and method == "accumulate" and len(inputs) == 1:
-            (result,) = kwargs.pop("out", [np.empty(self.shape, self.dtype)])
+        if ufunc in {np.add} and method == "accumulate" and len(raw_inputs) == 1:
+            (result,) = (
+                kwargs.pop("out")
+                if "out" in kwargs
+                else [np.empty(self.shape, self.dtype)]
+            )
             for field in self._FIELDS:
                 ufunc.accumulate(self[field], out=result[field], **kwargs)
             return result.view(self.__class__)  # type: ignore[no-any-return]
 
-        # If unsupported, just pass through (will return not implemented)
-        return super().__array_ufunc__(ufunc, method, *inputs, **kwargs)  # type: ignore[no-any-return]
+        # If unsupported, just pass through (will return NotImplemented or things like == will work but not return subclasses)
+        return super().__array_ufunc__(ufunc, method, *raw_inputs, **kwargs)  # type: ignore[no-any-return]
 
 
 @fields(
