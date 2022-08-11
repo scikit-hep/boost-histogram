@@ -105,7 +105,7 @@ jobs:
         CIBW_BUILD: cp38-win_amd64 cp310-manylinux_i686 cp37-macosx_x86_64
         CIBW_BUILD_VERBOSITY: 1
 
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         path: wheelhouse/*
 
