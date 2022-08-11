@@ -75,7 +75,7 @@ jobs:
       with:
         platforms: all
 
-    - uses: pypa/cibuildwheel@v2.8.1
+    - uses: pypa/cibuildwheel@v2.9.0
       env:
         CIBW_BUILD: cp${{ matrix.python }}-manylinux_*
         CIBW_ARCHS: ${{ matrix.arch }}
@@ -98,12 +98,12 @@ jobs:
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
         arch: [auto64]
-        build: ["*"]
+        build: ["?p3{?,10}-*"]
 
         include:
           - os: ubuntu-latest
             arch: auto32
-            build: "*"
+            build: "?p3{?,10}-*"
 
           - os: ubuntu-latest
             type: ManyLinux1
@@ -114,11 +114,11 @@ jobs:
 
           - os: macos-latest
             arch: universal2
-            build: "*"
+            build: "?p3{?,10}-*"
 
           - os: windows-latest
             arch: auto32
-            build: "*"
+            build: "?p3{?,10}-*"
 
     steps:
     - uses: actions/checkout@v2
@@ -131,7 +131,7 @@ jobs:
       shell: bash
       run: echo "SETUPTOOLS_SCM_PRETEND_VERSION=${{ github.event.inputs.overrideVersion }}" >> $GITHUB_ENV
 
-    - uses: pypa/cibuildwheel@v2.8.1
+    - uses: pypa/cibuildwheel@v2.9.0
       env:
         CIBW_BUILD: ${{ matrix.build }}
         CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.CIBW_MANYLINUX_I686_IMAGE }}

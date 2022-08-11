@@ -56,7 +56,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.6", "3.9", "3.11-dev", "pypy3"]
+        python-version: ["3.6", "3.9", "3.10", "pypy3"]
         include:
         - python-version: "3.8"
           cmake-extras: "-DCMAKE_CXX_STANDARD=17"
@@ -100,7 +100,7 @@ jobs:
         submodules: true
         fetch-depth: 0
 
-    - uses: pypa/cibuildwheel@v2.8.1
+    - uses: pypa/cibuildwheel@v2.9.0
       env:
         CIBW_BUILD: cp38-win_amd64 cp310-manylinux_i686 cp37-macosx_x86_64
         CIBW_BUILD_VERBOSITY: 1
