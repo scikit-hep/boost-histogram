@@ -98,12 +98,12 @@ jobs:
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
         arch: [auto64]
-        build: ["*"]
+        build: ["?p3{?,10}-*"]
 
         include:
           - os: ubuntu-latest
             arch: auto32
-            build: "*"
+            build: "?p3{?,10}-*"
 
           - os: ubuntu-latest
             type: ManyLinux1
@@ -114,11 +114,11 @@ jobs:
 
           - os: macos-latest
             arch: universal2
-            build: "*"
+            build: "?p3{?,10}-*"
 
           - os: windows-latest
             arch: auto32
-            build: "*"
+            build: "?p3{?,10}-*"
 
     steps:
     - uses: actions/checkout@v2
