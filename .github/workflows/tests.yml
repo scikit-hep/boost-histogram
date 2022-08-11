@@ -27,7 +27,7 @@ jobs:
       run: apt-get update && apt-get install -y python3-dev python3-pip
 
     - name: Install extra requirements
-      run: python3 -m pip install setuptools_scm[toml]
+      run: python3 -m pip install setuptools_scm
 
     - name: Configure
       run: cmake -S . -B build -DCMAKE_CXX_CLANG_TIDY="$(which clang-tidy);--warnings-as-errors=*"
@@ -56,7 +56,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.6", "3.9", "3.10", "pypy3"]
+        python-version: ["3.6", "3.9", "3.11-dev", "pypy3"]
         include:
         - python-version: "3.8"
           cmake-extras: "-DCMAKE_CXX_STANDARD=17"
