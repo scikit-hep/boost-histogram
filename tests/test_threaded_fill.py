@@ -82,7 +82,9 @@ def test_threaded_weight_storage(threads):
     hist_2.fill(x, y, weight=weights, threads=threads)
 
     assert np.asarray(hist_1.view().value) == approx(np.asarray(hist_2.view().value))
-    assert np.asarray(hist_1.view().variance) == approx(np.asarray(hist_2.view().variance))
+    assert np.asarray(hist_1.view().variance) == approx(
+        np.asarray(hist_2.view().variance)
+    )
 
 
 def test_no_profile():

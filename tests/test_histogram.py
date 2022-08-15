@@ -163,7 +163,9 @@ def test_setting(count_single_storage):
     assert h[9] == 5
     assert h[bh.overflow] == 6
 
-    assert np.asarray(h.view(flow=True)) == approx(np.asarray([1, 2, 3, 0, 0, 0, 4, 0, 0, 0, 5, 6]))
+    assert np.asarray(h.view(flow=True)) == approx(
+        np.asarray([1, 2, 3, 0, 0, 0, 4, 0, 0, 0, 5, 6])
+    )
 
 
 def test_growth():

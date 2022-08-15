@@ -163,7 +163,9 @@ def test_view_assign_wmean():
     h[...] = [[10, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]
 
     assert np.asarray(h.view().sum_of_weights) == approx(np.asarray([10, 5, 9, 13]))
-    assert np.asarray(h.view().sum_of_weights_squared) == approx(np.asarray([2, 6, 10, 14]))
+    assert np.asarray(h.view().sum_of_weights_squared) == approx(
+        np.asarray([2, 6, 10, 14])
+    )
     assert np.asarray(h.view().value) == approx(np.asarray([3, 7, 11, 15]))
     assert np.asarray(h.view().variance) == approx(np.asarray([4, 8, 12, 16]))
 

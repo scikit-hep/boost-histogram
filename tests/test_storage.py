@@ -122,7 +122,9 @@ def test_setting_profile():
 
     assert np.asarray(a.view().value) == approx(np.asarray(b.view()["value"]))
     assert np.asarray(a.view().count) == approx(np.asarray(b.view()["count"]))
-    assert np.asarray(a.view()._sum_of_deltas_squared) == approx(np.asarray(b.view()["_sum_of_deltas_squared"]))
+    assert np.asarray(a.view()._sum_of_deltas_squared) == approx(
+        np.asarray(b.view()["_sum_of_deltas_squared"])
+    )
 
 
 def test_setting_weighted_profile():
@@ -193,9 +195,17 @@ def test_setting_weighted_profile():
     )
 
     assert np.asarray(a.view().value) == approx(np.asarray(b.view()["value"]))
-    assert np.asarray(a.view().sum_of_weights) == approx(np.asarray(b.view()["sum_of_weights"]))
-    assert np.asarray(a.view().sum_of_weights_squared) == approx(np.asarray(b.view()["sum_of_weights_squared"]))
-    assert np.asarray(a.view()._sum_of_weighted_deltas_squared) == approx(np.asarray(b.view()["_sum_of_weighted_deltas_squared"],))
+    assert np.asarray(a.view().sum_of_weights) == approx(
+        np.asarray(b.view()["sum_of_weights"])
+    )
+    assert np.asarray(a.view().sum_of_weights_squared) == approx(
+        np.asarray(b.view()["sum_of_weights_squared"])
+    )
+    assert np.asarray(a.view()._sum_of_weighted_deltas_squared) == approx(
+        np.asarray(
+            b.view()["_sum_of_weighted_deltas_squared"],
+        )
+    )
 
 
 # Issue #486

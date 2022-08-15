@@ -256,7 +256,7 @@ class TestRegular(Axis):
         assert a.bin(-1)[0] == -np.inf
         assert a.bin(2)[1] == np.inf
 
-        assert  a[bh.underflow] == approx(a.bin(-1))
+        assert a[bh.underflow] == approx(a.bin(-1))
         assert a[bh.overflow] == approx(a.bin(2))
 
         with pytest.raises(IndexError):
