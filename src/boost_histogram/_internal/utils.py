@@ -201,6 +201,7 @@ def zip_strict(*args: Any) -> Iterator[Tuple[Any, ...]]:
                 raise ValueError("zip() arguments are not the same length")
         yield each
 
+
 def compare(self: "Histogram", hist2: "Histogram", **kwargs) -> str:
     if not np.allclose(self.view().shape, hist2.view().shape, **kwargs):
         return False
@@ -213,6 +214,7 @@ def compare(self: "Histogram", hist2: "Histogram", **kwargs) -> str:
     if list(self.axes) != list(hist2.axes):
         return False
     return True
+
 
 """
 def test_compare(self: "Histogram", hist2: "Histogram", **kwargs) -> str:
