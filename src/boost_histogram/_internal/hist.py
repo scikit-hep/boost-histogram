@@ -24,7 +24,7 @@ from typing import (
 )
 
 import numpy as np
-import pytest
+
 import boost_histogram
 from boost_histogram import _core
 
@@ -84,10 +84,21 @@ def _fill_cast(
 
     return value
 
+
 def meanStorageSampleCheck(sample):
-    assert type(sample)!=type(None), 'Sample key-argument (sample=) needs to be provided.'
-    assert (isinstance(sample, (collections.abc.Sequence, np.ndarray)) and not isinstance(sample, (str))), f'Sample key-argument needs to be a sequence, {sample.__class__.__name__} given.'
-    assert (np.array(sample).ndim)==1, f'Sample key-argument needs to be 1 dimensional, {np.array(sample).ndim} given.'
+    assert type(sample) != type(
+        None
+    ), "Sample key-argument (sample=) needs to be provided."
+    assert isinstance(
+        sample, (collections.abc.Sequence, np.ndarray)
+    ) and not isinstance(
+        sample, (str)
+    ), f"Sample key-argument needs to be a sequence, {sample.__class__.__name__} given."
+    assert (
+        np.array(sample).ndim
+    ) == 1, (
+        f"Sample key-argument needs to be 1 dimensional, {np.array(sample).ndim} given."
+    )
 
 
 def _arg_shortcut(item: Union[Tuple[int, float, float], Axis, CppAxis]) -> CppAxis:
@@ -494,12 +505,9 @@ class Histogram:
             available threads (usually two per core).
         """
 
-        if (
-            self._hist._storage_type
-            in {
-                _core.storage.mean,
-            }
-        ):
+        if self._hist._storage_type in {
+            _core.storage.mean,
+        }:
             meanStorageSampleCheck(sample)
 
         if (
