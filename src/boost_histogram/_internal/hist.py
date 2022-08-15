@@ -361,7 +361,12 @@ class Histogram:
     def __array__(self) -> "np.typing.NDArray[Any]":
         return self.view(False)
 
-    def __array_function__(self, ufunc: typing.Any, *inputs: typing.Any, **kwargs: typing.Any, ) -> typing.Any:
+    def __array_function__(
+        self,
+        ufunc: typing.Any,
+        *inputs: typing.Any,
+        **kwargs: typing.Any,
+    ) -> typing.Any:
         if ufunc is np.allclose:
             return inputs[1][0].allclose(inputs[1][1], **kwargs)
         return NotImplemented
