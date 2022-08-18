@@ -297,5 +297,5 @@ def test_empty_axis_histogram(storage):
         bh.axis.StrCategory([], growth=True),
         storage=storage(),
     )
-    assert h2d.sum() == h2d._storage_type.accumulator()
-    assert h2d.sum(flow=True) == h2d._storage_type.accumulator()
+    assert h2d.sum() == h2d.storage_type.accumulator()
+    assert h2d.sum(flow=True) == h2d.storage_type.accumulator()
