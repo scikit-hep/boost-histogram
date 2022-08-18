@@ -86,17 +86,13 @@ def _fill_cast(
 
 
 def meanStorageSampleCheck(sample: Optional[ArrayLike]) -> None:
-    assert sample is not None, "Sample key-argument (sample=) needs to be provided."
-    assert isinstance(
-        sample, (collections.abc.Sequence, np.ndarray)
-    ) and not isinstance(
-        sample, (str)
-    ), f"Sample key-argument needs to be a sequence, {sample.__class__.__name__} given."
-    assert (
-        np.array(sample).ndim
-    ) == 1, (
-        f"Sample key-argument needs to be 1 dimensional, {np.array(sample).ndim} given."
-    )
+    if sample is None:
+        raise TypeError("Sample key-argument (sample=) needs to be provided.")
+    seqs = (collections.abc.Sequence, np.ndarray)
+    if isinstance(sample, str) and not isinstance(sample, seqs):
+        raise ValueError(f"Sample key-argument needs to be a sequence, {sample.__class__.__name__} given.")
+    if np.array(sample).ndim != 1:
+        raise ValueError(f"Sample key-argument needs to be 1 dimensional, {np.array(sample).ndim} given.")
 
 
 def _arg_shortcut(item: Union[Tuple[int, float, float], Axis, CppAxis]) -> CppAxis:
