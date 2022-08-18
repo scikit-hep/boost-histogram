@@ -772,17 +772,10 @@ class Histogram:
 
     def reset(self: H) -> H:
         """
-        Reset/Clear bin counters to default values (zero).
+        Clear the bin counters.
         """
         self._hist.reset()
         return self
-
-    # def clear(self: H) -> H:
-    # """
-    # Reset/Clear bin counters to default values (zero).
-    # """
-    # self._hist.reset()
-    # return self
 
     def empty(self, flow: bool = False) -> bool:
         """
