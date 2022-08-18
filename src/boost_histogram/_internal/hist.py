@@ -85,10 +85,8 @@ def _fill_cast(
     return value
 
 
-def meanStorageSampleCheck(sample):
-    assert type(sample) != type(
-        None
-    ), "Sample key-argument (sample=) needs to be provided."
+def meanStorageSampleCheck(sample: Optional[ArrayLike]) -> None:
+    assert sample is not None, "Sample key-argument (sample=) needs to be provided."
     assert isinstance(
         sample, (collections.abc.Sequence, np.ndarray)
     ) and not isinstance(
