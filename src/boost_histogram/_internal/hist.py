@@ -772,7 +772,7 @@ class Histogram:
 
     def reset(self: H) -> H:
         """
-        Reset bin counters to default values.
+        Clear the bin counters.
         """
         self._hist.reset()
         return self
