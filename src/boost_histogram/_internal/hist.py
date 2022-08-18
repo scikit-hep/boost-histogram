@@ -89,14 +89,12 @@ def meanStorageSampleCheck(sample: Optional[ArrayLike]) -> None:
     if sample is None:
         raise TypeError("Sample key-argument (sample=) needs to be provided.")
     seqs = (collections.abc.Sequence, np.ndarray)
+    msg1 = f"Sample key-argument needs to be a sequence, {sample.__class__.__name__} given."
     if isinstance(sample, str) and not isinstance(sample, seqs):
-        raise ValueError(
-            f"Sample key-argument needs to be a sequence, {sample.__class__.__name__} given."
-        )
+        raise ValueError(msg1)
+    msg2 = f"Sample key-argument needs to be 1 dimensional, {np.array(sample).ndim} given."
     if np.array(sample).ndim != 1:
-        raise ValueError(
-            f"Sample key-argument needs to be 1 dimensional, {np.array(sample).ndim} given."
-        )
+        raise ValueError(msg2)
 
 
 def _arg_shortcut(item: Union[Tuple[int, float, float], Axis, CppAxis]) -> CppAxis:
