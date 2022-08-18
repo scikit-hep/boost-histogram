@@ -132,7 +132,7 @@ histograms can be plotted via any compatible library, such as [mplhep][].
   * `.values(flow=False)`: Get a view on the values (counts or means, depending on storage)
   * `.variances(flow=False)`: Get the variances if available
   * `.counts(flow=False)`: Get the effective counts for all storage types
-  * `.reset() and .clear()`: Set counters to 0 (Note: It doesn't clear growing axis)
+  * `.reset()`: Set counters to 0 (growing axis remain the same size)
   * `.empty(flow=False)`: Check to see if the histogram is empty (can check flow bins too if asked)
   * `.copy(deep=False)`: Make a copy of a histogram
   * `.axes`: Get the axes as a tuple-like (all properties of axes are available too)
