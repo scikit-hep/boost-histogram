@@ -231,7 +231,7 @@ class Histogram:
 
         # Check all available histograms, and if the storage matches, return that one
         for h in _histograms:
-            if isinstance(storage, h.storage_type):
+            if isinstance(storage, h._storage_type):
                 self._hist = h(axes, storage)  # type: ignore[unreachable]
                 self.axes = self._generate_axes_()
                 return
