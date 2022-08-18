@@ -11,7 +11,7 @@ T = TypeVar("T", bound="_BaseHistogram")
 _axes_limit: int
 
 class _BaseHistogram:
-    storage_type: ClassVar[Type[storage._BaseStorage]]
+    _storage_type: ClassVar[Type[storage._BaseStorage]]
     # Note that storage has a default simply because subclasses always handle it.
     def __init__(
         self, axis: list[axis._BaseAxis], storage: storage._BaseStorage = ...
