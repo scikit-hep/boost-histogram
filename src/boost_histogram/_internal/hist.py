@@ -337,6 +337,17 @@ class Histogram:
         """
         return self._hist.rank()
 
+    def compare(self, hist2: "Histogram") -> str:
+        if not np.allclose(self.view().shape, hist2.view().shape):
+            return f"The histogram dimensions [{self.view().shape} and {hist2.view().shape}] are not equal."
+        if not np.allclose(self.view(), hist2.view()):
+            return f"The histogram contents :\n {self.view()} \nand\n {hist2.view()} \nare not equal."
+        if self._storage_type != hist2._storage_type:
+            return f"The storage types ({str(self._storage_type).rsplit('.', maxsplit=1)[-1][:-2]} and {str(hist2._storage_type).rsplit('.', maxsplit=1)[-1][:-2]}) are not equal."
+        if list(self.axes) != list(hist2.axes):
+            return f"The axes :\n {list(self.axes)} \nand\n {list(hist2.axes)} \nare not equal."
+        return ""
+
     def view(
         self, flow: bool = False
     ) -> Union["np.typing.NDArray[Any]", WeightedSumView, WeightedMeanView, MeanView]:
