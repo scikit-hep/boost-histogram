@@ -85,7 +85,7 @@ def _fill_cast(
     return value
 
 
-def meanStorageSampleCheck(sample: Optional[ArrayLike]) -> None:
+def mean_storage_sample_check(sample: Optional[ArrayLike]) -> None:
     if sample is None:
         raise TypeError("Sample key-argument (sample=) needs to be provided.")
     seqs = (collections.abc.Sequence, np.ndarray)
@@ -502,10 +502,8 @@ class Histogram:
             available threads (usually two per core).
         """
 
-        if self._hist._storage_type in {
-            _core.storage.mean,
-        }:
-            meanStorageSampleCheck(sample)
+        if self._hist._storage_type is _core.storage.mean:
+            mean_storage_sample_check(sample)
 
         if (
             self._hist._storage_type
