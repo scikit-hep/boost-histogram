@@ -594,8 +594,11 @@ class Histogram:
         return cast(self, self._hist.axis(i), Axis)
 
     @property
-    def _storage_type(self) -> Type[Storage]:
+    def storage_type(self) -> Type[Storage]:
         return cast(self, self._hist._storage_type, Storage)  # type: ignore[return-value]
+
+    # Backward compat
+    _storage_type = storage_type
 
     def _reduce(self: H, *args: Any) -> H:
         return self._new_hist(self._hist.reduce(*args))
@@ -650,7 +653,7 @@ class Histogram:
         sep = "," if len(self.axes) > 0 else ""
         ret = f"{self.__class__.__name__}({first_newline}"
         ret += f",{newline}".join(repr(ax) for ax in self.axes)
-        ret += f"{sep}{storage_newline}storage={self._storage_type()}"  # pylint: disable=not-callable
+        ret += f"{sep}{storage_newline}storage={self.storage_type()}"  # pylint: disable=not-callable
         ret += ")"
         outer = self.sum(flow=True)
         if outer:
@@ -789,7 +792,7 @@ class Histogram:
         Compute the sum over the histogram bins (optionally including the flow bins).
         """
         if any(x == 0 for x in (self.axes.extent if flow else self.axes.size)):
-            return self._storage_type.accumulator()
+            return self.storage_type.accumulator()
 
         return self._hist.sum(flow)  # type: ignore[no-any-return]
 
