@@ -596,7 +596,7 @@ class Histogram:
     @property
     def storage_type(self) -> Type[Storage]:
         return cast(self, self._hist._storage_type, Storage)  # type: ignore[return-value]
-        
+
     # Backward compat
     _storage_type = storage_type
 
