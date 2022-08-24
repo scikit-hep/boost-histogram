@@ -125,6 +125,7 @@ histograms can be plotted via any compatible library, such as [mplhep][].
   * `*=`: Multiply by a scaler (not all storages) (`hist * scalar` and `scalar * hist` supported too)
   * `/=`: Divide by a scaler (not all storages) (`hist / scalar` supported too)
   * `.kind`: Either `bh.Kind.COUNT` or `bh.Kind.MEAN`, depending on storage
+  * `.storage_type`: Fetch the histogram storage type
   * `.sum(flow=False)`: The total count of all bins
   * `.project(ax1, ax2, ...)`: Project down to listed axis (numbers). Can also reorder axes.
   * `.to_numpy(flow=False, view=False)`: Convert to a NumPy style tuple (with or without under/overflow bins)
@@ -132,7 +133,7 @@ histograms can be plotted via any compatible library, such as [mplhep][].
   * `.values(flow=False)`: Get a view on the values (counts or means, depending on storage)
   * `.variances(flow=False)`: Get the variances if available
   * `.counts(flow=False)`: Get the effective counts for all storage types
-  * `.reset()`: Set counters to 0
+  * `.reset()`: Set counters to 0 (growing axis remain the same size)
   * `.empty(flow=False)`: Check to see if the histogram is empty (can check flow bins too if asked)
   * `.copy(deep=False)`: Make a copy of a histogram
   * `.axes`: Get the axes as a tuple-like (all properties of axes are available too)
@@ -268,6 +269,7 @@ We would like to acknowledge the contributors that made this project possible ([
     <td align="center"><a href="https://keybase.io/kgizdov"><img src="https://avatars.githubusercontent.com/u/3164953?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Konstantin Gizdov</b></sub></a><br /><a href="#platform-kgizdov" title="Packaging/porting to new platform">📦</a> <a href="https://github.com/scikit-hep/boost-histogram/issues?q=author%3Akgizdov" title="Bug reports">🐛</a></td>
     <td align="center"><a href="http://theoryandpractice.org"><img src="https://avatars.githubusercontent.com/u/4458890?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Kyle Cranmer</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/commits?author=cranmer" title="Documentation">📖</a></td>
     <td align="center"><a href="http://amangoel.me"><img src="https://avatars.githubusercontent.com/u/10528392?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Aman Goel</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/commits?author=amangoel185" title="Documentation">📖</a> <a href="https://github.com/scikit-hep/boost-histogram/commits?author=amangoel185" title="Code">💻</a></td>
+    <td align="center"><a href="http://jay-gohil.me"><img src="https://avatars.githubusercontent.com/u/59703162?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Jay Gohil</b></sub></a><br /><a href="https://github.com/scikit-hep/boost-histogram/commits?author=gohil-jay" title="Documentation">📖</a></td>
   </tr>
 </table>
 

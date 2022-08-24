@@ -32,7 +32,7 @@ jobs:
     name: Build SDist
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         fetch-depth: 0
         submodules: true
@@ -47,7 +47,7 @@ jobs:
     - name: Check metadata
       run: pipx run twine check --strict dist/*
 
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         path: dist/*.tar.gz
 
@@ -61,7 +61,7 @@ jobs:
         arch: [aarch64]
     steps:
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         fetch-depth: 0
         submodules: true
@@ -75,7 +75,7 @@ jobs:
       with:
         platforms: all
 
-    - uses: pypa/cibuildwheel@v2.8.0
+    - uses: pypa/cibuildwheel@v2.9.0
       env:
         CIBW_BUILD: cp${{ matrix.python }}-manylinux_*
         CIBW_ARCHS: ${{ matrix.arch }}
@@ -85,7 +85,7 @@ jobs:
       shell: bash
 
     - name: Upload wheels
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         path: wheelhouse/*.whl
 
@@ -96,14 +96,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
+        os: [windows-2019, macos-latest, ubuntu-latest]
         arch: [auto64]
-        build: ["*"]
+        build: ["?p3{?,10}-*"]
 
         include:
           - os: ubuntu-latest
             arch: auto32
-            build: "*"
+            build: "?p3{?,10}-*"
 
           - os: ubuntu-latest
             type: ManyLinux1
@@ -114,14 +114,14 @@ jobs:
 
           - os: macos-latest
             arch: universal2
-            build: "*"
+            build: "?p3{?,10}-*"
 
-          - os: windows-latest
+          - os: windows-2019
             arch: auto32
-            build: "*"
+            build: "?p3{?,10}-*"
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         fetch-depth: 0
         submodules: true
@@ -131,7 +131,7 @@ jobs:
       shell: bash
       run: echo "SETUPTOOLS_SCM_PRETEND_VERSION=${{ github.event.inputs.overrideVersion }}" >> $GITHUB_ENV
 
-    - uses: pypa/cibuildwheel@v2.8.0
+    - uses: pypa/cibuildwheel@v2.9.0
       env:
         CIBW_BUILD: ${{ matrix.build }}
         CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.CIBW_MANYLINUX_I686_IMAGE }}
@@ -143,7 +143,7 @@ jobs:
       shell: bash
 
     - name: Upload wheels
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         path: wheelhouse/*.whl
 
@@ -154,7 +154,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/download-artifact@v2
+    - uses: actions/download-artifact@v3
       with:
         name: artifact
         path: dist
@@ -162,7 +162,7 @@ jobs:
     - name: List all files
       run: ls -lh dist
 
-    - uses: pypa/gh-action-pypi-publish@v1.5.0
+    - uses: pypa/gh-action-pypi-publish@v1.5.1
       if: github.event_name == 'release' && github.event.action == 'published'
       with:
         password: ${{ secrets.pypi_password }}

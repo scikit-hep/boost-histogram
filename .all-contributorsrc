@@ -168,6 +168,15 @@
         "doc",
         "code"
       ]
+    },
+    {
+      "login": "gohil-jay",
+      "name": "Jay Gohil",
+      "avatar_url": "https://avatars.githubusercontent.com/u/59703162?v=4",
+      "profile": "http://jay-gohil.me",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,

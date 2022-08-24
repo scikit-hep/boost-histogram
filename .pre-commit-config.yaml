@@ -29,7 +29,7 @@ repos:
     additional_dependencies: [pyyaml]
 
 - repo: https://github.com/asottile/pyupgrade
-  rev: v2.34.0
+  rev: v2.37.3
   hooks:
   - id: pyupgrade
     args: [--py36-plus]
@@ -40,18 +40,19 @@ repos:
   - id: isort
 
 - repo: https://github.com/asottile/setup-cfg-fmt
-  rev: v1.20.1
+  rev: v2.0.0
   hooks:
   - id: setup-cfg-fmt
+    args: [--include-version-classifiers, --max-py-version=3.10]
 
 - repo: https://github.com/hadialqattan/pycln
-  rev: v1.3.5
+  rev: v2.1.1
   hooks:
   - id: pycln
     args: [--all]
 
 - repo: https://github.com/asottile/yesqa
-  rev: v1.3.0
+  rev: v1.4.0
   hooks:
   - id: yesqa
     additional_dependencies: &flake8-dependencies
@@ -59,14 +60,14 @@ repos:
     - flake8-print
 
 - repo: https://github.com/pycqa/flake8
-  rev: 4.0.1
+  rev: 5.0.4
   hooks:
   - id: flake8
     exclude: docs/conf.py
     additional_dependencies: *flake8-dependencies
 
 - repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v0.961
+  rev: v0.971
   hooks:
   - id: mypy
     files: ^src

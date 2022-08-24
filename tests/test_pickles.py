@@ -21,11 +21,11 @@ def test_read_pickle(version):
     h2 = d["h2"]
     h3 = d["h3"]
 
-    assert h1._storage_type == (
+    assert h1.storage_type == (
         bh.storage.Double if version[0] == "0" else bh.storage.Int64
     )
-    assert h2._storage_type == bh.storage.Weight
-    assert h3._storage_type == bh.storage.Double
+    assert h2.storage_type == bh.storage.Weight
+    assert h3.storage_type == bh.storage.Double
 
     assert h1[bh.loc(-5)] == 1
     assert h1[bh.loc(1)] == 2
