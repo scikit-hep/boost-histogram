@@ -598,7 +598,10 @@ class Histogram:
         return cast(self, self._hist._storage_type, Storage)  # type: ignore[return-value]
 
     def _storage_type(self) -> Type[Storage]:
-        warnings.warn("Accessing storage type has changed from _storage_type to storage_type, and will be removed in future.", DeprecationWarning)
+        warnings.warn(
+            "Accessing storage type has changed from _storage_type to storage_type, and will be removed in future.",
+            DeprecationWarning,
+        )
         return cast(self, self._hist._storage_type, Storage)  # type: ignore[return-value]
 
     def _reduce(self: H, *args: Any) -> H:
