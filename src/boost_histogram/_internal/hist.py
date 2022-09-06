@@ -85,6 +85,19 @@ def _fill_cast(
     return value
 
 
+def mean_storage_sample_check(sample: Optional[ArrayLike]) -> None:
+    if sample is None:
+        raise TypeError("Sample key-argument (sample=) needs to be provided.")
+    seqs = (collections.abc.Sequence, np.ndarray)
+    msg1 = f"Sample key-argument needs to be a sequence, {sample.__class__.__name__} given."
+    if isinstance(sample, str) and not isinstance(sample, seqs):
+        raise ValueError(msg1)
+    sample_dim = np.array(sample).ndim
+    msg2 = f"Sample key-argument needs to be 1 dimensional, {sample_dim} given."
+    if sample_dim != 1:
+        raise ValueError(msg2)
+
+
 def _arg_shortcut(item: Union[Tuple[int, float, float], Axis, CppAxis]) -> CppAxis:
     if isinstance(item, tuple) and len(item) == 3:
         msg = "Developer shortcut: will be removed in a future version"
@@ -488,6 +501,9 @@ class Histogram:
             threaded filling.  Using 0 will automatically pick the number of
             available threads (usually two per core).
         """
+
+        if self._hist._storage_type is _core.storage.mean:
+            mean_storage_sample_check(sample)
 
         if (
             self._hist._storage_type
