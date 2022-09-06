@@ -701,7 +701,7 @@ class IntCategory(BaseCategory, family=boost_histogram):
 
         Parameters
         ----------
-        categories : Iteratable[int]
+        categories : Iterable[int]
             The bin values, either ints or strings.
         metadata : object
             Any Python object to attach to the axis, like a label.
