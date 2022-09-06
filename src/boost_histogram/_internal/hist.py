@@ -602,6 +602,7 @@ class Histogram:
         warnings.warn(
             "Accessing storage type has changed from _storage_type to storage_type, and will be removed in future.",
             DeprecationWarning,
+            stacklevel=2,
         )
         return cast(self, self._hist._storage_type, Storage)  # type: ignore[return-value]
 
