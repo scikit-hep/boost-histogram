@@ -84,7 +84,7 @@ repos:
   hooks:
   - id: codespell
     args: ["-L", "hist,nd,circularly,ba"]
-    exclude: ^(notebooks/xarray.ipynb|notebooks/BoostHistogramHandsOn.ipynb)$
+    exclude: ^(notebooks/xarray.ipynb|notebooks/BoostHistogramHandsOn.ipynb|.*\.svg)$
 
 - repo: local
   hooks:
