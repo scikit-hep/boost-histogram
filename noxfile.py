@@ -29,14 +29,8 @@ def hist(session: nox.Session) -> None:
     session.chdir(tmpdir)
     session.run("git", "clone", "https://github.com/scikit-hep/hist", external=True)
     session.chdir("hist")
-    with open("setup.cfg", encoding="utf-8") as f:
-        lines = f.readlines()
-    with open("setup.cfg", "w", encoding="utf-8") as f:
-        for line in lines:
-            if "boost-histogram" not in line:
-                f.write(line)
-
     session.install(".[test,plot]")
+    session.run("pip", "list")
     session.run("pytest", *session.posargs)
 
 
