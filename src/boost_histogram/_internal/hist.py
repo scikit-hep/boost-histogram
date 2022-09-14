@@ -1,6 +1,7 @@
 import collections.abc
 import copy
 import logging
+import sys
 import threading
 import typing
 import warnings
@@ -100,8 +101,8 @@ def mean_storage_sample_check(sample: Optional[ArrayLike]) -> None:
 
 def _arg_shortcut(item: Union[Tuple[int, float, float], Axis, CppAxis]) -> CppAxis:
     if isinstance(item, tuple) and len(item) == 3:
-        msg = "Developer shortcut: will be removed in a future version"
-        warnings.warn(msg, FutureWarning)
+        msg = "Using () directly in constructor is a developer shortcut and will be removed in a future version"
+        warnings.warn(msg, FutureWarning, stacklevel=4)
         return _core.axis.regular_uoflow(item[0], item[1], item[2])  # type: ignore[return-value]
 
     if isinstance(item, Axis):
@@ -615,11 +616,12 @@ class Histogram:
 
     @property
     def _storage_type(self) -> Type[Storage]:
-        warnings.warn(
-            "Accessing storage type has changed from _storage_type to storage_type, and will be removed in future.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
+        if sys.version_info >= (3, 7):
+            warnings.warn(
+                "Accessing storage type has changed from _storage_type to storage_type, and will be removed in future.",
+                PendingDeprecationWarning,
+                stacklevel=2,
+            )
         return cast(self, self._hist._storage_type, Storage)  # type: ignore[return-value]
 
     def _reduce(self: H, *args: Any) -> H:
