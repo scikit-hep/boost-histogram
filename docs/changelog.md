@@ -12,10 +12,10 @@
 
 ### Version 1.3.2
 
-* Added `storage_type` operator and `storage_type()` function [#781][], with pending deprecation for _storage_type [#786][] [#790][]
+* Added `storage_type` operator and `storage_type()` function [#781][], with pending deprecation for `_storage_type` [#786][] [#790][]
 * Better errors generated for missing or incorrect sample to mean storage [#782][]
-* Explicit reset() documentation [#783][]
-* Added Python 3.11 test wheels [#789][]
+* Explicit `reset()` documentation [#783][]
+* Added Python 3.11 wheels [#789][]
 * Include PyPy 3.9 binary wheels [#730][]
 * Patch broken sum with fully empty (0 bin) axis [#718][]
 * Fix zero range `bh.numpy.histogram` to match `numpy.histogram` behavior [#721][]
