@@ -12,18 +12,32 @@
 
 ### Version 1.3.2
 
-* Added `storage_type` operator and `storage_type()` function [#781][], with pending deprecation for `_storage_type` [#786][] [#790][]
-* Better errors generated for missing or incorrect sample to mean storage [#782][]
-* Explicit `reset()` documentation [#783][]
-* Added Python 3.11 wheels [#789][]
-* Include PyPy 3.9 binary wheels [#730][]
-* Patch broken sum with fully empty (0 bin) axis [#718][]
-* Fix zero range `bh.numpy.histogram` to match `numpy.histogram` behavior [#721][]
+#### Changes
+
+* Added `storage_type` operator and `storage_type()` function [#781][], with pending deprecation for `_storage_type`. [#786][] [#790][]
+* Better errors generated for missing or incorrect sample to mean storage. [#782][]
+
+#### Bug fixes
+
+* Patch broken sum with fully empty (0 bin) axis. [#718][]
+* Fix zero range `bh.numpy.histogram` to match `numpy.histogram` behavior. [#721][]
+* Avoid triggering `__init__` when copying (better support for subclasses with custom init's). [#759][]
+
+#### Backend and docs
+
+* Minor optimizations for UFuncs. [#771][]
+* Added Python 3.11 wheels. [#789][]
+* Include PyPy 3.9 binary wheels. [#730][]
+* Using pybind11 2.10 [#767][]
+* Explicit `reset()` documentation. [#783][]
 * Minor cleanup and further removal of a little Python 2 back-compat code.
 
 [#718]: https://github.com/scikit-hep/boost-histogram/pull/718
 [#721]: https://github.com/scikit-hep/boost-histogram/pull/721
 [#730]: https://github.com/scikit-hep/boost-histogram/pull/730
+[#759]: https://github.com/scikit-hep/boost-histogram/pull/759
+[#767]: https://github.com/scikit-hep/boost-histogram/pull/767
+[#771]: https://github.com/scikit-hep/boost-histogram/pull/771
 [#781]: https://github.com/scikit-hep/boost-histogram/pull/781
 [#782]: https://github.com/scikit-hep/boost-histogram/pull/782
 [#783]: https://github.com/scikit-hep/boost-histogram/pull/783
