@@ -12,6 +12,10 @@
 
 ### Version 1.3.2
 
+* Added `storage_type` operator and `storage_type()` function [#781][], with pending deprecation for _storage_type [#786][] [#790][]
+* Better errors generated for missing or incorrect sample to mean storage [#782][]
+* Explicit reset() documentation [#783][]
+* Added Python 3.11 test wheels [#789][]
 * Include PyPy 3.9 binary wheels [#730][]
 * Patch broken sum with fully empty (0 bin) axis [#718][]
 * Fix zero range `bh.numpy.histogram` to match `numpy.histogram` behavior [#721][]
@@ -20,7 +24,12 @@
 [#718]: https://github.com/scikit-hep/boost-histogram/pull/718
 [#721]: https://github.com/scikit-hep/boost-histogram/pull/721
 [#730]: https://github.com/scikit-hep/boost-histogram/pull/730
-
+[#781]: https://github.com/scikit-hep/boost-histogram/pull/781
+[#782]: https://github.com/scikit-hep/boost-histogram/pull/782
+[#783]: https://github.com/scikit-hep/boost-histogram/pull/783
+[#786]: https://github.com/scikit-hep/boost-histogram/pull/786
+[#789]: https://github.com/scikit-hep/boost-histogram/pull/789
+[#790]: https://github.com/scikit-hep/boost-histogram/pull/790
 
 ### Version 1.3.1
 
