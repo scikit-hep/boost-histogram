@@ -927,6 +927,9 @@ class Histogram:
             new_reduced.view(flow=True)[...] = reduced.view(flow=True)[tuple_slice]
             reduced = new_reduced
             integrations = {i - sum(j <= i for j in pick_each) for i in integrations}
+            pick_set = {
+                i - sum(j <= i for j in pick_each): v for i, v in pick_set.items()
+            }
             for slice_ in slices:
                 slice_.iaxis -= sum(j <= slice_.iaxis for j in pick_each)
 
@@ -945,9 +948,8 @@ class Histogram:
                 selection = copy.copy(pick_set[i])
                 ax = reduced.axis(i)
                 if ax.traits_ordered:
-                    raise RuntimeError(
-                        f"Axis {i} is not a categorical axis, cannot pick with list"
-                    )
+                    msg = f"Axis {i} is not a categorical axis, cannot pick with list: {ax}"
+                    raise RuntimeError(msg)
 
                 if ax.traits_overflow and ax.size not in pick_set[i]:
                     selection.append(ax.size)

@@ -116,10 +116,13 @@ def test_select_many():
         bh.axis.StrCategory(["x", "y", "z"]),
         bh.axis.Regular(10, 0, 1),
     )
-    pick_a = hist[bh.loc("a"), ...]
-    pick_b = pick_a[[bh.loc("x"), bh.loc("y")], ...]
 
-    pick = hist[bh.loc("a"), [bh.loc("x"), bh.loc("y")], ...]
+    pick_a = hist[bh.loc("a"), ...]
+    with pytest.warns(UserWarning):
+        pick_b = pick_a[[bh.loc("x"), bh.loc("y")], ...]
+
+    with pytest.warns(UserWarning):
+        pick = hist[bh.loc("a"), [bh.loc("x"), bh.loc("y")], ...]
 
     assert pick_b.axes[0] == pick.axes[0]
     assert len(pick_b.axes) == len(pick.axes)
