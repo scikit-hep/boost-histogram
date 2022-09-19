@@ -2,26 +2,21 @@
 
 ## Version 1.3
 
-### WIP
-
-#### Bug Fixes
-
-* Avoid the constructor when creating new histograms from existing ones. [#759][]
-
-[#759]: https://github.com/scikit-hep/boost-histogram/pull/759
-
 ### Version 1.3.2
 
 #### Changes
 
 * Added `storage_type` operator and `storage_type()` function [#781][], with pending deprecation for `_storage_type`. [#786][] [#790][]
 * Better errors generated for missing or incorrect sample to mean storage. [#782][]
+* Better error message when views are set with an incompatible array. [#794][] 
 
 #### Bug fixes
 
 * Patch broken sum with fully empty (0 bin) axis. [#718][]
 * Fix zero range `bh.numpy.histogram` to match `numpy.histogram` behavior. [#721][]
 * Avoid triggering `__init__` when copying (better support for subclasses with custom init's). [#759][]
+* IntCategory now supports numbers larger than 2^24 (now 2^53). [#792][] 
+* Pick a subset now supported inside a larger expression. [#793][]
 
 #### Backend and docs
 
@@ -31,6 +26,7 @@
 * Using pybind11 2.10 [#767][]
 * Explicit `reset()` documentation. [#783][]
 * Minor cleanup and further removal of a little Python 2 back-compat code.
+* Warnings have better stacklevel settings.
 
 [#718]: https://github.com/scikit-hep/boost-histogram/pull/718
 [#721]: https://github.com/scikit-hep/boost-histogram/pull/721
@@ -44,6 +40,9 @@
 [#786]: https://github.com/scikit-hep/boost-histogram/pull/786
 [#789]: https://github.com/scikit-hep/boost-histogram/pull/789
 [#790]: https://github.com/scikit-hep/boost-histogram/pull/790
+[#792]: https://github.com/scikit-hep/boost-histogram/pull/792
+[#793]: https://github.com/scikit-hep/boost-histogram/pull/793
+[#794]: https://github.com/scikit-hep/boost-histogram/pull/794
 
 ### Version 1.3.1
 
