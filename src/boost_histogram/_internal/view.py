@@ -42,17 +42,19 @@ class View(np.ndarray):  # type: ignore[type-arg]
         current_ndim = super().__getitem__(ind).ndim
 
         array: "np.typing.NDArray[Any]" = np.asarray(value)
-        if array.ndim == current_ndim + 1 and len(self._FIELDS) == array.shape[-1]:
-            self.__setitem__(ind, self._PARENT._array(*np.moveaxis(array, -1, 0)))  # type: ignore[attr-defined]
-            return
+        msg = "Needs matching ndarray or n+1 dim array"
+        if array.ndim == current_ndim + 1:
+            if len(self._FIELDS) == array.shape[-1]:
+                self.__setitem__(ind, self._PARENT._array(*np.moveaxis(array, -1, 0)))  # type: ignore[attr-defined]
+                return
+            msg += f", final dimension should be {len(self._FIELDS)} for this storage, got {array.shape[-1]} instead"
+            raise ValueError(msg)
         if self.dtype == array.dtype:
             super().__setitem__(ind, array)  # type: ignore[no-untyped-call]
             return
 
-        raise ValueError(
-            "Needs matching ndarray or n+1 dim array, "
-            f"{current_ndim}D {self.dtype} or {current_ndim+1}D required, got {array.ndim}D {array.dtype}"
-        )
+        msg += f", {current_ndim}D {self.dtype} or {current_ndim+1}D required, got {array.ndim}D {array.dtype}"
+        raise ValueError(msg)
 
 
 def make_getitem_property(name: str) -> property:
