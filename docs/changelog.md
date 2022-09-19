@@ -8,14 +8,14 @@
 
 * Added `storage_type` operator and `storage_type()` function [#781][], with pending deprecation for `_storage_type`. [#786][] [#790][]
 * Better errors generated for missing or incorrect sample to mean storage. [#782][]
-* Better error message when views are set with an incompatible array. [#794][] 
+* Better error message when views are set with an incompatible array. [#794][]
 
 #### Bug fixes
 
 * Patch broken sum with fully empty (0 bin) axis. [#718][]
 * Fix zero range `bh.numpy.histogram` to match `numpy.histogram` behavior. [#721][]
 * Avoid triggering `__init__` when copying (better support for subclasses with custom init's). [#759][]
-* IntCategory now supports numbers larger than 2^24 (now 2^53). [#792][] 
+* IntCategory now supports numbers larger than 2^24 (now 2^53). [#792][]
 * Pick a subset now supported inside a larger expression. [#793][]
 
 #### Backend and docs
