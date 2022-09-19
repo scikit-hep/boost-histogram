@@ -940,7 +940,7 @@ class Histogram:
         if pick_set:
             warnings.warn(
                 "List indexing selection is experimental. Removed bins are not placed in overflow.",
-                stacklevel=2
+                stacklevel=2,
             )
             logger.debug("Slices for picking sets: %s", pick_set)
             axes = [reduced.axis(i) for i in range(reduced.rank())]
