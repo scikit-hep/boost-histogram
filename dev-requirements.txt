@@ -7,3 +7,4 @@ pytest-benchmark
 setuptools >=42
 setuptools_scm[toml] >=3.4,!=4.0.0
 typing_extensions; python_version<'3.8'
+uproot
