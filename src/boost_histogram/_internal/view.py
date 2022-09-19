@@ -39,16 +39,20 @@ class View(np.ndarray):  # type: ignore[type-arg]
             super().__setitem__(ind, value)  # type: ignore[no-untyped-call]
             return
 
+        current_ndim = super().__getitem__(ind).ndim
+
         array: "np.typing.NDArray[Any]" = np.asarray(value)
-        if (
-            array.ndim == super().__getitem__(ind).ndim + 1
-            and len(self._FIELDS) == array.shape[-1]
-        ):
+        if array.ndim == current_ndim + 1 and len(self._FIELDS) == array.shape[-1]:
             self.__setitem__(ind, self._PARENT._array(*np.moveaxis(array, -1, 0)))  # type: ignore[attr-defined]
-        elif self.dtype == array.dtype:
+            return
+        if self.dtype == array.dtype:
             super().__setitem__(ind, array)  # type: ignore[no-untyped-call]
-        else:
-            raise ValueError("Needs matching ndarray or n+1 dim array")
+            return
+
+        raise ValueError(
+            "Needs matching ndarray or n+1 dim array, "
+            f"{current_ndim}D {self.dtype} or {current_ndim+1}D required, got {array.ndim}D {array.dtype}"
+        )
 
 
 def make_getitem_property(name: str) -> property:
