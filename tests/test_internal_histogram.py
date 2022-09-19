@@ -107,6 +107,27 @@ def test_str_categories_histogram():
     assert hist[bh.loc("c")] == 1
 
 
+# Issue 715
+
+
+def test_select_many():
+    hist = bh.Histogram(
+        bh.axis.StrCategory(["a", "b"]),
+        bh.axis.StrCategory(["x", "y", "z"]),
+        bh.axis.Regular(10, 0, 1),
+    )
+
+    pick_a = hist[bh.loc("a"), ...]
+    with pytest.warns(UserWarning):
+        pick_b = pick_a[[bh.loc("x"), bh.loc("y")], ...]
+
+    with pytest.warns(UserWarning):
+        pick = hist[bh.loc("a"), [bh.loc("x"), bh.loc("y")], ...]
+
+    assert pick_b.axes[0] == pick.axes[0]
+    assert len(pick_b.axes) == len(pick.axes)
+
+
 def test_growing_histogram():
     hist = bh.Histogram(
         bh.axis.Regular(10, 0, 1, growth=True), storage=bh.storage.Int64()
