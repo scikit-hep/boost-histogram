@@ -58,10 +58,10 @@ inline decltype(auto) axis_cast<int>(py::handle x) {
     if(py::isinstance<int>(x))
         return py::cast<int>(x);
 
-    auto val  = py::cast<float>(x);
+    auto val  = py::cast<double>(x);
     auto ival = static_cast<int>(val);
 
-    if(static_cast<float>(ival) == val)
+    if(static_cast<double>(ival) == val)
         return ival;
 
     throw py::type_error(py::str("cannot cast {} to int").format(val));

@@ -455,3 +455,12 @@ def test_add_flowbins():
     scale_value = (h + 5).values(flow=True)
 
     assert scale_value == approx(ref_value)
+
+
+# issue 737
+def test_large_index():
+    h = bh.Histogram(
+        bh.axis.IntCategory([4, 8, 15, 16, 23, 42, 99_999_001, 1_000_010_020])
+    )
+    assert 99_999_001 == h.axes[0].value(6)
+    assert 6 == h.axes[0].index(99_999_001)
