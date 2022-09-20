@@ -226,10 +226,16 @@ class Axis:
         """
         return self._ax.extent  # type: ignore[no-any-return]
 
-    def __getitem__(self, i: AxCallOrInt) -> Union[int, str, Tuple[float, float]]:
+    def __getitem__(
+        self: T, i: Union[AxCallOrInt, slice]
+    ) -> Union[int, str, Tuple[float, float], T]:
         """
         Access a bin, using normal Python syntax for wraparound.
         """
+        if isinstance(i, slice):
+            raise NotImplementedError(
+                f"Slicing not supported on {self.__class__.__name__}"
+            )
         # UHI support
         if callable(i):
             i = i(self)
@@ -241,6 +247,7 @@ class Axis:
                     f"Out of range access, {i} is more than {self._ax.size}"
                 )
         assert not callable(i)
+        assert not isinstance(i, slice)
         return self.bin(i)
 
     @property
@@ -612,6 +619,9 @@ class BaseCategory(Axis, family=boost_histogram):
         return ret
 
 
+TStrC = TypeVar("TStrC", bound="StrCategory")
+
+
 @set_module("boost_histogram.axis")
 @register({ca.category_str_growth, ca.category_str})
 class StrCategory(BaseCategory, family=boost_histogram):
@@ -659,6 +669,16 @@ class StrCategory(BaseCategory, family=boost_histogram):
             raise KeyError("Unsupported collection of options")
 
         super().__init__(ax, metadata, __dict__)
+
+    def __getitem__(
+        self: TStrC, i: Union[AxCallOrInt, slice]
+    ) -> Union[int, str, Tuple[float, float], TStrC]:
+
+        if isinstance(i, slice):
+            new_cats = list(self)[i]
+            return self.__class__(new_cats, __dict__=self.__dict__)  # type: ignore[arg-type]
+        else:
+            return super().__getitem__(i)
 
     def index(self, value: Union[float, str]) -> int:
         """
