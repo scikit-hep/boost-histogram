@@ -128,6 +128,7 @@ histograms can be plotted via any compatible library, such as [mplhep][].
   * `.storage_type`: Fetch the histogram storage type
   * `.sum(flow=False)`: The total count of all bins
   * `.project(ax1, ax2, ...)`: Project down to listed axis (numbers). Can also reorder axes.
+  * `.allclose(second_hist)`: Compare the histogram with another histogram
   * `.to_numpy(flow=False, view=False)`: Convert to a NumPy style tuple (with or without under/overflow bins)
   * `.view(flow=False)`: Get a view on the bin contents (with or without under/overflow bins)
   * `.values(flow=False)`: Get a view on the values (counts or means, depending on storage)

@@ -359,8 +359,31 @@ class Histogram:
         """
         return _to_view(self._hist.view(flow))
 
+    def allclose(self: "Histogram", hist2: "Histogram", **kwargs) -> str:
+        if not np.allclose(self.view().shape, hist2.view().shape, **kwargs):
+            return f"The histogram dimensions [{self.view().shape} and {hist2.view().shape}] are not equal."
+        if not np.allclose(self.view(), hist2.view(), **kwargs):
+            return f"The histogram contents : {self.view()} and {hist2.view()} are not equal."
+        if not np.allclose(self.to_numpy()[1], hist2.to_numpy()[1], **kwargs):
+            return f"The edges : {self.to_numpy()[1]} and {hist2.to_numpy()[1]} are not equal."
+        if self._storage_type != hist2._storage_type:
+            return f"The storage types ({str(self._storage_type).split('.')[-1][:-2]} and {str(hist2._storage_type).split('.')[-1][:-2]}) are not equal."
+        if list(self.axes) != list(hist2.axes):
+            return f"The axes : {list(self.axes)} and {list(hist2.axes)} are not equal."
+        return ""
+
     def __array__(self) -> "np.typing.NDArray[Any]":
         return self.view(False)
+
+    def __array_function__(
+        self,
+        ufunc: typing.Any,
+        *inputs: typing.Any,
+        **kwargs: typing.Any,
+    ) -> typing.Any:
+        if ufunc is np.allclose:
+            return inputs[1][0].allclose(inputs[1][1], **kwargs)
+        return NotImplemented
 
     def __eq__(self, other: Any) -> bool:
         return hasattr(other, "_hist") and self._hist == other._hist
