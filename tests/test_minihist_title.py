@@ -1,6 +1,8 @@
 # The point of this test is to make sure that the infrastructure for supporting
 # custom attributes, like title in Hist, is working.
 
+from __future__ import annotations
+
 import pytest
 
 import boost_histogram as bh

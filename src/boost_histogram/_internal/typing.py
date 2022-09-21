@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import sys
 from typing import TYPE_CHECKING, Any, Tuple, Union
 
@@ -38,7 +40,7 @@ __all__ = (
 
 
 class AxisLike(Protocol):
-    def index(self, value: Union[float, str]) -> int:
+    def index(self, value: float | str) -> int:
         ...
 
     def __len__(self) -> int:

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import boost_histogram as bh
 
 # make 1-d histogram with 5 logarithmic bins from 1e0 to 1e5

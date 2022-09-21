@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
 
+from __future__ import annotations
+
 import pickle
 from pathlib import Path
-from typing import Optional
 
 import typer
 
@@ -13,7 +14,7 @@ DIR = Path(__file__).parent.resolve()
 
 
 def make_pickle(
-    output: Optional[Path] = typer.Argument(None, exists=False),  # noqa: B008
+    output: Path | None = typer.Argument(None, exists=False),  # noqa: B008
     *,
     protocol: int = 2,
 ) -> None:

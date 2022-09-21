@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from functools import partial
-from typing import Any, Iterable, List, Tuple, TypeVar
+from typing import Any, Iterable, TypeVar
 
 import numpy as np
 
@@ -27,7 +29,7 @@ class ArrayTuple(tuple):  # type: ignore[type-arg]
 
         return self.__class__(getattr(a, name) for a in self)
 
-    def __dir__(self) -> List[str]:
+    def __dir__(self) -> list[str]:
         names = dir(self.__class__) + dir("np.typing.NDArray[Any]")
         return sorted(n for n in names if not n.startswith("_"))
 
@@ -60,11 +62,11 @@ class AxesTuple(tuple):  # type: ignore[type-arg]
         super().__init__()
 
     @property
-    def size(self) -> Tuple[int, ...]:
+    def size(self) -> tuple[int, ...]:
         return tuple(s.size for s in self)
 
     @property
-    def extent(self) -> Tuple[int, ...]:
+    def extent(self) -> tuple[int, ...]:
         return tuple(s.extent for s in self)
 
     @property
@@ -82,21 +84,21 @@ class AxesTuple(tuple):  # type: ignore[type-arg]
         gen = (s.widths for s in self)
         return ArrayTuple(np.meshgrid(*gen, **self._MGRIDOPTS))
 
-    def value(self, *indexes: float) -> Tuple[float, ...]:
+    def value(self, *indexes: float) -> tuple[float, ...]:
         if len(indexes) != len(self):
             raise IndexError(
                 "Must have the same number of arguments as the number of axes"
             )
         return tuple(self[i].value(indexes[i]) for i in range(len(indexes)))
 
-    def bin(self, *indexes: float) -> Tuple[float, ...]:
+    def bin(self, *indexes: float) -> tuple[float, ...]:
         if len(indexes) != len(self):
             raise IndexError(
                 "Must have the same number of arguments as the number of axes"
             )
         return tuple(self[i].bin(indexes[i]) for i in range(len(indexes)))
 
-    def index(self, *values: float) -> Tuple[float, ...]:  # type: ignore[override, override]
+    def index(self, *values: float) -> tuple[float, ...]:  # type: ignore[override, override]
         if len(values) != len(self):
             raise IndexError(
                 "Must have the same number of arguments as the number of axes"
@@ -107,7 +109,7 @@ class AxesTuple(tuple):  # type: ignore[type-arg]
         result = super().__getitem__(item)
         return self.__class__(result) if isinstance(result, tuple) else result
 
-    def __getattr__(self, attr: str) -> Tuple[Any, ...]:
+    def __getattr__(self, attr: str) -> tuple[Any, ...]:
         return tuple(getattr(s, attr) for s in self)
 
     def __setattr__(self, attr: str, values: Any) -> None:

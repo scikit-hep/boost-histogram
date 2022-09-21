@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from ._internal.storage import (
     AtomicInt64,
     Double,

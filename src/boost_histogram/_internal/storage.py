@@ -1,4 +1,6 @@
-from typing import ClassVar, Type, Union
+from __future__ import annotations
+
+from typing import ClassVar
 
 import boost_histogram
 
@@ -19,13 +21,13 @@ class Storage:
         return f"{self.__class__.__name__}()"
 
     accumulator: ClassVar[
-        Union[
-            Type[int],
-            Type[float],
-            Type[accumulators.WeightedMean],
-            Type[accumulators.WeightedSum],
-            Type[accumulators.Mean],
-        ]
+        (
+            type[int]
+            | type[float]
+            | type[accumulators.WeightedMean]
+            | type[accumulators.WeightedSum]
+            | type[accumulators.Mean]
+        )
     ]
 
 

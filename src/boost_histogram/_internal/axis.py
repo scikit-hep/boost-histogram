@@ -1,18 +1,7 @@
+from __future__ import annotations
+
 import copy
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Iterable,
-    Iterator,
-    List,
-    Optional,
-    Set,
-    Tuple,
-    Type,
-    TypeVar,
-    Union,
-)
+from typing import Any, Callable, Iterable, Iterator, TypeVar, Union
 
 import numpy as np  # pylint: disable=unused-import
 
@@ -36,7 +25,7 @@ def _isstr(value: Any) -> bool:
     return False
 
 
-def _opts(**kwargs: bool) -> Set[str]:
+def _opts(**kwargs: bool) -> set[str]:
     return {k for k, v in kwargs.items() if v}
 
 
@@ -71,8 +60,8 @@ class Axis:
     def __init__(
         self,
         ax: Any,
-        metadata: Optional[Dict[str, Any]],
-        __dict__: Optional[Dict[str, Any]],
+        metadata: dict[str, Any] | None,
+        __dict__: dict[str, Any] | None,
     ) -> None:
         """
         ax: the C++ object
@@ -93,11 +82,11 @@ class Axis:
 
         self.__dict__ = self._ax.metadata
 
-    def __setstate__(self, state: Dict[str, Any]) -> None:
+    def __setstate__(self, state: dict[str, Any]) -> None:
         self._ax = state["_ax"]
         self.__dict__ = self._ax.metadata
 
-    def __getstate__(self) -> Dict[str, Any]:
+    def __getstate__(self) -> dict[str, Any]:
         return {"_ax": self._ax}
 
     def __copy__(self: T) -> T:
@@ -106,7 +95,7 @@ class Axis:
         other.__dict__ = other._ax.metadata
         return other
 
-    def index(self, value: Union[float, str]) -> int:
+    def index(self, value: float | str) -> int:
         """
         Return the fractional index(es) given a value (or values) on the axis.
         """
@@ -124,7 +113,7 @@ class Axis:
 
         return self._ax.value(index)  # type: ignore[no-any-return]
 
-    def bin(self, index: float) -> Union[int, str, Tuple[float, float]]:
+    def bin(self, index: float) -> int | str | tuple[float, float]:
         """
         Return the edges of the bins as a tuple for a
         continuous axis or the bin value for a
@@ -140,7 +129,7 @@ class Axis:
         return (not hasattr(other, "_ax")) or self._ax != other._ax
 
     @classmethod
-    def _convert_cpp(cls: Type[T], cpp_object: Any) -> T:
+    def _convert_cpp(cls: type[T], cpp_object: Any) -> T:
         nice_ax: T = cls.__new__(cls)
         nice_ax._ax = cpp_object
         nice_ax.__dict__ = cpp_object.metadata
@@ -151,12 +140,12 @@ class Axis:
 
     def __iter__(
         self,
-    ) -> Union[Iterator[float], Iterator[str], Iterator[Tuple[float, float]]]:
+    ) -> Iterator[float] | Iterator[str] | Iterator[tuple[float, float]]:
         return self._ax.__iter__()  # type: ignore[no-any-return]
 
     def _process_loc(
-        self, start: Optional[AxCallOrInt], stop: Optional[AxCallOrInt]
-    ) -> Tuple[int, int]:
+        self, start: AxCallOrInt | None, stop: AxCallOrInt | None
+    ) -> tuple[int, int]:
         """
         Compute start and stop into actual start and stop values in Boost.Histogram.
         None -> -1 or 0 for start, -> len or len+1 for stop. If start or stop are
@@ -166,7 +155,7 @@ class Axis:
         is turned off if underflow is not None.
         """
 
-        def _process_internal(item: Optional[AxCallOrInt], default: int) -> int:
+        def _process_internal(item: AxCallOrInt | None, default: int) -> int:
             return default if item is None else item(self) if callable(item) else item
 
         underflow = -1 if self._ax.traits_underflow else 0
@@ -185,7 +174,7 @@ class Axis:
         arg_str = ", ".join(self._repr_args_())
         return f"{self.__class__.__name__}({arg_str})"
 
-    def _repr_args_(self) -> List[str]:
+    def _repr_args_(self) -> list[str]:
         """
         Return arg options for use in the repr as strings.
         """
@@ -226,7 +215,7 @@ class Axis:
         """
         return self._ax.extent  # type: ignore[no-any-return]
 
-    def __getitem__(self, i: AxCallOrInt) -> Union[int, str, Tuple[float, float]]:
+    def __getitem__(self, i: AxCallOrInt) -> int | str | tuple[float, float]:
         """
         Access a bin, using normal Python syntax for wraparound.
         """
@@ -244,18 +233,18 @@ class Axis:
         return self.bin(i)
 
     @property
-    def edges(self) -> "np.typing.NDArray[Any]":
+    def edges(self) -> np.typing.NDArray[Any]:
         return self._ax.edges  # type: ignore[no-any-return]
 
     @property
-    def centers(self) -> "np.typing.NDArray[Any]":
+    def centers(self) -> np.typing.NDArray[Any]:
         """
         An array of bin centers.
         """
         return self._ax.centers  # type: ignore[no-any-return]
 
     @property
-    def widths(self) -> "np.typing.NDArray[Any]":
+    def widths(self) -> np.typing.NDArray[Any]:
         """
         An array of bin widths.
         """
@@ -291,8 +280,8 @@ class Regular(Axis, family=boost_histogram):
         overflow: bool = True,
         growth: bool = False,
         circular: bool = False,
-        transform: Optional[AxisTransform] = None,
-        __dict__: Optional[Dict[str, Any]] = None,
+        transform: AxisTransform | None = None,
+        __dict__: dict[str, Any] | None = None,
     ):
         """
         Make a regular axis with nice keyword arguments for underflow,
@@ -327,7 +316,7 @@ class Regular(Axis, family=boost_histogram):
             underflow=underflow, overflow=overflow, growth=growth, circular=circular
         )
 
-        ax: "ca._BaseRegular"
+        ax: ca._BaseRegular
 
         if transform is not None:
             if options != {"underflow", "overflow"}:
@@ -366,7 +355,7 @@ class Regular(Axis, family=boost_histogram):
 
         super().__init__(ax, metadata, __dict__)
 
-    def _repr_args_(self) -> List[str]:
+    def _repr_args_(self) -> list[str]:
         "Return inner part of signature for use in repr"
 
         ret = [f"{self.size:g}", f"{self.edges[0]:g}", f"{self.edges[-1]:g}"]
@@ -389,7 +378,7 @@ class Regular(Axis, family=boost_histogram):
         return ret
 
     @property
-    def transform(self) -> Optional[AxisTransform]:
+    def transform(self) -> AxisTransform | None:
         if hasattr(self._ax, "transform"):
             return cast(self, self._ax.transform, AxisTransform)
         return None
@@ -418,7 +407,7 @@ class Variable(Axis, family=boost_histogram):
         overflow: bool = True,
         growth: bool = False,
         circular: bool = False,
-        __dict__: Optional[Dict[str, Any]] = None,
+        __dict__: dict[str, Any] | None = None,
     ):
         """
         Make an axis with irregularly spaced bins. Provide a list
@@ -447,7 +436,7 @@ class Variable(Axis, family=boost_histogram):
             underflow=underflow, overflow=overflow, growth=growth, circular=circular
         )
 
-        ax: "ca._BaseVariable"
+        ax: ca._BaseVariable
         if options == {"growth", "underflow", "overflow"}:
             ax = ca.variable_uoflow_growth(edges)
         elif options == {"underflow", "overflow"}:
@@ -476,7 +465,7 @@ class Variable(Axis, family=boost_histogram):
 
         super().__init__(ax, metadata, __dict__)
 
-    def _repr_args_(self) -> List[str]:
+    def _repr_args_(self) -> list[str]:
         "Return inner part of signature for use in repr"
 
         if len(self) > 20:
@@ -524,7 +513,7 @@ class Integer(Axis, family=boost_histogram):
         overflow: bool = True,
         growth: bool = False,
         circular: bool = False,
-        __dict__: Optional[Dict[str, Any]] = None,
+        __dict__: dict[str, Any] | None = None,
     ):
         """
         Make an integer axis, with a collection of consecutive integers.
@@ -554,7 +543,7 @@ class Integer(Axis, family=boost_histogram):
             underflow=underflow, overflow=overflow, growth=growth, circular=circular
         )
 
-        ax: "ca._BaseInteger"
+        ax: ca._BaseInteger
 
         # underflow and overflow settings are ignored, integers are always
         # finite and thus cannot end up in a flow bin when growth is on
@@ -575,7 +564,7 @@ class Integer(Axis, family=boost_histogram):
 
         super().__init__(ax, metadata, __dict__)
 
-    def _repr_args_(self) -> List[str]:
+    def _repr_args_(self) -> list[str]:
         "Return inner part of signature for use in repr"
 
         ret = [f"{self.edges[0]:g}", f"{self.edges[-1]:g}"]
@@ -598,7 +587,7 @@ class Integer(Axis, family=boost_histogram):
 class BaseCategory(Axis, family=boost_histogram):
     __slots__ = ()
 
-    def _repr_args_(self) -> List[str]:
+    def _repr_args_(self) -> list[str]:
         "Return inner part of signature for use in repr"
 
         ret = []
@@ -623,7 +612,7 @@ class StrCategory(BaseCategory, family=boost_histogram):
         *,
         metadata: Any = None,
         growth: bool = False,
-        __dict__: Optional[Dict[str, Any]] = None,
+        __dict__: dict[str, Any] | None = None,
     ):
         """
         Make a category axis with strings; items will
@@ -646,7 +635,7 @@ class StrCategory(BaseCategory, family=boost_histogram):
 
         options = _opts(growth=growth)
 
-        ax: "ca._BaseCatStr"
+        ax: ca._BaseCatStr
 
         # henryiii: We currently expand "abc" to "a", "b", "c" - some
         # Python interfaces protect against that
@@ -660,7 +649,7 @@ class StrCategory(BaseCategory, family=boost_histogram):
 
         super().__init__(ax, metadata, __dict__)
 
-    def index(self, value: Union[float, str]) -> int:
+    def index(self, value: float | str) -> int:
         """
         Return the fractional index(es) given a value (or values) on the axis.
         """
@@ -671,7 +660,7 @@ class StrCategory(BaseCategory, family=boost_histogram):
         msg = f"index({value}) must be a string or iterable of strings for a StrCategory axis"
         raise TypeError(msg)
 
-    def _repr_args_(self) -> List[str]:
+    def _repr_args_(self) -> list[str]:
         "Return inner part of signature for use in repr"
 
         args = ", ".join(repr(c) for c in self)
@@ -691,7 +680,7 @@ class IntCategory(BaseCategory, family=boost_histogram):
         *,
         metadata: Any = None,
         growth: bool = False,
-        __dict__: Optional[Dict[str, Any]] = None,
+        __dict__: dict[str, Any] | None = None,
     ):
         """
         Make a category axis with ints; items will
@@ -713,7 +702,7 @@ class IntCategory(BaseCategory, family=boost_histogram):
         """
 
         options = _opts(growth=growth)
-        ax: "ca._BaseCatInt"
+        ax: ca._BaseCatInt
 
         if options == {"growth"}:
             ax = ca.category_int_growth(tuple(categories))
@@ -724,7 +713,7 @@ class IntCategory(BaseCategory, family=boost_histogram):
 
         super().__init__(ax, metadata, __dict__)
 
-    def _repr_args_(self) -> List[str]:
+    def _repr_args_(self) -> list[str]:
         "Return inner part of signature for use in repr"
 
         args = ", ".join(format(c, "g") for c in self)
@@ -739,9 +728,7 @@ class IntCategory(BaseCategory, family=boost_histogram):
 class Boolean(Axis, family=boost_histogram):
     __slots__ = ()
 
-    def __init__(
-        self, *, metadata: Any = None, __dict__: Optional[Dict[str, Any]] = None
-    ):
+    def __init__(self, *, metadata: Any = None, __dict__: dict[str, Any] | None = None):
         """
         Make an axis for boolean values.
 
@@ -757,7 +744,7 @@ class Boolean(Axis, family=boost_histogram):
 
         super().__init__(ax, metadata, __dict__)
 
-    def _repr_args_(self) -> List[str]:
+    def _repr_args_(self) -> list[str]:
         "Return inner part of signature for use in repr"
         ret = []
 

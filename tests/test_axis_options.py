@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from boost_histogram.axis import Traits
 
 

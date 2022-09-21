@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import typing
 from functools import reduce
 from operator import mul
-from typing import Any, List, Optional, Sequence, Tuple, Type, Union
+from typing import Any, Sequence
 
 if typing.TYPE_CHECKING:
     from numpy.typing import ArrayLike
@@ -19,30 +21,28 @@ from ._internal.utils import cast as _cast
 
 __all__ = ("histogram", "histogram2d", "histogramdd")
 
+# pylint: disable=redefined-builtin
+# pylint: disable=redefined-outer-name
 
-def __dir__() -> List[str]:
+def __dir__() -> list[str]:
     return list(__all__)
 
 
 def histogramdd(
-    a: Tuple[ArrayLike, ...],
-    bins: "Union[int, Tuple[int, ...], Tuple[np.typing.NDArray[Any], ...]]" = 10,
-    range: Optional[  # pylint: disable=redefined-builtin
-        Sequence[Union[None, Tuple[float, float]]]
-    ] = None,
+    a: tuple[ArrayLike, ...],
+    bins: int | tuple[int, ...] | tuple[np.typing.NDArray[Any], ...] = 10,
+    range: None | (Sequence[None | tuple[float, float]]) = None,
     normed: None = None,
-    weights: Optional[ArrayLike] = None,
+    weights: ArrayLike | None = None,
     density: bool = False,
     *,
-    histogram: Optional[  # pylint: disable=redefined-outer-name
-        Type[_hist.Histogram]
-    ] = None,
+    histogram: None | (type[_hist.Histogram]) = None,
     storage: _storage.Storage = _storage.Double(),  # noqa: B008
-    threads: Optional[int] = None
+    threads: int | None = None,
 ) -> Any:
 
     # TODO: Might be a bug in MyPy? This should type
-    cls: Type[_hist.Histogram] = _hist.Histogram if histogram is None else histogram  # type: ignore[assignment]
+    cls: type[_hist.Histogram] = _hist.Histogram if histogram is None else histogram  # type: ignore[assignment]
 
     if normed is not None:
         raise KeyError(
@@ -82,7 +82,7 @@ def histogramdd(
             new_ax = _cast(None, cpp_ax, _axis.Axis)
             axs.append(new_ax)
         else:
-            barr: "np.typing.NDArray[Any]" = np.asarray(b, dtype=np.double)
+            barr: np.typing.NDArray[Any] = np.asarray(b, dtype=np.double)
             barr[-1] = np.nextafter(barr[-1], np.finfo("d").max)
             axs.append(_axis.Variable(barr))
 
@@ -102,19 +102,15 @@ def histogramdd(
 def histogram2d(
     x: ArrayLike,
     y: ArrayLike,
-    bins: Union[int, Tuple[int, int]] = 10,
-    range: Optional[  # pylint: disable=redefined-builtin
-        Sequence[Union[None, Tuple[float, float]]]
-    ] = None,
+    bins: int | tuple[int, int] = 10,
+    range: None | (Sequence[None | tuple[float, float]]) = None,
     normed: None = None,
-    weights: Optional[ArrayLike] = None,
+    weights: ArrayLike | None = None,
     density: bool = False,
     *,
-    histogram: Optional[  # pylint: disable=redefined-outer-name
-        Type[_hist.Histogram]
-    ] = None,
+    histogram: None | (type[_hist.Histogram]) = None,
     storage: _storage.Storage = _storage.Double(),  # noqa: B008
-    threads: Optional[int] = None
+    threads: int | None = None,
 ) -> Any:
     result = histogramdd(
         (x, y),
@@ -137,17 +133,15 @@ def histogram2d(
 
 def histogram(
     a: ArrayLike,
-    bins: "Union[int, str, np.typing.NDArray[Any]]" = 10,
-    range: Optional[Tuple[float, float]] = None,  # pylint: disable=redefined-builtin
+    bins: int | str | np.typing.NDArray[Any] = 10,
+    range: tuple[float, float] | None = None,
     normed: None = None,
-    weights: Optional[ArrayLike] = None,
+    weights: ArrayLike | None = None,
     density: bool = False,
     *,
-    histogram: Optional[  # pylint: disable=redefined-outer-name
-        Type[_hist.Histogram]
-    ] = None,
-    storage: Optional[_storage.Storage] = None,
-    threads: Optional[int] = None
+    histogram: None | (type[_hist.Histogram]) = None,
+    storage: _storage.Storage | None = None,
+    threads: int | None = None,
 ) -> Any:
 
     # numpy 1d histogram returns integers in some cases
