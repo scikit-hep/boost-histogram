@@ -184,9 +184,10 @@ python3 -m pip install boost-histogram
 
 
 All the normal best-practices for Python apply; Pip should not be very old (Pip
-9 is very old), you should be in a virtual environment, etc. Python 3.6+ is
+9 is very old), you should be in a virtual environment, etc. Python 3.7+ is
 required; for older versions of Python (3.5 and 2.7), `0.13` will be installed
 instead, which is API equivalent to 1.0, but will not be gaining new features.
+1.3.x was the last series to support Python 3.6.
 
 #### Binaries available:
 
@@ -197,20 +198,17 @@ platforms have wheels provided in boost-histogram:
 
 | System | Arch | Python versions | PyPy versions |
 |---------|-----|------------------|--------------|
-| ManyLinux1 (custom GCC 9.2) | 32 & 64-bit | 3.6, 3.7, 3.8 | |
-| ManyLinux2010 | 32 & 64-bit | 3.6, 3.7, 3.8, 3.9 | (64-bit) 7.3: 3.7 |
-| ManyLinux2014 | 32 & 64-bit | 3.10 | |
-| ManyLinux2014 | ARM64 | 3.6, 3.7, 3.8, 3.9, 3.10 | |
-| MuslLinux_1_1 | 64-bit | 3.6, 3.7, 3.8, 3.9, 3.10 | |
-| macOS 10.9+ | 64-bit | 3.6, 3.7, 3.8, 3.9, 3.10 | 7.3: 3.7 |
-| macOS Universal2 | Arm64 | 3.8, 3.9, 3.10 | |
-| Windows | 32 & 64-bit | 3.6, 3.7, 3.8, 3.9, 3.10 | (64-bit) 7.3: 3.7 |
+| ManyLinux2014 | 32 & 64-bit | 3.7, 3.8, 3.9, 3.10, 3.11  | 3.7, 3.8, 3.9 |
+| ManyLinux2014 | ARM64 | 3.7, 3.8, 3.9, 3.10, 3.11 | 3.7, 3.8, 3.9 |
+| MuslLinux_1_1 | 64-bit | 3.7, 3.8, 3.9, 3.10, 3.11 | |
+| macOS 10.9+ | 64-bit | 3.7, 3.8, 3.9, 3.10, 3.11 | 3.7, 3.8, 3.9 |
+| macOS Universal2 | Arm64 | 3.8, 3.9, 3.10, 3.11 | |
+| Windows | 32 & 64-bit | 3.7, 3.8, 3.9, 3.10, 3.11 | |
+| Windows | 64-bit | | 3.7, 3.8, 3.9 |
 
 
-* manylinux1: Using a custom docker container with GCC 9 to produce. Anything running Python 3.9 should be compatible with manylinux2010, so manylinux1 not provided for Python 3.9 (like NumPy). These will be likely be dropped Jan 1, 2022 when manylinux support ends.
-* manylinux2010: Requires pip 10+.
-* PyPy 7.3.x: Supports the officially supported pypy3.7 on all Intel platforms.
-* ARM on Linux is supported for newer Python versions via `manylinux2014`. PowerPC or IBM-Z available on request, or `manylinux_2_24`, or `musllinux_1_1`.
+* manylinux2014: Requires pip 19.3.
+* ARM on Linux is supported. PowerPC or IBM-Z available on request.
 * macOS Universal2 wheels for Apple Silicon and Intel provided for Python 3.8+ (requires Pip 21.0.1 or newer).
 
 If you are on a Linux system that is not part of the "many" in manylinux or musl in musllinux, such as ClearLinux, building from source is usually fine, since the compilers on those systems are often quite new. It will just take longer to install when it is using the sdist instead of a wheel. All dependencies are header-only and included.

@@ -26,9 +26,10 @@ log_cli_level = "DEBUG"
 
 [tool.isort]
 profile = "black"
+add_imports = ["from __future__ import annotations"]
 
 [tool.mypy]
-python_version = "3.6"
+python_version = "3.7"
 files = ["src"]
 strict = true
 show_error_codes = true
@@ -88,19 +89,13 @@ ignore = [
 [tool.cibuildwheel]
 test-extras = "test"
 test-command = "pytest --benchmark-disable {project}/tests"
-test-skip = ["pp*", "*universal2:arm64", "cp310-*{i686,win32}", "*musllinux*"]
+test-skip = ["pp*", "*universal2:arm64", "*musllinux*"]
 skip = ["pp*-manylinux_i686"] # not supported by NumPy
 manylinux-x86_64-image = "manylinux2014"
 manylinux-i686-image = "manylinux2014"
 
-# Before Python 3.10, manylinux2010 is the most compatible
-[[tool.cibuildwheel.overrides]]
-select = "cp3?-*"
-manylinux-x86_64-image = "manylinux2010"
-manylinux-i686-image = "manylinux2010"
-
 [tool.pylint]
-main.py-version = "3.6"
+main.py-version = "3.7"
 main.extension-pkg-allow-list = ["boost_histogram._core"]
 reports.output-format = "colorized"
 similarities.ignore-imports = "yes"
