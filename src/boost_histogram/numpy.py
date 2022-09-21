@@ -24,6 +24,7 @@ __all__ = ("histogram", "histogram2d", "histogramdd")
 # pylint: disable=redefined-builtin
 # pylint: disable=redefined-outer-name
 
+
 def __dir__() -> list[str]:
     return list(__all__)
 
