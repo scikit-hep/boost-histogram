@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import numpy as np
 
 import boost_histogram as bh

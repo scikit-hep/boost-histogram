@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from ._core.accumulators import (  # pylint: disable=import-error
     Mean,
     Sum,

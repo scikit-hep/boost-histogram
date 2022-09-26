@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from . import accumulators, axis, numpy, storage
 from ._internal.enum import Kind
 from ._internal.hist import Histogram, IndexingExpr

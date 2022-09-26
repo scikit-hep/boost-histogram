@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from .._internal.axis_transform import (
     AxisTransform,
     Function,

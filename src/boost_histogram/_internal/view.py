@@ -1,4 +1,6 @@
-from typing import Any, Callable, ClassVar, Mapping, MutableMapping, Tuple, Type, Union
+from __future__ import annotations
+
+from typing import Any, Callable, ClassVar, Mapping, MutableMapping
 
 import numpy as np
 
@@ -8,9 +10,9 @@ from .typing import ArrayLike, StrIndex, Ufunc
 
 class View(np.ndarray):  # type: ignore[type-arg]
     __slots__ = ()
-    _FIELDS: ClassVar[Tuple[str, ...]]
+    _FIELDS: ClassVar[tuple[str, ...]]
 
-    def __getitem__(self, ind: StrIndex) -> "np.typing.NDArray[Any]":  # type: ignore[override]
+    def __getitem__(self, ind: StrIndex) -> np.typing.NDArray[Any]:  # type: ignore[override]
         sliced = super().__getitem__(ind)
 
         # If the shape is empty, return the parent type
@@ -41,7 +43,7 @@ class View(np.ndarray):  # type: ignore[type-arg]
 
         current_ndim = super().__getitem__(ind).ndim
 
-        array: "np.typing.NDArray[Any]" = np.asarray(value)
+        array: np.typing.NDArray[Any] = np.asarray(value)
         msg = "Needs matching ndarray or n+1 dim array"
         if array.ndim == current_ndim + 1:
             if len(self._FIELDS) == array.shape[-1]:
@@ -67,7 +69,7 @@ def make_getitem_property(name: str) -> property:
     return property(fget, fset)
 
 
-def fields(*names: str) -> Callable[[Type[object]], Type[object]]:
+def fields(*names: str) -> Callable[[type[object]], type[object]]:
     """
     This decorator adds the name to the _FIELDS
     class property (for printing in reprs), and
@@ -81,7 +83,7 @@ def fields(*names: str) -> Callable[[Type[object]], Type[object]]:
         self["name"] = value
     """
 
-    def injector(cls: Type[object]) -> Type[object]:
+    def injector(cls: type[object]) -> type[object]:
         if hasattr(cls, "_FIELDS"):
             raise RuntimeError(
                 f"{cls.__name__} already has had a fields decorator applied"
@@ -102,13 +104,13 @@ class WeightedSumView(View):
     __slots__ = ()
     _PARENT = WeightedSum
 
-    value: "np.typing.NDArray[Any]"
-    variance: "np.typing.NDArray[Any]"
+    value: np.typing.NDArray[Any]
+    variance: np.typing.NDArray[Any]
 
     # Could be implemented on master View
     def __array_ufunc__(
         self, ufunc: Ufunc, method: str, *inputs: Any, **kwargs: Any
-    ) -> "np.typing.NDArray[Any]":
+    ) -> np.typing.NDArray[Any]:
         # Avoid infinite recursion
         raw_inputs = [np.asarray(x) for x in inputs]
 
@@ -245,13 +247,13 @@ class WeightedMeanView(View):
     __slots__ = ()
     _PARENT = WeightedMean
 
-    sum_of_weights: "np.typing.NDArray[Any]"
-    sum_of_weights_squared: "np.typing.NDArray[Any]"
-    value: "np.typing.NDArray[Any]"
-    _sum_of_weighted_deltas_squared: "np.typing.NDArray[Any]"
+    sum_of_weights: np.typing.NDArray[Any]
+    sum_of_weights_squared: np.typing.NDArray[Any]
+    value: np.typing.NDArray[Any]
+    _sum_of_weighted_deltas_squared: np.typing.NDArray[Any]
 
     @property
-    def variance(self) -> "np.typing.NDArray[Any]":
+    def variance(self) -> np.typing.NDArray[Any]:
         # TODO: bug in mypy, perhaps? This should resolve to a literal.
         with np.errstate(divide="ignore", invalid="ignore"):  # type: ignore[arg-type]
             return self["_sum_of_weighted_deltas_squared"] / (  # type: ignore[no-any-return]
@@ -265,20 +267,20 @@ class MeanView(View):
     __slots__ = ()
     _PARENT = Mean
 
-    count: "np.typing.NDArray[Any]"
-    value: "np.typing.NDArray[Any]"
-    _sum_of_deltas_squared: "np.typing.NDArray[Any]"
+    count: np.typing.NDArray[Any]
+    value: np.typing.NDArray[Any]
+    _sum_of_deltas_squared: np.typing.NDArray[Any]
 
     # Variance is a computation
     @property
-    def variance(self) -> "np.typing.NDArray[Any]":
+    def variance(self) -> np.typing.NDArray[Any]:
         with np.errstate(divide="ignore", invalid="ignore"):  # type: ignore[arg-type]
             return self["_sum_of_deltas_squared"] / (self["count"] - 1)  # type: ignore[no-any-return]
 
 
 def _to_view(
-    item: "np.typing.NDArray[Any]", value: bool = False
-) -> Union["np.typing.NDArray[Any]", WeightedSumView, WeightedMeanView, MeanView]:
+    item: np.typing.NDArray[Any], value: bool = False
+) -> np.typing.NDArray[Any] | WeightedSumView | WeightedMeanView | MeanView:
     for cls in View.__subclasses__():
         if cls._FIELDS == item.dtype.names:
             ret = item.view(cls)

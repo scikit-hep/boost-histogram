@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import copy
-from typing import Any, Type, TypeVar
+from typing import Any, TypeVar
 
 import boost_histogram
 
@@ -25,7 +27,7 @@ class AxisTransform:
         return other
 
     @classmethod
-    def _convert_cpp(cls: Type[T], this: Any) -> T:
+    def _convert_cpp(cls: type[T], this: Any) -> T:
         self: T = cls.__new__(cls)
         self._this = this
         return self

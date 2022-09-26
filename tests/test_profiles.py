@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pytest import approx
 
 import boost_histogram as bh

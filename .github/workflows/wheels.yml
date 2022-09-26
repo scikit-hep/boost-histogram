@@ -57,7 +57,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        python: [36, 37, 38, 39, 310, 311]
+        python: [37, 38, 39, 310, 311]
         arch: [aarch64]
     steps:
 
@@ -98,27 +98,16 @@ jobs:
       matrix:
         os: [windows-2019, macos-latest, ubuntu-latest]
         arch: [auto64]
-        build: ["?p3{?,1?}-*"]
 
         include:
           - os: ubuntu-latest
             arch: auto32
-            build: "?p3{?,1?}-*"
-
-          - os: ubuntu-latest
-            type: ManyLinux1
-            arch: auto
-            build: "cp{36,37,38}-manylinux*"
-            CIBW_MANYLINUX_X86_64_IMAGE: skhep/manylinuxgcc-x86_64
-            CIBW_MANYLINUX_I686_IMAGE: skhep/manylinuxgcc-i686
 
           - os: macos-latest
             arch: universal2
-            build: "?p3{?,1?}-*"
 
           - os: windows-2019
             arch: auto32
-            build: "?p3{?,1?}-*"
 
     steps:
     - uses: actions/checkout@v3

@@ -1,17 +1,9 @@
+from __future__ import annotations
+
 import itertools
 import sys
 import typing
-from typing import (
-    Any,
-    Callable,
-    ClassVar,
-    Iterator,
-    Optional,
-    Set,
-    Tuple,
-    Type,
-    TypeVar,
-)
+from typing import Any, Callable, ClassVar, Iterator, TypeVar
 
 import boost_histogram
 
@@ -19,7 +11,7 @@ from .typing import Protocol
 
 
 class Registerable(Protocol):
-    _types: ClassVar[Set[Type[object]]]
+    _types: ClassVar[set[type[object]]]
 
 
 class HasFamily(Protocol):
@@ -29,13 +21,13 @@ class HasFamily(Protocol):
 T = TypeVar("T")
 
 
-def set_module(name: str) -> Callable[[Type[T]], Type[T]]:
+def set_module(name: str) -> Callable[[type[T]], type[T]]:
     """
     Set the __module__ attribute on a class. Very
     similar to numpy.core.overrides.set_module.
     """
 
-    def add_module(cls: Type[T]) -> Type[T]:
+    def add_module(cls: type[T]) -> type[T]:
         cls.__module__ = name
         return cls
 
@@ -43,8 +35,8 @@ def set_module(name: str) -> Callable[[Type[T]], Type[T]]:
 
 
 def register(
-    cpp_types: Optional[Set[Type[object]]] = None,
-) -> Callable[[Type[T]], Type[T]]:
+    cpp_types: set[type[object]] | None = None,
+) -> Callable[[type[T]], type[T]]:
     """
     Decorator to register a C++ type to a Python class.
     Each class given will be added to a lookup list "_types"
@@ -73,7 +65,7 @@ def register(
     used for simple renamed classes that inject warnings, etc.
     """
 
-    def add_registration(cls: Type[T]) -> Type[T]:
+    def add_registration(cls: type[T]) -> type[T]:
         if cpp_types is None or len(cpp_types) == 0:
             cls._types = set()  # type: ignore[attr-defined]
             return cls
@@ -109,7 +101,7 @@ def _cast_make_object(canidate_class: T, cpp_object: object, is_class: bool) -> 
     return canidate_class(cpp_object)  # type: ignore[operator, no-any-return]
 
 
-def cast(self: object, cpp_object: object, parent_class: Type[T]) -> T:
+def cast(self: object, cpp_object: object, parent_class: type[T]) -> T:
     """
     This converts a C++ object into a Python object.
     This takes the parent object, the C++ object,
@@ -175,13 +167,13 @@ def cast(self: object, cpp_object: object, parent_class: Type[T]) -> T:
     )
 
 
-def _walk_bases(cls: Type[object]) -> Iterator[Type[object]]:
+def _walk_bases(cls: type[object]) -> Iterator[type[object]]:
     for base in cls.__bases__:
         yield from _walk_bases(base)
         yield base
 
 
-def _walk_subclasses(cls: Type[object]) -> Iterator[Type[object]]:
+def _walk_subclasses(cls: type[object]) -> Iterator[type[object]]:
     for base in cls.__subclasses__():
         # Find the furthest child to allow
         # user subclasses to work
@@ -189,7 +181,7 @@ def _walk_subclasses(cls: Type[object]) -> Iterator[Type[object]]:
         yield base
 
 
-def zip_strict(*args: Any) -> Iterator[Tuple[Any, ...]]:
+def zip_strict(*args: Any) -> Iterator[tuple[Any, ...]]:
     if sys.version_info >= (3, 10):
         yield from zip(*args, strict=True)
         return

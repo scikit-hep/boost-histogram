@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from .._internal.axestuple import ArrayTuple, AxesTuple
 from .._internal.axis import (
     Axis,

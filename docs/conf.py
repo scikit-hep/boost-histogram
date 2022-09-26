@@ -1,13 +1,7 @@
 # To regenerate API docs:
 # sphinx-apidoc -o api ../src/boost_histogram -M -f -t template/
 
-# Configuration file for the Sphinx documentation builder.
-#
-# This file only contains a selection of the most common options. For a full
-# list see the documentation:
-# http://www.sphinx-doc.org/en/master/config
-
-# -- Path setup --------------------------------------------------------------
+from __future__ import annotations
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -17,6 +11,14 @@ import os
 import shutil
 import sys
 from pathlib import Path
+
+# Configuration file for the Sphinx documentation builder.
+#
+# This file only contains a selection of the most common options. For a full
+# list see the documentation:
+# http://www.sphinx-doc.org/en/master/config
+# -- Path setup --------------------------------------------------------------
+
 
 DIR = Path(__file__).parent.resolve()
 BASEDIR = DIR.parent

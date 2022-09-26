@@ -1,7 +1,8 @@
+from __future__ import annotations
+
 import collections.abc
 import copy
 import logging
-import sys
 import threading
 import typing
 import warnings
@@ -11,15 +12,11 @@ from typing import (
     Any,
     Callable,
     ClassVar,
-    Dict,
     Iterable,
     List,
     Mapping,
     NewType,
-    Optional,
-    Set,
     Tuple,
-    Type,
     TypeVar,
     Union,
 )
@@ -43,7 +40,7 @@ if TYPE_CHECKING:
 NOTHING = object()
 
 
-_histograms: Set[Type[CppHistogram]] = {
+_histograms: set[type[CppHistogram]] = {
     _core.hist.any_double,
     _core.hist.any_int64,
     _core.hist.any_atomic_int64,
@@ -69,7 +66,7 @@ T = TypeVar("T")
 
 def _fill_cast(
     value: T, *, inner: bool = False
-) -> Union[T, "np.typing.NDArray[Any]", Tuple[T, ...]]:
+) -> T | np.typing.NDArray[Any] | tuple[T, ...]:
     """
     Convert to NumPy arrays. Some buffer objects do not get converted by forcecast.
     If not called by itself (inner=False), then will work through one level of tuple/list.
@@ -86,7 +83,7 @@ def _fill_cast(
     return value
 
 
-def mean_storage_sample_check(sample: Optional[ArrayLike]) -> None:
+def mean_storage_sample_check(sample: ArrayLike | None) -> None:
     if sample is None:
         raise TypeError("Sample key-argument (sample=) needs to be provided.")
     seqs = (collections.abc.Sequence, np.ndarray)
@@ -99,7 +96,7 @@ def mean_storage_sample_check(sample: Optional[ArrayLike]) -> None:
         raise ValueError(msg2)
 
 
-def _arg_shortcut(item: Union[Tuple[int, float, float], Axis, CppAxis]) -> CppAxis:
+def _arg_shortcut(item: tuple[int, float, float] | Axis | CppAxis) -> CppAxis:
     if isinstance(item, tuple) and len(item) == 3:
         msg = "Using () directly in constructor is a developer shortcut and will be removed in a future version"
         warnings.warn(msg, FutureWarning, stacklevel=4)
@@ -111,7 +108,7 @@ def _arg_shortcut(item: Union[Tuple[int, float, float], Axis, CppAxis]) -> CppAx
     raise TypeError("Only axes supported in histogram constructor")
 
 
-def _expand_ellipsis(indexes: Iterable[Any], rank: int) -> List[Any]:
+def _expand_ellipsis(indexes: Iterable[Any], rank: int) -> list[Any]:
     indexes = list(indexes)
     number_ellipses = indexes.count(Ellipsis)
     if number_ellipses == 0:
@@ -149,7 +146,7 @@ class Histogram:
     axes: AxesTuple
     _hist: CppHistogram
 
-    def __init_subclass__(cls, *, family: Optional[object] = None) -> None:
+    def __init_subclass__(cls, *, family: object | None = None) -> None:
         """
         Sets the family for the histogram. This should be a unique object (such
         as the main module of your package) that is consistently set across all
@@ -161,7 +158,7 @@ class Histogram:
         cls._family = family if family is not None else object()
 
     @typing.overload
-    def __init__(self, *args: "Histogram") -> None:
+    def __init__(self, *args: Histogram) -> None:
         ...
 
     @typing.overload
@@ -171,7 +168,7 @@ class Histogram:
     @typing.overload
     def __init__(
         self,
-        *axes: Union[Axis, CppAxis],
+        *axes: Axis | CppAxis,
         storage: Storage = ...,
         metadata: Any = ...,
     ) -> None:
@@ -179,7 +176,7 @@ class Histogram:
 
     def __init__(
         self,
-        *axes: Union[Axis, CppAxis, "Histogram", CppHistogram],
+        *axes: Axis | CppAxis | Histogram | CppHistogram,
         storage: Storage = Double(),  # noqa: B008
         metadata: Any = None,
     ) -> None:
@@ -254,10 +251,10 @@ class Histogram:
 
     @classmethod
     def _clone(
-        cls: Type[H],
-        _hist: "Histogram | CppHistogram",
+        cls: type[H],
+        _hist: Histogram | CppHistogram,
         *,
-        other: "Histogram | None" = None,
+        other: Histogram | None = None,
         memo: Any = NOTHING,
     ) -> H:
         """
@@ -306,7 +303,7 @@ class Histogram:
         self.metadata = None
         self.axes = self._generate_axes_()
 
-    def _from_histogram_object(self, other: "Histogram") -> None:
+    def _from_histogram_object(self, other: Histogram) -> None:
         """
         Convert self into a new histogram object based on another, possibly
         converting from a different subclass.
@@ -329,7 +326,7 @@ class Histogram:
         """
 
     @classmethod
-    def _export_bh_(cls, self: "Histogram") -> None:
+    def _export_bh_(cls, self: Histogram) -> None:
         """
         If any preparation is needed to pass a histogram between libraries, a subclass can
         implement it here. cls is the current class being converted from, and self is the
@@ -353,13 +350,13 @@ class Histogram:
 
     def view(
         self, flow: bool = False
-    ) -> Union["np.typing.NDArray[Any]", WeightedSumView, WeightedMeanView, MeanView]:
+    ) -> np.typing.NDArray[Any] | WeightedSumView | WeightedMeanView | MeanView:
         """
         Return a view into the data, optionally with overflow turned on.
         """
         return _to_view(self._hist.view(flow))
 
-    def __array__(self) -> "np.typing.NDArray[Any]":
+    def __array__(self) -> np.typing.NDArray[Any]:
         return self.view(False)
 
     def __eq__(self, other: Any) -> bool:
@@ -368,15 +365,11 @@ class Histogram:
     def __ne__(self, other: Any) -> bool:
         return (not hasattr(other, "_hist")) or self._hist != other._hist
 
-    def __add__(
-        self: H, other: Union["Histogram", "np.typing.NDArray[Any]", float]
-    ) -> H:
+    def __add__(self: H, other: Histogram | np.typing.NDArray[Any] | float) -> H:
         result = self.copy(deep=False)
         return result.__iadd__(other)
 
-    def __iadd__(
-        self: H, other: Union["Histogram", "np.typing.NDArray[Any]", float]
-    ) -> H:
+    def __iadd__(self: H, other: Histogram | np.typing.NDArray[Any] | float) -> H:
         if isinstance(other, (int, float)) and other == 0:
             return self
         self._compute_inplace_op("__iadd__", other)
@@ -387,19 +380,15 @@ class Histogram:
         return self
 
     def __radd__(  # type: ignore[misc]
-        self: H, other: Union["np.typing.NDArray[Any]", float]
+        self: H, other: np.typing.NDArray[Any] | float
     ) -> H:
         return self + other
 
-    def __sub__(
-        self: H, other: Union["Histogram", "np.typing.NDArray[Any]", float]
-    ) -> H:
+    def __sub__(self: H, other: Histogram | np.typing.NDArray[Any] | float) -> H:
         result = self.copy(deep=False)
         return result.__isub__(other)
 
-    def __isub__(
-        self: H, other: Union["Histogram", "np.typing.NDArray[Any]", float]
-    ) -> H:
+    def __isub__(self: H, other: Histogram | np.typing.NDArray[Any] | float) -> H:
         if isinstance(other, (int, float)) and other == 0:
             return self
         self._compute_inplace_op("__isub__", other)
@@ -409,46 +398,34 @@ class Histogram:
         return self
 
     # If these fail, the underlying object throws the correct error
-    def __mul__(
-        self: H, other: Union["Histogram", "np.typing.NDArray[Any]", float]
-    ) -> H:
+    def __mul__(self: H, other: Histogram | np.typing.NDArray[Any] | float) -> H:
         result = self.copy(deep=False)
         return result._compute_inplace_op("__imul__", other)
 
     def __rmul__(  # type: ignore[misc]
-        self: H, other: Union["np.typing.NDArray[Any]", float]
+        self: H, other: np.typing.NDArray[Any] | float
     ) -> H:
         return self * other
 
-    def __truediv__(
-        self: H, other: Union["Histogram", "np.typing.NDArray[Any]", float]
-    ) -> H:
+    def __truediv__(self: H, other: Histogram | np.typing.NDArray[Any] | float) -> H:
         result = self.copy(deep=False)
         return result._compute_inplace_op("__itruediv__", other)
 
-    def __div__(
-        self: H, other: Union["Histogram", "np.typing.NDArray[Any]", float]
-    ) -> H:
+    def __div__(self: H, other: Histogram | np.typing.NDArray[Any] | float) -> H:
         result = self.copy(deep=False)
         return result._compute_inplace_op("__idiv__", other)
 
-    def __idiv__(
-        self: H, other: Union["Histogram", "np.typing.NDArray[Any]", float]
-    ) -> H:
+    def __idiv__(self: H, other: Histogram | np.typing.NDArray[Any] | float) -> H:
         return self._compute_inplace_op("__idiv__", other)
 
-    def __itruediv__(
-        self: H, other: Union["Histogram", "np.typing.NDArray[Any]", float]
-    ) -> H:
+    def __itruediv__(self: H, other: Histogram | np.typing.NDArray[Any] | float) -> H:
         return self._compute_inplace_op("__itruediv__", other)
 
-    def __imul__(
-        self: H, other: Union["Histogram", "np.typing.NDArray[Any]", float]
-    ) -> H:
+    def __imul__(self: H, other: Histogram | np.typing.NDArray[Any] | float) -> H:
         return self._compute_inplace_op("__imul__", other)
 
     def _compute_inplace_op(
-        self: H, name: str, other: Union["Histogram", "np.typing.NDArray[Any]", float]
+        self: H, name: str, other: Histogram | np.typing.NDArray[Any] | float
     ) -> H:
         # Also takes CppHistogram, but that confuses mypy because it's hard to pick out
         if isinstance(other, Histogram):
@@ -481,10 +458,10 @@ class Histogram:
     # TODO: Marked as too complex by flake8. Should be factored out a bit.
     def fill(
         self: H,
-        *args: Union[ArrayLike, str],
-        weight: Optional[ArrayLike] = None,
-        sample: Optional[ArrayLike] = None,
-        threads: Optional[int] = None,
+        *args: ArrayLike | str,
+        weight: ArrayLike | None = None,
+        sample: ArrayLike | None = None,
+        threads: int | None = None,
     ) -> H:
         """
         Insert data into the histogram.
@@ -535,19 +512,19 @@ class Histogram:
         }:
             raise RuntimeError("Mean histograms do not support threaded filling")
 
-        data: "List[Union[List[np.typing.NDArray[Any]], List[str]]]" = [
+        data: list[list[np.typing.NDArray[Any]] | list[str]] = [
             np.array_split(a, threads) if not isinstance(a, str) else [a] * threads  # type: ignore[arg-type, list-item]
             for a in args_ars
         ]
 
-        weights: "List[Any]"
+        weights: list[Any]
         if weight is None or np.isscalar(weight):
             assert threads is not None
             weights = [weight_ars] * threads
         else:
             weights = np.array_split(weight_ars, threads)  # type: ignore[arg-type]
 
-        samples: "List[Any]"
+        samples: list[Any]
         if sample_ars is None or np.isscalar(sample_ars):
             assert threads is not None
             samples = [sample_ars] * threads
@@ -557,9 +534,9 @@ class Histogram:
         if self._hist._storage_type is _core.storage.atomic_int64:
 
             def fun(
-                weight: Optional[ArrayLike],
-                sample: Optional[ArrayLike],
-                *args: "np.typing.NDArray[Any]",
+                weight: ArrayLike | None,
+                sample: ArrayLike | None,
+                *args: np.typing.NDArray[Any],
             ) -> None:
                 self._hist.fill(*args, weight=weight, sample=sample)
 
@@ -567,9 +544,9 @@ class Histogram:
             sum_lock = threading.Lock()
 
             def fun(
-                weight: Optional[ArrayLike],
-                sample: Optional[ArrayLike],
-                *args: "np.typing.NDArray[Any]",
+                weight: ArrayLike | None,
+                sample: ArrayLike | None,
+                *args: np.typing.NDArray[Any],
             ) -> None:
                 local_hist = copy.copy(self._hist)
                 local_hist.reset()
@@ -611,17 +588,16 @@ class Histogram:
         return cast(self, self._hist.axis(i), Axis)
 
     @property
-    def storage_type(self) -> Type[Storage]:
+    def storage_type(self) -> type[Storage]:
         return cast(self, self._hist._storage_type, Storage)  # type: ignore[return-value]
 
     @property
-    def _storage_type(self) -> Type[Storage]:
-        if sys.version_info >= (3, 7):
-            warnings.warn(
-                "Accessing storage type has changed from _storage_type to storage_type, and will be removed in future.",
-                PendingDeprecationWarning,
-                stacklevel=2,
-            )
+    def _storage_type(self) -> type[Storage]:
+        warnings.warn(
+            "Accessing storage type has changed from _storage_type to storage_type, and will be removed in future.",
+            PendingDeprecationWarning,
+            stacklevel=2,
+        )
         return cast(self, self._hist._storage_type, Storage)  # type: ignore[return-value]
 
     def _reduce(self: H, *args: Any) -> H:
@@ -633,7 +609,7 @@ class Histogram:
     def __deepcopy__(self: H, memo: Any) -> H:
         return self._new_hist(copy.deepcopy(self._hist), memo=memo)
 
-    def __getstate__(self) -> Tuple[int, Dict[str, Any]]:
+    def __getstate__(self) -> tuple[int, dict[str, Any]]:
         """
         Version 0.8: metadata added
         Version 0.11: version added and set to 0. metadata/_hist replaced with dict.
@@ -713,13 +689,13 @@ class Histogram:
 
     def _compute_commonindex(
         self, index: IndexingExpr
-    ) -> List[Union[SupportsIndex, slice, Mapping[int, Union[SupportsIndex, slice]]]]:
+    ) -> list[SupportsIndex | slice | Mapping[int, SupportsIndex | slice]]:
         """
         Takes indices and returns two iterables; one is a tuple or dict of the
         original, Ellipsis expanded index, and the other returns index,
         operation value pairs.
         """
-        indexes: List[Any]
+        indexes: list[Any]
 
         # Shorten the computations with direct access to raw object
         hist = self._hist
@@ -753,10 +729,10 @@ class Histogram:
 
     def to_numpy(
         self, flow: bool = False, *, dd: bool = False, view: bool = False
-    ) -> Union[
-        Tuple["np.typing.NDArray[Any]", ...],
-        Tuple["np.typing.NDArray[Any]", Tuple["np.typing.NDArray[Any]", ...]],
-    ]:
+    ) -> (
+        tuple[np.typing.NDArray[Any], ...]
+        | tuple[np.typing.NDArray[Any], tuple[np.typing.NDArray[Any], ...]]
+    ):
         """
         Convert to a NumPy style tuple of return arrays. Edges are converted to
         match NumPy standards, with upper edge inclusive, unlike
@@ -811,7 +787,7 @@ class Histogram:
         """
         return self._hist.empty(flow)
 
-    def sum(self, flow: bool = False) -> Union[float, Accumulator]:
+    def sum(self, flow: bool = False) -> float | Accumulator:
         """
         Compute the sum over the histogram bins (optionally including the flow bins).
         """
@@ -828,7 +804,7 @@ class Histogram:
         return self._hist.size()
 
     @property
-    def shape(self) -> Tuple[int, ...]:
+    def shape(self) -> tuple[int, ...]:
         """
         Tuple of axis sizes (not including underflow/overflow).
         """
@@ -837,7 +813,7 @@ class Histogram:
     # TODO: Marked as too complex by flake8. Should be factored out a bit.
     def __getitem__(  # noqa: C901
         self: H, index: IndexingExpr
-    ) -> Union[H, float, Accumulator]:
+    ) -> H | float | Accumulator:
 
         indexes = self._compute_commonindex(index)
 
@@ -848,10 +824,10 @@ class Histogram:
         ):
             return self._hist.at(*indexes)  # type: ignore[no-any-return, arg-type]
 
-        integrations: Set[int] = set()
-        slices: List[_core.algorithm.reduce_command] = []
-        pick_each: Dict[int, int] = {}
-        pick_set: Dict[int, List[int]] = {}
+        integrations: set[int] = set()
+        slices: list[_core.algorithm.reduce_command] = []
+        pick_each: dict[int, int] = {}
+        pick_set: dict[int, list[int]] = {}
 
         # Compute needed slices and projections
         for i, ind in enumerate(indexes):
@@ -971,9 +947,7 @@ class Histogram:
 
         return self._new_hist(reduced) if reduced.rank() > 0 else reduced.sum(flow=True)
 
-    def __setitem__(
-        self, index: IndexingExpr, value: Union[ArrayLike, Accumulator]
-    ) -> None:
+    def __setitem__(self, index: IndexingExpr, value: ArrayLike | Accumulator) -> None:
         """
         There are several supported possibilities:
 
@@ -1073,7 +1047,7 @@ class Histogram:
 
         view[tuple(indexes)] = value  # type: ignore[arg-type]
 
-    def project(self: H, *args: int) -> Union[H, float, Accumulator]:
+    def project(self: H, *args: int) -> H | float | Accumulator:
         """
         Project to a single axis or several axes on a multidimensional histogram.
         Provided a list of axis numbers, this will produce the histogram over
@@ -1104,7 +1078,7 @@ class Histogram:
 
         return Kind.MEAN if mean else Kind.COUNT
 
-    def values(self, flow: bool = False) -> "np.typing.NDArray[Any]":
+    def values(self, flow: bool = False) -> np.typing.NDArray[Any]:
         """
         Returns the accumulated values. The counts for simple histograms, the
         sum of weights for weighted histograms, the mean for profiles, etc.
@@ -1124,7 +1098,7 @@ class Histogram:
             return view
         return view.value  # type: ignore[union-attr]
 
-    def variances(self, flow: bool = False) -> Optional["np.typing.NDArray[Any]"]:
+    def variances(self, flow: bool = False) -> np.typing.NDArray[Any] | None:
         """
         Returns the estimated variance of the accumulated values. The sum of squared
         weights for weighted histograms, the variance of samples for profiles, etc.
@@ -1171,7 +1145,7 @@ class Histogram:
 
         return view.variance  # type: ignore[union-attr]
 
-    def counts(self, flow: bool = False) -> "np.typing.NDArray[Any]":
+    def counts(self, flow: bool = False) -> np.typing.NDArray[Any]:
         """
         Returns the number of entries in each bin for an unweighted
         histogram or profile and an effective number of entries (defined below)
