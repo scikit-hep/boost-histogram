@@ -7,6 +7,7 @@
 
 #include <bh_python/pybind11.hpp>
 
+#include <bh_python/metadata.hpp>
 #include <bh_python/transform.hpp>
 
 #include <boost/histogram/axis.hpp>
