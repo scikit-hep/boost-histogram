@@ -677,7 +677,7 @@ class Histogram:
         if callable(index):
             return index(self.axes[axis])
 
-        if isinstance(index, float):  # type: ignore[unreachable]
+        if isinstance(index, float):
             raise TypeError(f"Index {index} must be an integer, not float")
 
         if isinstance(index, SupportsIndex):
