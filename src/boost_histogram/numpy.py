@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import typing
 from functools import reduce
 from operator import mul
@@ -61,10 +62,8 @@ def histogramdd(
     rank = len(a)
 
     # Integer bins: all the same
-    try:
+    with contextlib.suppress(TypeError):
         bins = (int(bins),) * rank  # type: ignore[arg-type]
-    except TypeError:
-        pass
     assert not isinstance(bins, int)
 
     # Single None -> list of Nones

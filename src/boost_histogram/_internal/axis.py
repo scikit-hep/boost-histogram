@@ -338,13 +338,10 @@ class Regular(Axis, family=boost_histogram):
             ax = ca.regular_uflow(bins, start, stop)
         elif options == {"overflow"}:
             ax = ca.regular_oflow(bins, start, stop)
-        elif options in [
+        elif options in (
             {"circular", "underflow", "overflow"},
-            {
-                "circular",
-                "overflow",
-            },
-        ]:
+            {"circular", "overflow"},
+        ):
             # growth=True, underflow=False is also correct
             ax = ca.regular_circular(bins, start, stop)
 
@@ -445,17 +442,10 @@ class Variable(Axis, family=boost_histogram):
             ax = ca.variable_uflow(edges)
         elif options == {"overflow"}:
             ax = ca.variable_oflow(edges)
-        elif options in [
-            {
-                "circular",
-                "underflow",
-                "overflow",
-            },
-            {
-                "circular",
-                "overflow",
-            },
-        ]:
+        elif options in (
+            {"circular", "underflow", "overflow"},
+            {"circular", "overflow"},
+        ):
             # growth=True, underflow=False is also correct
             ax = ca.variable_circular(edges)
         elif options == set():
