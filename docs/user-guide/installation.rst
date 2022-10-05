@@ -14,14 +14,14 @@ a Python package providing Python bindings for Boost.Histogram_ (`source
 You can install this library from
 `PyPI <https://pypi.org/project/boost-histogram/>`__ with pip:
 
-.. code:: bash
+.. code-block:: bash
 
    python -m pip install boost-histogram
 
 or you can use Conda through
 `conda-forge <https://github.com/conda-forge/boost-histogram-feedstock>`__:
 
-.. code:: bash
+.. code-block:: bash
 
    conda install -c conda-forge boost-histogram
 
@@ -63,6 +63,6 @@ Boost is not required or needed (this only depends on included
 header-only dependencies).This library is under active development; you
 can install directly from GitHub if you would like.
 
-.. code:: bash
+.. code-block:: bash
 
    python -m pip install git+https://github.com/scikit-hep/boost-histogram.git@develop

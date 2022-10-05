@@ -39,7 +39,7 @@ showing how non-accurate sums fail to produce the obvious answer, 2.0::
     print(f"{np.sum(values) = } (pairwise)")
     print(f"{bh.accumulators.Sum().fill(values) = }")
 
-.. code:: text
+.. code-block:: text
 
     sum(values) = 0.0 (simple)
     math.fsum(values) = 2.0
@@ -55,7 +55,7 @@ orders of values::
     print(f"{math.fsum(values) = }")
     print(f"{bh.accumulators.Sum().fill(values) = }")
 
-.. code:: text
+.. code-block:: text
 
     math.fsum(values) = 2.0
     bh.accumulators.Sum().fill(values) = Sum(0 + 0)
@@ -86,7 +86,7 @@ For example, you could sum the following values::
     rough = bh.accumulators.WeightedSum().fill(values)
     print(f"{rough =  }")
 
-.. code:: text
+.. code-block:: text
 
     smooth = WeightedSum(value=100, variance=1000)
     rough =  WeightedSum(value=100, variance=8290)
@@ -116,7 +116,7 @@ For example, you could compute the mean of the following values::
     rough = bh.accumulators.Mean().fill(values)
     print(f"{rough =  }")
 
-.. code:: text
+.. code-block:: text
 
     smooth = Mean(count=10, value=10, variance=0)
     rough =  Mean(count=10, value=10, variance=810)
@@ -142,7 +142,7 @@ For example, you could compute the mean of the following values::
     wm = bh.accumulators.WeightedMean().fill(values, weight=2)
     print(f"{wm = }")
 
-.. code:: text
+.. code-block:: text
 
     wm = WeightedMean(sum_of_weights=20, sum_of_weights_squared=40, value=10, variance=810)
 
