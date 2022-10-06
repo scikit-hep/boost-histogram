@@ -21,13 +21,13 @@ up to 53 bits of information (9 quadrillion) counts per cell, and supports
 weighted fills. It can also be scaled by a floating point values without making
 a copy.
 
-.. code:: python3
+.. code-block:: python3
 
     h = bh.Histogram(bh.axis.Regular(10, 0, 1))  # Double() is the default
     h.fill([0.2, 0.3], weight=[0.5, 2])  # Weights are optional
     print(f"{h[bh.loc(.2)]=}\n{h[bh.loc(.3)]=}")  # Python 3.8 print
 
-.. code:: text
+.. code-block:: text
 
     h[bh.loc(.2)]=0.5
     h[bh.loc(.3)]=2.0
@@ -47,13 +47,13 @@ A true integer storage is provided, as well; this storage has the ``np.uint64``
 datatype.  This eventually should provide type safety by not accepting
 non-integer fills for data that should represent raw, unweighed counts.
 
-.. code:: python3
+.. code-block:: python3
 
     h = bh.Histogram(bh.axis.Regular(10, 0, 1), storage=bh.storage.Int64())
     h.fill([0.2, 0.3], weight=[1, 2])  # Integer weights supported
     print(f"{h[bh.loc(.2)]=}\n{h[bh.loc(.2)]=}")
 
-.. code:: text
+.. code-block:: text
 
     h[bh.loc(.2)]=1
     h[bh.loc(.3)]=2

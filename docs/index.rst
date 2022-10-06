@@ -20,18 +20,18 @@ a Python package providing Python bindings for Boost.Histogram_ (`source
 `PyPI <https://pypi.org/project/boost-histogram/>`__ with pip or you can use
 Conda via `conda-forge <https://github.com/conda-forge/boost-histogram-feedstock>`__:
 
-.. code:: bash
+.. code-block:: bash
 
    python -m pip install boost-histogram
 
-.. code:: bash
+.. code-block:: bash
 
    conda install -c conda-forge boost-histogram
 
 All the normal best-practices for Python apply; you should be in a
 virtual environment, etc. See :ref:`usage-installation` for more details. An example of usage:
 
-.. code:: python3
+.. code-block:: python3
 
    import boost_histogram as bh
 

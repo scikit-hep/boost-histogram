@@ -5,7 +5,7 @@ Quickstart
 
 All of the examples will assume the following import:
 
-.. code:: python3
+.. code-block:: python3
 
    import boost_histogram as bh
 
@@ -22,20 +22,20 @@ Making a histogram
 
 You can make a histogram like this:
 
-.. code:: python3
+.. code-block:: python3
 
    hist = bh.Histogram(bh.axis.Regular(bins=10, start=0, stop=1))
 
 If you’d like to type less, you can leave out the keywords:
 
-.. code:: python3
+.. code-block:: python3
 
    hist = bh.Histogram(bh.axis.Regular(10, 0, 1))
 
 
 The exact same syntax is used for 1D, 2D, and ND histograms:
 
-.. code:: python3
+.. code-block:: python3
 
    hist3D = bh.Histogram(
        bh.axis.Regular(10, 0, 100, circular=True),
@@ -54,7 +54,7 @@ Filling a histogram
 Once you have a histogram, you can fill it using ``.fill``. Ideally, you
 should give arrays, but single values work as well:
 
-.. code:: python3
+.. code-block:: python3
 
    hist = bh.Histogram(bh.axis.Regular(10, 0.0, 1.0))
    hist.fill(0.9)
@@ -69,7 +69,7 @@ You can slice into a histogram using bin coordinates or data coordinates using
 using ``sum`` (technically as the third slice argument, though it is allowed by
 itself as well):
 
-.. code:: python3
+.. code-block:: python3
 
     hist = bh.Histogram(
         bh.axis.Regular(10, 0, 1),
@@ -96,7 +96,7 @@ NumPy array for simple storages or a RecArray-like wrapper for non-simple
 storages.  Most methods  offer an optional keyword argument that you can pass,
 ``flow=True``, to enable the under and overflow bins (disabled by default).
 
-.. code:: python3
+.. code-block:: python3
 
     np_array = hist.view()
 
@@ -107,7 +107,7 @@ Setting the contents
 You can set the contents directly as you would a NumPy array;
 you can set either values or arrays at a time:
 
-.. code:: python3
+.. code-block:: python3
 
     hist[2] = 3.5
     hist[bh.underflow] = 0  # set the underflow bin
@@ -117,7 +117,7 @@ For non-simple storages, you can add an extra dimension that matches the
 constructor arguments of that accumulator. For example, if you want to fill
 a Weight histogram with three values, you can dimension:
 
-.. code:: python3
+.. code-block:: python3
 
     hist[0:3] = [[1, 0.1], [2, 0.2], [3, 0.3]]
 
@@ -130,7 +130,7 @@ The axes are directly available in the histogram, and you can access
 a variety of properties, such as the ``edges`` or the ``centers``. All
 properties and methods are also available directly on the ``axes`` tuple:
 
-.. code:: python3
+.. code-block:: python3
 
    ax0 = hist.axes[0]
    X, Y = hist.axes.centers
@@ -143,7 +143,7 @@ Saving Histograms
 
 You can save histograms using pickle:
 
-.. code:: python3
+.. code-block:: python3
 
     import pickle
 
