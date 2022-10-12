@@ -24,7 +24,32 @@ git submodule update --init --depth 10
 
 </details>
 
-## Development environment
+## Setting up a development environment
+
+
+### Nox
+
+The fastest way to start with development is to use nox. If you don't have nox,
+you can use `pipx run nox` to run it without installing, or `pipx install nox`.
+If you don't have pipx (pip for applications), then you can install with with
+`pip install pipx` (the only case were installing an application with regular
+pip is reasonable). If you use macOS, then pipx and nox are both in brew, use
+`brew install pipx nox`.
+
+To use, run `nox`. This will lint and test using every installed version of
+Python on your system, skipping ones that are not installed. You can also run
+specific jobs:
+
+```console
+$ nox -l # List all the defined sessions
+$ nox -s lint  # Lint only
+$ nox -s tests-3.9  # Python 3.9 tests only
+$ nox -s docs -- serve  # Build and serve the docs
+$ nox -s make_pickle  # Make a pickle file for this version
+```
+
+Nox handles everything for you, including setting up an temporary virtual
+environment for each run.
 
 ### Pip
 
