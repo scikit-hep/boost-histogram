@@ -92,6 +92,7 @@ test-skip = ["pp*", "*universal2:arm64", "*musllinux*"]
 skip = ["pp*-manylinux_i686"] # not supported by NumPy
 manylinux-x86_64-image = "manylinux2014"
 manylinux-i686-image = "manylinux2014"
+environment-pass = ["SETUPTOOLS_SCM_PRETEND_VERSION"]
 
 [tool.pylint]
 main.py-version = "3.7"
