@@ -91,7 +91,7 @@ def _cast_make_object(canidate_class: T, cpp_object: object, is_class: bool) -> 
         return canidate_class
 
     if hasattr(canidate_class, "_convert_cpp"):
-        return canidate_class._convert_cpp(cpp_object)  # type: ignore[attr-defined, no-any-return]
+        return canidate_class._convert_cpp(cpp_object)  # type: ignore[no-any-return]
 
     # Casting down does not work in pybind11,
     # see https://github.com/pybind/pybind11/issues/1640
