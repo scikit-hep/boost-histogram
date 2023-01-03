@@ -22,13 +22,13 @@ jobs:
     container: silkeh/clang:15-bullseye
 
     steps:
+    - name: Install requirements
+      run: apt-get update && apt-get install -y python3-dev python3-pip git
+
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0
         submodules: true
-
-    - name: Install requirements
-      run: apt-get update && apt-get install -y python3-dev python3-pip git
 
     - name: Install extra requirements
       run: python3 -m pip install setuptools_scm
