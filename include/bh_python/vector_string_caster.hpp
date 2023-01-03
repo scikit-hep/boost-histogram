@@ -45,7 +45,7 @@ struct type_caster<std::vector<std::string>>
         value.clear();
         value.reserve(size);
         for(std::size_t i = 0; i < size; p += step, ++i)
-            value.emplace_back(std::string{p, strlen(p, step)});
+            value.emplace_back(p, strlen(p, step));
         return true;
     }
 

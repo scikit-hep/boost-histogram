@@ -159,7 +159,7 @@ inline func_transform deep_copy<func_transform>(const func_transform& input,
     py::object convert = copy.attr("deepcopy")(input._convert_ob, memo);
     py::str name       = copy.attr("deepcopy")(input._name, memo);
 
-    return func_transform(forward, inverse, convert, name);
+    return {forward, inverse, convert, name};
 }
 
 // Print in repr
