@@ -154,7 +154,8 @@ class TestRegular(Axis):
             bh.axis.Regular(0, 1.0, 2.0)
         with pytest.raises(TypeError):
             bh.axis.Regular("1", 1.0, 2.0)
-        with pytest.raises(Exception):
+
+        with pytest.raises(TypeError):
             bh.axis.Regular(-1, 1.0, 2.0)
 
         with pytest.raises(ValueError):
@@ -378,7 +379,7 @@ class TestCircular(Axis):
             bh.axis.Regular(1, circular=True)
         with pytest.raises(TypeError):
             bh.axis.Regular(1, -1, circular=True)
-        with pytest.raises(Exception):
+        with pytest.raises(TypeError):
             bh.axis.Regular(-1, circular=True)
         with pytest.raises(TypeError):
             bh.axis.Regular(1, 1.0, metadata=1, circular=True)

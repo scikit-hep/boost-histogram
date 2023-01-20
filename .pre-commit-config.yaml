@@ -71,7 +71,7 @@ repos:
   hooks:
   - id: mypy
     files: ^src
-    additional_dependencies: [numpy==1.22.4, pytest, uhi, types-dataclasses]
+    additional_dependencies: [numpy~=1.24.0, pytest, uhi, types-dataclasses]
 
 - repo: https://github.com/mgedmin/check-manifest
   rev: "0.49"

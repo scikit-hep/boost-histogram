@@ -13,7 +13,7 @@ class View(np.ndarray):  # type: ignore[type-arg]
     _FIELDS: ClassVar[tuple[str, ...]]
 
     def __getitem__(self, ind: StrIndex) -> np.typing.NDArray[Any]:  # type: ignore[override]
-        sliced = super().__getitem__(ind)
+        sliced = super().__getitem__(ind)  # type: ignore[index]
 
         # If the shape is empty, return the parent type
         if not sliced.shape:
@@ -24,7 +24,7 @@ class View(np.ndarray):  # type: ignore[type-arg]
             return np.asarray(sliced)
 
         # Otherwise, no change, return the same View type
-        return sliced  # type: ignore[no-any-return]
+        return sliced
 
     def __repr__(self) -> str:
         # NumPy starts the ndarray class name with "array", so we replace it
@@ -41,7 +41,7 @@ class View(np.ndarray):  # type: ignore[type-arg]
             super().__setitem__(ind, value)  # type: ignore[no-untyped-call]
             return
 
-        current_ndim = super().__getitem__(ind).ndim
+        current_ndim = super().__getitem__(ind).ndim  # type: ignore[index]
 
         array: np.typing.NDArray[Any] = np.asarray(value)
         msg = "Needs matching ndarray or n+1 dim array"
@@ -155,7 +155,7 @@ class WeightedSumView(View):
                     return result.view(self.__class__)  # type: ignore[no-any-return]
 
                 # If unsupported, just pass through (will return not implemented)
-                return super().__array_ufunc__(ufunc, method, *raw_inputs, **kwargs)  # type: ignore[no-any-return]
+                return super().__array_ufunc__(ufunc, method, *raw_inputs, **kwargs)  # type: ignore[no-any-return, arg-type]
 
             # View with normal value or array
             if ufunc in {np.add, np.subtract}:
@@ -234,7 +234,7 @@ class WeightedSumView(View):
             return result.view(self.__class__)  # type: ignore[no-any-return]
 
         # If unsupported, just pass through (will return NotImplemented or things like == will work but not return subclasses)
-        return super().__array_ufunc__(ufunc, method, *raw_inputs, **kwargs)  # type: ignore[no-any-return]
+        return super().__array_ufunc__(ufunc, method, *raw_inputs, **kwargs)  # type: ignore[no-any-return, arg-type]
 
 
 @fields(
@@ -254,8 +254,7 @@ class WeightedMeanView(View):
 
     @property
     def variance(self) -> np.typing.NDArray[Any]:
-        # TODO: bug in mypy, perhaps? This should resolve to a literal.
-        with np.errstate(divide="ignore", invalid="ignore"):  # type: ignore[arg-type]
+        with np.errstate(divide="ignore", invalid="ignore"):
             return self["_sum_of_weighted_deltas_squared"] / (  # type: ignore[no-any-return]
                 self["sum_of_weights"]
                 - self["sum_of_weights_squared"] / self["sum_of_weights"]
@@ -274,7 +273,7 @@ class MeanView(View):
     # Variance is a computation
     @property
     def variance(self) -> np.typing.NDArray[Any]:
-        with np.errstate(divide="ignore", invalid="ignore"):  # type: ignore[arg-type]
+        with np.errstate(divide="ignore", invalid="ignore"):
             return self["_sum_of_deltas_squared"] / (self["count"] - 1)  # type: ignore[no-any-return]
 
 

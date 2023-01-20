@@ -28,7 +28,7 @@ log_cli_level = "DEBUG"
 profile = "black"
 
 [tool.mypy]
-python_version = "3.7"
+python_version = "3.8"
 files = ["src"]
 strict = true
 show_error_codes = true
