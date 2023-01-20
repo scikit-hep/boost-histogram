@@ -256,9 +256,10 @@ def test_fill_2d(flow):
     h.fill(3, -1)
     h.fill(0, -3)
 
-    with pytest.raises(Exception):
+    # TODO: this really should be a TypeError, but we are throwing ValueError
+    with pytest.raises(ValueError):
         h.fill(1)
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         h.fill(1, 2, 3)
 
     m = [
