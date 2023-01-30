@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import platform
 import sys
 from pathlib import Path
 
@@ -48,6 +49,7 @@ ext_modules = [
         cxx_std=cxx_std,
         include_pybind11=False,
         extra_compile_args=["/d2FH4-"] if sys.platform.startswith("win32") else [],
+        extra_link_args=["-latomic"] if platform.machine() == "armv7l" else [],
     )
 ]
 
