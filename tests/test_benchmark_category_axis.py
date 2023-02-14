@@ -40,7 +40,6 @@ def test_StrCategory(benchmark, growth, dtype):
 
 @pytest.mark.benchmark(group="Pick")
 def test_pick_only(benchmark):
-
     h = bh.Histogram(
         bh.axis.StrCategory([str(i) for i in range(32)]),
         bh.axis.StrCategory([str(i) for i in range(32)]),
@@ -58,7 +57,6 @@ def test_pick_only(benchmark):
 
 @pytest.mark.benchmark(group="Pick")
 def test_pick_and_slice(benchmark):
-
     h = bh.Histogram(
         bh.axis.StrCategory([str(i) for i in range(32)]),
         bh.axis.StrCategory([str(i) for i in range(32)]),

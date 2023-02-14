@@ -67,7 +67,6 @@ def test_copy():
 
 
 def test_fill_int_1d():
-
     h = bh.Histogram(bh.axis.Integer(-1, 2))
     assert isinstance(h, bh.Histogram)
     assert h.empty()
@@ -397,7 +396,6 @@ def test_add_2d_w(flow):
 
 
 def test_sub_2d(flow, count_storage):
-
     h0 = bh.Histogram(
         bh.axis.Integer(-1, 2, underflow=flow, overflow=flow),
         bh.axis.Regular(4, -2, 2, underflow=flow, overflow=flow),
@@ -497,7 +495,6 @@ def test_axis():
 
 
 def test_out_of_limit_axis():
-
     lim = bh._core.hist._axes_limit
     ax = (
         bh.axis.Regular(1, -1, 1, underflow=False, overflow=False) for a in range(lim)

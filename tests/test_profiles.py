@@ -6,7 +6,6 @@ import boost_histogram as bh
 
 
 def test_mean_hist():
-
     h = bh.Histogram(bh.axis.Regular(3, 0, 1), storage=bh.storage.Mean())
 
     h.fill(0.10, sample=[2.5])
@@ -23,7 +22,6 @@ def test_mean_hist():
     )
 
     for i in range(len(h.axes[0])):
-
         assert results[i]["count"] == h[i].count
         assert results[i]["value"] == approx(h[i].value)
         assert results[i]["variance"] == approx(h[i].variance)

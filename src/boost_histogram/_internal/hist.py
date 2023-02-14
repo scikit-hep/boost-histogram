@@ -814,7 +814,6 @@ class Histogram:
     def __getitem__(  # noqa: C901
         self: H, index: IndexingExpr
     ) -> H | float | Accumulator:
-
         indexes = self._compute_commonindex(index)
 
         # If this is (now) all integers, return the bin contents

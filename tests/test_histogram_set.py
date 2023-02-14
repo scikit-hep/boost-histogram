@@ -8,7 +8,6 @@ import boost_histogram as bh
 
 
 def test_1D_set_bin():
-
     h = bh.Histogram(bh.axis.Regular(10, 0, 1))
 
     h[2] = 2
@@ -22,7 +21,6 @@ def test_1D_set_bin():
 
 
 def test_2d_set_bin():
-
     h = bh.Histogram(bh.axis.Regular(10, 0, 1), bh.axis.Regular(10, 0, 1))
 
     h[2, 4] = 2

@@ -42,7 +42,6 @@ def histogramdd(
     storage: _storage.Storage = _storage.Double(),  # noqa: B008
     threads: int | None = None,
 ) -> Any:
-
     # TODO: Might be a bug in MyPy? This should type
     cls: type[_hist.Histogram] = _hist.Histogram if histogram is None else histogram  # type: ignore[assignment]
 
@@ -143,7 +142,6 @@ def histogram(
     storage: _storage.Storage | None = None,
     threads: int | None = None,
 ) -> Any:
-
     # numpy 1d histogram returns integers in some cases
     if storage is None:
         storage = (
@@ -186,7 +184,6 @@ for f, np_f in zip(
     (histogram, histogram2d, histogramdd),
     (np.histogram, np.histogram2d, np.histogramdd),
 ):
-
     H = """\
     Return a boost-histogram object using the same arguments as numpy's {}.
     This does not support the deprecated normed=True argument. Three extra

@@ -12,7 +12,6 @@ DIR = os.path.abspath(os.path.dirname(__file__))
 
 @pytest.mark.parametrize("version", ["0.10.2", "0.6.2", "0.11.1", "1.1.0"])
 def test_read_pickle(version):
-
     filename = os.path.join(DIR, "pickles", f"bh_{version}.pkl")
     with open(filename, "rb") as f:
         d = pickle.load(f)
