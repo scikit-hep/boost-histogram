@@ -811,9 +811,7 @@ class Histogram:
         return self.axes.size
 
     # TODO: Marked as too complex by flake8. Should be factored out a bit.
-    def __getitem__(  # noqa: C901
-        self: H, index: IndexingExpr
-    ) -> H | float | Accumulator:
+    def __getitem__(self: H, index: IndexingExpr) -> H | float | Accumulator:
         indexes = self._compute_commonindex(index)
 
         # If this is (now) all integers, return the bin contents

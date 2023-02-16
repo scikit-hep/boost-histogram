@@ -1219,7 +1219,7 @@ def test_add_broadcast():
     assert h1.view().sum() == 10 * 20
     assert h1.view(flow=True).sum() == 10 * 20
 
-    h2 = h + [[1]]
+    h2 = h + [[1]]  # noqa: RUF005
     assert h2.sum() == 10 * 20
     assert h2.sum(flow=True) == 12 * 22
 

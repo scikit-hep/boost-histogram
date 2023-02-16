@@ -8,7 +8,7 @@ from pytest import approx
 import boost_histogram as bh
 
 
-@pytest.fixture
+@pytest.fixture()
 def v():
     h = bh.Histogram(bh.axis.Integer(0, 4), storage=bh.storage.Weight())
     h.fill([1, 1, 1, 2, 2, 3])

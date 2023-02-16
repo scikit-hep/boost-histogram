@@ -245,7 +245,7 @@ def test_repr():
 
 # Was broken in 0.6.1
 def test_noflow_slicing():
-    noflow = dict(underflow=False, overflow=False)
+    noflow = {"underflow": False, "overflow": False}
 
     h = bh.Histogram(
         bh.axis.Regular(10, 0, 10),
@@ -285,7 +285,7 @@ def test_singleflow_slicing():
 
 
 def test_pick_str_category():
-    noflow = dict(underflow=False, overflow=False)
+    noflow = {"underflow": False, "overflow": False}
 
     h = bh.Histogram(
         bh.axis.Regular(10, 0, 10),
@@ -326,7 +326,7 @@ def test_string_requirement():
 
 
 def test_pick_int_category():
-    noflow = dict(underflow=False, overflow=False)
+    noflow = {"underflow": False, "overflow": False}
 
     h = bh.Histogram(
         bh.axis.Regular(10, 0, 10),
@@ -461,5 +461,5 @@ def test_large_index():
     h = bh.Histogram(
         bh.axis.IntCategory([4, 8, 15, 16, 23, 42, 99_999_001, 1_000_010_020])
     )
-    assert 99_999_001 == h.axes[0].value(6)
-    assert 6 == h.axes[0].index(99_999_001)
+    assert h.axes[0].value(6) == 99_999_001
+    assert h.axes[0].index(99_999_001) == 6

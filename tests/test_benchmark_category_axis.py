@@ -7,7 +7,7 @@ import boost_histogram as bh
 
 
 @pytest.mark.benchmark(group="IntCategory")
-@pytest.mark.parametrize("dtype", ("i", tuple))
+@pytest.mark.parametrize("dtype", ["i", tuple])
 def test_IntCategory(benchmark, growth, dtype):
     np.random.seed(42)
     values = np.random.choice(np.arange(5), size=[100000])
@@ -23,7 +23,7 @@ def test_IntCategory(benchmark, growth, dtype):
 
 
 @pytest.mark.benchmark(group="StrCategory")
-@pytest.mark.parametrize("dtype", ("S", "U", "O", tuple))
+@pytest.mark.parametrize("dtype", ["S", "U", "O", tuple])
 def test_StrCategory(benchmark, growth, dtype):
     np.random.seed(42)
     values = np.random.choice(["A", "B", "C", "D", "E"], size=[100000])

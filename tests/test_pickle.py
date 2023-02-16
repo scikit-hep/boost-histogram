@@ -40,7 +40,7 @@ def copy_fn(request):
 
 
 @pytest.mark.parametrize(
-    "opts", ({}, {"growth": True}, {"underflow": True, "overflow": True})
+    "opts", [{}, {"growth": True}, {"underflow": True, "overflow": True}]
 )
 def test_options(copy_fn, opts):
     orig = bh.axis.Traits(**opts)
@@ -49,13 +49,13 @@ def test_options(copy_fn, opts):
 
 
 @pytest.mark.parametrize(
-    "accum,args",
-    (
+    ("accum", "args"),
+    [
         (bh.accumulators.Sum, (12,)),
         (bh.accumulators.WeightedSum, (1.5, 2.5)),
         (bh.accumulators.Mean, (5, 1.5, 2.5)),
         (bh.accumulators.WeightedMean, (1.5, 2.5, 3.5, 4.5)),
-    ),
+    ],
 )
 def test_accumulators(accum, args, copy_fn):
     orig = accum(*args)
@@ -63,7 +63,7 @@ def test_accumulators(accum, args, copy_fn):
     assert new == orig
 
 
-axes_creations = (
+axes_creations = [
     (bh.axis.Regular, (4, 2, 4), {"underflow": False, "overflow": False}),
     (bh.axis.Regular, (4, 2, 4), {}),
     (bh.axis.Regular, (4, 2, 4), {"growth": True}),
@@ -79,11 +79,11 @@ axes_creations = (
     (bh.axis.IntCategory, ([1, 2, 3],), {"growth": True}),
     (bh.axis.StrCategory, (["1", "2", "3"],), {}),
     (bh.axis.StrCategory, (["1", "2", "3"],), {"growth": True}),
-)
-raw_axes_creations = ((bh._core.axis.regular_numpy, (4, 2, 4), {}),)
+]
+raw_axes_creations = [(bh._core.axis.regular_numpy, (4, 2, 4), {})]
 
 
-@pytest.mark.parametrize("axis,args,opts", axes_creations + raw_axes_creations)
+@pytest.mark.parametrize(("axis", "args", "opts"), axes_creations + raw_axes_creations)
 def test_axes(axis, args, opts, copy_fn):
     orig = axis(*args, **opts)
     new = copy_fn(orig)
@@ -91,7 +91,7 @@ def test_axes(axis, args, opts, copy_fn):
     assert new.centers == approx(orig.centers)
 
 
-@pytest.mark.parametrize("axis,args,opts", axes_creations)
+@pytest.mark.parametrize(("axis", "args", "opts"), axes_creations)
 def test_metadata_str(axis, args, opts, copy_fn):
     orig = axis(*args, **opts)
     orig.metadata = "foo"
@@ -126,7 +126,7 @@ def test_compare_copy_hist(metadata):
         assert orig.axes[0].metadata is not dnew.axes[0].metadata
 
 
-@pytest.mark.parametrize("axis,args,opts", axes_creations)
+@pytest.mark.parametrize(("axis", "args", "opts"), axes_creations)
 def test_metadata_any(axis, args, opts, copy_fn):
     orig = axis(*args, **opts)
     orig.metadata = (1, 2, 3)
@@ -138,8 +138,8 @@ def test_metadata_any(axis, args, opts, copy_fn):
 
 @pytest.mark.benchmark(group="histogram-pickling")
 @pytest.mark.parametrize(
-    "storage, extra",
-    (
+    ("storage", "extra"),
+    [
         (bh.storage.AtomicInt64, {}),
         (bh.storage.Int64, {}),
         (bh.storage.Unlimited, {}),
@@ -148,7 +148,7 @@ def test_metadata_any(axis, args, opts, copy_fn):
         (bh.storage.Weight, {"weight"}),
         (bh.storage.Mean, {"sample"}),
         (bh.storage.WeightedMean, {"weight", "sample"}),
-    ),
+    ],
 )
 def test_storage(benchmark, copy_fn, storage, extra):
     n = 1000
@@ -202,7 +202,7 @@ def test_numpy_edge(copy_fn):
     platform.python_implementation() == "PyPy",
     reason="Not remotely supported on PyPY, hangs forever",
 )
-@pytest.mark.parametrize("mod", (np, math))
+@pytest.mark.parametrize("mod", [np, math])
 def test_pickle_transforms(mod, copy_fn):
     ax1 = bh.axis.Regular(
         100,

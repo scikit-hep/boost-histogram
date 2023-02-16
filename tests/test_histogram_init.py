@@ -6,7 +6,7 @@ from pytest import approx
 import boost_histogram as bh
 
 
-@pytest.mark.parametrize("opt,extent", (("uo", 2), ("", 0)))
+@pytest.mark.parametrize(("opt", "extent"), [("uo", 2), ("", 0)])
 def test_make_regular_1D(opt, extent):
     hist = bh.Histogram(
         bh.axis.Regular(3, 2, 5, underflow="u" in opt, overflow="o" in opt)
@@ -39,7 +39,7 @@ def test_shortcuts_with_metadata():
         bh.Histogram((1, 2, 3, "this"))
 
 
-@pytest.mark.parametrize("opt,extent", (("uo", 2), ("", 0)))
+@pytest.mark.parametrize(("opt", "extent"), [("uo", 2), ("", 0)])
 def test_make_regular_2D(opt, extent):
     hist = bh.Histogram(
         bh.axis.Regular(3, 2, 5, underflow="u" in opt, overflow="o" in opt),
@@ -58,12 +58,12 @@ def test_make_regular_2D(opt, extent):
 
 @pytest.mark.parametrize(
     "storage",
-    (
+    [
         bh.storage.Int64(),
         bh.storage.Double(),
         bh.storage.Unlimited(),
         bh.storage.Weight(),
-    ),
+    ],
 )
 def test_make_any_hist(storage):
     hist = bh.Histogram(

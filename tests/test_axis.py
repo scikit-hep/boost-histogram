@@ -12,7 +12,7 @@ import boost_histogram as bh
 
 
 @pytest.mark.parametrize(
-    "axis,args,opt,kwargs",
+    ("axis", "args", "opt", "kwargs"),
     [
         (bh.axis.Regular, (1, 2, 3), "", {}),
         (bh.axis.Regular, (1, 2, 3), "u", {}),
@@ -164,13 +164,13 @@ class TestRegular(Axis):
         with pytest.raises(TypeError):
             bh.axis.Regular(1, 1.0, 2.0, bad_keyword="ra")
         with pytest.raises(AttributeError):
-            bh.axis.Regular(1, 1.0, 2.0, transform=lambda x: 2)
+            bh.axis.Regular(1, 1.0, 2.0, transform=lambda _: 2)
         with pytest.raises(TypeError):
             bh.axis.Regular(1, 1.0, 2.0, transform=bh.axis.transform.Pow)
         # TODO: These errors could be better
 
     def test_traits(self):
-        STD_TRAITS = dict(continuous=True, ordered=True)
+        STD_TRAITS = {"continuous": True, "ordered": True}
 
         ax = bh.axis.Regular(1, 2, 3)
         assert isinstance(ax, bh.axis.Regular)
@@ -201,7 +201,7 @@ class TestRegular(Axis):
         assert a != bh.axis.Regular(4, 1.1, 2.0)
         assert a != bh.axis.Regular(4, 1.0, 2.1)
         assert a != object()
-        assert not (a == object())  # __eq__ and __ne__ are separately implemented
+        assert a != object()  # __eq__ and __ne__ are separately implemented
 
         # metadata compare
         assert bh.axis.Regular(1, 2, 3, metadata=1) == bh.axis.Regular(
@@ -486,7 +486,7 @@ class TestVariable(Axis):
             bh.axis.Variable([0.0, 1.0, 2.0], bad_keyword="ra")
 
     def test_traits(self):
-        STD_TRAITS = dict(continuous=True, ordered=True)
+        STD_TRAITS = {"continuous": True, "ordered": True}
 
         ax = bh.axis.Variable([1, 2, 3])
         assert isinstance(ax, bh.axis.Variable)
@@ -599,7 +599,7 @@ class TestInteger:
             bh.axis.Integer(20, 30, 40)
 
     def test_traits(self):
-        STD_TRAITS = dict(ordered=True)
+        STD_TRAITS = {"ordered": True}
 
         ax = bh.axis.Integer(1, 3)
         assert isinstance(ax, bh.axis.Integer)
@@ -751,7 +751,7 @@ class TestCategory(Axis):
         assert bh.axis.StrCategory(["A", "B"]) == bh.axis.StrCategory("AB")
         assert bh.axis.StrCategory(["A", "B"]) != bh.axis.StrCategory("BA")
 
-    @pytest.mark.parametrize("ref", ([1, 2, 3], "ABC"))
+    @pytest.mark.parametrize("ref", [[1, 2, 3], "ABC"])
     def test_len(self, ref, growth):
         Cat = bh.axis.StrCategory if isinstance(ref[0], str) else bh.axis.IntCategory
         a = Cat(ref, growth=growth)
@@ -769,7 +769,7 @@ class TestCategory(Axis):
         ax = bh.axis.StrCategory("ABC", metadata="foo")
         assert repr(ax) == "StrCategory(['A', 'B', 'C'], metadata='foo')"
 
-    @pytest.mark.parametrize("ref", ([1, 2, 3], "ABC"))
+    @pytest.mark.parametrize("ref", [[1, 2, 3], "ABC"])
     def test_getitem(self, ref, growth):
         Cat = bh.axis.StrCategory if isinstance(ref[0], str) else bh.axis.IntCategory
 
@@ -792,14 +792,14 @@ class TestCategory(Axis):
         else:
             assert a.bin(3) is None
 
-    @pytest.mark.parametrize("ref", ([1, 2, 3], ("A", "B", "C")))
+    @pytest.mark.parametrize("ref", [[1, 2, 3], ("A", "B", "C")])
     def test_iter(self, ref, growth):
         Cat = bh.axis.StrCategory if isinstance(ref[0], str) else bh.axis.IntCategory
         a = Cat(ref, growth=growth)
         assert_array_equal(a, ref)
 
     @pytest.mark.parametrize(
-        "ref", ([1, 2, 3, 4], ("A", "B", "C", "D")), ids=("int", "str")
+        "ref", [[1, 2, 3, 4], ("A", "B", "C", "D")], ids=("int", "str")
     )
     def test_index(self, ref, growth):
         Cat = bh.axis.StrCategory if isinstance(ref[0], str) else bh.axis.IntCategory
@@ -818,7 +818,7 @@ class TestCategory(Axis):
             with pytest.raises(KeyError):
                 a.index(-2)
 
-    @pytest.mark.parametrize("ref", ([1, 2, 3], ("A", "B", "C")))
+    @pytest.mark.parametrize("ref", [[1, 2, 3], ("A", "B", "C")])
     def test_value(self, ref, growth):
         Cat = bh.axis.StrCategory if isinstance(ref[0], str) else bh.axis.IntCategory
         a = Cat(ref, growth=growth)
@@ -834,7 +834,7 @@ class TestCategory(Axis):
         with pytest.raises(ValueError):
             a.value([[2], [2]])
 
-    @pytest.mark.parametrize("ref", ([1, 2, 3], "ABC"))
+    @pytest.mark.parametrize("ref", [[1, 2, 3], "ABC"])
     def test_edges_centers_widths(self, ref, growth):
         Cat = bh.axis.StrCategory if isinstance(ref[0], str) else bh.axis.IntCategory
         a = Cat(ref, growth=growth)

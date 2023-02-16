@@ -40,8 +40,7 @@ vals = np.random.normal(size=[2, 1_000_000]).astype(np.float64)
 
 def timer(setup, statement, n=10):
     t = timeit(statement, setup, number=n)
-    t = (t * 1000) / n
-    return t
+    return (t * 1000) / n
 
 
 def print_timer(setup, statement, name, storage, fill, flow, base=None, n=10):

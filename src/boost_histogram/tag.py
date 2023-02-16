@@ -79,7 +79,7 @@ class Underflow(Locator):
     __slots__ = ()
     NAME = "underflow"
 
-    def __call__(self, axis: AxisLike) -> int:
+    def __call__(self, axis: AxisLike) -> int:  # noqa: ARG002
         return -1 + self.offset
 
 
@@ -103,7 +103,7 @@ class at:
     def __init__(self, value: int) -> None:
         self.value = value
 
-    def __call__(self, axis: AxisLike) -> int:
+    def __call__(self, axis: AxisLike) -> int:  # noqa: ARG002
         return self.value
 
 
