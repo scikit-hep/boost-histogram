@@ -92,12 +92,12 @@ def test_weighted_set_shortcut():
 
 
 @pytest.mark.parametrize(
-    "storage, default",
-    (
+    ("storage", "default"),
+    [
         (bh.storage.Mean, bh.accumulators.Mean(1.0, 2.0, 3.0)),
         (bh.storage.WeightedMean, bh.accumulators.WeightedMean(1.0, 2.0, 3.0, 4.0)),
         (bh.storage.Weight, bh.accumulators.WeightedSum(1.0, 2)),
-    ),
+    ],
 )
 def test_set_special_dtype(storage, default):
     h = bh.Histogram(
@@ -128,14 +128,16 @@ def test_set_special_dtype(storage, default):
     h[...] = arr
     assert_array_equal(h.view(flow=True), arr)
 
+    arr = np.full((9, 1), default)
     with pytest.raises(ValueError):
-        arr = np.full((9, 1), default)
         h[...] = arr
+
+    arr = np.full((11, 1), default)
     with pytest.raises(ValueError):
-        arr = np.full((11, 1), default)
         h[...] = arr
+
+    arr = np.full((13, 1), default)
     with pytest.raises(ValueError):
-        arr = np.full((13, 1), default)
         h[...] = arr
 
     with pytest.raises(ValueError):

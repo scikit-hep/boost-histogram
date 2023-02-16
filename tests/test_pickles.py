@@ -1,19 +1,19 @@
 from __future__ import annotations
 
-import os
 import pickle
+from pathlib import Path
 
 import pytest
 
 import boost_histogram as bh
 
-DIR = os.path.abspath(os.path.dirname(__file__))
+DIR = Path(__file__).parent.resolve()
 
 
 @pytest.mark.parametrize("version", ["0.10.2", "0.6.2", "0.11.1", "1.1.0"])
 def test_read_pickle(version):
-    filename = os.path.join(DIR, "pickles", f"bh_{version}.pkl")
-    with open(filename, "rb") as f:
+    filename = DIR / "pickles" / f"bh_{version}.pkl"
+    with filename.open("rb") as f:
         d = pickle.load(f)
 
     assert d["version"] == version

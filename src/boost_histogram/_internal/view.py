@@ -281,7 +281,7 @@ def _to_view(
     item: np.typing.NDArray[Any], value: bool = False
 ) -> np.typing.NDArray[Any] | WeightedSumView | WeightedMeanView | MeanView:
     for cls in View.__subclasses__():
-        if cls._FIELDS == item.dtype.names:
+        if item.dtype.names == cls._FIELDS:
             ret = item.view(cls)
             if value and ret.shape:
                 return ret.value  # type: ignore[no-any-return,attr-defined]

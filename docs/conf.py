@@ -7,7 +7,7 @@ from __future__ import annotations
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import os
+import contextlib
 import shutil
 import sys
 from pathlib import Path
@@ -34,10 +34,9 @@ author = "Henry Schreiner, Hans Dembinski"
 # It is better to use pkg_resources, but we can't build on RtD
 from pkg_resources import DistributionNotFound, get_distribution
 
-try:
+with contextlib.suppress(DistributionNotFound):
     version = get_distribution("boost_histogram").version
-except DistributionNotFound:
-    pass  # No version (latest/git hash)
+    # passed if no version (latest/git hash)
 
 
 # -- General configuration ---------------------------------------------------
@@ -135,7 +134,7 @@ def clean_up(app, exception):
         notebook.unlink()
 
     inner_cont = DIR
-    os.unlink(inner_cont / "contributing.md")
+    (inner_cont / "contributing.md").unlink()
 
 
 def setup(app):

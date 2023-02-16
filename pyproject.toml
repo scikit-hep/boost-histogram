@@ -24,9 +24,6 @@ testpaths = ["tests"]
 required_plugins = ["pytest-benchmark"]
 log_cli_level = "DEBUG"
 
-[tool.isort]
-profile = "black"
-
 [tool.mypy]
 python_version = "3.8"
 files = ["src"]
@@ -118,3 +115,55 @@ messages_control.disable = [
   "too-many-statements",
   "wrong-import-position",
 ]
+
+[tool.ruff]
+select = [
+  "E", "F", "W", # flake8
+  "B", "B904",   # flake8-bugbear
+  "I",           # isort
+  "ARG",         # flake8-unused-arguments
+  "C4",          # flake8-comprehensions
+  "ICN",         # flake8-import-conventions
+  "ISC",         # flake8-implicit-str-concat
+  "PGH",         # pygrep-hooks
+  "PIE",         # flake8-pie
+  "PL",          # pylint
+  "PT",          # flake8-pytest-style
+  "PTH",         # flake8-use-pathlib
+  "RET",         # flake8-return
+  "RUF",         # Ruff-specific
+  "SIM",         # flake8-simplify
+  "T20",         # flake8-print
+  "UP",          # pyupgrade
+  "YTT",         # flake8-2020
+]
+extend-ignore = [
+  "PLR",    # Design related pylint codes
+  "E501",   # Line too long
+  "PT011", "PT013"
+]
+target-version = "py37"
+src = ["src"]
+unfixable = [
+  "T20",  # Removes print statements
+  "F841", # Removes unused variables
+]
+exclude = []
+typing-modules = ["boost_histogram._internal.typing"]
+flake8-unused-arguments.ignore-variadic-names = true
+isort.required-imports = ["from __future__ import annotations"]
+
+
+[tool.ruff.mccabe]
+max-complexity = 13
+
+[tool.ruff.per-file-ignores]
+"docs/*" = ["T20"]
+"examples/*" = ["T20"]
+"scripts/*" = ["T20"]
+"setup_helpers.py" = ["C901"]
+"setup.py" = ["T20"]
+"tests/*" = ["T20"]
+"notebooks/*" = ["T20"]
+"*.pyi" = ["F401", "F811", "ARG001"]
+"docs/conf.py" = ["E402", "ARG001"]
