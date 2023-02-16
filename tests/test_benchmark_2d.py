@@ -40,7 +40,6 @@ def test_numpy_perf_2d(benchmark, dtype):
 
 
 def make_and_run_hist(flow, storage, vals):
-
     histo = bh.Histogram(
         bh.axis.Regular(bins[0], *ranges[0], underflow=flow, overflow=flow),
         bh.axis.Regular(bins[1], *ranges[1], underflow=flow, overflow=flow),

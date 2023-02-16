@@ -86,7 +86,6 @@ def test_make_any_hist(storage):
 
 
 def test_make_any_hist_storage():
-
     assert not isinstance(
         bh.Histogram(bh.axis.Regular(5, 1, 2), storage=bh.storage.Int64())[0], float
     )

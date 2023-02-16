@@ -183,7 +183,6 @@ def test_histogram_fancy(copy_fn):
 
 
 def test_histogram_metadata(copy_fn, metadata):
-
     hist = bh.Histogram(bh.axis.Regular(4, 1, 2, metadata=metadata))
     new = copy_fn(hist)
     assert hist == new
