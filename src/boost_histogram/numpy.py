@@ -74,9 +74,9 @@ def histogramdd(
         if np.issubdtype(type(b), np.integer):
             if r is None:
                 # Nextafter may affect bin edges slightly
-                r = (np.amin(a[n]), np.amax(a[n]))
+                r = (np.amin(a[n]), np.amax(a[n]))  # noqa: PLW2901
                 if r[0] == r[1]:
-                    r = (r[0] - 0.5, r[1] + 0.5)
+                    r = (r[0] - 0.5, r[1] + 0.5)  # noqa: PLW2901
             cpp_ax = _core.axis.regular_numpy(typing.cast(int, b), r[0], r[1])
             new_ax = _cast(None, cpp_ax, _axis.Axis)
             axs.append(new_ax)
