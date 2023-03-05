@@ -15,7 +15,6 @@
 #include <boost/histogram/axis/ostream.hpp>
 #include <boost/histogram/axis/traits.hpp>
 #include <boost/histogram/detail/iterator_adaptor.hpp>
-#include <boost/histogram/detail/span.hpp>
 
 #include <pybind11/eval.h>
 #include <pybind11/numpy.h>
