@@ -48,6 +48,7 @@
 
 #include <boost/assert.hpp>
 #include <boost/core/nvp.hpp>
+#include <boost/core/span.hpp>
 #include <boost/histogram/detail/array_wrapper.hpp>
 #include <boost/mp11/function.hpp> // mp_or
 #include <boost/mp11/utility.hpp>  // mp_valid
@@ -58,6 +59,14 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+
+// Available as make_span in boost/core/make_span.hpp in 1.82+
+namespace {
+template <class T>
+inline constexpr boost::span<T> make_span(T* begin, std::size_t size) noexcept {
+    return boost::span<T>{begin, size};
+}
+} // namespace
 
 template <class T,
           class = decltype(std::declval<T&>().serialize(std::declval<std::nullptr_t&>(),
@@ -225,7 +234,7 @@ class tuple_oarchive {
     std::enable_if_t<std::is_arithmetic<T>::value == false, tuple_oarchive&>
     operator<<(const bh::detail::array_wrapper<T>& w) {
         // generic version
-        for(auto&& item : bh::detail::make_span(w.ptr, w.size))
+        for(auto&& item : ::make_span(w.ptr, w.size))
             this->operator<<(item);
         return *this;
     }
@@ -342,7 +351,7 @@ class tuple_iarchive {
     std::enable_if_t<std::is_arithmetic<T>::value == false, tuple_iarchive&>
     operator>>(bh::detail::array_wrapper<T>& w) {
         // generic version
-        for(auto&& item : bh::detail::make_span(w.ptr, w.size))
+        for(auto&& item : ::make_span(w.ptr, w.size))
             this->operator>>(item);
         return *this;
     }

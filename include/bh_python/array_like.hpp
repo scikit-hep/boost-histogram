@@ -7,7 +7,7 @@
 
 #include <bh_python/pybind11.hpp>
 
-#include <boost/histogram/detail/span.hpp>
+#include <boost/core/span.hpp>
 #include <vector>
 
 /// Generate empty array with same shape and strides as argument
@@ -29,7 +29,7 @@ py::array_t<T> array_like(py::object obj) {
         strides.emplace_back(arr.strides()[i] / arr.itemsize()
                              * static_cast<py::ssize_t>(sizeof(T)));
     }
-    return py::array_t<T>{bh::detail::span<const py::ssize_t>{
+    return py::array_t<T>{boost::span<const py::ssize_t>{
                               arr.shape(), static_cast<std::size_t>(arr.ndim())},
                           strides};
 }
