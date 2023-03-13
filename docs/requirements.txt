@@ -1,6 +1,6 @@
 ipython
-myst_parser>=0.13,<0.19
-nbsphinx
+myst_parser>=0.13
+nbsphinx<0.9
 numpy
 Sphinx>=3.0.0
 sphinx-book-theme>=0.0.33
