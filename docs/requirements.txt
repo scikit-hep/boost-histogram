@@ -1,5 +1,5 @@
 ipython
-myst_parser>=0.13
+myst_parser>=0.13,<0.19
 nbsphinx
 numpy
 Sphinx>=3.0.0
