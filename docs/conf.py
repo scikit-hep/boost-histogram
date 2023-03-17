@@ -1,5 +1,5 @@
 # To regenerate API docs:
-# sphinx-apidoc -o api ../src/boost_histogram -M -f -t template/
+# nox -s build_api_docs
 
 from __future__ import annotations
 
