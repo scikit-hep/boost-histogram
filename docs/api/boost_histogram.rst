@@ -49,4 +49,3 @@ boost\_histogram.version
    :members:
    :undoc-members:
    :show-inheritance:
-

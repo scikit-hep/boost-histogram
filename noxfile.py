@@ -53,6 +53,7 @@ def docs(session: nox.Session) -> None:
         else:
             session.error("Unsupported argument to docs")
 
+
 @nox.session
 def build_api_docs(session: nox.Session) -> None:
     """
