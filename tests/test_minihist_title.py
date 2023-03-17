@@ -109,8 +109,8 @@ def test_hist_creation():
     assert hist_1.axes[1].name == "b"
 
     hist_2 = CustomHist(Regular(10, 0, 1, name=""), Regular(20, 0, 4, name=""))
-    assert hist_2.axes[0].name == ""
-    assert hist_2.axes[1].name == ""
+    assert not hist_2.axes[0].name
+    assert not hist_2.axes[1].name
 
     with pytest.raises(KeyError):
         CustomHist(Regular(10, 0, 1, name="a"), Regular(20, 0, 4, name="a"))
