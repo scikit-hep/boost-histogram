@@ -42,14 +42,6 @@ boost\_histogram.tag
    :undoc-members:
    :show-inheritance:
 
-boost\_histogram.utils
-======================
-
-.. automodule:: boost_histogram.utils
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 boost\_histogram.version
 ========================
 
@@ -57,3 +49,4 @@ boost\_histogram.version
    :members:
    :undoc-members:
    :show-inheritance:
+

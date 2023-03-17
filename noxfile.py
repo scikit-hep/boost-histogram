@@ -53,6 +53,26 @@ def docs(session: nox.Session) -> None:
         else:
             session.error("Unsupported argument to docs")
 
+@nox.session
+def build_api_docs(session: nox.Session) -> None:
+    """
+    Build (regenerate) API docs.
+    """
+
+    session.install(".", "-r", "docs/requirements.txt")
+    session.chdir("docs")
+    session.run(
+        "sphinx-apidoc",
+        "-o",
+        "api/",
+        "--no-toc",
+        "--template",
+        "template/",
+        "--force",
+        "--module-first",
+        "../src/boost_histogram",
+    )
+
 
 @nox.session
 def lint(session: nox.Session) -> None:
