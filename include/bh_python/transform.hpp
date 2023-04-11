@@ -20,13 +20,13 @@ struct func_transform {
 
     raw_t* _forward = nullptr;
     raw_t* _inverse = nullptr;
-    py::object _forward_ob; // Held for reference counting, repr, and pickling
+    py::object _forward_ob;        // Held for reference counting, repr, and pickling
     py::object _inverse_ob;
     py::object _forward_converted; // Held for reference counting if conversion makes a
                                    // new object (ctypes does not bump the refcount)
     py::object _inverse_converted;
-    py::object _convert_ob; // Called before computing transform if not None
-    py::str _name;          // Optional name (uses repr from objects otherwise)
+    py::object _convert_ob;        // Called before computing transform if not None
+    py::str _name;                 // Optional name (uses repr from objects otherwise)
 
     /// Convert an object into a std::function. Can handle ctypes
     /// function pointers and pybind11 C++ functions, or anything
