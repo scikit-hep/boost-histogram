@@ -1,4 +1,4 @@
-name: Pyodide`
+name: Pyodide
 
 on:
   pull_request:
@@ -46,7 +46,7 @@ jobs:
         run: |
           pyodide venv .venv-pyodide
           source .venv-pyodide/bin/activate
-          pip install dist/*.whl\[test\]
+          pip install $(echo -n dist/*.whl)[test]
       - name: Test
         run: |
           source .venv-pyodide/bin/activate
