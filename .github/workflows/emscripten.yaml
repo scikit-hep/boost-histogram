@@ -49,7 +49,7 @@ jobs:
         .venv-pyodide/bin/pip install $(echo -n dist/*.whl)[test]
 
     - name: Test
-      run: .venv-pyodide/bin/activate/pytest
+      run: .venv-pyodide/bin/pytest
 
     - name: Upload wheels
       uses: actions/upload-artifact@v3
