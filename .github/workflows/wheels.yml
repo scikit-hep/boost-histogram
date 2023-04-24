@@ -98,9 +98,6 @@ jobs:
         arch: [auto64]
 
         include:
-          - os: ubuntu-latest
-            arch: auto32
-
           - os: macos-latest
             arch: universal2
 
