@@ -1,6 +1,7 @@
 name: Pyodide
 
 on:
+  workflow_dispatch:
   pull_request:
     branches:
       - master
@@ -14,15 +15,12 @@ jobs:
   build-wasm-emscripten:
     runs-on: ubuntu-22.04
     steps:
-      - name: Checkout numpy
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
         with:
           submodules: true
           fetch-depth: 0
 
-      - name: set up python
-        id: setup-python
-        uses: actions/setup-python@v4
+      - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
 
@@ -37,8 +35,7 @@ jobs:
       - name: Build
         run: CFLAGS=-fexceptions LDFLAGS=-fexceptions pyodide build
 
-      - name: set up node
-        uses: actions/setup-node@v3.6.0
+      - uses: actions/setup-node@v3.6.0
         with:
           node-version: 18
 
@@ -47,6 +44,7 @@ jobs:
           pyodide venv .venv-pyodide
           source .venv-pyodide/bin/activate
           pip install $(echo -n dist/*.whl)[test]
+
       - name: Test
         run: |
           source .venv-pyodide/bin/activate
