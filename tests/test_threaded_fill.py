@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+import sys
+
 import numpy as np
 import pytest
 from numpy.testing import assert_almost_equal, assert_array_equal
 
 import boost_histogram as bh
 
+if sys.platform.startswith("emscripten"):
+    pytest.skip(allow_module_level=True) 
 
 def fillit(hist, *args, **kwargs):
     return hist.reset().fill(*args, **kwargs)
