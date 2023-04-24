@@ -1,4 +1,4 @@
-name: Pyodide
+name: WebAssembly
 
 on:
   workflow_dispatch:
@@ -16,6 +16,7 @@ concurrency:
 
 jobs:
   build-wasm-emscripten:
+    name: Pyodide
     runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
@@ -45,15 +46,15 @@ jobs:
     - name: Set up Pyodide virtual environment
       run: |
         pyodide venv .venv-pyodide
-        source .venv-pyodide/bin/activate
-        pip install $(echo -n dist/*.whl)[test]
+        .venv-pyodide/bin/pip install $(echo -n dist/*.whl)[test]
 
     - name: Test
-      run: |
-        source .venv-pyodide/bin/activate
-        pytest
+      run: .venv-pyodide/bin/activate/pytest
 
     - name: Upload wheels
       uses: actions/upload-artifact@v3
+      with:
+        path: dist/*.whl
+      
       with:
         path: dist/*.whl
