@@ -50,6 +50,7 @@ ext_modules = [
         include_pybind11=False,
         extra_compile_args=["/d2FH4-"] if sys.platform.startswith("win32") else [],
         extra_link_args=["-latomic"] if platform.machine() == "armv7l" else [],
+        define_macros=[("PYBIND11_DETAILED_ERROR_MESSAGES", "1")],
     )
 ]
 
