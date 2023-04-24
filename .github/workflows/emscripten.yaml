@@ -4,8 +4,11 @@ on:
   workflow_dispatch:
   pull_request:
     branches:
-      - master
-      - develop
+    - master
+    - develop
+  release:
+    types:
+    - published
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -15,37 +18,42 @@ jobs:
   build-wasm-emscripten:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
-          fetch-depth: 0
+    - uses: actions/checkout@v3
+      with:
+        submodules: true
+        fetch-depth: 0
 
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
+    - uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
 
-      - uses: mymindstorm/setup-emsdk@v12
-        with:
-          version: 3.1.32
-          actions-cache-folder: emsdk-cache
+    - uses: mymindstorm/setup-emsdk@v12
+      with:
+        version: 3.1.32
+        actions-cache-folder: emsdk-cache
 
-      - name: Install pyodide-build
-        run: pip install pyodide-build==0.23.1
+    - name: Install pyodide-build
+      run: pip install pyodide-build==0.23.1
 
-      - name: Build
-        run: CFLAGS=-fexceptions LDFLAGS=-fexceptions pyodide build
+    - name: Build
+      run: CFLAGS=-fexceptions LDFLAGS=-fexceptions pyodide build
 
-      - uses: actions/setup-node@v3.6.0
-        with:
-          node-version: 18
+    - uses: actions/setup-node@v3.6.0
+      with:
+        node-version: 18
 
-      - name: Set up Pyodide virtual environment
-        run: |
-          pyodide venv .venv-pyodide
-          source .venv-pyodide/bin/activate
-          pip install $(echo -n dist/*.whl)[test]
+    - name: Set up Pyodide virtual environment
+      run: |
+        pyodide venv .venv-pyodide
+        source .venv-pyodide/bin/activate
+        pip install $(echo -n dist/*.whl)[test]
 
-      - name: Test
-        run: |
-          source .venv-pyodide/bin/activate
-          pytest
+    - name: Test
+      run: |
+        source .venv-pyodide/bin/activate
+        pytest
+
+    - name: Upload wheels
+      uses: actions/upload-artifact@v3
+      with:
+        path: dist/*.whl
