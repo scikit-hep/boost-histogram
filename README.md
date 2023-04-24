@@ -198,7 +198,7 @@ platforms have wheels provided in boost-histogram:
 
 | System | Arch | Python versions | PyPy versions |
 |---------|-----|------------------|--------------|
-| ManyLinux2014 | 32 & 64-bit | 3.7, 3.8, 3.9, 3.10, 3.11  | 3.7, 3.8, 3.9 |
+| ManyLinux2014 | 64-bit | 3.7, 3.8, 3.9, 3.10, 3.11  | 3.7, 3.8, 3.9 |
 | ManyLinux2014 | ARM64 | 3.7, 3.8, 3.9, 3.10, 3.11 | 3.7, 3.8, 3.9 |
 | MuslLinux_1_1 | 64-bit | 3.7, 3.8, 3.9, 3.10, 3.11 | |
 | macOS 10.9+ | 64-bit | 3.7, 3.8, 3.9, 3.10, 3.11 | 3.7, 3.8, 3.9 |
