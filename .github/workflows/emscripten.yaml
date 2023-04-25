@@ -1,4 +1,4 @@
-name: WebAssembly
+name: WASM
 
 on:
   workflow_dispatch:
@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   build-wasm-emscripten:
-    name: Pyodide
+    name: Pyodide wheel
     runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
@@ -28,18 +28,27 @@ jobs:
       with:
         python-version: "3.11"
 
-    - uses: mymindstorm/setup-emsdk@v12
-      with:
-        version: 3.1.32
-        actions-cache-folder: emsdk-cache
-
     - name: Install pyodide-build
       run: pip install pyodide-build==0.23.1
+
+    - name: Compute emsdk version
+      id: compute-emsdk-version
+      run: |
+        # Prepare xbuild environment (side-effect)
+        pyodide config list
+        # Save EMSDK version
+        EMSCRIPTEN_VERSION=$(pyodide config get emscripten_version)
+        echo "emsdk-version=$EMSCRIPTEN_VERSION" >> $GITHUB_OUTPUT
+
+    - uses: mymindstorm/setup-emsdk@v12
+      with:
+        version: ${{ steps.compute-emsdk-version.outputs.emsdk-version }}
+        actions-cache-folder: emsdk-cache
 
     - name: Build
       run: CFLAGS=-fexceptions LDFLAGS=-fexceptions pyodide build
 
-    - uses: actions/setup-node@v3.6.0
+    - uses: actions/setup-node@v3
       with:
         node-version: 18
 
