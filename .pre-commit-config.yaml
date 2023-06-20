@@ -54,7 +54,7 @@ repos:
     stages: [manual]
 
 - repo: https://github.com/codespell-project/codespell
-  rev: v2.2.4
+  rev: v2.2.5
   hooks:
   - id: codespell
     args: ["-L", "hist,nd,circularly,ba"]
@@ -69,7 +69,7 @@ repos:
     exclude: .pre-commit-config.yaml
 
 - repo: https://github.com/pre-commit/mirrors-clang-format
-  rev: v16.0.4
+  rev: v16.0.6
   hooks:
    - id: clang-format
      types_or: [c++]
