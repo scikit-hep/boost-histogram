@@ -21,7 +21,7 @@ class MGridOpts(TypedDict):
 class ArrayTuple(tuple):  # type: ignore[type-arg]
     __slots__ = ()
     # This is an exhaustive list as of NumPy 1.19
-    _REDUCTIONS = {"sum", "any", "all", "min", "max", "prod"}
+    _REDUCTIONS = frozenset(("sum", "any", "all", "min", "max", "prod"))
 
     def __getattr__(self, name: str) -> Any:
         if name in self._REDUCTIONS:
@@ -51,7 +51,7 @@ B = TypeVar("B", bound="AxesTuple")
 @set_module("boost_histogram.axis")
 class AxesTuple(tuple):  # type: ignore[type-arg]
     __slots__ = ()
-    _MGRIDOPTS: MGridOpts = {"sparse": True, "indexing": "ij"}
+    _MGRIDOPTS: ClassVar[MGridOpts] = {"sparse": True, "indexing": "ij"}
 
     def __init__(self, __iterable: Iterable[Axis]) -> None:
         for item in self:
