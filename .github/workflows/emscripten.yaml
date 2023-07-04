@@ -29,7 +29,7 @@ jobs:
         python-version: "3.11"
 
     - name: Install pyodide-build
-      run: pip install pyodide-build==0.23.1 pydantic<2
+      run: pip install pyodide-build==0.23.1 "pydantic<2"
 
     - name: Compute emsdk version
       id: compute-emsdk-version
