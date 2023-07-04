@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import partial
-from typing import Any, Iterable, TypeVar
+from typing import Any, ClassVar, Iterable, TypeVar
 
 import numpy as np
 
