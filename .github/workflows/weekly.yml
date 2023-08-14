@@ -7,7 +7,7 @@ on:
 
 jobs:
   basic:
-    name: Head on Python 3.8
+    name: Head on Python 3.11
     runs-on: ubuntu-latest
 
     steps:
@@ -21,7 +21,7 @@ jobs:
 
     - uses: actions/setup-python@v4
       with:
-        python-version: 3.8
+        python-version: "3.11"
 
     - name: Build and install wheel
       run: pip install -v .[test]
