@@ -8,6 +8,7 @@
 #include <bh_python/axis.hpp>
 #include <bh_python/kwargs.hpp>
 #include <bh_python/register_axis.hpp>
+#include <bh_python/regular_numpy.hpp>
 #include <boost/mp11.hpp>
 #include <vector>
 
@@ -29,7 +30,8 @@ void register_axes(py::module& mod) {
                        axis::regular_oflow,
                        axis::regular_uoflow,
                        axis::regular_uoflow_growth,
-                       axis::regular_circular>(mod, [](auto ax) {
+                       axis::regular_circular,
+                       axis::regular_numpy>(mod, [](auto ax) {
         ax.def(py::init<unsigned, double, double>(), "bins"_a, "start"_a, "stop"_a);
     });
 

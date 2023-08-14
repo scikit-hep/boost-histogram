@@ -7,7 +7,7 @@
 
 #include <bh_python/pybind11.hpp>
 
-#include <bh_python/metadata.hpp>
+#include <bh_python/regular_numpy.hpp>
 #include <bh_python/transform.hpp>
 
 #include <boost/histogram/axis.hpp>
@@ -130,6 +130,9 @@ class boolean : public bh::axis::integer<int, metadata_t, option::none_t> {
 // using boolean = bh::axis::boolean<metadata_t>;
 BHP_SPECIALIZE_NAME(boolean)
 
+// Axis defined elsewhere
+BHP_SPECIALIZE_NAME(regular_numpy)
+
 #undef BHP_SPECIALIZE_NAME
 
 // How edges, centers, and widths are handled
@@ -216,7 +219,10 @@ py::array_t<double> edges(const A& ax, bool flow = false, bool numpy_upper = fal
         for(index_type i = -underflow; i <= ax.size() + overflow; ++i)
             edges.mutable_at(i + underflow) = ax.value(i);
 
-        if(numpy_upper && !std::is_same<A, axis::regular_none>::value) {
+        if(numpy_upper
+           && !(std::is_same<A, axis::regular_none>::value
+                || std::is_same<A, axis::regular_uflow>::value
+                || std::is_same<A, axis::regular_numpy>::value)) {
             edges.mutable_at(ax.size() + underflow) = std::nextafter(
                 edges.at(ax.size() + underflow), std::numeric_limits<double>::min());
         }
@@ -283,6 +289,7 @@ using axis_variant = bh::axis::variant<axis::regular_uoflow,
                                        axis::regular_circular,
                                        axis::regular_pow,
                                        axis::regular_trans,
+                                       axis::regular_numpy,
                                        axis::variable_uoflow,
                                        axis::variable_uflow,
                                        axis::variable_oflow,
