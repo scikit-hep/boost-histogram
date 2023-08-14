@@ -219,7 +219,10 @@ py::array_t<double> edges(const A& ax, bool flow = false, bool numpy_upper = fal
         for(index_type i = -underflow; i <= ax.size() + overflow; ++i)
             edges.mutable_at(i + underflow) = ax.value(i);
 
-        if(numpy_upper && !std::is_same<A, axis::regular_numpy>::value) {
+        if(numpy_upper
+           && !(std::is_same<A, axis::regular_none>::value
+                || std::is_same<A, axis::regular_uflow>::value
+                || std::is_same<A, axis::regular_numpy>::value)) {
             edges.mutable_at(ax.size() + underflow) = std::nextafter(
                 edges.at(ax.size() + underflow), std::numeric_limits<double>::min());
         }

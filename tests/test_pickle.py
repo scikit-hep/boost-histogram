@@ -80,10 +80,9 @@ axes_creations = [
     (bh.axis.StrCategory, (["1", "2", "3"],), {}),
     (bh.axis.StrCategory, (["1", "2", "3"],), {"growth": True}),
 ]
-raw_axes_creations = [(bh._core.axis.regular_numpy, (4, 2, 4), {})]
 
 
-@pytest.mark.parametrize(("axis", "args", "opts"), axes_creations + raw_axes_creations)
+@pytest.mark.parametrize(("axis", "args", "opts"), axes_creations)
 def test_axes(axis, args, opts, copy_fn):
     orig = axis(*args, **opts)
     new = copy_fn(orig)
@@ -186,16 +185,6 @@ def test_histogram_metadata(copy_fn, metadata):
     hist = bh.Histogram(bh.axis.Regular(4, 1, 2, metadata=metadata))
     new = copy_fn(hist)
     assert hist == new
-
-
-def test_numpy_edge(copy_fn):
-    ax1 = bh._core.axis.regular_numpy(10, 0, 1)
-    ax2 = copy_fn(ax1)
-
-    # stop defaults to 0, so this fails if the copy fails
-    assert ax1 == ax2
-    assert ax1.index(1) == ax2.index(1)
-    assert ax2.index(1) == 9
 
 
 @pytest.mark.skipif(

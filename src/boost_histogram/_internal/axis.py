@@ -259,7 +259,6 @@ class Axis:
         ca.regular_uflow,
         ca.regular_oflow,
         ca.regular_none,
-        ca.regular_numpy,
         ca.regular_pow,
         ca.regular_trans,
         ca.regular_circular,
