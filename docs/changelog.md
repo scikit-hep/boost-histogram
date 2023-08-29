@@ -450,7 +450,6 @@ usability when plotting and indexing.
 - Histograms support operations with arrays, no longer take the first element only [#417][]
 
 [#414]: https://github.com/scikit-hep/boost-histogram/pull/414
-[#414]: https://github.com/scikit-hep/boost-histogram/pull/414
 [#415]: https://github.com/scikit-hep/boost-histogram/pull/415
 [#417]: https://github.com/scikit-hep/boost-histogram/pull/417
 [#418]: https://github.com/scikit-hep/boost-histogram/pull/418

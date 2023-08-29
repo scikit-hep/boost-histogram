@@ -95,7 +95,6 @@ One common use for an integer axis could be a true/false axis:
 .. code-block:: python3
 
    bool_axis = bh.axis.Integer(0, 2, underflow=False, overflow=False)
-   :noindex:
 
 Another could be for an IntEnum if the values are contiguous.
 
@@ -117,12 +116,13 @@ One use for an IntCategory axis is for an IntEnum:
 
     import enum
 
+
     class MyEnum(enum.IntEnum):
         a = 1
         b = 5
 
+
     my_enum_axis = bh.axis.IntEnum(list(MyEnum), underflow=False, overflow=False)
-   :noindex:
 
 
 .. py:function:: bh.axis.StrCategory([str1, ...], metadata="", growth=False)

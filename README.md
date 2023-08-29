@@ -60,7 +60,7 @@ values = hist.values()
 
 # Make a new histogram with just the second axis, summing over the first, and
 # rebinning the second into larger bins:
-h2 = hist[::sum, ::bh.rebin(2)]
+h2 = hist[::sum, :: bh.rebin(2)]
 ```
 
 </details>

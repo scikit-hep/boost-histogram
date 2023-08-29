@@ -1,6 +1,7 @@
 ---
 aspectratio: 169
 fontfamily: bookman
+orphan: true
 ---
 
 # Simple usage
@@ -16,12 +17,10 @@ Converted to GIF with ezgif.com, 300 ms delay time.
 import boost_histogram as bh
 
 # Make a histogram
-h = bh.Histogram(
-    bh.axis.Regular(10, 0, 1)
-)
+h = bh.Histogram(bh.axis.Regular(10, 0, 1))
 
 # Fill it with events
-h.fill([.2, .3, .6, .9])
+h.fill([0.2, 0.3, 0.6, 0.9])
 
 # Compute the sum
 total = h.sum()
@@ -31,10 +30,10 @@ total = h.sum()
 
 ```python
 # Slice in data coordinates
-sliced_h = h[bh.loc(.5):bh.loc(1.5)]
+sliced_h = h[bh.loc(0.5) : bh.loc(1.5)]
 
 # Sum over and rebin easily
-smaller = h[::sum, ::bh.rebin(2)]
+smaller = h[::sum, :: bh.rebin(2)]
 
 # Set and access easily
 h[...] = np.asarray(prebinned)
@@ -87,6 +86,7 @@ Supports the UHI `PlottableHistogram` protocol!
 
 ```python
 import mplhep
+
 mplhep.histplot(h)
 ```
 
