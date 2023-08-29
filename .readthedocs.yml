@@ -19,7 +19,7 @@ formats: all
 
 python:
   install:
-     - requirements: docs/requirements.txt
+    - requirements: docs/requirements.txt
 
 submodules:
   exclude: all

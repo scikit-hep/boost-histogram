@@ -15,21 +15,19 @@
 [![Gitter][gitter-badge]][gitter-link]
 [![Scikit-HEP][sk-badge]](https://scikit-hep.org/)
 
-
-Python bindings for [Boost::Histogram][] ([source][Boost::Histogram
-source]), a C++14 library. This is one of the [fastest libraries][] for
+Python bindings for [Boost::Histogram][] ([source][Boost::Histogram source]), a C++14 library. This is one of the [fastest libraries][] for
 histogramming, while still providing the power of a full histogram object. See
 [what's new](./docs/CHANGELOG.md).
 
 Other members of the boost-histogram family include:
 
-* [Hist][]: The first-party analyst-friendly histogram library that extends
+- [Hist][]: The first-party analyst-friendly histogram library that extends
   boost-histogram with named axes, many new shortcuts including UHI+, plotting
   shortcuts, and more.
-* [UHI][]: Specification for Histogram library interop, especially for plotting.
-* [mplhep][]: Plotting extension for matplotlib with support for UHI histograms.
-* [histoprint][]: Histogram display library for the command line with support for UHI.
-* [dask-histogram][]: Dask support for boost-histogram.
+- [UHI][]: Specification for Histogram library interop, especially for plotting.
+- [mplhep][]: Plotting extension for matplotlib with support for UHI histograms.
+- [histoprint][]: Histogram display library for the command line with support for UHI.
+- [dask-histogram][]: Dask support for boost-histogram.
 
 [uhi]: https://uhi.readthedocs.io
 [dask-histogram]: https://dask-histogram.readthedocs.io/en/stable/
@@ -41,7 +39,6 @@ Other members of the boost-histogram family include:
 ![Slideshow of features. See expandable text below if the image is not readable.](https://github.com/scikit-hep/boost-histogram/raw/develop/docs/_images/banner.gif)
 
 <details><summary>Text intro (click to expand)</summary>
-
 
 ```python
 import boost_histogram as bh
@@ -79,100 +76,99 @@ histograms can be plotted via any compatible library, such as [mplhep][].
 
 <details><summary>Simplified list of features (click to expand)</summary>
 
-* Many axis types (all support `metadata=...`)
-    * `bh.axis.Regular(n, start, stop, ...)`: Make a regular axis. Options listed below.
-        * `overflow=False`: Turn off overflow bin
-        * `underflow=False`: Turn off underflow bin
-        * `growth=True`: Turn on growing axis, bins added when out-of-range items added
-        * `circular=True`: Turn on wrapping, so that out-of-range values wrap around into the axis
-        * `transform=bh.axis.transform.Log`: Log spacing
-        * `transform=bh.axis.transform.Sqrt`: Square root spacing
-        * `transform=bh.axis.transform.Pow(v)`: Power spacing
-        * See also the flexible [Function transform](https://boost-histogram.readthedocs.io/en/latest/usage/transforms.html)
-    * `bh.axis.Integer(start, stop, *, underflow=True, overflow=True, growth=False, circular=False)`: Special high-speed version of `regular` for evenly spaced bins of width 1
-    * `bh.axis.Variable([start, edge1, edge2, ..., stop], *, underflow=True, overflow=True, circular=False)`: Uneven bin spacing
-    * `bh.axis.IntCategory([...], *, growth=False)`: Integer categories
-    * `bh.axis.StrCategory([...], *, growth=False)`: String categories
-    * `bh.axis.Boolean()`: A True/False axis
-* Axis features:
-    * `.index(value)`: The index at a point (or points) on the axis
-    * `.value(index)`: The value for a fractional bin (or bins) in the axis
-    * `.bin(i)`: The bin edges (continuous axis) or a bin value (discrete axis)
-    * `.centers`: The N bin centers (if continuous)
-    * `.edges`: The N+1 bin edges (if continuous)
-    * `.extent`: The number of bins (including under/overflow)
-    * `.metadata`: Anything a user wants to store
-    * `.traits`: The options set on the axis
-    * `.size`: The number of bins (not including under/overflow)
-    * `.widths`: The N bin widths
-* Many storage types
-    * `bh.storage.Double()`: Doubles for weighted values (default)
-    * `bh.storage.Int64()`: 64-bit unsigned integers
-    * `bh.storage.Unlimited()`: Starts small, but can go up to unlimited precision ints or doubles.
-    * `bh.storage.AtomicInt64()`: Threadsafe filling, experimental. Does not support growing axis in threads.
-    * `bh.storage.Weight()`: Stores a weight and sum of weights squared.
-    * `bh.storage.Mean()`: Accepts a sample and computes the mean of the samples (profile).
-    * `bh.storage.WeightedMean()`: Accepts a sample and a weight. It computes the weighted mean of the samples.
-* Accumulators
-    * `bh.accumulator.Sum`: High accuracy sum (Neumaier) - used by the sum method when summing a numerical histogram
-    * `bh.accumulator.WeightedSum`: Tracks a weighted sum and variance
-    * `bh.accumulator.Mean`: Running count, mean, and variance (Welfords's incremental algorithm)
-    * `bh.accumulator.WeightedMean`: Tracks a weighted sum, mean, and variance (West's incremental algorithm)
-* Histogram operations
-  * `h.ndim`: The number of dimensions
-  * `h.size or len(h)`: The number of bins
-  * `+`: Add two histograms (storages must match types currently)
-  * `*=`: Multiply by a scaler (not all storages) (`hist * scalar` and `scalar * hist` supported too)
-  * `/=`: Divide by a scaler (not all storages) (`hist / scalar` supported too)
-  * `.kind`: Either `bh.Kind.COUNT` or `bh.Kind.MEAN`, depending on storage
-  * `.storage_type`: Fetch the histogram storage type
-  * `.sum(flow=False)`: The total count of all bins
-  * `.project(ax1, ax2, ...)`: Project down to listed axis (numbers). Can also reorder axes.
-  * `.to_numpy(flow=False, view=False)`: Convert to a NumPy style tuple (with or without under/overflow bins)
-  * `.view(flow=False)`: Get a view on the bin contents (with or without under/overflow bins)
-  * `.values(flow=False)`: Get a view on the values (counts or means, depending on storage)
-  * `.variances(flow=False)`: Get the variances if available
-  * `.counts(flow=False)`: Get the effective counts for all storage types
-  * `.reset()`: Set counters to 0 (growing axis remain the same size)
-  * `.empty(flow=False)`: Check to see if the histogram is empty (can check flow bins too if asked)
-  * `.copy(deep=False)`: Make a copy of a histogram
-  * `.axes`: Get the axes as a tuple-like (all properties of axes are available too)
-      * `.axes[0]`: Get the 0th axis
-      * `.axes.edges`: The lower values as a broadcasting-ready array
-      * `.axes.centers`: The centers of the bins broadcasting-ready array
-      * `.axes.widths`: The bin widths as a broadcasting-ready array
-      * `.axes.metadata`: A tuple of the axes metadata
-      * `.axes.size`: A tuple of the axes sizes (size without flow)
-      * `.axes.extent`: A tuple of the axes extents (size with flow)
-      * `.axes.bin(*args)`: Returns the bin edges as a tuple of pairs (continuous axis) or values (describe)
-      * `.axes.index(*args)`: Returns the bin index at a value for each axis
-      * `.axes.value(*args)`: Returns the bin value at an index for each axis
-* Indexing - Supports [UHI Indexing](https://uhi.readthedocs.io/en/latest/indexing.html)
-    * Bin content access / setting
-        * `v = h[b]`: Access bin content by index number
-        * `v = h[{0:b}]`: All actions can be represented by `axis:item` dictionary instead of by position (mostly useful for slicing)
-    * Slicing to get histogram or set array of values
-        * `h2 = h[a:b]`: Access a slice of a histogram, cut portions go to flow bins if present
-        * `h2 = h[:, ...]`: Using `:` and `...` supported just like NumPy
-        * `h2 = h[::sum]`: Third item in slice is the "action"
-        * `h[...] = array`: Set the bin contents, either include or omit flow bins
-    * Special accessors
-        * `bh.loc(v)`: Supply value in axis coordinates instead of bin number
-        * `bh.underflow`: The underflow bin (use empty beginning on slice for slicing instead)
-        * `bh.overflow`: The overflow bin (use empty end on slice for slicing instead)
-    * Special actions (third item in slice)
-        * `sum`: Remove axes via projection; if limits are given, use those
-        * `bh.rebin(n)`: Rebin an axis
-* NumPy compatibility
-    * `bh.numpy` provides faster [drop in replacements](https://boost-histogram.readthedocs.io/en/latest/usage/numpy.html) for NumPy histogram functions
-    * Histograms follow the buffer interface, and provide `.view()`
-    * Histograms can be converted to NumPy style output tuple with `.to_numpy()`
-* Details
-    * All objects support copy/deepcopy/pickle
-    * Fully statically typed, tested with MyPy.
+- Many axis types (all support `metadata=...`)
+  - `bh.axis.Regular(n, start, stop, ...)`: Make a regular axis. Options listed below.
+    - `overflow=False`: Turn off overflow bin
+    - `underflow=False`: Turn off underflow bin
+    - `growth=True`: Turn on growing axis, bins added when out-of-range items added
+    - `circular=True`: Turn on wrapping, so that out-of-range values wrap around into the axis
+    - `transform=bh.axis.transform.Log`: Log spacing
+    - `transform=bh.axis.transform.Sqrt`: Square root spacing
+    - `transform=bh.axis.transform.Pow(v)`: Power spacing
+    - See also the flexible [Function transform](https://boost-histogram.readthedocs.io/en/latest/usage/transforms.html)
+  - `bh.axis.Integer(start, stop, *, underflow=True, overflow=True, growth=False, circular=False)`: Special high-speed version of `regular` for evenly spaced bins of width 1
+  - `bh.axis.Variable([start, edge1, edge2, ..., stop], *, underflow=True, overflow=True, circular=False)`: Uneven bin spacing
+  - `bh.axis.IntCategory([...], *, growth=False)`: Integer categories
+  - `bh.axis.StrCategory([...], *, growth=False)`: String categories
+  - `bh.axis.Boolean()`: A True/False axis
+- Axis features:
+  - `.index(value)`: The index at a point (or points) on the axis
+  - `.value(index)`: The value for a fractional bin (or bins) in the axis
+  - `.bin(i)`: The bin edges (continuous axis) or a bin value (discrete axis)
+  - `.centers`: The N bin centers (if continuous)
+  - `.edges`: The N+1 bin edges (if continuous)
+  - `.extent`: The number of bins (including under/overflow)
+  - `.metadata`: Anything a user wants to store
+  - `.traits`: The options set on the axis
+  - `.size`: The number of bins (not including under/overflow)
+  - `.widths`: The N bin widths
+- Many storage types
+  - `bh.storage.Double()`: Doubles for weighted values (default)
+  - `bh.storage.Int64()`: 64-bit unsigned integers
+  - `bh.storage.Unlimited()`: Starts small, but can go up to unlimited precision ints or doubles.
+  - `bh.storage.AtomicInt64()`: Threadsafe filling, experimental. Does not support growing axis in threads.
+  - `bh.storage.Weight()`: Stores a weight and sum of weights squared.
+  - `bh.storage.Mean()`: Accepts a sample and computes the mean of the samples (profile).
+  - `bh.storage.WeightedMean()`: Accepts a sample and a weight. It computes the weighted mean of the samples.
+- Accumulators
+  - `bh.accumulator.Sum`: High accuracy sum (Neumaier) - used by the sum method when summing a numerical histogram
+  - `bh.accumulator.WeightedSum`: Tracks a weighted sum and variance
+  - `bh.accumulator.Mean`: Running count, mean, and variance (Welfords's incremental algorithm)
+  - `bh.accumulator.WeightedMean`: Tracks a weighted sum, mean, and variance (West's incremental algorithm)
+- Histogram operations
+  - `h.ndim`: The number of dimensions
+  - `h.size or len(h)`: The number of bins
+  - `+`: Add two histograms (storages must match types currently)
+  - `*=`: Multiply by a scaler (not all storages) (`hist * scalar` and `scalar * hist` supported too)
+  - `/=`: Divide by a scaler (not all storages) (`hist / scalar` supported too)
+  - `.kind`: Either `bh.Kind.COUNT` or `bh.Kind.MEAN`, depending on storage
+  - `.storage_type`: Fetch the histogram storage type
+  - `.sum(flow=False)`: The total count of all bins
+  - `.project(ax1, ax2, ...)`: Project down to listed axis (numbers). Can also reorder axes.
+  - `.to_numpy(flow=False, view=False)`: Convert to a NumPy style tuple (with or without under/overflow bins)
+  - `.view(flow=False)`: Get a view on the bin contents (with or without under/overflow bins)
+  - `.values(flow=False)`: Get a view on the values (counts or means, depending on storage)
+  - `.variances(flow=False)`: Get the variances if available
+  - `.counts(flow=False)`: Get the effective counts for all storage types
+  - `.reset()`: Set counters to 0 (growing axis remain the same size)
+  - `.empty(flow=False)`: Check to see if the histogram is empty (can check flow bins too if asked)
+  - `.copy(deep=False)`: Make a copy of a histogram
+  - `.axes`: Get the axes as a tuple-like (all properties of axes are available too)
+    - `.axes[0]`: Get the 0th axis
+    - `.axes.edges`: The lower values as a broadcasting-ready array
+    - `.axes.centers`: The centers of the bins broadcasting-ready array
+    - `.axes.widths`: The bin widths as a broadcasting-ready array
+    - `.axes.metadata`: A tuple of the axes metadata
+    - `.axes.size`: A tuple of the axes sizes (size without flow)
+    - `.axes.extent`: A tuple of the axes extents (size with flow)
+    - `.axes.bin(*args)`: Returns the bin edges as a tuple of pairs (continuous axis) or values (describe)
+    - `.axes.index(*args)`: Returns the bin index at a value for each axis
+    - `.axes.value(*args)`: Returns the bin value at an index for each axis
+- Indexing - Supports [UHI Indexing](https://uhi.readthedocs.io/en/latest/indexing.html)
+  - Bin content access / setting
+    - `v = h[b]`: Access bin content by index number
+    - `v = h[{0:b}]`: All actions can be represented by `axis:item` dictionary instead of by position (mostly useful for slicing)
+  - Slicing to get histogram or set array of values
+    - `h2 = h[a:b]`: Access a slice of a histogram, cut portions go to flow bins if present
+    - `h2 = h[:, ...]`: Using `:` and `...` supported just like NumPy
+    - `h2 = h[::sum]`: Third item in slice is the "action"
+    - `h[...] = array`: Set the bin contents, either include or omit flow bins
+  - Special accessors
+    - `bh.loc(v)`: Supply value in axis coordinates instead of bin number
+    - `bh.underflow`: The underflow bin (use empty beginning on slice for slicing instead)
+    - `bh.overflow`: The overflow bin (use empty end on slice for slicing instead)
+  - Special actions (third item in slice)
+    - `sum`: Remove axes via projection; if limits are given, use those
+    - `bh.rebin(n)`: Rebin an axis
+- NumPy compatibility
+  - `bh.numpy` provides faster [drop in replacements](https://boost-histogram.readthedocs.io/en/latest/usage/numpy.html) for NumPy histogram functions
+  - Histograms follow the buffer interface, and provide `.view()`
+  - Histograms can be converted to NumPy style output tuple with `.to_numpy()`
+- Details
+  - All objects support copy/deepcopy/pickle
+  - Fully statically typed, tested with MyPy.
 
 </details>
-
 
 ## Installation
 
@@ -181,7 +177,6 @@ You can install this library from [PyPI](https://pypi.org/project/boost-histogra
 ```bash
 python3 -m pip install boost-histogram
 ```
-
 
 All the normal best-practices for Python apply; Pip should not be very old (Pip
 9 is very old), you should be in a virtual environment, etc. Python 3.7+ is
@@ -192,24 +187,23 @@ instead, which is API equivalent to 1.0, but will not be gaining new features.
 #### Binaries available:
 
 The easiest way to get boost-histogram is to use a binary wheel, which happens
-when you run the above command on a supported platform.  Wheels are produced using
+when you run the above command on a supported platform. Wheels are produced using
 [cibuildwheel](https://cibuildwheel.readthedocs.io/en/stable/); all common
 platforms have wheels provided in boost-histogram:
 
-| System | Arch | Python versions | PyPy versions |
-|---------|-----|------------------|--------------|
-| ManyLinux2014 | 64-bit | 3.7, 3.8, 3.9, 3.10, 3.11  | 3.7, 3.8, 3.9 |
-| ManyLinux2014 | ARM64 | 3.7, 3.8, 3.9, 3.10, 3.11 | 3.7, 3.8, 3.9 |
-| MuslLinux_1_1 | 64-bit | 3.7, 3.8, 3.9, 3.10, 3.11 | |
-| macOS 10.9+ | 64-bit | 3.7, 3.8, 3.9, 3.10, 3.11 | 3.7, 3.8, 3.9 |
-| macOS Universal2 | Arm64 | 3.8, 3.9, 3.10, 3.11 | |
-| Windows | 32 & 64-bit | 3.7, 3.8, 3.9, 3.10, 3.11 | |
-| Windows | 64-bit | | 3.7, 3.8, 3.9 |
+| System           | Arch        | Python versions           | PyPy versions |
+| ---------------- | ----------- | ------------------------- | ------------- |
+| ManyLinux2014    | 64-bit      | 3.7, 3.8, 3.9, 3.10, 3.11 | 3.7, 3.8, 3.9 |
+| ManyLinux2014    | ARM64       | 3.7, 3.8, 3.9, 3.10, 3.11 | 3.7, 3.8, 3.9 |
+| MuslLinux_1_1    | 64-bit      | 3.7, 3.8, 3.9, 3.10, 3.11 |               |
+| macOS 10.9+      | 64-bit      | 3.7, 3.8, 3.9, 3.10, 3.11 | 3.7, 3.8, 3.9 |
+| macOS Universal2 | Arm64       | 3.8, 3.9, 3.10, 3.11      |               |
+| Windows          | 32 & 64-bit | 3.7, 3.8, 3.9, 3.10, 3.11 |               |
+| Windows          | 64-bit      |                           | 3.7, 3.8, 3.9 |
 
-
-* manylinux2014: Requires pip 19.3.
-* ARM on Linux is supported. PowerPC or IBM-Z available on request.
-* macOS Universal2 wheels for Apple Silicon and Intel provided for Python 3.8+ (requires Pip 21.0.1 or newer).
+- manylinux2014: Requires pip 19.3.
+- ARM on Linux is supported. PowerPC or IBM-Z available on request.
+- macOS Universal2 wheels for Apple Silicon and Intel provided for Python 3.8+ (requires Pip 21.0.1 or newer).
 
 If you are on a Linux system that is not part of the "many" in manylinux or musl in musllinux, such as ClearLinux, building from source is usually fine, since the compilers on those systems are often quite new. It will just take longer to install when it is using the sdist instead of a wheel. All dependencies are header-only and included.
 
@@ -231,11 +225,9 @@ Boost is not required or needed (this only depends on included header-only depen
 python -m pip install git+https://github.com/scikit-hep/boost-histogram.git@develop
 ```
 
-
 ## Developing
 
 See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for details on how to set up a development environment.
-
 
 ## Contributors
 
@@ -282,12 +274,11 @@ This project follows the [all-contributors](https://github.com/all-contributors/
 
 The [official documentation is here](https://boost-histogram.readthedocs.io/en/latest/index.html), and includes a [quickstart](https://boost-histogram.readthedocs.io/en/latest/usage/quickstart.html).
 
-
-* [2019-4-15 IRIS-HEP Topical meeting](https://indico.cern.ch/event/803122/)
-* [2019-10-17 PyHEP Histogram session](https://indico.cern.ch/event/833895/contributions/3577833/) - [repo with talks and workbook](https://github.com/henryiii/pres-bhandhist)
-* [2019-11-7 CHEP](https://indico.cern.ch/event/773049/contributions/3473265/)
-* [2020-07-07 SciPy](https://www.youtube.com/watch?v=ERraTfHkPd0&list=PLYx7XA2nY5GfY4WWJjG5cQZDc7DIUmn6Z&index=4)
-* [2020-07-17 PyHEP](https://indico.cern.ch/event/882824/contributions/3931299/)
+- [2019-4-15 IRIS-HEP Topical meeting](https://indico.cern.ch/event/803122/)
+- [2019-10-17 PyHEP Histogram session](https://indico.cern.ch/event/833895/contributions/3577833/) - [repo with talks and workbook](https://github.com/henryiii/pres-bhandhist)
+- [2019-11-7 CHEP](https://indico.cern.ch/event/773049/contributions/3473265/)
+- [2020-07-07 SciPy](https://www.youtube.com/watch?v=ERraTfHkPd0&list=PLYx7XA2nY5GfY4WWJjG5cQZDc7DIUmn6Z&index=4)
+- [2020-07-17 PyHEP](https://indico.cern.ch/event/882824/contributions/3931299/)
 
 ---
 
@@ -297,24 +288,23 @@ This library was primarily developed by Henry Schreiner and Hans Dembinski.
 
 Support for this work was provided by the National Science Foundation cooperative agreement OAC-1836650 (IRIS-HEP) and OAC-1450377 (DIANA/HEP). Any opinions, findings, conclusions or recommendations expressed in this material are those of the authors and do not necessarily reflect the views of the National Science Foundation.
 
-[actions-badge]:            https://github.com/scikit-hep/boost-histogram/workflows/Tests/badge.svg
-[actions-link]:             https://github.com/scikit-hep/boost-histogram/actions
-[black-badge]:              https://img.shields.io/badge/code%20style-black-000000.svg
-[black-link]:               https://github.com/psf/black
-[conda-badge]:              https://img.shields.io/conda/vn/conda-forge/boost-histogram
-[conda-link]:               https://github.com/conda-forge/boost-histogram-feedstock
+[actions-badge]: https://github.com/scikit-hep/boost-histogram/workflows/Tests/badge.svg
+[actions-link]: https://github.com/scikit-hep/boost-histogram/actions
+[black-badge]: https://img.shields.io/badge/code%20style-black-000000.svg
+[black-link]: https://github.com/psf/black
+[conda-badge]: https://img.shields.io/conda/vn/conda-forge/boost-histogram
+[conda-link]: https://github.com/conda-forge/boost-histogram-feedstock
 [github-discussions-badge]: https://img.shields.io/static/v1?label=Discussions&message=Ask&color=blue&logo=github
-[github-discussions-link]:  https://github.com/scikit-hep/boost-histogram/discussions
-[gitter-badge]:             https://badges.gitter.im/HSF/PyHEP-histogramming.svg
-[gitter-link]:              https://gitter.im/HSF/PyHEP-histogramming?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
-[pypi-link]:                https://pypi.org/project/boost-histogram/
-[pypi-platforms]:           https://img.shields.io/pypi/pyversions/boost-histogram
-[pypi-version]:             https://badge.fury.io/py/boost-histogram.svg
-[rtd-badge]:                https://readthedocs.org/projects/boost-histogram/badge/?version=latest
-[rtd-link]:                 https://boost-histogram.readthedocs.io/en/latest/?badge=latest
-[sk-badge]:                 https://scikit-hep.org/assets/images/Scikit--HEP-Project-blue.svg
-
-[Boost::Histogram]:         https://www.boost.org/doc/libs/release/libs/histogram/doc/html/index.html
-[Boost::Histogram source]:  https://github.com/boostorg/histogram
-[Hist]:                     https://github.com/scikit-hep/hist
-[fastest libraries]:        https://iscinumpy.gitlab.io/post/histogram-speeds-in-python/
+[github-discussions-link]: https://github.com/scikit-hep/boost-histogram/discussions
+[gitter-badge]: https://badges.gitter.im/HSF/PyHEP-histogramming.svg
+[gitter-link]: https://gitter.im/HSF/PyHEP-histogramming?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
+[pypi-link]: https://pypi.org/project/boost-histogram/
+[pypi-platforms]: https://img.shields.io/pypi/pyversions/boost-histogram
+[pypi-version]: https://badge.fury.io/py/boost-histogram.svg
+[rtd-badge]: https://readthedocs.org/projects/boost-histogram/badge/?version=latest
+[rtd-link]: https://boost-histogram.readthedocs.io/en/latest/?badge=latest
+[sk-badge]: https://scikit-hep.org/assets/images/Scikit--HEP-Project-blue.svg
+[Boost::Histogram]: https://www.boost.org/doc/libs/release/libs/histogram/doc/html/index.html
+[Boost::Histogram source]: https://github.com/boostorg/histogram
+[Hist]: https://github.com/scikit-hep/hist
+[fastest libraries]: https://iscinumpy.gitlab.io/post/histogram-speeds-in-python/

@@ -3,86 +3,97 @@ ci:
   autofix_commit_msg: "style: pre-commit fixes"
 
 repos:
-- repo: https://github.com/psf/black-pre-commit-mirror
-  rev: 23.7.0
-  hooks:
-  - id: black-jupyter
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 23.7.0
+    hooks:
+      - id: black-jupyter
 
-- repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.4.0
-  hooks:
-  - id: check-added-large-files
-  - id: check-case-conflict
-  - id: check-merge-conflict
-  - id: check-symlinks
-  - id: check-yaml
-  - id: debug-statements
-  - id: end-of-file-fixer
-  - id: mixed-line-ending
-  - id: requirements-txt-fixer
-  - id: trailing-whitespace
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: check-yaml
+      - id: debug-statements
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: requirements-txt-fixer
+      - id: trailing-whitespace
 
-- repo: https://github.com/cheshirekow/cmake-format-precommit
-  rev: v0.6.13
-  hooks:
-  - id: cmake-format
-    additional_dependencies: [pyyaml]
+  - repo: https://github.com/cheshirekow/cmake-format-precommit
+    rev: v0.6.13
+    hooks:
+      - id: cmake-format
+        additional_dependencies: [pyyaml]
 
-- repo: https://github.com/asottile/setup-cfg-fmt
-  rev: v2.4.0
-  hooks:
-  - id: setup-cfg-fmt
-    args: [--include-version-classifiers, --min-py3-version=3.7, --max-py-version=3.12]
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: "v3.0.2"
+    hooks:
+      - id: prettier
+        types_or: [yaml, markdown, html, css, scss, javascript, json]
 
-- repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: "v0.0.286"
-  hooks:
-    - id: ruff
-      args: ["--fix", "--show-fixes"]
+  - repo: https://github.com/asottile/setup-cfg-fmt
+    rev: v2.4.0
+    hooks:
+      - id: setup-cfg-fmt
+        args:
+          [
+            --include-version-classifiers,
+            --min-py3-version=3.7,
+            --max-py-version=3.12,
+          ]
 
-- repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v1.5.1
-  hooks:
-  - id: mypy
-    files: ^src
-    additional_dependencies: [numpy~=1.24.0, pytest, uhi, types-dataclasses]
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: "v0.0.286"
+    hooks:
+      - id: ruff
+        args: ["--fix", "--show-fixes"]
 
-- repo: https://github.com/mgedmin/check-manifest
-  rev: "0.49"
-  hooks:
-  - id: check-manifest
-    stages: [manual]
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.5.1
+    hooks:
+      - id: mypy
+        files: ^src
+        additional_dependencies: [numpy~=1.24.0, pytest, uhi, types-dataclasses]
 
-- repo: https://github.com/codespell-project/codespell
-  rev: v2.2.5
-  hooks:
-  - id: codespell
-    args: ["-L", "hist,nd,circularly,ba"]
-    exclude: ^(notebooks/xarray.ipynb|notebooks/BoostHistogramHandsOn.ipynb|.*\.svg)$
+  - repo: https://github.com/mgedmin/check-manifest
+    rev: "0.49"
+    hooks:
+      - id: check-manifest
+        stages: [manual]
 
-- repo: local
-  hooks:
-  - id: disallow-caps
-    name: Disallow improper capitalization
-    language: pygrep
-    entry: PyBind|Numpy|Cmake|CCache|Github|PyTest
-    exclude: .pre-commit-config.yaml
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.2.5
+    hooks:
+      - id: codespell
+        args: ["-L", "hist,nd,circularly,ba"]
+        exclude: ^(notebooks/xarray.ipynb|notebooks/BoostHistogramHandsOn.ipynb|.*\.svg)$
 
-- repo: https://github.com/pre-commit/mirrors-clang-format
-  rev: v16.0.6
-  hooks:
-   - id: clang-format
-     types_or: [c++]
+  - repo: local
+    hooks:
+      - id: disallow-caps
+        name: Disallow improper capitalization
+        language: pygrep
+        entry: PyBind|Numpy|Cmake|CCache|Github|PyTest
+        exclude: .pre-commit-config.yaml
 
-- repo: https://github.com/pre-commit/pygrep-hooks
-  rev: v1.10.0
-  hooks:
-  - id: rst-backticks
-  - id: rst-directive-colons
-  - id: rst-inline-touching-normal
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v16.0.6
+    hooks:
+      - id: clang-format
+        types_or: [c++]
 
-- repo: https://github.com/shellcheck-py/shellcheck-py
-  rev: v0.9.0.5
-  hooks:
-  - id: shellcheck
-    exclude: ^docs/notebooks/conf.sh$
+  - repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.10.0
+    hooks:
+      - id: rst-backticks
+      - id: rst-directive-colons
+      - id: rst-inline-touching-normal
+
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.9.0.5
+    hooks:
+      - id: shellcheck
+        exclude: ^docs/notebooks/conf.sh$
