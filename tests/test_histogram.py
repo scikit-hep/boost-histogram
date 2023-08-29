@@ -117,6 +117,19 @@ def test_fill_int_1d():
         h[-3]
 
 
+def test_fill_int_with_float_single_1d():
+    h = bh.Histogram(bh.axis.Integer(-1, 2))
+    h.fill(0.3)
+    h.fill(-0.3)
+    assert h.values() == approx(np.array([1, 1, 0]))
+
+
+def test_fill_int_with_float_array_1d():
+    h = bh.Histogram(bh.axis.Integer(-1, 2))
+    h.fill([-0.3, 0.3])
+    assert h.values() == approx(np.array([1, 1, 0]))
+
+
 def test_fill_1d(flow):
     h = bh.Histogram(bh.axis.Regular(3, -1, 2, underflow=flow, overflow=flow))
     with pytest.raises(ValueError):

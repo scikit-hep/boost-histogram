@@ -84,7 +84,7 @@ Mean
 
 This storage tracks a "Profile", that is, the mean value of the accumulation instead of the sum.
 It stores the count (as a double), the mean, and a term that is used to compute the variance. When
-filling, you can add a ``sample=`` term.
+filling, you must add a ``sample=`` term.
 
 
 WeightedMean

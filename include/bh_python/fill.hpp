@@ -20,6 +20,7 @@
 #include <boost/mp11.hpp>
 #include <boost/variant2/variant.hpp>
 
+#include <cmath>
 #include <stdexcept>
 #include <type_traits>
 #include <vector>
@@ -93,6 +94,25 @@ template <>
 inline decltype(auto) special_cast<c_array_t<std::string>>(py::handle x) {
     using B = typename c_array_t<std::string>::base_t;
     return py::cast<B>(x);
+}
+
+// Allow single floats to be integers
+template <>
+inline decltype(auto) special_cast<int>(py::handle x) {
+    try {
+        return static_cast<int>(std::floor(py::cast<double>(x)));
+    } catch(const py::cast_error&) {
+        return py::cast<int>(x);
+    }
+}
+
+// Allow float arrays to be integers
+template <>
+inline decltype(auto) special_cast<c_array_t<int>>(py::handle x) {
+    auto np     = py::module_::import("numpy");
+    auto to_int = np.attr("floor")(x);
+
+    return py::cast<c_array_t<int>>(to_int);
 }
 
 using arg_t = variant::variant<c_array_t<double>,
