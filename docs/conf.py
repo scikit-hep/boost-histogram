@@ -46,10 +46,11 @@ with contextlib.suppress(DistributionNotFound):
 # ones.
 extensions = [
     "myst_parser",
-    "sphinx.ext.autodoc",
-    "sphinx.ext.napoleon",
     "nbsphinx",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.intersphinx",
     "sphinx.ext.mathjax",
+    "sphinx.ext.napoleon",
     "sphinx_copybutton",
 ]
 
@@ -70,6 +71,12 @@ exclude_patterns = [
 
 # Read the Docs needs this explicitly listed.
 master_doc = "index"
+
+# Intersphinx setup
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
+}
 
 # -- Options for Notebook input ----------------------------------------------
 

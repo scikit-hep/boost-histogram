@@ -36,12 +36,10 @@ virtual environment, etc. See :ref:`usage-installation` for more details. An exa
    import boost_histogram as bh
 
    # Compose axis however you like; this is a 2D histogram
-   hist = bh.Histogram(bh.axis.Regular(2, 0, 1),
-                       bh.axis.Regular(4, 0.0, 1.0))
+   hist = bh.Histogram(bh.axis.Regular(2, 0, 1), bh.axis.Regular(4, 0.0, 1.0))
 
    # Filling can be done with arrays, one per dimension
-   hist.fill([.3, .5, .2],
-             [.1, .4, .9])
+   hist.fill([0.3, 0.5, 0.2], [0.1, 0.4, 0.9])
 
    # NumPy array view into histogram counts, no overflow bins
    counts = hist.view()

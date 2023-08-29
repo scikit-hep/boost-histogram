@@ -41,13 +41,15 @@ If you try the following in an IPython session, you will get:
    import numpy as np
    import boost_histogram as bh
 
-   norm_vals = np.concatenate([
-       np.random.normal(loc=5, scale=1, size=1_000_000),
-       np.random.normal(loc=2, scale=.2, size=200_000),
-       np.random.normal(loc=8, scale=.2, size=200_000),
-   ])
+   norm_vals = np.concatenate(
+       [
+           np.random.normal(loc=5, scale=1, size=1_000_000),
+           np.random.normal(loc=2, scale=0.2, size=200_000),
+           np.random.normal(loc=8, scale=0.2, size=200_000),
+       ]
+   )
 
-.. code-block:: python3
+.. code-block:: ipython
 
    %%timeit
    bins, edges = np.histogram(norm_vals, bins=100, range=(0, 10))
@@ -64,7 +66,7 @@ ND histograms. But if you already use NumPy histograms and you really
 don’t want to rewrite your code, boost-histogram has adaptors for the
 three histogram functions in NumPy:
 
-.. code-block:: python3
+.. code-block:: ipython
 
    %%timeit
    bins, edges = bh.numpy.histogram(norm_vals, bins=100, range=(0, 10))
@@ -95,15 +97,12 @@ So you can transition your code slowly to boost-histogram.
 
 .. code-block:: python3
 
-   data  = np.random.multivariate_normal(
-       (0, 0),
-       ((1, 0),(0, .5)),
-       10_000_000).T.copy()
+   data = np.random.multivariate_normal((0, 0), ((1, 0), (0, 0.5)), 10_000_000).T.copy()
 
 We can check the performance against NumPy again; NumPy does not do well
 with regular spaced bins in more than 1D:
 
-.. code-block:: python3
+.. code-block:: ipython
 
    %%timeit
    np.histogram2d(*data, bins=(400, 200), range=((-2, 2), (-1, 1)))
@@ -112,7 +111,7 @@ with regular spaced bins in more than 1D:
 
    1.31 s ± 17.3 ms per loop (mean ± std. dev. of 7 runs, 1 loop each)
 
-.. code-block:: python3
+.. code-block:: ipython
 
    %%timeit
    bh.numpy.histogram2d(*data, bins=(400, 200), range=((-2, 2), (-1, 1)))

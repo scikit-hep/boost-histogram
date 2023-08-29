@@ -134,6 +134,7 @@ ctypes call into the convert function. You need a little wrapper function to mak
 
    import ctypes, math
 
+
    # We need a little wrapper function only because ftype is not directly picklable
    def convert_python(func):
        ftype = ctypes.CFUNCTYPE(ctypes.c_double, ctypes.c_double)

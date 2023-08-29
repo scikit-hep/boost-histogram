@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import shutil
 
 import nox
@@ -36,22 +37,46 @@ def hist(session: nox.Session) -> None:
     session.run("pytest", *session.posargs)
 
 
-@nox.session
+@nox.session(reuse_venv=True)
 def docs(session: nox.Session) -> None:
     """
-    Build the docs. Pass "serve" to serve.
+    Build the docs. Pass "--serve" to serve. Pass "-b linkcheck" to check links.
     """
 
-    session.chdir("docs")
-    session.install("-r", "requirements.txt")
-    session.run("sphinx-build", "-M", "html", ".", "_build")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--serve", action="store_true", help="Serve after building")
+    parser.add_argument(
+        "-b", dest="builder", default="html", help="Build target (default: html)"
+    )
+    args, posargs = parser.parse_known_args(session.posargs)
 
-    if session.posargs:
-        if "serve" in session.posargs:
-            session.log("Launching docs at http://localhost:8000/ - use Ctrl-C to quit")
-            session.run("python", "-m", "http.server", "8000", "-d", "_build/html")
-        else:
-            session.error("Unsupported argument to docs")
+    if args.builder != "html" and args.serve:
+        session.error("Must not specify non-HTML builder with --serve")
+
+    extra_installs = ["sphinx-autobuild"] if args.serve else []
+
+    session.chdir("docs")
+    session.install("-r", "requirements.txt", *extra_installs)
+
+    if args.builder == "linkcheck":
+        session.run(
+            "sphinx-build", "-b", "linkcheck", ".", "_build/linkcheck", *posargs
+        )
+        return
+
+    shared_args = (
+        "-n",  # nitpicky mode
+        "-T",  # full tracebacks
+        f"-b={args.builder}",
+        ".",
+        f"_build/{args.builder}",
+        *posargs,
+    )
+
+    if args.serve:
+        session.run("sphinx-autobuild", *shared_args)
+    else:
+        session.run("sphinx-build", "--keep-going", *shared_args)
 
 
 @nox.session
