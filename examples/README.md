@@ -7,8 +7,8 @@ convert back to older versions if they so desire.
 
 You can run these examples in a virtual environment using:
 
-
 #### Conda
+
 ```bash
 conda create -p .env python=3.8 boost-histogram matplotlib numpy -c conda-forge
 conda activate ./.env

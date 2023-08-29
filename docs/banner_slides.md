@@ -27,7 +27,6 @@ h.fill([.2, .3, .6, .9])
 total = h.sum()
 ```
 
-
 # Advanced Indexing
 
 ```python
@@ -45,45 +44,44 @@ h2 = h.project(1, 0)
 ```
 
 # Many Axis types
+
 ::: columns
 ::: {.column width="60%"}
 
-* Regular: evenly or functionally spaced binning
-* Variable: arbitrary binning
-* Integer: integer binning
-* IntCategory: arbitrary integers
-* StrCategory: strings
-* Boolean: True/False
+- Regular: evenly or functionally spaced binning
+- Variable: arbitrary binning
+- Integer: integer binning
+- IntCategory: arbitrary integers
+- StrCategory: strings
+- Boolean: True/False
 
 Most Axis types support optional extras:
 
-* Underflow and/or Overflow bins
-* Growth
-* Circular (wraparound)
+- Underflow and/or Overflow bins
+- Growth
+- Circular (wraparound)
 
 :::
 ::: {.column width="40%"}
 
 \begin{center}
-  \includegraphics[width=1.05\textwidth]{docs/_images/axis_circular.png}
-  \includegraphics[width=.7\textwidth]{docs/_images/axis_regular.png}
-  \includegraphics[width=.9\textwidth]{docs/_images/axis_variable.png}
-  \includegraphics[width=.65\textwidth]{docs/_images/axis_integer.png}
-  \includegraphics[width=\textwidth]{docs/_images/axis_category.png}
+\includegraphics[width=1.05\textwidth]{docs/\_images/axis_circular.png}
+\includegraphics[width=.7\textwidth]{docs/\_images/axis_regular.png}
+\includegraphics[width=.9\textwidth]{docs/\_images/axis_variable.png}
+\includegraphics[width=.65\textwidth]{docs/\_images/axis_integer.png}
+\includegraphics[width=\textwidth]{docs/\_images/axis_category.png}
 \end{center}
 
 :::
 :::
 
-
-
 # Advanced Storages
 
-* Integers
-* Floats
-* Weighted Sums
-* Means
-* Weighted Means
+- Integers
+- Floats
+- Weighted Sums
+- Means
+- Weighted Means
 
 Supports the UHI `PlottableHistogram` protocol!
 
@@ -91,8 +89,6 @@ Supports the UHI `PlottableHistogram` protocol!
 import mplhep
 mplhep.histplot(h)
 ```
-
-
 
 # NumPy compatibility
 

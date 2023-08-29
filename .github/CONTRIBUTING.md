@@ -26,7 +26,6 @@ git submodule update --init --depth 10
 
 ## Setting up a development environment
 
-
 ### Nox
 
 The fastest way to start with development is to use nox. If you don't have nox,
@@ -75,6 +74,7 @@ deactivate
 
 Now, you can run notebooks using your system JupyterLab, and it will list
 the environment as available!
+
 </details>
 
 To rebuild, rerun `pip install -ve .` from the environment, if the commit has
@@ -91,7 +91,7 @@ help installing the latest CMake version, [visit this
 page](https://cliutils.gitlab.io/modern-cmake/chapters/intro/installing.html);
 one option is to use pip to install CMake.
 
-> Note: Since setuptools uses a subdirectory called `build`, it is *slightly*
+> Note: Since setuptools uses a subdirectory called `build`, it is _slightly_
 > better to avoid making your CMake directory `build` as well. Also, you will
 > often have multiple CMake directories (`build-release`, `build-debug`, etc.),
 > so avoiding the descriptive name `build` is not a bad idea.
@@ -102,7 +102,7 @@ You have three options for running code in python:
 pytest`, and not others, like `pytest`
 2. Add the build directory to your PYTHONPATH environment variable
 3. Set `CMAKE_INSTALL_PREFIX` to your site-packages and install (recommended
-for virtual environments).
+   for virtual environments).
 
 Here is the recommendation for a CMake install:
 
@@ -199,7 +199,7 @@ pre-commit autoupdate
 > Pre-commit uses docker to ensure a consistent run of clang-format. If you do
 > not want to install/run Docker, you should use `SKIP=docker-clang-format`
 > when running pre-commit, and instead run `clang-format -style=file -i
-> <files>` yourself.
+<files>` yourself.
 
 ## Clang-Tidy
 

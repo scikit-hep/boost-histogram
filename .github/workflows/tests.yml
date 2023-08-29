@@ -5,8 +5,8 @@ on:
   pull_request:
   push:
     branches:
-    - master
-    - develop
+      - master
+      - develop
 
 env:
   FORCE_COLOR: 3
@@ -22,38 +22,37 @@ jobs:
     container: silkeh/clang:15-bullseye
 
     steps:
-    - name: Install requirements
-      run: apt-get update && apt-get install -y python3-dev python3-pip git
+      - name: Install requirements
+        run: apt-get update && apt-get install -y python3-dev python3-pip git
 
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-        submodules: true
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: true
 
-    - name: Install extra requirements
-      run: python3 -m pip install setuptools_scm
+      - name: Install extra requirements
+        run: python3 -m pip install setuptools_scm
 
-    - name: Configure
-      run: cmake -S . -B build -DCMAKE_CXX_CLANG_TIDY="$(which clang-tidy);--warnings-as-errors=*"
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_CXX_CLANG_TIDY="$(which clang-tidy);--warnings-as-errors=*"
 
-    - name: Build
-      run: cmake --build build -j 2
+      - name: Build
+        run: cmake --build build -j 2
 
   pylint:
     runs-on: ubuntu-latest
     name: PyLint
 
     steps:
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-        submodules: true
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: true
 
-    - name: Run PyLint
-      run: |
-        echo "::add-matcher::$GITHUB_WORKSPACE/.github/matchers/pylint.json"
-        pipx run nox -s pylint
-
+      - name: Run PyLint
+        run: |
+          echo "::add-matcher::$GITHUB_WORKSPACE/.github/matchers/pylint.json"
+          pipx run nox -s pylint
 
   cmake:
     runs-on: ubuntu-latest
@@ -64,34 +63,34 @@ jobs:
       matrix:
         python-version: ["3.7", "3.9", "3.12", "pypy3.9"]
         include:
-        - python-version: "3.8"
-          cmake-extras: "-DCMAKE_CXX_STANDARD=17"
+          - python-version: "3.8"
+            cmake-extras: "-DCMAKE_CXX_STANDARD=17"
 
     name: CMake Python ${{ matrix.python-version }}
 
     steps:
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-        submodules: true
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: true
 
-    - uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-        allow-prereleases: true
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          allow-prereleases: true
 
-    - name: Install python tools
-      run: python -m pip install -r dev-requirements.txt pytest-github-actions-annotate-failures
+      - name: Install python tools
+        run: python -m pip install -r dev-requirements.txt pytest-github-actions-annotate-failures
 
-    - name: Configure
-      run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DBOOST_HISTOGRAM_ERRORS=ON ${{ matrix.cmake-extras }}
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DBOOST_HISTOGRAM_ERRORS=ON ${{ matrix.cmake-extras }}
 
-    - name: Build
-      run: cmake --build build -j 2
+      - name: Build
+        run: cmake --build build -j 2
 
-    - name: Test
-      working-directory: ./build
-      run: python -m pytest -ra
+      - name: Test
+        working-directory: ./build
+        run: python -m pytest -ra
 
   build_wheels:
     name: Wheels on ${{ matrix.os }}
@@ -102,21 +101,21 @@ jobs:
         os: [ubuntu-latest, windows-2019, macos-latest]
 
     steps:
-    - uses: actions/checkout@v3
-      with:
-        submodules: true
-        fetch-depth: 0
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+          fetch-depth: 0
 
-    - uses: pypa/cibuildwheel@v2.15
-      env:
-        CIBW_BUILD: cp38-win32 cp312-manylinux_x86_64 cp37-macosx_x86_64
-        CIBW_BUILD_VERBOSITY: 1
-        CIBW_ENVIRONMENT: "PIP_ONLY_BINARY=:all:"
+      - uses: pypa/cibuildwheel@v2.15
+        env:
+          CIBW_BUILD: cp38-win32 cp312-manylinux_x86_64 cp37-macosx_x86_64
+          CIBW_BUILD_VERBOSITY: 1
+          CIBW_ENVIRONMENT: "PIP_ONLY_BINARY=:all:"
 
-    - uses: actions/upload-artifact@v3
-      with:
-        path: wheelhouse/*
+      - uses: actions/upload-artifact@v3
+        with:
+          path: wheelhouse/*
 
-    - name: Check wheels
-      run: pipx run twine check wheelhouse/*
-      shell: bash
+      - name: Check wheels
+        run: pipx run twine check wheelhouse/*
+        shell: bash

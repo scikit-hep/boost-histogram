@@ -30,25 +30,24 @@ jobs:
     name: Build SDist
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-        submodules: true
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: true
 
-    - name: Set version if needed
-      if: github.event.inputs.overrideVersion
-      run: echo "SETUPTOOLS_SCM_PRETEND_VERSION=${{ github.event.inputs.overrideVersion }}" >> $GITHUB_ENV
+      - name: Set version if needed
+        if: github.event.inputs.overrideVersion
+        run: echo "SETUPTOOLS_SCM_PRETEND_VERSION=${{ github.event.inputs.overrideVersion }}" >> $GITHUB_ENV
 
-    - name: Build SDist
-      run: pipx run build --sdist
+      - name: Build SDist
+        run: pipx run build --sdist
 
-    - name: Check metadata
-      run: pipx run twine check --strict dist/*
+      - name: Check metadata
+        run: pipx run twine check --strict dist/*
 
-    - uses: actions/upload-artifact@v3
-      with:
-        path: dist/*.tar.gz
-
+      - uses: actions/upload-artifact@v3
+        with:
+          path: dist/*.tar.gz
 
   build_arch_wheels:
     name: ${{ matrix.python }} on ${{ matrix.arch }}
@@ -58,35 +57,33 @@ jobs:
         python: [37, 38, 39, 310, 311, 312]
         arch: [aarch64]
     steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: true
 
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-        submodules: true
+      - name: Set version if needed
+        if: github.event.inputs.overrideVersion
+        shell: bash
+        run: echo "SETUPTOOLS_SCM_PRETEND_VERSION=${{ github.event.inputs.overrideVersion }}" >> $GITHUB_ENV
 
-    - name: Set version if needed
-      if: github.event.inputs.overrideVersion
-      shell: bash
-      run: echo "SETUPTOOLS_SCM_PRETEND_VERSION=${{ github.event.inputs.overrideVersion }}" >> $GITHUB_ENV
+      - uses: docker/setup-qemu-action@v2.2.0
+        with:
+          platforms: all
 
-    - uses: docker/setup-qemu-action@v2.2.0
-      with:
-        platforms: all
+      - uses: pypa/cibuildwheel@v2.15
+        env:
+          CIBW_BUILD: cp${{ matrix.python }}-manylinux_*
+          CIBW_ARCHS: ${{ matrix.arch }}
 
-    - uses: pypa/cibuildwheel@v2.15
-      env:
-        CIBW_BUILD: cp${{ matrix.python }}-manylinux_*
-        CIBW_ARCHS: ${{ matrix.arch }}
+      - name: Verify clean directory
+        run: git diff --exit-code
+        shell: bash
 
-    - name: Verify clean directory
-      run: git diff --exit-code
-      shell: bash
-
-    - name: Upload wheels
-      uses: actions/upload-artifact@v3
-      with:
-        path: wheelhouse/*.whl
-
+      - name: Upload wheels
+        uses: actions/upload-artifact@v3
+        with:
+          path: wheelhouse/*.whl
 
   build_wheels:
     name: ${{ matrix.type }} ${{ matrix.arch }} on ${{ matrix.os }}
@@ -105,32 +102,31 @@ jobs:
             arch: auto32
 
     steps:
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-        submodules: true
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: true
 
-    - name: Set version if needed
-      if: github.event.inputs.overrideVersion
-      shell: bash
-      run: echo "SETUPTOOLS_SCM_PRETEND_VERSION=${{ github.event.inputs.overrideVersion }}" >> $GITHUB_ENV
+      - name: Set version if needed
+        if: github.event.inputs.overrideVersion
+        shell: bash
+        run: echo "SETUPTOOLS_SCM_PRETEND_VERSION=${{ github.event.inputs.overrideVersion }}" >> $GITHUB_ENV
 
-    - uses: pypa/cibuildwheel@v2.15
-      env:
-        CIBW_BUILD: ${{ matrix.build }}
-        CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.CIBW_MANYLINUX_I686_IMAGE }}
-        CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.CIBW_MANYLINUX_X86_64_IMAGE }}
-        CIBW_ARCHS: ${{ matrix.arch }}
+      - uses: pypa/cibuildwheel@v2.15
+        env:
+          CIBW_BUILD: ${{ matrix.build }}
+          CIBW_MANYLINUX_I686_IMAGE: ${{ matrix.CIBW_MANYLINUX_I686_IMAGE }}
+          CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.CIBW_MANYLINUX_X86_64_IMAGE }}
+          CIBW_ARCHS: ${{ matrix.arch }}
 
-    - name: Verify clean directory
-      run: git diff --exit-code
-      shell: bash
+      - name: Verify clean directory
+        run: git diff --exit-code
+        shell: bash
 
-    - name: Upload wheels
-      uses: actions/upload-artifact@v3
-      with:
-        path: wheelhouse/*.whl
-
+      - name: Upload wheels
+        uses: actions/upload-artifact@v3
+        with:
+          path: wheelhouse/*.whl
 
   upload_all:
     name: Upload if release
@@ -138,15 +134,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/download-artifact@v3
-      with:
-        name: artifact
-        path: dist
+      - uses: actions/download-artifact@v3
+        with:
+          name: artifact
+          path: dist
 
-    - name: List all files
-      run: ls -lh dist
+      - name: List all files
+        run: ls -lh dist
 
-    - uses: pypa/gh-action-pypi-publish@release/v1
-      if: github.event_name == 'release' && github.event.action == 'published'
-      with:
-        password: ${{ secrets.pypi_password }}
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        if: github.event_name == 'release' && github.event.action == 'published'
+        with:
+          password: ${{ secrets.pypi_password }}
