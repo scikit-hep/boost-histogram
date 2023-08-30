@@ -110,7 +110,7 @@ inline decltype(auto) special_cast<int>(py::handle x) {
 template <>
 inline decltype(auto) special_cast<c_array_t<int>>(py::handle x) {
     auto np     = py::module_::import("numpy");
-    auto to_int = np.attr("floor")(x);
+    auto to_int = np.attr("floor")(np.attr("asarray")(x));
 
     return py::cast<c_array_t<int>>(to_int);
 }
