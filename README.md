@@ -191,15 +191,15 @@ when you run the above command on a supported platform. Wheels are produced usin
 [cibuildwheel](https://cibuildwheel.readthedocs.io/en/stable/); all common
 platforms have wheels provided in boost-histogram:
 
-| System           | Arch        | Python versions           | PyPy versions |
-| ---------------- | ----------- | ------------------------- | ------------- |
-| ManyLinux2014    | 64-bit      | 3.7, 3.8, 3.9, 3.10, 3.11 | 3.7, 3.8, 3.9 |
-| ManyLinux2014    | ARM64       | 3.7, 3.8, 3.9, 3.10, 3.11 | 3.7, 3.8, 3.9 |
-| MuslLinux_1_1    | 64-bit      | 3.7, 3.8, 3.9, 3.10, 3.11 |               |
-| macOS 10.9+      | 64-bit      | 3.7, 3.8, 3.9, 3.10, 3.11 | 3.7, 3.8, 3.9 |
-| macOS Universal2 | Arm64       | 3.8, 3.9, 3.10, 3.11      |               |
-| Windows          | 32 & 64-bit | 3.7, 3.8, 3.9, 3.10, 3.11 |               |
-| Windows          | 64-bit      |                           | 3.7, 3.8, 3.9 |
+| System           | Arch        | Python versions                 | PyPy versions |
+| ---------------- | ----------- | ------------------------------- | ------------- |
+| ManyLinux2014    | 64-bit      | 3.7, 3.8, 3.9, 3.10, 3.11, 3.12 | 3.7, 3.8, 3.9, 3.10 |
+| ManyLinux2014    | ARM64       | 3.7, 3.8, 3.9, 3.10, 3.11, 3.12 | 3.7, 3.8, 3.9, 3.10 |
+| MuslLinux_1_1    | 64-bit      | 3.7, 3.8, 3.9, 3.10, 3.11, 3.12 |                     |
+| macOS 10.9+      | 64-bit      | 3.7, 3.8, 3.9, 3.10, 3.11, 3.12 | 3.7, 3.8, 3.9, 3.10 |
+| macOS Universal2 | Arm64       | 3.8, 3.9, 3.10, 3.11, 3.12      |                     |
+| Windows          | 32 & 64-bit | 3.7, 3.8, 3.9, 3.10, 3.11, 3.12 |                     |
+| Windows          | 64-bit      |                                 | 3.7, 3.8, 3.9, 3.10 |
 
 - manylinux2014: Requires pip 19.3.
 - ARM on Linux is supported. PowerPC or IBM-Z available on request.
