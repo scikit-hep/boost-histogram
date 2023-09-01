@@ -191,8 +191,8 @@ when you run the above command on a supported platform. Wheels are produced usin
 [cibuildwheel](https://cibuildwheel.readthedocs.io/en/stable/); all common
 platforms have wheels provided in boost-histogram:
 
-| System           | Arch        | Python versions                 | PyPy versions |
-| ---------------- | ----------- | ------------------------------- | ------------- |
+| System           | Arch        | Python versions                 | PyPy versions       |
+| ---------------- | ----------- | ------------------------------- | ------------------- |
 | ManyLinux2014    | 64-bit      | 3.7, 3.8, 3.9, 3.10, 3.11, 3.12 | 3.7, 3.8, 3.9, 3.10 |
 | ManyLinux2014    | ARM64       | 3.7, 3.8, 3.9, 3.10, 3.11, 3.12 | 3.7, 3.8, 3.9, 3.10 |
 | MuslLinux_1_1    | 64-bit      | 3.7, 3.8, 3.9, 3.10, 3.11, 3.12 |                     |
