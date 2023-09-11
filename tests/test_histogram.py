@@ -119,15 +119,14 @@ def test_fill_int_1d():
 
 def test_fill_int_with_float_single_1d():
     h = bh.Histogram(bh.axis.Integer(-1, 2))
-    h.fill(0.3)
-    h.fill(-0.3)
-    assert h.values() == approx(np.array([1, 1, 0]))
+    with pytest.raises(TypeError):
+        h.fill(0.3)
 
 
 def test_fill_int_with_float_array_1d():
     h = bh.Histogram(bh.axis.Integer(-1, 2))
-    h.fill([-0.3, 0.3])
-    assert h.values() == approx(np.array([1, 1, 0]))
+    with pytest.raises(TypeError):
+        h.fill([-0.3, 0.3])
 
 
 def test_fill_1d(flow):
@@ -948,7 +947,7 @@ def test_fill_with_sequence_0():
         a.fill(np.empty(2), 1)
     with pytest.raises(ValueError):
         a.fill(np.empty(2), np.empty(3))
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         a.fill("abc")
 
     with pytest.raises(IndexError):
@@ -989,12 +988,9 @@ def test_fill_with_sequence_0():
     platform.machine() == "ppc64le", reason="ppc64le bug (TBD)", strict=False
 )
 def test_fill_with_sequence_1():
-    def fa(*args):
-        return np.array(args, dtype=float)
-
     a = bh.Histogram(bh.axis.Integer(0, 3), storage=bh.storage.Weight())
-    v = fa(-1, 0, 1, 2, 3, 4)
-    w = fa(2, 3, 4, 5, 6, 7)
+    v = np.array([-1, 0, 1, 2, 3, 4], dtype=int)
+    w = np.array([2, 3, 4, 5, 6, 7], dtype=float)
     a.fill(v, weight=w)
     a.fill((0, 1), weight=(2, 3))
 

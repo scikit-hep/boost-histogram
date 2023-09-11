@@ -280,7 +280,7 @@ def test_int_cat_hist():
     assert_array_equal(h.view(), [1, 1, 1])
     assert h.sum() == 3
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises(TypeError):
         h.fill(0.5)
 
 

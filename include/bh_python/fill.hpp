@@ -20,7 +20,6 @@
 #include <boost/mp11.hpp>
 #include <boost/variant2/variant.hpp>
 
-#include <cmath>
 #include <stdexcept>
 #include <type_traits>
 #include <vector>
@@ -96,23 +95,27 @@ inline decltype(auto) special_cast<c_array_t<std::string>>(py::handle x) {
     return py::cast<B>(x);
 }
 
-// Allow single floats to be integers
+// Make sure float arrays don't get cast to integers (-.5 rounds to 0!)
+template <>
+inline decltype(auto) special_cast<c_array_t<int>>(py::handle x) {
+    auto np    = py::module::import("numpy");
+    auto dtype = py::cast<py::array>(x).dtype();
+    if(dtype.equal(np.attr("bool_")) || dtype.equal(np.attr("int8"))
+       || dtype.equal(np.attr("int16")) || dtype.equal(np.attr("int32"))
+       || dtype.equal(np.attr("int64")))
+        return py::cast<c_array_t<int>>(x);
+    throw py::type_error("Only integer arrays supported when targeting integer axes");
+}
+
+// Produce a type error for passing float to int
 template <>
 inline decltype(auto) special_cast<int>(py::handle x) {
     try {
-        return static_cast<int>(std::floor(py::cast<double>(x)));
-    } catch(const py::cast_error&) {
         return py::cast<int>(x);
+    } catch(std::runtime_error&) {
+        throw py::type_error(
+            "Only integer values supported when targeting integer axes");
     }
-}
-
-// Allow float arrays to be integers
-template <>
-inline decltype(auto) special_cast<c_array_t<int>>(py::handle x) {
-    auto np     = py::module_::import("numpy");
-    auto to_int = np.attr("floor")(np.attr("asarray")(x));
-
-    return py::cast<c_array_t<int>>(to_int);
 }
 
 using arg_t = variant::variant<c_array_t<double>,
