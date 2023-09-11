@@ -1,0 +1,6 @@
+*.py diff=python
+*.pyi diff=python
+*.cpp diff=cpp
+*.hpp diff=cpp
+
+*.svg -diff
