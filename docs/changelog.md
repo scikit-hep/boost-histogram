@@ -1,5 +1,45 @@
 # Changelog
 
+## Version 1.4
+
+### Version 1.4.0
+
+#### Features
+
+- `overflow=False` is now supported for `IntCategory` and `StrCategory`. [#883][]
+
+#### Changes
+
+- Using `_storage_type` now produces a `DeprecationWarning` instead of `PendingDeprecationWarning`. [#801][]
+- Updated Boost to 1.82. The upper limit on Regular axes without overflow is now inclusive like NumPy. [#802][]
+- Produce more detailed error messages on C++ errors [#848][]
+
+#### Bugfixes
+
+- Make filling an integer axis with a float array (also) an error. [#876][]
+- Include `-latomic` on `armv7l` [#823][]
+
+#### Backend and docs
+
+- Add Python 3.12 support and binary wheels, also latest PyPy. `manylinux2014+` required. [#880][], [#878][]
+- Drop Python 3.6 support. [#798][]
+- Drop pre-built wheels for 32-bit Linux (NumPy also dropped). [#849][]
+- Add testing for WebAssembly (Pyodide). [#850][]
+- Use Ruff [#829][]
+
+[#798]: https://github.com/scikit-hep/boost-histogram/pull/798
+[#801]: https://github.com/scikit-hep/boost-histogram/pull/801
+[#802]: https://github.com/scikit-hep/boost-histogram/pull/802
+[#823]: https://github.com/scikit-hep/boost-histogram/pull/823
+[#829]: https://github.com/scikit-hep/boost-histogram/pull/829
+[#848]: https://github.com/scikit-hep/boost-histogram/pull/848
+[#849]: https://github.com/scikit-hep/boost-histogram/pull/849
+[#850]: https://github.com/scikit-hep/boost-histogram/pull/850
+[#876]: https://github.com/scikit-hep/boost-histogram/pull/876
+[#878]: https://github.com/scikit-hep/boost-histogram/pull/878
+[#880]: https://github.com/scikit-hep/boost-histogram/pull/880
+[#883]: https://github.com/scikit-hep/boost-histogram/pull/883
+
 ## Version 1.3
 
 ### Version 1.3.2
