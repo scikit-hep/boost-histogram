@@ -95,16 +95,20 @@ BHP_SPECIALIZE_NAME(integer_oflow)
 BHP_SPECIALIZE_NAME(integer_growth)
 BHP_SPECIALIZE_NAME(integer_circular)
 
+using category_int_none   = bh::axis::category<int, metadata_t, option::none_t>;
 using category_int        = bh::axis::category<int, metadata_t>;
 using category_int_growth = bh::axis::category<int, metadata_t, option::growth_t>;
 
+BHP_SPECIALIZE_NAME(category_int_none)
 BHP_SPECIALIZE_NAME(category_int)
 BHP_SPECIALIZE_NAME(category_int_growth)
 
+using category_str_none = bh::axis::category<std::string, metadata_t, option::none_t>;
 using category_str = bh::axis::category<std::string, metadata_t, option::overflow_t>;
 using category_str_growth
     = bh::axis::category<std::string, metadata_t, option::growth_t>;
 
+BHP_SPECIALIZE_NAME(category_str_none)
 BHP_SPECIALIZE_NAME(category_str)
 BHP_SPECIALIZE_NAME(category_str_growth)
 
@@ -306,7 +310,9 @@ using axis_variant = bh::axis::variant<axis::regular_uoflow,
                                        axis::category_int_growth,
                                        axis::category_str,
                                        axis::category_str_growth,
-                                       axis::boolean>;
+                                       axis::boolean,
+                                       axis::category_int_none,
+                                       axis::category_str_none>;
 
 // This saves a little typing
 using vector_axis_variant = std::vector<axis_variant>;

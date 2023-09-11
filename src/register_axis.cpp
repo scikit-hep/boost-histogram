@@ -76,10 +76,14 @@ void register_axes(py::module& mod) {
                        axis::integer_circular>(
         mod, [](auto ax) { ax.def(py::init<int, int>(), "start"_a, "stop"_a); });
 
-    register_axis_each<axis::category_int, axis::category_int_growth>(
+    register_axis_each<axis::category_int,
+                       axis::category_int_growth,
+                       axis::category_int_none>(
         mod, [](auto ax) { ax.def(py::init<std::vector<int>>(), "categories"_a); });
 
-    register_axis_each<axis::category_str, axis::category_str_growth>(mod, [](auto ax) {
+    register_axis_each<axis::category_str,
+                       axis::category_str_growth,
+                       axis::category_str_none>(mod, [](auto ax) {
         ax.def(py::init<std::vector<std::string>>(), "categories"_a);
     });
 
