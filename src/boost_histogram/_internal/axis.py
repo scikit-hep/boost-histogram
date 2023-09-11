@@ -583,15 +583,15 @@ class BaseCategory(Axis, family=boost_histogram):
 
         if self.traits.growth:
             ret.append("growth=True")
-        elif self.traits.circular:
-            ret.append("circular=True")
+        elif not self.traits.overflow:
+            ret.append("overflow=False")
 
         ret += super()._repr_args_()
         return ret
 
 
 @set_module("boost_histogram.axis")
-@register({ca.category_str_growth, ca.category_str})
+@register({ca.category_str_growth, ca.category_str, ca.category_str_none})
 class StrCategory(BaseCategory, family=boost_histogram):
     __slots__ = ()
 
@@ -601,6 +601,7 @@ class StrCategory(BaseCategory, family=boost_histogram):
         *,
         metadata: Any = None,
         growth: bool = False,
+        overflow: bool = True,
         __dict__: dict[str, Any] | None = None,
     ):
         """
@@ -618,21 +619,25 @@ class StrCategory(BaseCategory, family=boost_histogram):
         growth : bool = False
             Allow the axis to grow if a value is encountered out of range.
             Be careful, the axis will grow as large as needed.
+        overflow : bool = True
+            Include an overflow bin for "missed" hits. Ignored if growth=True.
         __dict__: Optional[Dict[str, Any]] = None
             The full metadata dictionary
         """
 
-        options = _opts(growth=growth)
+        options = _opts(growth=growth, overflow=overflow)
 
         ax: ca._BaseCatStr
 
         # henryiii: We currently expand "abc" to "a", "b", "c" - some
         # Python interfaces protect against that
 
-        if options == {"growth"}:
+        if "growth" in options:
             ax = ca.category_str_growth(tuple(categories))
-        elif options == set():
+        elif options == {"overflow"}:
             ax = ca.category_str(tuple(categories))
+        elif not options:
+            ax = ca.category_str_none(tuple(categories))
         else:
             raise KeyError("Unsupported collection of options")
 
@@ -659,7 +664,7 @@ class StrCategory(BaseCategory, family=boost_histogram):
 
 
 @set_module("boost_histogram.axis")
-@register({ca.category_int, ca.category_int_growth})
+@register({ca.category_int, ca.category_int_growth, ca.category_int_none})
 class IntCategory(BaseCategory, family=boost_histogram):
     __slots__ = ()
 
@@ -669,6 +674,7 @@ class IntCategory(BaseCategory, family=boost_histogram):
         *,
         metadata: Any = None,
         growth: bool = False,
+        overflow: bool = True,
         __dict__: dict[str, Any] | None = None,
     ):
         """
@@ -686,17 +692,21 @@ class IntCategory(BaseCategory, family=boost_histogram):
         growth : bool = False
             Allow the axis to grow if a value is encountered out of range.
             Be careful, the axis will grow as large as needed.
+        overflow : bool = True
+            Include an overflow bin for "missed" hits. Ignored if growth=True.
         __dict__: Optional[Dict[str, Any]] = None
             The full metadata dictionary
         """
 
-        options = _opts(growth=growth)
+        options = _opts(growth=growth, overflow=overflow)
         ax: ca._BaseCatInt
 
-        if options == {"growth"}:
+        if "growth" in options:
             ax = ca.category_int_growth(tuple(categories))
-        elif options == set():
+        elif options == {"overflow"}:
             ax = ca.category_int(tuple(categories))
+        elif not options:
+            ax = ca.category_int_none(tuple(categories))
         else:
             raise KeyError("Unsupported collection of options")
 

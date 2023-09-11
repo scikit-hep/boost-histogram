@@ -208,6 +208,17 @@ def test_growing_cats():
     assert h.size == 4
 
 
+def test_noflow_cats():
+    h = bh.Histogram(
+        bh.axis.IntCategory([1, 2, 3], overflow=False),
+        bh.axis.StrCategory(["hi"], overflow=False),
+    )
+
+    h.fill([1, 2, 3, 4], ["hi", "ho", "hi", "ho"])
+
+    assert h.sum() == 2
+
+
 def test_metadata_add():
     h1 = bh.Histogram(
         bh.axis.IntCategory([1, 2, 3]), bh.axis.StrCategory(["1", "2", "3"])
@@ -655,9 +666,9 @@ def test_rebin_nd():
 
 
 # CLASSIC: This used to have metadata too, but that does not compare equal
-def test_pickle_0():
+def test_pickle_0(flow):
     a = bh.Histogram(
-        bh.axis.IntCategory([0, 1, 2]),
+        bh.axis.IntCategory([0, 1, 2], overflow=flow),
         bh.axis.Integer(0, 20),
         bh.axis.Regular(2, 0.0, 20.0, underflow=False, overflow=False),
         bh.axis.Variable([0.0, 1.0, 2.0]),
