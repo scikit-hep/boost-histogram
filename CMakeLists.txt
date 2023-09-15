@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10...3.26)
+cmake_minimum_required(VERSION 3.15...3.26)
 
 project(BOOST_HISTOGRAM LANGUAGES CXX)
 # Version is added later
@@ -129,7 +129,8 @@ set_property(TARGET _core PROPERTY LIBRARY_OUTPUT_DIRECTORY "$<1:boost_histogram
 # Collect all the python files and symlink them (3.14+) or copy them (3.12-3.13)
 # into the build directory
 # Protects from in-source builds (don't do this, please)
-if(NOT "${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_BINARY_DIR}")
+if(NOT "${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_BINARY_DIR}" AND NOT DEFINED
+                                                                                SKBUILD)
   file(
     GLOB_RECURSE BOOST_HIST_PY_FILES
     LIST_DIRECTORIES false
@@ -149,15 +150,20 @@ if(NOT "${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_BINARY_DIR}")
 endif()
 
 # Support installing
-install(DIRECTORY "src/boost_histogram" DESTINATION ".")
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/boost_histogram/version.py"
-        DESTINATION "boost_histogram")
 install(TARGETS _core DESTINATION "boost_histogram")
 
-# Tests (Requires pytest to be available to run)
-include(CTest)
+if(NOT DEFINED SKBUILD)
+  install(DIRECTORY "src/boost_histogram" DESTINATION ".")
+  install(FILES "${CMAKE_CURRENT_BINARY_DIR}/boost_histogram/version.py"
+          DESTINATION "boost_histogram")
 
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/boost_histogram/version.py")
+  # Tests (Requires pytest to be available to run)
+  include(CTest)
+endif()
+
+if(DEFINED SKBUILD)
+  # Don't worry about the version
+elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/boost_histogram/version.py")
   set(VERSION_REGEX [=[version[ \t]*=[ \t]*["']([0-9]+\.[0-9]+\.[0-9]+)]=])
 
   # Read in the line containing the version
@@ -195,12 +201,14 @@ else()
   message(STATUS "Full version output: ${VERSION_FULL_STRING}")
 endif()
 
-project(
-  BOOST_HISTOGRAM
-  LANGUAGES CXX
-  VERSION ${VERSION_STRING})
-message(STATUS "boost-histogram ${BOOST_HISTOGRAM_VERSION}")
+if(NOT DEFINED SKBUILD)
+  project(
+    BOOST_HISTOGRAM
+    LANGUAGES CXX
+    VERSION ${VERSION_STRING})
+  message(STATUS "boost-histogram ${BOOST_HISTOGRAM_VERSION}")
 
-if(BUILD_TESTING)
-  add_subdirectory(tests)
+  if(BUILD_TESTING)
+    add_subdirectory(tests)
+  endif()
 endif()

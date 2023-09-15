@@ -76,7 +76,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2019, macos-latest]
+        os: [windows-2019]
         arch: [auto64]
         build: ["*"]
 
@@ -96,6 +96,10 @@ jobs:
           - os: ubuntu-latest
             arch: auto64
             build: "*musllinux*"
+
+          - os: macos-latest
+            arch: auto64
+            build: cp37*
 
     steps:
       - uses: actions/checkout@v4
