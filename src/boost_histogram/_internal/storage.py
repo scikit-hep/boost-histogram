@@ -4,8 +4,8 @@ from typing import ClassVar
 
 import boost_histogram
 
-from .._core import accumulators
-from .._core import storage as store
+from .._core import accumulators  # pylint: disable=no-name-in-module
+from .._core import storage as store  # pylint: disable=no-name-in-module
 from .utils import set_module
 
 

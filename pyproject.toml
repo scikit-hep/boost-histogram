@@ -109,7 +109,7 @@ messages_control.disable = [
   "missing-class-docstring",
   "missing-function-docstring",
   "missing-module-docstring",
-  "no-member", # C extensions mess with this
+  "c-extension-no-member", # C extensions mess with this
   "protected-access",
   "too-few-public-methods",
   "too-many-arguments",
