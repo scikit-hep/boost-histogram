@@ -95,9 +95,10 @@ skip = ["pp*-manylinux_i686", "cp312-win32"] # not supported by NumPy
 environment-pass = ["SETUPTOOLS_SCM_PRETEND_VERSION"]
 environment = { PIP_ONLY_BINARY = "numpy" }
 
+
 [tool.pylint]
-main.py-version = "3.7"
-main.extension-pkg-allow-list = ["boost_histogram._core"]
+py-version = "3.7"
+extension-pkg-allow-list = ["boost_histogram._core"]
 reports.output-format = "colorized"
 similarities.ignore-imports = "yes"
 messages_control.disable = [
