@@ -5,19 +5,22 @@ from typing import Any, Callable, ClassVar, Mapping, MutableMapping
 import numpy as np
 
 from ..accumulators import Mean, WeightedMean, WeightedSum
-from .typing import ArrayLike, StrIndex, Ufunc
+from .typing import ArrayLike, Literal, StrIndex, Ufunc
+
+UFMethod = Literal["__call__", "reduce", "reduceat", "accumulate", "outer", "inner"]
 
 
 class View(np.ndarray):  # type: ignore[type-arg]
     __slots__ = ()
     _FIELDS: ClassVar[tuple[str, ...]]
+    _PARENT: type[WeightedSum] | type[WeightedMean] | type[Mean]
 
     def __getitem__(self, ind: StrIndex) -> np.typing.NDArray[Any]:  # type: ignore[override]
         sliced = super().__getitem__(ind)  # type: ignore[index]
 
         # If the shape is empty, return the parent type
         if not sliced.shape:
-            return self._PARENT._make(*sliced)  # type: ignore[attr-defined, no-any-return]
+            return self._PARENT._make(*sliced)  # type: ignore[no-any-return]
 
         # If the dtype has changed, return a normal array (no longer a record)
         if sliced.dtype != self.dtype:
@@ -47,7 +50,7 @@ class View(np.ndarray):  # type: ignore[type-arg]
         msg = "Needs matching ndarray or n+1 dim array"
         if array.ndim == current_ndim + 1:
             if len(self._FIELDS) == array.shape[-1]:
-                self.__setitem__(ind, self._PARENT._array(*np.moveaxis(array, -1, 0)))  # type: ignore[attr-defined]
+                self.__setitem__(ind, self._PARENT._array(*np.moveaxis(array, -1, 0)))
                 return
             msg += f", final dimension should be {len(self._FIELDS)} for this storage, got {array.shape[-1]} instead"
             raise ValueError(msg)
@@ -109,7 +112,7 @@ class WeightedSumView(View):
 
     # Could be implemented on master View
     def __array_ufunc__(
-        self, ufunc: Ufunc, method: str, *inputs: Any, **kwargs: Any
+        self, ufunc: Ufunc, method: UFMethod, *inputs: Any, **kwargs: Any
     ) -> np.typing.NDArray[Any]:
         # Avoid infinite recursion
         raw_inputs = [np.asarray(x) for x in inputs]
@@ -155,7 +158,8 @@ class WeightedSumView(View):
                     return result.view(self.__class__)  # type: ignore[no-any-return]
 
                 # If unsupported, just pass through (will return not implemented)
-                return super().__array_ufunc__(ufunc, method, *raw_inputs, **kwargs)  # type: ignore[no-any-return, arg-type]
+                # pylint: disable-next=no-member
+                return super().__array_ufunc__(ufunc, method, *raw_inputs, **kwargs)  # type: ignore[no-any-return]
 
             # View with normal value or array
             if ufunc in {np.add, np.subtract}:
@@ -234,7 +238,8 @@ class WeightedSumView(View):
             return result.view(self.__class__)  # type: ignore[no-any-return]
 
         # If unsupported, just pass through (will return NotImplemented or things like == will work but not return subclasses)
-        return super().__array_ufunc__(ufunc, method, *raw_inputs, **kwargs)  # type: ignore[no-any-return, arg-type]
+        # pylint: disable-next=no-member
+        return super().__array_ufunc__(ufunc, method, *raw_inputs, **kwargs)  # type: ignore[no-any-return]
 
 
 @fields(

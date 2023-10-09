@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import copy
-from typing import Any, TypeVar
+from typing import Any, ClassVar, TypeVar
 
 import boost_histogram
 
@@ -15,7 +15,7 @@ T = TypeVar("T", bound="AxisTransform")
 class AxisTransform:
     __slots__ = ("_this",)
     _family: object
-    _this: Any
+    _this: ca.transform._BaseTransform
 
     def __init_subclass__(cls, *, family: object) -> None:
         super().__init_subclass__()
@@ -39,23 +39,19 @@ class AxisTransform:
         return f"{self.__class__.__name__}() # Missing _this, broken class"
 
     def _produce(self, bins: int, start: float, stop: float) -> Any:
-        # Note: this is an ABC; _type must be defined on children
-        # These can be fixed later with a Protocol
-        return self.__class__._type(bins, start, stop)  # type: ignore[attr-defined]
+        raise NotImplementedError()
 
     def __init__(self) -> None:
         "Create a new transform instance"
-        # Note: this comes from family
-        (cpp_class,) = self._types  # type: ignore[attr-defined]
-        self._this = cpp_class()
+        raise NotImplementedError()
 
     def forward(self, value: float) -> float:
         "Compute the forward transform"
-        return self._this.forward(value)  # type: ignore[no-any-return]
+        return self._this.forward(value)
 
     def inverse(self, value: float) -> float:
         "Compute the inverse transform"
-        return self._this.inverse(value)  # type: ignore[no-any-return]
+        return self._this.inverse(value)
 
 
 @set_module("boost_histogram.axis.transform")
@@ -63,17 +59,20 @@ class AxisTransform:
 class Pow(AxisTransform, family=boost_histogram):
     __slots__ = ()
     _type = ca.regular_pow
+    _this: ca.transform.pow
+
+    # Note: this comes from family
+    _types: ClassVar[set[type[ca.transform.pow]]]
 
     def __init__(self, power: float):  # pylint: disable=super-init-not-called
         "Create a new transform instance"
-        # Note: this comes from family
-        (cpp_class,) = self._types  # type: ignore[attr-defined]
+        (cpp_class,) = self._types
         self._this = cpp_class(power)
 
     @property
     def power(self) -> float:
         "The power of the transform"
-        return self._this.power  # type: ignore[no-any-return]
+        return self._this.power
 
     # This one does need to be a normal method
     def _produce(self, bins: int, start: float, stop: float) -> Any:
@@ -85,6 +84,10 @@ class Pow(AxisTransform, family=boost_histogram):
 class Function(AxisTransform, family=boost_histogram):
     __slots__ = ()
     _type = ca.regular_trans
+    _this: ca.transform.func_transform
+
+    # Note: this comes from family
+    _types: ClassVar[set[type[ca.transform.func_transform]]]
 
     def __init__(  # pylint: disable=super-init-not-called
         self, forward: Any, inverse: Any, *, convert: Any = None, name: str = ""
@@ -135,8 +138,7 @@ class Function(AxisTransform, family=boost_histogram):
 
         """
 
-        # Note: this comes from family
-        (cpp_class,) = self._types  # type: ignore[attr-defined]
+        (cpp_class,) = self._types
         self._this = cpp_class(forward, inverse, convert, name)
 
     # This one does need to be a normal method

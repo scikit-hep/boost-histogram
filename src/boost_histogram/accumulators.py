@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ._core.accumulators import (  # pylint: disable=import-error
+from ._core.accumulators import (  # pylint: disable=import-error,no-name-in-module
     Mean,
     Sum,
     WeightedMean,

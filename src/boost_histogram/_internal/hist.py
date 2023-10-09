@@ -145,6 +145,7 @@ class Histogram:
 
     axes: AxesTuple
     _hist: CppHistogram
+    _variance_known: bool
 
     def __init_subclass__(cls, *, family: object | None = None) -> None:
         """

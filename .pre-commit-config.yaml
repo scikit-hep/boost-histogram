@@ -12,10 +12,10 @@ repos:
     rev: "1.16.0"
     hooks:
       - id: blacken-docs
-        additional_dependencies: [black==23.7.0]
+        additional_dependencies: [black==23.9.1]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v4.5.0
     hooks:
       - id: check-added-large-files
       - id: check-case-conflict
@@ -41,7 +41,7 @@ repos:
         types_or: [yaml, markdown, html, css, scss, javascript, json]
 
   - repo: https://github.com/asottile/setup-cfg-fmt
-    rev: v2.4.0
+    rev: v2.5.0
     hooks:
       - id: setup-cfg-fmt
         args:
@@ -52,7 +52,7 @@ repos:
           ]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.0.290"
+    rev: "v0.0.292"
     hooks:
       - id: ruff
         args: ["--fix", "--show-fixes"]
@@ -71,10 +71,10 @@ repos:
         stages: [manual]
 
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.2.5
+    rev: v2.2.6
     hooks:
       - id: codespell
-        args: ["-L", "hist,nd,circularly,ba"]
+        args: ["-L", "hist,nd,circularly,ba", "-w"]
         exclude: ^(notebooks/xarray.ipynb|notebooks/BoostHistogramHandsOn.ipynb|.*\.svg)$
 
   - repo: local
@@ -99,7 +99,7 @@ repos:
       - id: rst-inline-touching-normal
 
   - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.9.0.5
+    rev: v0.9.0.6
     hooks:
       - id: shellcheck
         exclude: ^docs/notebooks/conf.sh$
