@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-from numpy.testing import assert_allclose, assert_array_equal
 from pytest import approx
 
 import boost_histogram as bh
@@ -34,9 +33,9 @@ def test_1D_fill_int(storage):
 
     H = np.array([0, 1, 2, 0, 0, 0, 0, 0, 0, 0])
 
-    assert_array_equal(np.asarray(hist), H)
-    assert_array_equal(hist.view(flow=False), H)
-    assert_array_equal(hist.view(flow=True)[1:-1], H)
+    assert np.asarray(hist) == approx(H)
+    assert np.asarray(hist.view(flow=False)) == approx(np.asarray(H))
+    assert np.asarray(hist.view(flow=True)[1:-1]) == approx(np.asarray(H))
 
     assert hist.axes[0].size == bins
     assert hist.axes[0].extent == bins + 2
@@ -59,9 +58,9 @@ def test_2D_fill_int(storage):
 
     H = np.histogram2d(*vals, bins=bins, range=ranges)[0]
 
-    assert_array_equal(np.asarray(hist), H)
-    assert_array_equal(hist.view(flow=True)[1:-1, 1:-1], H)
-    assert_array_equal(hist.view(flow=False), H)
+    assert np.asarray(hist) == approx(H)
+    assert np.asarray(hist.view(flow=True)[1:-1, 1:-1]) == approx(np.asarray(H))
+    assert np.asarray(hist.view(flow=False)) == approx(np.asarray(H))
 
     assert hist.axes[0].size == bins[0]
     assert hist.axes[0].extent == bins[0] + 2
@@ -78,9 +77,9 @@ def test_edges_histogram():
     hist.fill(vals)
 
     bins = np.asarray(hist)
-    assert_array_equal(bins, [0, 2, 2])
-    assert_array_equal(hist.view(flow=True), [0, 0, 2, 2, 0])
-    assert_array_equal(hist.view(flow=False), [0, 2, 2])
+    assert bins == approx([0, 2, 2])
+    assert np.asarray(hist.view(flow=True)) == approx(np.asarray([0, 0, 2, 2, 0]))
+    assert np.asarray(hist.view(flow=False)) == approx(np.asarray([0, 2, 2]))
 
 
 def test_int_histogram():
@@ -90,9 +89,9 @@ def test_int_histogram():
     hist.fill(vals)
 
     bins = np.asarray(hist)
-    assert_array_equal(bins, [1, 1, 1, 1])
-    assert_array_equal(hist.view(flow=False), [1, 1, 1, 1])
-    assert_array_equal(hist.view(flow=True), [2, 1, 1, 1, 1, 3])
+    assert bins == approx([1, 1, 1, 1])
+    assert np.asarray(hist.view(flow=False)) == approx(np.asarray([1, 1, 1, 1]))
+    assert np.asarray(hist.view(flow=True)) == approx(np.asarray([2, 1, 1, 1, 1, 3]))
 
 
 def test_str_categories_histogram():
@@ -154,9 +153,9 @@ def test_numpy_dd():
     h2, x2, y2 = h.to_numpy()
     h1, (x1, y1) = h.to_numpy(dd=True)
 
-    assert_array_equal(h1, h2)
-    assert_array_equal(x1, x2)
-    assert_array_equal(y1, y2)
+    assert h1 == approx(h2)
+    assert x1 == approx(x2)
+    assert y1 == approx(y2)
 
 
 def test_numpy_weights():
@@ -173,16 +172,16 @@ def test_numpy_weights():
     h2, x2, y2 = h.to_numpy(view=False)
     h1, (x1, y1) = h.to_numpy(dd=True, view=False)
 
-    assert_array_equal(h1, h2)
-    assert_array_equal(x1, x2)
-    assert_array_equal(y1, y2)
+    assert h1 == approx(h2)
+    assert x1 == approx(x2)
+    assert y1 == approx(y2)
 
     h1, (x1, y1) = h.to_numpy(dd=True, view=False)
     h2, x2, y2 = h.to_numpy(view=True)
 
-    assert_array_equal(h1, h2.value)
-    assert_array_equal(x1, x2)
-    assert_array_equal(y1, y2)
+    assert h1 == approx(h2.value)
+    assert x1 == approx(x2)
+    assert y1 == approx(y2)
 
 
 def test_numpy_flow():
@@ -199,14 +198,14 @@ def test_numpy_flow():
     flow_true = h.to_numpy(True)[0][1:-1, 1:-1]
     flow_false = h.to_numpy(False)[0]
 
-    assert_array_equal(flow_true, flow_false)
+    assert flow_true == approx(flow_false)
 
     view_flow_true = h.view(flow=True)
     view_flow_false = h.view(flow=False)
     view_flow_default = h.view()
 
-    assert_array_equal(view_flow_true[1:-1, 1:-1], view_flow_false)
-    assert_array_equal(view_flow_default, view_flow_false)
+    assert view_flow_true[1:-1, 1:-1] == approx(view_flow_false)
+    assert view_flow_default == approx(view_flow_false)
 
 
 def test_numpy_compare():
@@ -229,9 +228,9 @@ def test_numpy_compare():
 
     nH, nE1, nE2 = np.histogram2d(xs, ys, bins=(10, 5), range=((0, 1), (0, 1)))
 
-    assert_array_equal(H, nH)
-    assert_allclose(E1, nE1)
-    assert_allclose(E2, nE2)
+    assert H == approx(nH)
+    assert E1 == approx(nE1)
+    assert E2 == approx(nE2)
 
 
 def test_project():
@@ -257,9 +256,9 @@ def test_project():
     assert h.project(0) == h0
     assert h.project(1) == h1
 
-    assert_array_equal(h.project(0, 1), h)
-    assert_array_equal(h.project(0), h0)
-    assert_array_equal(h.project(1), h1)
+    assert h.project(0, 1) == approx(h)
+    assert h.project(0) == approx(h0)
+    assert h.project(1) == approx(h1)
 
 
 def test_sums():
@@ -277,7 +276,7 @@ def test_int_cat_hist():
     h.fill(2)
     h.fill(3)
 
-    assert_array_equal(h.view(), [1, 1, 1])
+    assert np.asarray(h.view()) == approx(np.asarray([1, 1, 1]))
     assert h.sum() == 3
 
     with pytest.raises(TypeError):

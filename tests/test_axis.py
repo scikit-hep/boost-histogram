@@ -5,7 +5,6 @@ import copy
 
 import numpy as np
 import pytest
-from numpy.testing import assert_allclose, assert_array_equal
 from pytest import approx
 
 import boost_histogram as bh
@@ -254,8 +253,8 @@ class TestRegular(Axis):
         a = bh.axis.Regular(2, 1.0, 2.0)
         ref = [1.0, 1.5, 2.0]
         for i in range(2):
-            assert_allclose(a.bin(i), ref[i : i + 2])
-            assert_allclose(a[i], ref[i : i + 2])
+            assert a.bin(i) == approx(ref[i : i + 2])
+            assert a[i] == approx(ref[i : i + 2])
 
         assert a[-1] == a[1]
         with pytest.raises(IndexError):
@@ -264,8 +263,8 @@ class TestRegular(Axis):
         assert a.bin(-1)[0] == -np.inf
         assert a.bin(2)[1] == np.inf
 
-        assert_allclose(a[bh.underflow], a.bin(-1))
-        assert_allclose(a[bh.overflow], a.bin(2))
+        assert a[bh.underflow] == approx(a.bin(-1))
+        assert a[bh.overflow] == approx(a.bin(2))
 
         with pytest.raises(IndexError):
             a.bin(-2)
@@ -275,7 +274,7 @@ class TestRegular(Axis):
     def test_iter(self):
         a = bh.axis.Regular(2, 1.0, 2.0)
         ref = [(1.0, 1.5), (1.5, 2.0)]
-        assert_allclose(a, ref)
+        assert a == approx(ref)
 
     def test_index(self):
         a = bh.axis.Regular(4, 1.0, 2.0)
@@ -363,9 +362,9 @@ class TestRegular(Axis):
 
     def test_edges_centers_widths(self):
         a = bh.axis.Regular(2, 0, 1)
-        assert_allclose(a.edges, [0, 0.5, 1])
-        assert_allclose(a.centers, [0.25, 0.75])
-        assert_allclose(a.widths, [0.5, 0.5])
+        assert a.edges == approx([0, 0.5, 1])
+        assert a.centers == approx([0.25, 0.75])
+        assert a.widths == approx([0.5, 0.5])
 
 
 class TestCircular(Axis):
@@ -419,8 +418,8 @@ class TestCircular(Axis):
         a = bh.axis.Regular(2, 1, 1 + np.pi * 2, circular=True)
         ref = [1.0, 1.0 + np.pi, 1.0 + 2.0 * np.pi]
         for i in range(2):
-            assert_allclose(a.bin(i), ref[i : i + 2])
-            assert_allclose(a[i], ref[i : i + 2])
+            assert a.bin(i) == approx(ref[i : i + 2])
+            assert a[i] == approx(ref[i : i + 2])
 
         assert a[-1] == a[1]
         with pytest.raises(IndexError):
@@ -429,7 +428,7 @@ class TestCircular(Axis):
         with pytest.raises(IndexError):
             a[bh.underflow]
 
-        assert_allclose(a[bh.overflow], a.bin(2))
+        assert a[bh.overflow] == approx(a.bin(2))
 
         assert a.bin(2)[0] == approx(1 + 2 * np.pi)
         assert a.bin(2)[1] == approx(1 + 3 * np.pi)
@@ -442,7 +441,7 @@ class TestCircular(Axis):
     def test_iter(self):
         a = bh.axis.Regular(2, 1, 2, circular=True)
         ref = [(1, 1.5), (1.5, 2)]
-        assert_allclose(a, ref)
+        assert a == approx(ref)
 
     def test_index(self):
         a = bh.axis.Regular(4, 1, 1 + np.pi * 2, circular=True)
@@ -463,9 +462,9 @@ class TestCircular(Axis):
 
     def test_edges_centers_widths(self):
         a = bh.axis.Regular(2, 0, 1, circular=True)
-        assert_allclose(a.edges, [0, 0.5, 1])
-        assert_allclose(a.centers, [0.25, 0.75])
-        assert_allclose(a.widths, [0.5, 0.5])
+        assert a.edges == approx([0, 0.5, 1])
+        assert a.centers == approx([0.25, 0.75])
+        assert a.widths == approx([0.5, 0.5])
 
 
 class TestVariable(Axis):
@@ -533,15 +532,15 @@ class TestVariable(Axis):
         a = bh.axis.Variable(ref)
 
         for i in range(2):
-            assert_allclose(a.bin(i), ref[i : i + 2])
-            assert_allclose(a[i], ref[i : i + 2])
+            assert a.bin(i) == approx(ref[i : i + 2])
+            assert a[i] == approx(ref[i : i + 2])
 
         assert a[-1] == a[1]
         with pytest.raises(IndexError):
             a[2]
 
-        assert_allclose(a[bh.underflow], a.bin(-1))
-        assert_allclose(a[bh.overflow], a.bin(2))
+        assert a[bh.underflow] == approx(a.bin(-1))
+        assert a[bh.overflow] == approx(a.bin(2))
 
         assert a.bin(-1)[0] == -np.inf
         assert a.bin(-1)[1] == ref[0]
@@ -558,7 +557,7 @@ class TestVariable(Axis):
         ref = [-0.1, 0.2, 0.3]
         a = bh.axis.Variable(ref)
         for i, bin in enumerate(a):
-            assert_array_equal(bin, ref[i : i + 2])
+            assert bin == approx(ref[i : i + 2])
 
     def test_index(self):
         a = bh.axis.Variable([-0.1, 0.2, 0.3])
@@ -576,9 +575,9 @@ class TestVariable(Axis):
 
     def test_edges_centers_widths(self):
         a = bh.axis.Variable([0, 1, 3])
-        assert_allclose(a.edges, [0, 1, 3])
-        assert_allclose(a.centers, [0.5, 2])
-        assert_allclose(a.widths, [1, 2])
+        assert a.edges == approx([0, 1, 3])
+        assert a.centers == approx([0.5, 2])
+        assert a.widths == approx([1, 2])
 
 
 class TestInteger:
@@ -674,13 +673,13 @@ class TestInteger:
         assert a.bin(-1) == -2
         assert a.bin(4) == 3
 
-        assert_allclose(a[bh.underflow], a.bin(-1))
-        assert_allclose(a[bh.overflow], a.bin(4))
+        assert a[bh.underflow] == approx(a.bin(-1))
+        assert a[bh.overflow] == approx(a.bin(4))
 
     def test_iter(self):
         a = bh.axis.Integer(-1, 3)
         ref = (-1, 0, 1, 2)
-        assert_array_equal(a, ref)
+        assert a == approx(ref)
 
     def test_index(self):
         a = bh.axis.Integer(-1, 3)
@@ -695,9 +694,9 @@ class TestInteger:
 
     def test_edges_centers_widths(self):
         a = bh.axis.Integer(1, 3)
-        assert_allclose(a.edges, [1, 2, 3])
-        assert_allclose(a.centers, [1.5, 2.5])
-        assert_allclose(a.widths, [1, 1])
+        assert a.edges == approx([1, 2, 3])
+        assert a.centers == approx([1.5, 2.5])
+        assert a.widths == approx([1, 1])
 
 
 class TestCategory(Axis):
@@ -800,7 +799,7 @@ class TestCategory(Axis):
     def test_iter(self, ref, growth):
         Cat = bh.axis.StrCategory if isinstance(ref[0], str) else bh.axis.IntCategory
         a = Cat(ref, growth=growth)
-        assert_array_equal(a, ref)
+        assert a == approx(ref)
 
     @pytest.mark.parametrize(
         "ref", [[1, 2, 3, 4], ("A", "B", "C", "D")], ids=("int", "str")
@@ -810,8 +809,8 @@ class TestCategory(Axis):
         a = Cat(ref, growth=growth)
         for i, r in enumerate(ref):
             assert a.index(r) == i
-        assert_array_equal(a.index(ref), [0, 1, 2, 3])
-        assert_array_equal(a.index(np.reshape(ref, (2, 2))), [[0, 1], [2, 3]])
+        assert a.index(ref) == approx([0, 1, 2, 3])
+        assert a.index(np.reshape(ref, (2, 2))) == approx([[0, 1], [2, 3]])
 
         if isinstance(ref[0], str):
             with pytest.raises(KeyError):
@@ -828,12 +827,10 @@ class TestCategory(Axis):
         a = Cat(ref, growth=growth)
         for i, r in enumerate(ref):
             assert a.value(i) == r
-        assert_array_equal(a.value(range(3)), ref)
+        assert a.value(range(3)) == approx(ref)
         assert a.value(3) is None
-        assert_array_equal(a.value((0, 3)), [ref[0], None])
-        assert_array_equal(
-            a.value(np.array((0, 1, 2, 3))), [ref[0], ref[1], ref[2], None]
-        )
+        assert a.value((0, 3)) == approx([ref[0], None])
+        assert a.value(np.array((0, 1, 2, 3))) == approx([ref[0], ref[1], ref[2], None])
         # may be added in the future
         with pytest.raises(ValueError):
             a.value([[2], [2]])
@@ -842,9 +839,9 @@ class TestCategory(Axis):
     def test_edges_centers_widths(self, ref, growth):
         Cat = bh.axis.StrCategory if isinstance(ref[0], str) else bh.axis.IntCategory
         a = Cat(ref, growth=growth)
-        assert_allclose(a.edges, [0, 1, 2, 3])
-        assert_allclose(a.centers, [0.5, 1.5, 2.5])
-        assert_allclose(a.widths, [1, 1, 1])
+        assert a.edges == approx([0, 1, 2, 3])
+        assert a.centers == approx([0.5, 1.5, 2.5])
+        assert a.widths == approx([1, 1, 1])
 
 
 class TestBoolean:
@@ -898,7 +895,7 @@ class TestBoolean:
     def test_iter(self):
         a = bh.axis.Boolean()
         ref = (False, True)
-        assert_array_equal(a, ref)
+        assert a == approx(ref)
 
     def test_index(self):
         a = bh.axis.Boolean()
@@ -907,6 +904,6 @@ class TestBoolean:
 
     def test_edges_centers_widths(self):
         a = bh.axis.Boolean()
-        assert_allclose(a.edges, [0.0, 1.0, 2.0])
-        assert_allclose(a.centers, [0.5, 1.5])
-        assert_allclose(a.widths, [1, 1])
+        assert a.edges == approx([0.0, 1.0, 2.0])
+        assert a.centers == approx([0.5, 1.5])
+        assert a.widths == approx([1, 1])

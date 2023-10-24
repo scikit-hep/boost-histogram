@@ -4,7 +4,6 @@ import math
 
 import numpy as np
 import pytest
-from numpy.testing import assert_array_equal
 from pytest import approx
 
 import boost_histogram as bh
@@ -25,7 +24,7 @@ def test_setting(storage):
     assert h[1] == 3
     assert h[9] == 5
 
-    assert_array_equal(h.view(), [2, 3, 0, 0, 0, 0, 0, 0, 0, 5])
+    assert np.asarray(h.view()) == approx(np.asarray([2, 3, 0, 0, 0, 0, 0, 0, 0, 5]))
 
 
 def test_setting_weight():
@@ -64,8 +63,8 @@ def test_setting_weight():
     assert b["value"][0] == a["value"][0]
     assert b["variance"][0] == a["variance"][0]
 
-    assert_array_equal(a.view().value, b.view()["value"])
-    assert_array_equal(a.view().variance, b.view()["variance"])
+    assert np.asarray(a.view().value) == approx(np.asarray(b.view()["value"]))
+    assert np.asarray(a.view().variance) == approx(np.asarray(b.view()["variance"]))
 
 
 def test_sum_weight():
@@ -80,7 +79,7 @@ def test_sum_weight():
     v2 = v + v
     h2 = h + h
 
-    assert_array_equal(h2.view(), v2)
+    assert np.asarray(h2.view()) == approx(np.asarray(v2))
 
 
 def test_setting_profile():
@@ -123,10 +122,10 @@ def test_setting_profile():
     assert b[0]["count"] == a["count"][0]
     assert b[0]["_sum_of_deltas_squared"] == a["_sum_of_deltas_squared"][0]
 
-    assert_array_equal(a.view().value, b.view()["value"])
-    assert_array_equal(a.view().count, b.view()["count"])
-    assert_array_equal(
-        a.view()._sum_of_deltas_squared, b.view()["_sum_of_deltas_squared"]
+    assert np.asarray(a.view().value) == approx(np.asarray(b.view()["value"]))
+    assert np.asarray(a.view().count) == approx(np.asarray(b.view()["count"]))
+    assert np.asarray(a.view()._sum_of_deltas_squared) == approx(
+        np.asarray(b.view()["_sum_of_deltas_squared"])
     )
 
 
@@ -197,14 +196,17 @@ def test_setting_weighted_profile():
         == a["_sum_of_weighted_deltas_squared"][0]
     )
 
-    assert_array_equal(a.view().value, b.view()["value"])
-    assert_array_equal(a.view().sum_of_weights, b.view()["sum_of_weights"])
-    assert_array_equal(
-        a.view().sum_of_weights_squared, b.view()["sum_of_weights_squared"]
+    assert np.asarray(a.view().value) == approx(np.asarray(b.view()["value"]))
+    assert np.asarray(a.view().sum_of_weights) == approx(
+        np.asarray(b.view()["sum_of_weights"])
     )
-    assert_array_equal(
-        a.view()._sum_of_weighted_deltas_squared,
-        b.view()["_sum_of_weighted_deltas_squared"],
+    assert np.asarray(a.view().sum_of_weights_squared) == approx(
+        np.asarray(b.view()["sum_of_weights_squared"])
+    )
+    assert np.asarray(a.view()._sum_of_weighted_deltas_squared) == approx(
+        np.asarray(
+            b.view()["_sum_of_weighted_deltas_squared"],
+        )
     )
 
 
@@ -218,8 +220,8 @@ def test_modify_weights_by_view():
 
     hist.view().value /= 2
 
-    assert hist.view().value[0] == pytest.approx(1.5)
-    assert hist.view().value[1] == pytest.approx(2)
+    assert hist.view().value[0] == approx(1.5)
+    assert hist.view().value[1] == approx(2)
 
 
 # Issue #531
