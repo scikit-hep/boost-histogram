@@ -11,7 +11,7 @@
 Welcome to boost-histogram's documentation!
 ===========================================
 
-|Actions Status| |Documentation Status| |Code style: black| |PyPI version| |Conda-Forge|
+|Actions Status| |Documentation Status| |PyPI version| |Conda-Forge|
 |PyPI platforms| |DOI| |GitHub Discussion| |Gitter| |Scikit-HEP|
 
 Boost-histogram (`source <https://github.com/scikit-hep/boost-histogram>`__) is
@@ -116,8 +116,6 @@ Indices and tables
    :target: https://github.com/scikit-hep/boost-histogram/actions
 .. |Documentation Status| image:: https://readthedocs.org/projects/boost-histogram/badge/?version=latest
    :target: https://boost-histogram.readthedocs.io/en/latest/?badge=latest
-.. |Code style: black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
-   :target: https://github.com/ambv/black
 .. |PyPI version| image:: https://badge.fury.io/py/boost-histogram.svg
    :target: https://pypi.org/project/boost-histogram
 .. |Conda-Forge| image:: https://img.shields.io/conda/vn/conda-forge/boost-histogram
