@@ -973,6 +973,7 @@ class Histogram:
         value = np.asarray(value)
         view = self.view(flow=True)
 
+        value_shape: tuple[int, ...]
         # Support raw arrays for accumulators, the final dimension is the constructor values
         if (
             value.ndim > 0
