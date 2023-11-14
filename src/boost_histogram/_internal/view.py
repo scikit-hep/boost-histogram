@@ -20,7 +20,7 @@ class View(np.ndarray):  # type: ignore[type-arg]
 
         # If the shape is empty, return the parent type
         if not sliced.shape:
-            return self._PARENT._make(*sliced)  # type: ignore[no-any-return]
+            return self._PARENT._make(*sliced)  # type: ignore[unreachable]
 
         # If the dtype has changed, return a normal array (no longer a record)
         if sliced.dtype != self.dtype:
