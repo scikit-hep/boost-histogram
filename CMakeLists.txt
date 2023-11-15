@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15...3.26)
+cmake_minimum_required(VERSION 3.15...3.27)
 
 project(BOOST_HISTOGRAM LANGUAGES CXX)
 # Version is added later
@@ -40,9 +40,11 @@ message(STATUS "CMake ${CMAKE_VERSION}")
 
 # Adding pybind11 and setting up Python
 # Will display pybind11 version
+set(PYBIND11_FINDPYTHON TRUE)
+set(Python_ARTIFACTS_INTERACTIVE TRUE)
 add_subdirectory(extern/pybind11)
 
-message(STATUS "Python ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
+message(STATUS "Python ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}")
 
 # This is completely optional and just adds hints to IDEs - no affect on build at all.
 file(GLOB_RECURSE BOOST_HIST_FILES "extern/histogram/include/*.hpp")
@@ -126,8 +128,7 @@ endif()
 # which confuses Python.
 set_property(TARGET _core PROPERTY LIBRARY_OUTPUT_DIRECTORY "$<1:boost_histogram>")
 
-# Collect all the python files and symlink them (3.14+) or copy them (3.12-3.13)
-# into the build directory
+# Collect all the python files and symlink them into the build directory
 # Protects from in-source builds (don't do this, please)
 if(NOT "${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_BINARY_DIR}" AND NOT DEFINED
                                                                                 SKBUILD)
@@ -137,15 +138,9 @@ if(NOT "${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_BINARY_DIR}" AND 
     RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/src"
     CONFIGURE_DEPENDS "src/boost_histogram/*.py")
   foreach(F IN LISTS BOOST_HIST_PY_FILES)
-    if(CMAKE_VERSION VERSION_LESS 3.14)
-      get_filename_component(FDIR "${F}" DIRECTORY)
-      file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/src/${F}"
-           DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/${FDIR}")
-    else()
-      file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/${F}")
-      file(CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/src/${F}" "${CMAKE_CURRENT_BINARY_DIR}/${F}"
-           COPY_ON_ERROR SYMBOLIC)
-    endif()
+    file(REMOVE "${CMAKE_CURRENT_BINARY_DIR}/${F}")
+    file(CREATE_LINK "${CMAKE_CURRENT_SOURCE_DIR}/src/${F}" "${CMAKE_CURRENT_BINARY_DIR}/${F}"
+         COPY_ON_ERROR SYMBOLIC)
   endforeach()
 endif()
 
