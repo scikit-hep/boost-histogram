@@ -40,7 +40,7 @@ jobs:
           EMSCRIPTEN_VERSION=$(pyodide config get emscripten_version)
           echo "emsdk-version=$EMSCRIPTEN_VERSION" >> $GITHUB_OUTPUT
 
-      - uses: mymindstorm/setup-emsdk@v12
+      - uses: mymindstorm/setup-emsdk@v13
         with:
           version: ${{ steps.compute-emsdk-version.outputs.emsdk-version }}
           actions-cache-folder: emsdk-cache
