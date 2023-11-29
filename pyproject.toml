@@ -146,18 +146,13 @@ extend-select = [
   "YTT",         # flake8-2020
 ]
 ignore = [
-  "PLR",    # Design related pylint codes
-  "E501",   # Line too long
+  "PLR09",          # Too many X
+  "PLR2004",        # Magic value in comparison
+  "E501",           # Line too long
   "PT011", "PT013", # Incorrect pytest codes
-  "ISC001", # Conflicts with the formatter
+  "ISC001",         # Conflicts with the formatter
 ]
-unfixable = [
-  "T20",  # Removes print statements
-  "F841", # Removes unused variables
-]
-exclude = []
 typing-modules = ["boost_histogram._internal.typing"]
-flake8-unused-arguments.ignore-variadic-names = true
 isort.required-imports = ["from __future__ import annotations"]
 
 
@@ -174,3 +169,6 @@ max-complexity = 13
 "notebooks/*" = ["T20"]
 "*.pyi" = ["F401", "F811", "ARG001"]
 "docs/conf.py" = ["E402", "ARG001"]
+# Several of these will be fixed in the next Ruff release
+# F401 is needed since Ruff doesn't realise some magics are code
+"**.ipynb" = ["E703", "I002", "E731", "B015", "B018", "F401"]
