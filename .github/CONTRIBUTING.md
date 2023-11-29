@@ -225,6 +225,23 @@ cmake -S . -B build-iwyu -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE=$(which include-what-y
 cmake --build build
 ```
 
+## Timing steps
+
+Make time/memory taken can be set
+`CMAKE_CXX_COMPILER_LAUNCHER`/`CMAKE_CXX_LINKER_LANCHER`. Some examples:
+
+```
+# Linux:
+#   "time"
+#   "time;-v"
+#   "time;-f;'%U user %S system %E elapsed %P CPU %M KB'"
+# macOS:
+#   "time"
+# macOS with brew install gnu-time:
+#   "gtime;-f;'%U user %S system %E elapsed %P CPU %M KB'"
+#
+```
+
 ## Common tasks
 
 <details><summary>Updating dependencies (click to expand)</summary>

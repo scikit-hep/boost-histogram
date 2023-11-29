@@ -1,9 +1,6 @@
 pybind11_find_import(numpy)
 pybind11_find_import(pytest)
 pybind11_find_import(pytest-benchmark)
-if(PYTHON_VERSION VERSION_LESS 3.5)
-  pybind11_find_import(typing)
-endif()
 
 # Support for running from build directory
 file(WRITE "${PROJECT_BINARY_DIR}/pytest.ini" "[pytest]\n" "addopts = --benchmark-disable\n"
