@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import shutil
+from pathlib import Path
 
 import nox
 
@@ -98,6 +99,20 @@ def build_api_docs(session: nox.Session) -> None:
         "--module-first",
         "../src/boost_histogram",
     )
+
+    # add API docs of boost_histogram._internal.hist.Histogram after
+    # the generation step
+    with Path("api/boost_histogram.rst").open("r+") as f:
+        lines = f.readlines()
+        for i in range(len(lines)):
+            if lines[i] == ".. automodule:: boost_histogram\n":
+                lines[i] = ".. automodule:: boost_histogram._internal.hist\n"
+                lines[i + 1] = "   :members: Histogram\n"
+                break
+
+        f.truncate(0)
+        f.seek(0)
+        f.writelines(lines)
 
 
 @nox.session
