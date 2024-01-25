@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import copy
 from builtins import sum
-from typing import Mapping, Sequence, TypeVar
+from typing import Sequence, TypeVar
 
 from uhi.typing.plottable import PlottableAxis
 
@@ -145,7 +145,7 @@ class Rebinner:
 
     def __call__(
         self, axis: PlottableAxis
-    ) -> int | Sequence[int] | Mapping[int | str, Sequence[int | str]]:
+    ) -> int | Sequence[int]:
         if isinstance(axis, Regular):
             if self.factor is None:
                 raise ValueError("must provide a value")
