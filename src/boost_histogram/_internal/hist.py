@@ -676,6 +676,7 @@ class Histogram:
         if index is sum or hasattr(index, "factor"):  # type: ignore[comparison-overlap]
             return slice(None, None, index)
 
+        # General locators
         # Note that MyPy doesn't like these very much - the fix
         # will be to properly set input types
         if callable(index):
