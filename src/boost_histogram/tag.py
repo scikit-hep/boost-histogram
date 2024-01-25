@@ -143,9 +143,7 @@ class Rebinner:
                 break
         return return_str
 
-    def __call__(
-        self, axis: PlottableAxis
-    ) -> int | Sequence[int]:
+    def __call__(self, axis: PlottableAxis) -> int | Sequence[int]:
         if isinstance(axis, Regular):
             if self.factor is None:
                 raise ValueError("must provide a value")
