@@ -148,9 +148,8 @@ class Rebinner:
             if self.factor is None:
                 raise ValueError("must provide a value")
             return self.factor
-        elif isinstance(axis, Variable):  # noqa: RET505
+        if isinstance(axis, Variable):
             if self.groups is None:
                 raise ValueError("must provide bin groups")
             return self.groups
-        else:
-            raise NotImplementedError(axis)
+        raise NotImplementedError(axis)

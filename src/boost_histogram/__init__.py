@@ -36,7 +36,6 @@ __all__ = (
     "accumulators",
     "numpy",
     "loc",
-    "rebin",
     "sum",
     "underflow",
     "overflow",
