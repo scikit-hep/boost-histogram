@@ -28,7 +28,7 @@ import boost_histogram
 from boost_histogram import _core
 
 from .axestuple import AxesTuple
-from .axis import Axis
+from .axis import Axis, Variable
 from .enum import Kind
 from .storage import Double, Storage
 from .typing import Accumulator, ArrayLike, CppHistogram
@@ -676,7 +676,6 @@ class Histogram:
         if index is sum or hasattr(index, "factor"):  # type: ignore[comparison-overlap]
             return slice(None, None, index)
 
-        # General locators
         # Note that MyPy doesn't like these very much - the fix
         # will be to properly set input types
         if callable(index):
@@ -858,13 +857,15 @@ class Histogram:
             if ind != slice(None):
                 merge = 1
                 if ind.step is not None:
-                    if hasattr(ind.step, "factor"):
+                    if ind.step.factor is not None:
                         merge = ind.step.factor
                     elif callable(ind.step):
                         if ind.step is sum:
                             integrations.add(i)
+                        elif ind.step.groups is not None:
+                            groups = ind.step.groups
                         else:
-                            raise RuntimeError("Full UHI not supported yet")
+                            raise NotImplementedError
 
                         if ind.start is not None or ind.stop is not None:
                             slices.append(
@@ -880,7 +881,10 @@ class Histogram:
 
                 assert isinstance(start, int)
                 assert isinstance(stop, int)
-                slices.append(_core.algorithm.slice_and_rebin(i, start, stop, merge))
+                if not (ind.step is not None and ind.step.factor is None):
+                    slices.append(
+                        _core.algorithm.slice_and_rebin(i, start, stop, merge)
+                    )
 
         # Will be updated below
         if slices or pick_set or pick_each or integrations:
@@ -888,6 +892,31 @@ class Histogram:
         else:
             logger.debug("Reduce actions are all empty, just making a copy")
             reduced = copy.copy(self._hist)
+
+        # bin re-grouping
+        if (
+            hasattr(ind, "step")
+            and ind.step is not None
+            and ind.step.groups is not None
+        ):
+            axes = [reduced.axis(i) for i in range(reduced.rank())]
+            reduced_view = reduced.view(flow=True)
+            new_axes_indices = [axes[i].edges[0]]
+            j: int = 0
+            for group in groups:
+                new_axes_indices += [axes[i].edges[j + 1 : j + group + 1][-1]]
+                j = group
+
+            variable_axis = Variable(new_axes_indices)
+            variable_axis.metadata = axes[i].metadata
+            axes[i] = variable_axis
+            reduced_view = np.take(reduced_view, range(len(reduced_view)), axis=i)
+
+            logger.debug("Axes: %s", axes)
+
+            new_reduced = reduced.__class__(axes)
+            new_reduced.view(flow=True)[...] = reduced_view
+            reduced = new_reduced
 
         if pick_each:
             tuple_slice = tuple(

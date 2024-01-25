@@ -6,7 +6,6 @@ from ._internal.hist import Histogram, IndexingExpr
 from .tag import (  # pylint: disable=redefined-builtin
     loc,
     overflow,
-    rebin,
     sum,
     underflow,
 )
