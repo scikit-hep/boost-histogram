@@ -4,11 +4,14 @@ from __future__ import annotations
 
 import copy
 from builtins import sum
-from typing import TypeVar
+from typing import Mapping, Sequence, TypeVar
+
+from uhi.typing.plottable import PlottableAxis
 
 from ._internal.typing import AxisLike
+from .axis import Regular, Variable
 
-__all__ = ("Slicer", "Locator", "at", "loc", "overflow", "underflow", "rebin", "sum")
+__all__ = ("Slicer", "Locator", "at", "loc", "overflow", "underflow", "Rebinner", "sum")
 
 
 class Slicer:
@@ -107,13 +110,49 @@ class at:
         return self.value
 
 
-class rebin:
-    __slots__ = ("factor",)
+class Rebinner:
+    __slots__ = (
+        "factor",
+        "groups",
+        "category_map",
+    )
 
-    def __init__(self, value: int) -> None:
+    def __init__(
+        self,
+        *,
+        value: int | None = None,
+        groups: Sequence[int] | None = None,
+    ) -> None:
+        if (
+            sum(i is None for i in [value, groups]) == 2
+            or sum(i is not None for i in [value, groups]) > 1
+        ):
+            raise ValueError("exactly one, a value or groups should be provided")
         self.factor = value
+        self.groups = groups
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}({self.factor})"
+        repr_str = f"{self.__class__.__name__}"
+        args: dict[str, int | Sequence[int] | None] = {
+            "value": self.factor,
+            "groups": self.groups,
+        }
+        for k, v in args.items():
+            if v is not None:
+                return_str = f"{repr_str}({k}={v})"
+                break
+        return return_str
 
-    # TODO: Add __call__ to support UHI
+    def __call__(
+        self, axis: PlottableAxis
+    ) -> int | Sequence[int] | Mapping[int | str, Sequence[int | str]]:
+        if isinstance(axis, Regular):
+            if self.factor is None:
+                raise ValueError("must provide a value")
+            return self.factor
+        elif isinstance(axis, Variable):  # noqa: RET505
+            if self.groups is None:
+                raise ValueError("must provide bin groups")
+            return self.groups
+        else:
+            raise NotImplementedError(axis)
