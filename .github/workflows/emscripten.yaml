@@ -40,7 +40,7 @@ jobs:
           EMSCRIPTEN_VERSION=$(pyodide config get emscripten_version)
           echo "emsdk-version=$EMSCRIPTEN_VERSION" >> $GITHUB_OUTPUT
 
-      - uses: mymindstorm/setup-emsdk@v13
+      - uses: mymindstorm/setup-emsdk@v14
         with:
           version: ${{ steps.compute-emsdk-version.outputs.emsdk-version }}
           actions-cache-folder: emsdk-cache
@@ -61,6 +61,7 @@ jobs:
         run: .venv-pyodide/bin/pytest
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
+          name: emscripten-wheel
           path: dist/*.whl

@@ -112,9 +112,10 @@ jobs:
           CIBW_BUILD_VERBOSITY: 1
           CIBW_ENVIRONMENT: "PIP_ONLY_BINARY=:all:"
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           path: wheelhouse/*
+          name: test-wheels-${{ strategy.job-index }}
 
       - name: Check wheels
         run: pipx run twine check wheelhouse/*
