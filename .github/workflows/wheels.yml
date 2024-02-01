@@ -48,6 +48,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           path: dist/*.tar.gz
+          name: wheels-sdist
 
   build_arch_wheels:
     name: ${{ matrix.python }} on ${{ matrix.arch }}
@@ -84,6 +85,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           path: wheelhouse/*.whl
+          name: wheel-aarch-${{ strategy.job-index }}
 
   build_wheels:
     name: ${{ matrix.type }} ${{ matrix.arch }} on ${{ matrix.os }}
@@ -125,6 +127,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           path: wheelhouse/*.whl
+          name: wheels-${{ strategy.job-index }}
 
   upload_all:
     name: Upload if release
@@ -134,7 +137,8 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: artifact
+          pattern: wheels-*
+          merge-multiple: true
           path: dist
 
       - name: List all files
