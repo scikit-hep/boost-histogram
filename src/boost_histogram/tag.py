@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import copy
 from builtins import sum
-from typing import Sequence, TypeVar
+from typing import TYPE_CHECKING, Sequence, TypeVar
 
-from uhi.typing.plottable import PlottableAxis
+if TYPE_CHECKING:
+    from uhi.typing.plottable import PlottableAxis
 
 from ._internal.typing import AxisLike
-from .axis import Regular, Variable
 
 __all__ = ("Slicer", "Locator", "at", "loc", "overflow", "underflow", "Rebinner", "sum")
 
@@ -114,21 +114,17 @@ class Rebinner:
     __slots__ = (
         "factor",
         "groups",
-        "category_map",
     )
 
     def __init__(
         self,
+        factor: int | None = None,
         *,
-        value: int | None = None,
         groups: Sequence[int] | None = None,
     ) -> None:
-        if (
-            sum(i is None for i in [value, groups]) == 2
-            or sum(i is not None for i in [value, groups]) > 1
-        ):
+        if not sum(i is None for i in [factor, groups]) == 1:
             raise ValueError("exactly one, a value or groups should be provided")
-        self.factor = value
+        self.factor = factor
         self.groups = groups
 
     def __repr__(self) -> str:
@@ -144,12 +140,10 @@ class Rebinner:
         return return_str
 
     def __call__(self, axis: PlottableAxis) -> int | Sequence[int]:
-        if isinstance(axis, Regular):
-            if self.factor is None:
-                raise ValueError("must provide a value")
-            return self.factor
-        if isinstance(axis, Variable):
-            if self.groups is None:
-                raise ValueError("must provide bin groups")
+        if self.factor is not None:
+            return [self.factor] * (len(axis) // self.factor)
+
+        if self.groups is not None:
             return self.groups
+
         raise NotImplementedError(axis)

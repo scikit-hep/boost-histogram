@@ -858,12 +858,12 @@ class Histogram:
             if ind != slice(None):
                 merge = 1
                 if ind.step is not None:
-                    if ind.step.factor is not None:
+                    if getattr(ind.step, "factor", None) is not None:
                         merge = ind.step.factor
                     elif callable(ind.step):
                         if ind.step is sum:
                             integrations.add(i)
-                        elif ind.step.groups is not None:
+                        elif getattr(ind.step, "groups", None) is not None:
                             groups = ind.step.groups
                         else:
                             raise NotImplementedError
@@ -908,9 +908,8 @@ class Histogram:
                 new_axes_indices += [axes[i].edges[j + 1 : j + group + 1][-1]]
                 j = group
 
-            variable_axis = Variable(new_axes_indices)
-            variable_axis.metadata = axes[i].metadata
-            axes[i] = variable_axis
+            variable_axis = Variable(new_axes_indices, metadata=axes[i].metadata)
+            axes[i] = variable_axis._axis
             reduced_view = np.take(reduced_view, range(len(reduced_view)), axis=i)
 
             logger.debug("Axes: %s", axes)
