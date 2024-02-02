@@ -123,7 +123,7 @@ class Rebinner:
         groups: Sequence[int] | None = None,
     ) -> None:
         if not sum(i is None for i in [factor, groups]) == 1:
-            raise ValueError("exactly one, a value or groups should be provided")
+            raise ValueError("Exactly one, a factor or groups should be provided")
         self.factor = factor
         self.groups = groups
 
