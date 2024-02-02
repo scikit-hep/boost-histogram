@@ -240,7 +240,7 @@ def test_repr():
     assert repr(bh.overflow + 1) == "overflow + 1"
     assert repr(bh.overflow - 1) == "overflow - 1"
 
-    assert repr(bh.rebin(2)) == "rebin(2)"
+    assert repr(bh.rebin(2)) == "Rebinner(value=2)"
 
 
 # Was broken in 0.6.1
