@@ -857,6 +857,7 @@ class Histogram:
 
             if ind != slice(None):
                 merge = 1
+                groups = []
                 if ind.step is not None:
                     if getattr(ind.step, "factor", None) is not None:
                         merge = ind.step.factor
@@ -874,7 +875,8 @@ class Histogram:
                                     i, start, stop, _core.algorithm.slice_mode.crop
                                 )
                             )
-                        continue
+                        if len(groups) == 0:
+                            continue
                     else:
                         raise IndexError(
                             "The third argument to a slice must be rebin or projection"
@@ -882,10 +884,37 @@ class Histogram:
 
                 assert isinstance(start, int)
                 assert isinstance(stop, int)
-                if not (ind.step is not None and ind.step.factor is None):
+                # rebinning with factor
+                if len(groups) == 0:
                     slices.append(
                         _core.algorithm.slice_and_rebin(i, start, stop, merge)
                     )
+                # rebinning with groups
+                elif len(groups) != 0:
+                    reduced = self._hist
+                    axes = [reduced.axis(x) for x in range(reduced.rank())]
+                    reduced_view = reduced.view(flow=True)
+                    new_axes_indices = [axes[i].edges[0]]
+                    j: int = 0
+                    for group in groups:
+                        new_axes_indices += [axes[i].edges[j + 1 : j + group + 1][-1]]
+                        j = group
+
+                    variable_axis = Variable(
+                        new_axes_indices, metadata=axes[i].metadata
+                    )
+                    axes[i] = variable_axis._ax
+                    reduced_view = np.take(
+                        reduced_view, range(len(reduced_view)), axis=i
+                    )
+
+                    logger.debug("Axes: %s", axes)
+
+                    # redistribute the bin contents here
+
+                    new_reduced = reduced.__class__(axes)
+                    new_reduced.view(flow=True)[...] = reduced_view
+                    reduced = new_reduced
 
         # Will be updated below
         if slices or pick_set or pick_each or integrations:
@@ -893,30 +922,6 @@ class Histogram:
         else:
             logger.debug("Reduce actions are all empty, just making a copy")
             reduced = copy.copy(self._hist)
-
-        # bin re-grouping
-        if (
-            hasattr(ind, "step")
-            and ind.step is not None
-            and ind.step.groups is not None
-        ):
-            axes = [reduced.axis(i) for i in range(reduced.rank())]
-            reduced_view = reduced.view(flow=True)
-            new_axes_indices = [axes[i].edges[0]]
-            j: int = 0
-            for group in groups:
-                new_axes_indices += [axes[i].edges[j + 1 : j + group + 1][-1]]
-                j = group
-
-            variable_axis = Variable(new_axes_indices, metadata=axes[i].metadata)
-            axes[i] = variable_axis._axis
-            reduced_view = np.take(reduced_view, range(len(reduced_view)), axis=i)
-
-            logger.debug("Axes: %s", axes)
-
-            new_reduced = reduced.__class__(axes)
-            new_reduced.view(flow=True)[...] = reduced_view
-            reduced = new_reduced
 
         if pick_each:
             tuple_slice = tuple(
