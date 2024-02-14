@@ -855,9 +855,9 @@ class Histogram:
             # This ensures that callable start/stop are handled
             start, stop = self.axes[i]._process_loc(ind.start, ind.stop)
 
+            groups = []
             if ind != slice(None):
                 merge = 1
-                groups = []
                 if ind.step is not None:
                     if getattr(ind.step, "factor", None) is not None:
                         merge = ind.step.factor
@@ -895,10 +895,11 @@ class Histogram:
                     axes = [reduced.axis(x) for x in range(reduced.rank())]
                     reduced_view = reduced.view(flow=True)
                     new_axes_indices = [axes[i].edges[0]]
+
                     j: int = 0
                     for group in groups:
                         new_axes_indices += [axes[i].edges[j + 1 : j + group + 1][-1]]
-                        j = group
+                        j += group
 
                     variable_axis = Variable(
                         new_axes_indices, metadata=axes[i].metadata
@@ -910,16 +911,16 @@ class Histogram:
 
                     logger.debug("Axes: %s", axes)
 
-                    # redistribute the bin contents here
-
                     new_reduced = reduced.__class__(axes)
-                    new_reduced.view(flow=True)[...] = reduced_view
+                    new_reduced.fill(
+                        np.add.reduceat(reduced.to_numpy()[0], new_axes_indices, axis=i)
+                    )
                     reduced = new_reduced
 
         # Will be updated below
         if slices or pick_set or pick_each or integrations:
             reduced = self._hist
-        else:
+        elif len(groups) == 0:
             logger.debug("Reduce actions are all empty, just making a copy")
             reduced = copy.copy(self._hist)
 

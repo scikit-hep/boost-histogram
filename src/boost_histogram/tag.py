@@ -130,7 +130,7 @@ class Rebinner:
     def __repr__(self) -> str:
         repr_str = f"{self.__class__.__name__}"
         args: dict[str, int | Sequence[int] | None] = {
-            "value": self.factor,
+            "factor": self.factor,
             "groups": self.groups,
         }
         for k, v in args.items():
