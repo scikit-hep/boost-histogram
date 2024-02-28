@@ -896,25 +896,30 @@ class Histogram:
                     reduced_view = reduced.view(flow=True)
                     new_axes_indices = [axes[i].edges[0]]
 
-                    j: int = 0
+                    j = 0
                     for group in groups:
-                        new_axes_indices += [axes[i].edges[j + 1 : j + group + 1][-1]]
+                        new_axes_indices += [axes[i].edges[j + group]]
                         j += group
 
                     variable_axis = Variable(
                         new_axes_indices, metadata=axes[i].metadata
                     )
                     axes[i] = variable_axis._ax
-                    reduced_view = np.take(
-                        reduced_view, range(len(reduced_view)), axis=i
-                    )
 
                     logger.debug("Axes: %s", axes)
 
                     new_reduced = reduced.__class__(axes)
-                    new_reduced.fill(
-                        np.add.reduceat(reduced.to_numpy()[0], new_axes_indices, axis=i)
-                    )
+                    new_view = new_reduced.view(flow=True)
+
+                    j = 1
+                    for new_j, group in enumerate(groups):
+                        for _ in range(group):
+                            pos = [slice] * (i)
+                            new_view[(*pos, new_j + 1, ...)] += reduced_view[  # type: ignore[arg-type]
+                                (*pos, j, ...)  # type: ignore[arg-type]
+                            ]
+                            j += 1
+
                     reduced = new_reduced
 
         # Will be updated below

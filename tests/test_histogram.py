@@ -632,13 +632,18 @@ def test_shrink_1d():
 
 def test_rebin_1d():
     h = bh.Histogram(bh.axis.Regular(20, 1, 5))
-    h.fill(1.1)
+    h.fill([1.1, 2.2, 3.3, 4.4])
 
-    hs = h[{0: slice(None, None, bh.rebin(4))}]
-    assert_array_equal(hs.view(), [1, 0, 0, 0, 0])
+    hs = h[{0: slice(None, None, bh.tag.Rebinner(4))}]
+    assert_array_equal(hs.view(), [1, 1, 1, 0, 1])
+    print("Here")
 
-    hs = h[{0: bh.rebin(4)}]
-    assert_array_equal(hs.view(), [1, 0, 0, 0, 0])
+    hs = h[{0: bh.tag.Rebinner(4)}]
+    assert_array_equal(hs.view(), [1, 1, 1, 0, 1])
+
+    hs = h[{0: bh.tag.Rebinner(groups=[1, 2, 3, 4])}]
+    assert_array_equal(hs.view(), [1, 0, 0, 1])
+    assert_array_equal(hs.axes.edges[0], [1.0, 1.2, 1.6, 2.2, 3.0])
 
 
 def test_shrink_rebin_1d():
