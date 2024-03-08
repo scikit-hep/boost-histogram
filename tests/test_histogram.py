@@ -636,7 +636,6 @@ def test_rebin_1d():
 
     hs = h[{0: slice(None, None, bh.tag.Rebinner(4))}]
     assert_array_equal(hs.view(), [1, 1, 1, 0, 1])
-    print("Here")
 
     hs = h[{0: bh.tag.Rebinner(4)}]
     assert_array_equal(hs.view(), [1, 1, 1, 0, 1])
@@ -664,7 +663,58 @@ def test_rebin_nd():
     assert h[{1: s[:: bh.rebin(2)]}].axes.size == (20, 15, 40)
     assert h[{2: s[:: bh.rebin(2)]}].axes.size == (20, 30, 20)
 
+    assert h[{0: s[:: bh.rebin(groups=[1, 2, 3])]}].axes.size == (3, 30, 40)
+    assert h[{1: s[:: bh.rebin(groups=[1, 2, 3])]}].axes.size == (20, 3, 40)
+    assert h[{2: s[:: bh.rebin(groups=[1, 2, 3])]}].axes.size == (20, 30, 3)
+    assert np.all(
+        np.isclose(
+            h[{0: s[:: bh.rebin(groups=[1, 2, 3])]}].axes[0].edges, [1.0, 1.1, 1.3, 1.6]
+        )
+    )
+    assert np.all(
+        np.isclose(
+            h[{1: s[:: bh.rebin(groups=[1, 2, 3])]}].axes[1].edges,
+            [1.0, 1.06666667, 1.2, 1.4],
+        )
+    )
+    assert np.all(
+        np.isclose(
+            h[{2: s[:: bh.rebin(groups=[1, 2, 3])]}].axes[2].edges,
+            [1.0, 1.05, 1.15, 1.3],
+        )
+    )
+
     assert h[{0: s[:: bh.rebin(2)], 2: s[:: bh.rebin(2)]}].axes.size == (10, 30, 20)
+
+    assert h[
+        {0: s[:: bh.rebin(groups=[1, 2, 3])], 2: s[:: bh.rebin(groups=[1, 2, 3])]}
+    ].axes.size == (3, 30, 3)
+    assert np.all(
+        np.isclose(
+            h[
+                {
+                    0: s[:: bh.rebin(groups=[1, 2, 3])],
+                    2: s[:: bh.rebin(groups=[1, 2, 3])],
+                }
+            ]
+            .axes[0]
+            .edges,
+            [1.0, 1.1, 1.3, 1.6],
+        )
+    )
+    assert np.all(
+        np.isclose(
+            h[
+                {
+                    0: s[:: bh.rebin(groups=[1, 2, 3])],
+                    2: s[:: bh.rebin(groups=[1, 2, 3])],
+                }
+            ]
+            .axes[2]
+            .edges,
+            [1.0, 1.05, 1.15, 1.3],
+        )
+    )
 
     assert h[{1: s[:: bh.sum]}].axes.size == (20, 40)
     assert h[{1: bh.sum}].axes.size == (20, 40)
