@@ -827,6 +827,7 @@ class Histogram:
         slices: list[_core.algorithm.reduce_command] = []
         pick_each: dict[int, int] = {}
         pick_set: dict[int, list[int]] = {}
+        reduced: CppHistogram | None = None
 
         # Compute needed slices and projections
         for i, ind in enumerate(indexes):
@@ -891,7 +892,8 @@ class Histogram:
                     )
                 # rebinning with groups
                 elif len(groups) != 0:
-                    reduced = self._hist
+                    if not reduced:
+                        reduced = self._hist
                     axes = [reduced.axis(x) for x in range(reduced.rank())]
                     reduced_view = reduced.view(flow=True)
                     new_axes_indices = [axes[i].edges[0]]
@@ -914,7 +916,7 @@ class Histogram:
                     j = 1
                     for new_j, group in enumerate(groups):
                         for _ in range(group):
-                            pos = [slice] * (i)
+                            pos = [slice(None)] * (i)
                             new_view[(*pos, new_j + 1, ...)] += reduced_view[  # type: ignore[arg-type]
                                 (*pos, j, ...)  # type: ignore[arg-type]
                             ]
@@ -923,10 +925,9 @@ class Histogram:
                     reduced = new_reduced
 
         # Will be updated below
-        if slices or pick_set or pick_each or integrations:
+        if (slices or pick_set or pick_each or integrations) and not reduced:
             reduced = self._hist
-        elif len(groups) == 0:
-            logger.debug("Reduce actions are all empty, just making a copy")
+        elif not reduced:
             reduced = copy.copy(self._hist)
 
         if pick_each:
