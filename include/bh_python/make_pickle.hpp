@@ -252,7 +252,7 @@ class tuple_iarchive {
         : tup_(t) {}
 
     // no object tracking
-    void reset_object_address(const void*, const void*){};
+    void reset_object_address(const void*, const void*) {};
 
     template <class T>
     tuple_iarchive& operator&(boost::nvp<T> t) {

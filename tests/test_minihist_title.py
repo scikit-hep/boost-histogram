@@ -97,9 +97,7 @@ class CustomHist(bh.Histogram, family=CUSTOM_FAMILY):
         super().__init__(*args, **kwargs)
         valid_names = [ax.name for ax in self.axes if ax.name]
         if len(valid_names) != len(set(valid_names)):
-            msg = "{} instance cannot contain axes with duplicated names".format(
-                self.__class__.__name__
-            )
+            msg = f"{self.__class__.__name__} instance cannot contain axes with duplicated names"
             raise KeyError(msg)
 
 
