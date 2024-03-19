@@ -72,7 +72,7 @@ jobs:
         with:
           platforms: all
 
-      - uses: pypa/cibuildwheel@v2.16
+      - uses: pypa/cibuildwheel@v2.17
         env:
           CIBW_BUILD: cp${{ matrix.python }}-manylinux_*
           CIBW_ARCHS: ${{ matrix.arch }}
@@ -114,7 +114,7 @@ jobs:
         shell: bash
         run: echo "SETUPTOOLS_SCM_PRETEND_VERSION=${{ github.event.inputs.overrideVersion }}" >> $GITHUB_ENV
 
-      - uses: pypa/cibuildwheel@v2.16
+      - uses: pypa/cibuildwheel@v2.17
         env:
           CIBW_BUILD: ${{ matrix.build }}
           CIBW_ARCHS: ${{ matrix.arch }}
