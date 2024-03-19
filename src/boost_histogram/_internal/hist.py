@@ -159,12 +159,10 @@ class Histogram:
         cls._family = family if family is not None else object()
 
     @typing.overload
-    def __init__(self, *args: Histogram) -> None:
-        ...
+    def __init__(self, *args: Histogram) -> None: ...
 
     @typing.overload
-    def __init__(self, *args: CppHistogram, metadata: Any = ...) -> None:
-        ...
+    def __init__(self, *args: CppHistogram, metadata: Any = ...) -> None: ...
 
     @typing.overload
     def __init__(
@@ -172,8 +170,7 @@ class Histogram:
         *axes: Axis | CppAxis,
         storage: Storage = ...,
         metadata: Any = ...,
-    ) -> None:
-        ...
+    ) -> None: ...
 
     def __init__(
         self,
@@ -244,7 +241,7 @@ class Histogram:
         # Check all available histograms, and if the storage matches, return that one
         for h in _histograms:
             if isinstance(storage, h._storage_type):
-                self._hist = h(axes, storage)  # type: ignore[unreachable]
+                self._hist = h(axes, storage)  # type: ignore[arg-type]
                 self.axes = self._generate_axes_()
                 return
 

@@ -40,11 +40,9 @@ __all__ = (
 
 
 class AxisLike(Protocol):
-    def index(self, value: float | str) -> int:
-        ...
+    def index(self, value: float | str) -> int: ...
 
-    def __len__(self) -> int:
-        ...
+    def __len__(self) -> int: ...
 
 
 StdIndex = Union[int, slice, "ellipsis", Tuple[Union[slice, int, "ellipsis"], ...]]

@@ -22,15 +22,11 @@ for idx, (lower, upper) in enumerate(h.axes[0]):
 # under- and overflow bin
 lo, up = h.axes[0][bh.underflow]
 print(
-    "underflow [{:g}, {:g}): {} +/- {}".format(
-        lo, up, h[bh.underflow].value, h[bh.underflow].variance ** 0.5
-    )
+    f"underflow [{lo:g}, {up:g}): {h[bh.underflow].value} +/- {h[bh.underflow].variance ** 0.5}"
 )
 lo, up = h.axes[0][bh.overflow]
 print(
-    "overflow  [{:g}, {:g}): {} +/- {}".format(
-        lo, up, h[bh.overflow].value, h[bh.overflow].variance ** 0.5
-    )
+    f"overflow  [{lo:g}, {up:g}): {h[bh.overflow].value} +/- {h[bh.overflow].variance ** 0.5}"
 )
 
 # prints:

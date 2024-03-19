@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import functools
+import operator
 import os
 import platform
 import sys
@@ -10,6 +12,7 @@ from setuptools import setup
 DIR = Path(__file__).parent.resolve()
 
 sys.path.append(str(DIR / "extern" / "pybind11"))
+
 from pybind11.setup_helpers import ParallelCompile, Pybind11Extension  # noqa: E402
 
 del sys.path[-1]
@@ -67,7 +70,7 @@ extras = {
     "examples": ["matplotlib", "xarray", "xhistogram", "netCDF4", "numba", "uproot3"],
     "dev": ["ipykernel", "typer"],
 }
-extras["all"] = sum(extras.values(), [])
+extras["all"] = functools.reduce(operator.iadd, extras.values(), [])
 extras["dev"] += extras["test"]
 
 setup(ext_modules=ext_modules, extras_require=extras)
