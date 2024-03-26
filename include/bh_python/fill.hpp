@@ -102,7 +102,9 @@ inline decltype(auto) special_cast<c_array_t<int>>(py::handle x) {
     auto dtype = py::cast<py::array>(x).dtype();
     if(dtype.equal(np.attr("bool_")) || dtype.equal(np.attr("int8"))
        || dtype.equal(np.attr("int16")) || dtype.equal(np.attr("int32"))
-       || dtype.equal(np.attr("int64")))
+       || dtype.equal(np.attr("int64")) || dtype.equal(np.attr("uint8"))
+       || dtype.equal(np.attr("uint16")) || dtype.equal(np.attr("uint32"))
+       || dtype.equal(np.attr("uint64")))
         return py::cast<c_array_t<int>>(x);
     throw py::type_error("Only integer arrays supported when targeting integer axes");
 }
