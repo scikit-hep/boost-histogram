@@ -19,7 +19,7 @@ jobs:
   clang-tidy:
     name: Clang-Tidy
     runs-on: ubuntu-latest
-    container: silkeh/clang:15-bullseye
+    container: silkeh/clang:18-bookworm
 
     steps:
       - name: Install requirements
@@ -31,7 +31,7 @@ jobs:
           submodules: true
 
       - name: Install extra requirements
-        run: python3 -m pip install setuptools_scm
+        run: python3 -m pip install setuptools_scm --break-system-packages
 
       - name: Configure
         run: cmake -S . -B build -DCMAKE_CXX_CLANG_TIDY="$(which clang-tidy);--warnings-as-errors=*"
