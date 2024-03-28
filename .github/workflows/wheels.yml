@@ -93,7 +93,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2019, macos-latest, ubuntu-latest]
+        os: [windows-2019, ubuntu-latest]
         arch: [auto64]
 
         include:
@@ -102,6 +102,10 @@ jobs:
 
           - os: windows-2019
             arch: auto32
+
+          - os: macos-latest
+            arch: auto64
+            build: cp37*
 
     steps:
       - uses: actions/checkout@v4

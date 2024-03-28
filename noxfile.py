@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import argparse
-import shutil
 from pathlib import Path
 
 import nox
 
+nox.needs_version = ">=2024.3.2"
+nox.options.default_venv_backend = "uv|virtualenv"
 nox.options.sessions = ["lint", "tests"]
 
 
@@ -15,7 +16,6 @@ def tests(session: nox.Session) -> None:
     Run the unit and regular tests.
     """
 
-    shutil.rmtree("build", ignore_errors=True)
     session.install(".[test]")
     session.run("pytest", *session.posargs)
 
@@ -26,7 +26,6 @@ def testsnp2(session: nox.Session) -> None:
     Run the unit and regular tests with NumPy 2.
     """
 
-    shutil.rmtree("build", ignore_errors=True)
     session.install(".[test]", "numpy>=2.0a1")
     session.run("pytest", *session.posargs)
 
@@ -36,7 +35,6 @@ def hist(session: nox.Session) -> None:
     """
     Run Hist's test suite
     """
-    shutil.rmtree("build", ignore_errors=True)
     session.install(".")
     tmpdir = session.create_tmp()
     session.chdir(tmpdir)
