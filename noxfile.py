@@ -6,7 +6,6 @@ from pathlib import Path
 
 import nox
 
-
 nox.options.sessions = ["lint", "tests"]
 
 

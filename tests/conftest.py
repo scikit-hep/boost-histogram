@@ -72,6 +72,7 @@ def count_storage(request):
 def count_single_storage(request):
     return request.param
 
+
 def pytest_report_header() -> str:
     if sys.version_info < (3, 8):
         import importlib_metadata as metadata
