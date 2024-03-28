@@ -1,7 +1,9 @@
-cmake_minimum_required(VERSION 3.15...3.27)
+cmake_minimum_required(VERSION 3.24...3.29)
 
 project(BOOST_HISTOGRAM LANGUAGES CXX)
 # Version is added later
+
+include(FetchContent)
 
 # Boost histogram requires C++14
 set(CMAKE_CXX_STANDARD
@@ -35,16 +37,24 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
                                                "RelWithDebInfo")
 endif()
 
-# Display versions
-message(STATUS "CMake ${CMAKE_VERSION}")
-
 # Adding pybind11 and setting up Python
 # Will display pybind11 version
 set(PYBIND11_FINDPYTHON TRUE)
 set(Python_ARTIFACTS_INTERACTIVE TRUE)
-add_subdirectory(extern/pybind11)
 
+FetchContent_Declare(
+  pybind11
+  GIT_REPOSITORY https://github.com/pybind/pybind11.git
+  GIT_TAG 3e9dfa2866941655c56877882565e7577de6fc7b # v2.12.0
+  FIND_PACKAGE_ARGS NAMES pybind11)
+FetchContent_MakeAvailable(pybind11)
+
+# Display versions
+message(STATUS "CMake ${CMAKE_VERSION}")
 message(STATUS "Python ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}")
+if(DEFINED pybind11_VERSION)
+  message(STATUS "pybind11 ${pybind11_VERSION}")
+endif()
 
 # This is completely optional and just adds hints to IDEs - no affect on build at all.
 file(GLOB_RECURSE BOOST_HIST_FILES "extern/histogram/include/*.hpp")
@@ -172,23 +182,14 @@ else()
 
   execute_process(
     COMMAND
-      ${PYTHON_EXECUTABLE} -c
-      "from setuptools_scm import get_version; print(get_version(root='${CMAKE_CURRENT_SOURCE_DIR}'))"
-    RESULT_VARIABLE VERSION_PRESENT
+      ${Python_EXECUTABLE} -c
+      "from setuptools_scm import get_version; print(get_version())"
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
     OUTPUT_VARIABLE VERSION_FULL_STRING
-    ERROR_VARIABLE VERSION_ERROR)
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    COMMAND_ERROR_IS_FATAL ANY
+  )
 
-  if(ERROR_VARIABLE)
-    message(STATUS "Warning from setuptools_scm:\n${ERROR_VARIABLE}")
-  endif()
-
-  if(NOT VERSION_PRESENT EQUAL 0)
-    message(
-      FATAL_ERROR
-        "Cannot detect ${VERSION_PRESENT} the version from setuptools_scm\n${VERSION_STRING}")
-  endif()
-
-  string(STRIP "${VERSION_FULL_STRING}" VERSION_FULL_STRING)
   string(REGEX MATCH [=[^[0-9]+\.[0-9]+\.[0-9]+]=] VERSION_STRING "${VERSION_FULL_STRING}")
   string(REPLACE "-" "." VERSION_STRING "${VERSION_STRING}")
   file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/boost_histogram/version.py"
