@@ -5,14 +5,6 @@ on:
     inputs:
       overrideVersion:
         description: Manually force a version
-  pull_request:
-    branches:
-      - master
-      - main
-  push:
-    branches:
-      - master
-      - main
   release:
     types:
       - published
@@ -25,6 +17,9 @@ env:
   SETUPTOOLS_SCM_PRETEND_VERSION: ${{ github.event.inputs.overrideVersion }}
   CIBW_ENVIRONMENT: "PIP_PREFER_BINARY=1"
 
+permissions:
+  id-token: write # sigstore
+
 jobs:
   build_sdist:
     name: Build SDist
@@ -35,19 +30,20 @@ jobs:
           fetch-depth: 0
           submodules: true
 
-      - name: Set version if needed
-        if: github.event.inputs.overrideVersion
-        run: echo "SETUPTOOLS_SCM_PRETEND_VERSION=${{ github.event.inputs.overrideVersion }}" >> $GITHUB_ENV
-
       - name: Build SDist
         run: pipx run build --sdist
 
       - name: Check metadata
-        run: pipx run twine check --strict dist/*
+        run: pipx run twine check --strict dist/*.tar.gz
+
+      - name: Sign the dists with Sigstore
+        uses: sigstore/gh-action-sigstore-python@v1.2.3
+        with:
+          inputs: ./dist/*.tar.gz
 
       - uses: actions/upload-artifact@v4
         with:
-          path: dist/*.tar.gz
+          path: dist/*
           name: wheels-sdist
 
   build_arch_wheels:
@@ -63,11 +59,6 @@ jobs:
           fetch-depth: 0
           submodules: true
 
-      - name: Set version if needed
-        if: github.event.inputs.overrideVersion
-        shell: bash
-        run: echo "SETUPTOOLS_SCM_PRETEND_VERSION=${{ github.event.inputs.overrideVersion }}" >> $GITHUB_ENV
-
       - uses: docker/setup-qemu-action@v3.0.0
         with:
           platforms: all
@@ -81,10 +72,15 @@ jobs:
         run: git diff --exit-code
         shell: bash
 
+      - name: Sign the dists with Sigstore
+        uses: sigstore/gh-action-sigstore-python@v1.2.3
+        with:
+          inputs: ./wheelhouse/*.whl
+
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          path: wheelhouse/*.whl
+          path: wheelhouse/*
           name: wheel-aarch-${{ strategy.job-index }}
 
   build_wheels:
@@ -109,11 +105,6 @@ jobs:
           fetch-depth: 0
           submodules: true
 
-      - name: Set version if needed
-        if: github.event.inputs.overrideVersion
-        shell: bash
-        run: echo "SETUPTOOLS_SCM_PRETEND_VERSION=${{ github.event.inputs.overrideVersion }}" >> $GITHUB_ENV
-
       - uses: pypa/cibuildwheel@v2.17
         env:
           CIBW_BUILD: ${{ matrix.build }}
@@ -122,6 +113,11 @@ jobs:
       - name: Verify clean directory
         run: git diff --exit-code
         shell: bash
+
+      - name: Sign the dists with Sigstore
+        uses: sigstore/gh-action-sigstore-python@v1.2.3
+        with:
+          inputs: ./wheelhouse/*
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4
@@ -133,6 +129,12 @@ jobs:
     name: Upload if release
     needs: [build_wheels, build_arch_wheels, build_sdist]
     runs-on: ubuntu-latest
+    if: github.event_name == 'release' && github.event.action == 'published'
+    environment:
+      name: pypi
+      url: https://pypi.org/p/boost-histogram
+    permissions:
+      id-token: write
 
     steps:
       - uses: actions/download-artifact@v4
@@ -145,6 +147,3 @@ jobs:
         run: ls -lh dist
 
       - uses: pypa/gh-action-pypi-publish@release/v1
-        if: github.event_name == 'release' && github.event.action == 'published'
-        with:
-          password: ${{ secrets.pypi_password }}
