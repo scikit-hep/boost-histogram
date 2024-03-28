@@ -17,9 +17,6 @@ env:
   SETUPTOOLS_SCM_PRETEND_VERSION: ${{ github.event.inputs.overrideVersion }}
   CIBW_ENVIRONMENT: "PIP_PREFER_BINARY=1"
 
-permissions:
-  id-token: write # sigstore
-
 jobs:
   build_sdist:
     name: Build SDist
@@ -35,11 +32,6 @@ jobs:
 
       - name: Check metadata
         run: pipx run twine check --strict dist/*.tar.gz
-
-      - name: Sign the dists with Sigstore
-        uses: sigstore/gh-action-sigstore-python@v1.2.3
-        with:
-          inputs: ./dist/*.tar.gz
 
       - uses: actions/upload-artifact@v4
         with:
@@ -71,11 +63,6 @@ jobs:
       - name: Verify clean directory
         run: git diff --exit-code
         shell: bash
-
-      - name: Sign the dists with Sigstore
-        uses: sigstore/gh-action-sigstore-python@v1.2.3
-        with:
-          inputs: ./wheelhouse/*.whl
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4
@@ -113,11 +100,6 @@ jobs:
       - name: Verify clean directory
         run: git diff --exit-code
         shell: bash
-
-      - name: Sign the dists with Sigstore
-        uses: sigstore/gh-action-sigstore-python@v1.2.3
-        with:
-          inputs: ./wheelhouse/*
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4
