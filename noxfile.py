@@ -6,12 +6,10 @@ from pathlib import Path
 
 import nox
 
-ALL_PYTHONS = ["3.7", "3.8", "3.9", "3.10", "3.11"]
-
 nox.options.sessions = ["lint", "tests"]
 
 
-@nox.session(python=ALL_PYTHONS)
+@nox.session
 def tests(session: nox.Session) -> None:
     """
     Run the unit and regular tests.
@@ -19,6 +17,17 @@ def tests(session: nox.Session) -> None:
 
     shutil.rmtree("build", ignore_errors=True)
     session.install(".[test]")
+    session.run("pytest", *session.posargs)
+
+
+@nox.session
+def testsnp2(session: nox.Session) -> None:
+    """
+    Run the unit and regular tests with NumPy 2.
+    """
+
+    shutil.rmtree("build", ignore_errors=True)
+    session.install(".[test]", "numpy>=2.0a1")
     session.run("pytest", *session.posargs)
 
 
