@@ -80,7 +80,7 @@ jobs:
           allow-prereleases: true
 
       - name: Install python tools
-        run: python -m pip install -r dev-requirements.txt pytest-github-actions-annotate-failures
+        run: python -m pip install -r dev-requirements.txt pytest-github-actions-annotate-failures numpy>=2.0a1
 
       - name: Configure
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DBOOST_HISTOGRAM_ERRORS=ON ${{ matrix.cmake-extras }}
