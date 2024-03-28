@@ -181,14 +181,10 @@ else()
   pybind11_find_import(setuptools_scm REQUIRED)
 
   execute_process(
-    COMMAND
-      ${Python_EXECUTABLE} -c
-      "from setuptools_scm import get_version; print(get_version())"
+    COMMAND ${Python_EXECUTABLE} -c "from setuptools_scm import get_version; print(get_version())"
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
     OUTPUT_VARIABLE VERSION_FULL_STRING
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    COMMAND_ERROR_IS_FATAL ANY
-  )
+    OUTPUT_STRIP_TRAILING_WHITESPACE COMMAND_ERROR_IS_FATAL ANY)
 
   string(REGEX MATCH [=[^[0-9]+\.[0-9]+\.[0-9]+]=] VERSION_STRING "${VERSION_FULL_STRING}")
   string(REPLACE "-" "." VERSION_STRING "${VERSION_STRING}")
