@@ -91,6 +91,7 @@ test-skip = [
   "pp310-*",
   "*universal2:arm64",
   "cp37-*musllinux*",  # segfault
+  "cp38-*musllinux*",  # segfault
 ]
 environment-pass = ["SETUPTOOLS_SCM_PRETEND_VERSION"]
 environment = { PIP_ONLY_BINARY = "numpy" }
