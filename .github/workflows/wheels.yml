@@ -71,20 +71,31 @@ jobs:
           name: wheel-aarch-${{ strategy.job-index }}
 
   build_wheels:
-    name: ${{ matrix.type }} ${{ matrix.arch }} on ${{ matrix.os }}
+    name: ${{ matrix.build }} ${{ matrix.arch }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2019, macos-latest, ubuntu-latest]
+        os: [windows-2019, macos-latest]
         arch: [auto64]
+        build: ["*"]
 
         include:
           - os: macos-latest
             arch: universal2
+            build: "*"
 
           - os: windows-2019
             arch: auto32
+            build: "*"
+
+          - os: ubuntu-latest
+            arch: auto64
+            build: "*manylinux*"
+
+          - os: ubuntu-latest
+            arch: auto64
+            build: "*musllinux*"
 
     steps:
       - uses: actions/checkout@v4
