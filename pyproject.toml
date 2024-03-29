@@ -86,12 +86,11 @@ ignore = [
 test-extras = "test"
 test-command = "pytest --benchmark-disable {project}/tests"
 test-skip = [
-  "pp*",  # requires correct version to get binary
+  "pp37-*",
+  "pp38-*",
+  "pp310-*",
   "*universal2:arm64",
-  "*musllinux*",
-  "cp312-win_amd64", # NumPy segfaults
 ]
-skip = ["pp*-manylinux_i686", "cp312-win32"] # not supported by NumPy
 environment-pass = ["SETUPTOOLS_SCM_PRETEND_VERSION"]
 environment = { PIP_ONLY_BINARY = "numpy" }
 
