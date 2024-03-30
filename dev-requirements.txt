@@ -1,10 +1,8 @@
 cloudpickle
-dataclasses; python_version<'3.7'
 hypothesis >=6.0
 numpy
 pytest >=6,!=6.1.0,!=7.1.0
 pytest-benchmark
-setuptools >=42
 setuptools_scm[toml] >=3.4,!=4.0.0
 typing_extensions; python_version<'3.8'
 uproot
