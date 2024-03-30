@@ -81,9 +81,15 @@ target_include_directories(
          extern/throw_exception/include
          extern/variant2/include)
 
-# Useful flags
-target_compile_options(_core
-                       PRIVATE $<IF:$<CXX_COMPILER_ID:MSVC>,/fp:fast,-funsafe-math-optimizations>)
+# Support older Windows from newer MSVC
+target_compile_options(_core PRIVATE $<IF:$<CXX_COMPILER_ID:MSVC>,/d2FH4->)
+# Better error messages
+target_compile_definitions(_core PRIVATE PYBIND11_DETAILED_ERROR_MESSAGES)
+
+# Atomic is required for armv7l
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "armv7l")
+  target_link_libraries(_core PRIVATE atomic)
+endif()
 
 # This makes IDE's like XCode mimic the Boost Histogram structure
 source_group(
