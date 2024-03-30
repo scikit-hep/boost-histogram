@@ -98,7 +98,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-2019, macos-latest]
+        os: [ubuntu-latest, windows-2019, macos-13, macos-14]
 
     steps:
       - uses: actions/checkout@v4
@@ -108,9 +108,8 @@ jobs:
 
       - uses: pypa/cibuildwheel@v2.17
         env:
-          CIBW_BUILD: cp38-win32 cp312-manylinux_x86_64 cp38-macosx_universal2
+          CIBW_BUILD: cp38-win32 cp312-manylinux_x86_64 cp39-macosx_*
           CIBW_BUILD_VERBOSITY: 1
-          CIBW_ENVIRONMENT: "PIP_ONLY_BINARY=:all:"
 
       - uses: actions/upload-artifact@v4
         with:
