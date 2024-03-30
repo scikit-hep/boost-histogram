@@ -939,6 +939,17 @@ def test_numpy_conversion_5():
     assert a1[2, 1] == 5
 
 
+@pytest.mark.parametrize(
+    "dtype",
+    [np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16, np.uint32, np.uint64],
+)
+def test_fill_dtypes(dtype):
+    a = bh.Histogram(bh.axis.Integer(0, 2), storage=bh.storage.Int64())
+    a.fill(np.array([0, 0, 0, 1, 1, 2], dtype=dtype))
+    a.fill(dtype(0))
+    assert list(a.values()) == [4, 2]
+
+
 def test_fill_with_sequence_0():
     def fa(*args):
         return np.array(args, dtype=float)
