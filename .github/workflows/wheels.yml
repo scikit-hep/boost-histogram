@@ -76,14 +76,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2019]
-        arch: [auto64]
-        build: ["*"]
-
         include:
           - os: macos-latest
             arch: universal2
             build: "*"
+
+          - os: windows-2019
+            arch: auto64
+            build: "cp*"
+
+          - os: windows-2019
+            arch: auto64
+            build: "pp*"
 
           - os: windows-2019
             arch: auto32
