@@ -112,7 +112,7 @@ jobs:
 
       - uses: pypa/cibuildwheel@v2.17
         env:
-          CIBW_BUILD: cp38-win32 cp312-manylinux_x86_64 cp39-macosx_*
+          CIBW_BUILD: cp38-win32 cp37-win_amd64 cp312-manylinux_x86_64 cp39-macosx_*
           CIBW_BUILD_VERBOSITY: 1
 
       - uses: actions/upload-artifact@v4
@@ -120,6 +120,9 @@ jobs:
           path: wheelhouse/*
           name: test-wheels-${{ strategy.job-index }}
 
+      - name: Install twine
+        run: pip install twine
+
       - name: Check wheels
-        run: pipx run twine check wheelhouse/*
+        run: twine check wheelhouse/*
         shell: bash
