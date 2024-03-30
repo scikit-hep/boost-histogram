@@ -2,6 +2,29 @@
 
 ## Version 1.4
 
+### Version 1.4.1
+
+#### Features
+
+- NumPy 2 support. [#918][]
+- 32-bit Windows Python 3.12 wheel added (matching NumPy). [#920][]
+
+#### Bugfixes
+
+- Support filling Integer axes with unsigned integers [#917][]
+- Avoid triggering NumPy 2 dev release install on Python 3.12. [#914][]
+
+#### Backend and docs
+
+- Add missing API docs [#909][]
+- Use boost 1.84 [#920][]
+
+[#909]: https://github.com/scikit-hep/boost-histogram/pull/909
+[#914]: https://github.com/scikit-hep/boost-histogram/pull/914
+[#917]: https://github.com/scikit-hep/boost-histogram/pull/917
+[#918]: https://github.com/scikit-hep/boost-histogram/pull/918
+[#920]: https://github.com/scikit-hep/boost-histogram/pull/920
+
 ### Version 1.4.0
 
 #### Features
