@@ -83,6 +83,7 @@ target_include_directories(
 
 # Support older Windows from newer MSVC
 target_compile_options(_core PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/d2FH4->)
+
 # Better error messages
 target_compile_definitions(_core PRIVATE PYBIND11_DETAILED_ERROR_MESSAGES)
 

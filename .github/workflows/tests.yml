@@ -34,7 +34,7 @@ jobs:
         run: python3 -m pip install setuptools_scm --break-system-packages
 
       - name: Configure
-        run: cmake -S . -B build -DCMAKE_CXX_CLANG_TIDY="$(which clang-tidy);--warnings-as-errors=*"
+        run: cmake -S. -Bbuild -DCMAKE_CXX_CLANG_TIDY="$(which clang-tidy);--warnings-as-errors=*"
 
       - name: Build
         run: cmake --build build -j 2
@@ -80,10 +80,10 @@ jobs:
           allow-prereleases: true
 
       - name: Install python tools
-        run: python -m pip install -r dev-requirements.txt pytest-github-actions-annotate-failures numpy>=2.0a1
+        run: python -m pip install -r dev-requirements.txt pytest-github-actions-annotate-failures numpy>=2.0.0rc1
 
       - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DBOOST_HISTOGRAM_ERRORS=ON ${{ matrix.cmake-extras }}
+        run: cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Debug -DBOOST_HISTOGRAM_ERRORS=ON ${{ matrix.cmake-extras }}
 
       - name: Build
         run: cmake --build build -j 2
@@ -98,7 +98,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-2019, macos-13, macos-14]
+        include:
+          - os: ubuntu-latest
+            build: cp312-manylinux_x86_64
+          - os: windows-2019
+            build: cp38-win32
+          - os: windows-2019
+            build: cp37-win_amd64
+          - os: macos-13
+            build: cp39-macosx_x86_64
+          - os: macos-14
+            build: cp39-macosx_arm64
 
     steps:
       - uses: actions/checkout@v4
@@ -112,7 +122,7 @@ jobs:
 
       - uses: pypa/cibuildwheel@v2.17
         env:
-          CIBW_BUILD: cp38-win32 cp37-win_amd64 cp312-manylinux_x86_64 cp39-macosx_*
+          CIBW_BUILD: "${{ matrix.build }}"
           CIBW_BUILD_VERBOSITY: 1
 
       - uses: actions/upload-artifact@v4

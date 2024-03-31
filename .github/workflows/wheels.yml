@@ -77,8 +77,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-latest
-            arch: universal2
+          - os: macos-13
+            arch: auto64
+            build: "*"
+
+          - os: macos-14
+            arch: auto64
             build: "*"
 
           - os: windows-2019

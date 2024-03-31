@@ -188,7 +188,6 @@ test-skip = [
 ]
 environment-pass = ["SETUPTOOLS_SCM_PRETEND_VERSION"]
 environment.PIP_ONLY_BINARY = "numpy"
-macos.archs = ["universal2"]
 
 
 [tool.pylint]
