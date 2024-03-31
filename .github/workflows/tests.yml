@@ -19,7 +19,7 @@ jobs:
   clang-tidy:
     name: Clang-Tidy
     runs-on: ubuntu-latest
-    container: silkeh/clang:15-bullseye
+    container: silkeh/clang:18-bookworm
 
     steps:
       - name: Install requirements
@@ -31,10 +31,10 @@ jobs:
           submodules: true
 
       - name: Install extra requirements
-        run: python3 -m pip install setuptools_scm
+        run: python3 -m pip install setuptools_scm --break-system-packages
 
       - name: Configure
-        run: cmake -S . -B build -DCMAKE_CXX_CLANG_TIDY="$(which clang-tidy);--warnings-as-errors=*"
+        run: cmake -S. -Bbuild -DCMAKE_CXX_CLANG_TIDY="$(which clang-tidy);--warnings-as-errors=*"
 
       - name: Build
         run: cmake --build build -j 2
@@ -55,6 +55,7 @@ jobs:
           pipx run nox -s pylint
 
   cmake:
+    name: CMake 🐍 ${{ matrix.python-version }}
     runs-on: ubuntu-latest
     env:
       PIP_ONLY_BINARY: numpy
@@ -65,8 +66,6 @@ jobs:
         include:
           - python-version: "3.8"
             cmake-extras: "-DCMAKE_CXX_STANDARD=17"
-
-    name: CMake Python ${{ matrix.python-version }}
 
     steps:
       - uses: actions/checkout@v4
@@ -80,10 +79,10 @@ jobs:
           allow-prereleases: true
 
       - name: Install python tools
-        run: python -m pip install -r dev-requirements.txt pytest-github-actions-annotate-failures numpy>=2.0a1
+        run: python -m pip install -r dev-requirements.txt pytest-github-actions-annotate-failures numpy>=2.0.0rc1
 
       - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DBOOST_HISTOGRAM_ERRORS=ON ${{ matrix.cmake-extras }}
+        run: cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Debug -DBOOST_HISTOGRAM_ERRORS=ON ${{ matrix.cmake-extras }}
 
       - name: Build
         run: cmake --build build -j 2
@@ -93,12 +92,22 @@ jobs:
         run: python -m pytest -ra
 
   build_wheels:
-    name: Wheels on ${{ matrix.os }}
+    name: ${{ matrix.build }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-2019, macos-latest]
+        include:
+          - os: ubuntu-latest
+            build: cp312-manylinux_x86_64
+          - os: windows-2019
+            build: cp38-win32
+          - os: windows-2019
+            build: cp37-win_amd64
+          - os: macos-13
+            build: cp39-macosx_x86_64
+          - os: macos-14
+            build: cp39-macosx_arm64
 
     steps:
       - uses: actions/checkout@v4
@@ -106,17 +115,33 @@ jobs:
           submodules: true
           fetch-depth: 0
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
       - uses: pypa/cibuildwheel@v2.17
         env:
-          CIBW_BUILD: cp38-win32 cp312-manylinux_x86_64 cp37-macosx_x86_64
+          CIBW_BUILD: "${{ matrix.build }}"
           CIBW_BUILD_VERBOSITY: 1
-          CIBW_ENVIRONMENT: "PIP_ONLY_BINARY=:all:"
 
       - uses: actions/upload-artifact@v4
         with:
           path: wheelhouse/*
           name: test-wheels-${{ strategy.job-index }}
 
+      # Pipx is either missing or broken on macos-14 runners ATM
+      - name: Install twine
+        run: pip install twine
+
       - name: Check wheels
-        run: pipx run twine check wheelhouse/*
+        run: twine check wheelhouse/*
         shell: bash
+
+  pass:
+    if: always()
+    needs: [clang-tidy, pylint, cmake, build_wheels]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: re-actors/alls-green@release/v1
+        with:
+          jobs: ${{ toJSON(needs) }}

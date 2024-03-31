@@ -15,7 +15,6 @@ concurrency:
 
 env:
   SETUPTOOLS_SCM_PRETEND_VERSION: ${{ github.event.inputs.overrideVersion }}
-  CIBW_ENVIRONMENT: "PIP_PREFER_BINARY=1"
 
 jobs:
   build_sdist:
@@ -76,14 +75,22 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2019, macos-latest]
-        arch: [auto64]
-        build: ["*"]
-
         include:
-          - os: macos-latest
-            arch: universal2
+          - os: macos-13
+            arch: auto64
             build: "*"
+
+          - os: macos-14
+            arch: auto64
+            build: "*"
+
+          - os: windows-2019
+            arch: auto64
+            build: "cp*"
+
+          - os: windows-2019
+            arch: auto64
+            build: "pp*"
 
           - os: windows-2019
             arch: auto32
