@@ -55,6 +55,7 @@ jobs:
           pipx run nox -s pylint
 
   cmake:
+    name: CMake 🐍 ${{ matrix.python-version }}
     runs-on: ubuntu-latest
     env:
       PIP_ONLY_BINARY: numpy
@@ -65,8 +66,6 @@ jobs:
         include:
           - python-version: "3.8"
             cmake-extras: "-DCMAKE_CXX_STANDARD=17"
-
-    name: CMake Python ${{ matrix.python-version }}
 
     steps:
       - uses: actions/checkout@v4
@@ -93,7 +92,7 @@ jobs:
         run: python -m pytest -ra
 
   build_wheels:
-    name: Wheels on ${{ matrix.os }}
+    name: ${{ matrix.build }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -130,9 +129,19 @@ jobs:
           path: wheelhouse/*
           name: test-wheels-${{ strategy.job-index }}
 
+      # Pipx is either missing or broken on macos-14 runners ATM
       - name: Install twine
         run: pip install twine
 
       - name: Check wheels
         run: twine check wheelhouse/*
         shell: bash
+
+  pass:
+    if: always()
+    needs: [clang-tidy, pylint, cmake, build_wheels]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: re-actors/alls-green@release/v1
+        with:
+          jobs: ${{ toJSON(needs) }}

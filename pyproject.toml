@@ -184,10 +184,12 @@ test-skip = [
   "pp38-*",
   "pp310-*",
   "*universal2:arm64",
+  "cp38-macosx_*:arm64",
   "cp*-*musllinux*",  # segfault
 ]
 environment-pass = ["SETUPTOOLS_SCM_PRETEND_VERSION"]
 environment.PIP_ONLY_BINARY = "numpy"
+environment.PIP_PREFER_BINARY = "1"
 
 
 [tool.pylint]
