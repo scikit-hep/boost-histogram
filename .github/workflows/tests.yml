@@ -52,7 +52,7 @@ jobs:
       - name: Run PyLint
         run: |
           echo "::add-matcher::$GITHUB_WORKSPACE/.github/matchers/pylint.json"
-          pipx run nox -s pylint
+          pipx run nox[uv] -s pylint
 
   cmake:
     name: CMake 🐍 ${{ matrix.python-version }}
@@ -115,10 +115,6 @@ jobs:
           submodules: true
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
-
       - uses: pypa/cibuildwheel@v2.17
         env:
           CIBW_BUILD: "${{ matrix.build }}"
@@ -129,12 +125,8 @@ jobs:
           path: wheelhouse/*
           name: test-wheels-${{ strategy.job-index }}
 
-      # Pipx is either missing or broken on macos-14 runners ATM
-      - name: Install twine
-        run: pip install twine
-
       - name: Check wheels
-        run: twine check wheelhouse/*
+        run: pipx run twine check wheelhouse/*
         shell: bash
 
   pass:

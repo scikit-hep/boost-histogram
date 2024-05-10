@@ -48,41 +48,31 @@ def hist(session: nox.Session) -> None:
 @nox.session(reuse_venv=True)
 def docs(session: nox.Session) -> None:
     """
-    Build the docs. Pass "--serve" to serve. Pass "-b linkcheck" to check links.
+    Build the docs. Pass --non-interactive to avoid serving. Pass "-b linkcheck" to check links.
     """
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--serve", action="store_true", help="Serve after building")
     parser.add_argument(
         "-b", dest="builder", default="html", help="Build target (default: html)"
     )
     args, posargs = parser.parse_known_args(session.posargs)
+    serve = args.builder == "html" and session.interactive
 
-    if args.builder != "html" and args.serve:
-        session.error("Must not specify non-HTML builder with --serve")
-
-    extra_installs = ["sphinx-autobuild"] if args.serve else []
-
-    session.chdir("docs")
-    session.install("-r", "requirements.txt", *extra_installs)
-
-    if args.builder == "linkcheck":
-        session.run(
-            "sphinx-build", "-b", "linkcheck", ".", "_build/linkcheck", *posargs
-        )
-        return
+    extra_installs = ["sphinx-autobuild"] if serve else []
+    session.install("-r", "docs/requirements.txt", *extra_installs)
 
     shared_args = (
         "-n",  # nitpicky mode
         "-T",  # full tracebacks
         f"-b={args.builder}",
-        ".",
-        f"_build/{args.builder}",
-        *posargs,
+        "docs",
+        *(posargs or [f"docs/_build/{args.builder}"]),
     )
 
-    if args.serve:
-        session.run("sphinx-autobuild", *shared_args)
+    if serve:
+        session.run(
+            "sphinx-autobuild", "--open-browser", "--ignore=docs/.build", *shared_args
+        )
     else:
         session.run("sphinx-build", "--keep-going", *shared_args)
 
@@ -94,22 +84,21 @@ def build_api_docs(session: nox.Session) -> None:
     """
 
     session.install(".", "-r", "docs/requirements.txt")
-    session.chdir("docs")
     session.run(
         "sphinx-apidoc",
         "-o",
-        "api/",
+        "docs/api/",
         "--no-toc",
         "--template",
-        "template/",
+        "docs/template/",
         "--force",
         "--module-first",
-        "../src/boost_histogram",
+        "src/boost_histogram",
     )
 
     # add API docs of boost_histogram._internal.hist.Histogram after
     # the generation step
-    with Path("api/boost_histogram.rst").open("r+") as f:
+    with Path("docs/api/boost_histogram.rst").open("r+") as f:
         lines = f.readlines()
         for i in range(len(lines)):
             if lines[i] == ".. automodule:: boost_histogram\n":
@@ -137,7 +126,7 @@ def pylint(session: nox.Session) -> None:
     Run pylint.
     """
 
-    session.install("pylint==2.17.*")
+    session.install("pylint==3.1.*")
     session.install(".")
     session.run("pylint", "src", *session.posargs)
 

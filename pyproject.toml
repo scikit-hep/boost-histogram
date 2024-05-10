@@ -169,6 +169,7 @@ environment.PIP_PREFER_BINARY = "1"
 
 [tool.pylint]
 py-version = "3.7"
+ignore-patterns = ['.*\.pyi']
 extension-pkg-allow-list = ["boost_histogram._core"]
 reports.output-format = "colorized"
 similarities.ignore-imports = "yes"
