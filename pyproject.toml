@@ -96,6 +96,21 @@ sdist.include = ["src/boost_histogram/version.py"]
 wheel.expand-macos-universal-tags = true
 minimum-version = "0.8"
 cmake.version = ">=3.24"
+sdist.exclude = [
+  "extern/**/*.py",
+  "extern/**/*.md",
+  "extern/**/*.rst",
+  "extern/**/*.toml",
+  "extern/*/checks/**",
+  "extern/*/test/**",
+  "extern/*/benchmark/**",
+  "extern/*/doc/**",
+  "extern/*/examples/**",
+  "extern/*/tools/**",
+  "extern/pybind11/docs/**",
+  "extern/pybind11/tests/**",
+  "extern/*/README.md",
+]
 
 
 [tool.setuptools_scm]
@@ -135,46 +150,6 @@ disallow_untyped_calls = false
 module = ["matplotlib.*", "typer"]
 ignore_missing_imports = true
 
-[tool.check-manifest]
-ignore = [
-  ".all-contributorsrc",
-  ".clang-format",
-  ".cmake-format.yaml",
-  ".pre-commit-config.yaml",
-  ".pre-commit-nodocker.yaml",
-  ".readthedocs.yml",
-  ".clang-tidy",
-  "examples/**",
-  "notebooks/**",
-  "docs/**",
-  "scripts/**",
-  "dev-requirements.txt",
-  "extern/**/*.py",
-  "extern/**/*.md",
-  "extern/**/*.rst",
-  "extern/**/*.toml",
-  "extern/*/checks/**",
-  "extern/*/test/**",
-  "extern/*/benchmark/**",
-  "extern/*/doc/**",
-  "extern/*/examples/**",
-  "extern/*/tools/**",
-  "extern/pybind11/docs/**",
-  "extern/pybind11/tests/**",
-  "CMakeLists.txt",
-  "extern/*/README.md",
-  "CONTRIBUTING.md",
-  "Jamfile",
-  "configure",
-  "*.clang_complete",
-  "*.html",
-  "*.in",
-  "*.json",
-  "*.yml",
-  "src/boost_histogram/_core.*",
-  "src/boost_histogram/version.py",
-  "tests/.pytest_cache/**",
-]
 
 [tool.cibuildwheel]
 test-extras = "test"

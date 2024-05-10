@@ -62,12 +62,6 @@ repos:
         files: ^src
         additional_dependencies: [numpy~=1.26.0, pytest, uhi, types-dataclasses]
 
-  - repo: https://github.com/mgedmin/check-manifest
-    rev: "0.49"
-    hooks:
-      - id: check-manifest
-        stages: [manual]
-
   - repo: https://github.com/codespell-project/codespell
     rev: v2.2.6
     hooks:
