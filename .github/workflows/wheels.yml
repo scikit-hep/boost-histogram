@@ -8,6 +8,9 @@ on:
   release:
     types:
       - published
+  pull_request:
+    paths:
+      - .github/workflows/wheels.yml
 
 concurrency:
   group: wheels-${{ github.head_ref }}
