@@ -115,7 +115,7 @@ jobs:
           submodules: true
           fetch-depth: 0
 
-      - uses: pypa/cibuildwheel@v2.17
+      - uses: pypa/cibuildwheel@v2.18
         env:
           CIBW_BUILD: "${{ matrix.build }}"
           CIBW_BUILD_VERBOSITY: 1
