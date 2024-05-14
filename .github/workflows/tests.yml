@@ -50,9 +50,7 @@ jobs:
           submodules: true
 
       - name: Run PyLint
-        run: |
-          echo "::add-matcher::$GITHUB_WORKSPACE/.github/matchers/pylint.json"
-          pipx run nox[uv] -s pylint
+        run: pipx run nox[uv] -s pylint -- --output-format=github
 
   cmake:
     name: CMake 🐍 ${{ matrix.python-version }}
