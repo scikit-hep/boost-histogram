@@ -126,7 +126,7 @@ def pylint(session: nox.Session) -> None:
     Run pylint.
     """
 
-    session.install("pylint==3.1.*")
+    session.install("pylint==3.2.*")
     session.install(".")
     session.run("pylint", "src", *session.posargs)
 
