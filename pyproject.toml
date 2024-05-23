@@ -127,7 +127,10 @@ addopts = [
   "--strict-config",
   "--import-mode=importlib",
 ]
-filterwarnings = ["error"]
+filterwarnings = [
+  "error",
+  "default:could not create cache path:pytest.PytestCacheWarning",
+]
 xfail_strict = true
 testpaths = ["tests"]
 required_plugins = ["pytest-benchmark"]
