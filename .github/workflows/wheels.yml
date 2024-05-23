@@ -138,6 +138,8 @@ jobs:
       url: https://pypi.org/p/boost-histogram
     permissions:
       id-token: write
+      attestations: write
+      contents: read
 
     steps:
       - uses: actions/download-artifact@v4
@@ -148,5 +150,10 @@ jobs:
 
       - name: List all files
         run: ls -lh dist
+
+      - name: Generate artifact attestation for sdist and wheels
+        uses: actions/attest-build-provenance@173725a1209d09b31f9d30a3890cf2757ebbff0d # v1.1.2
+        with:
+          subject-path: "dist/boost_histogram-*"
 
       - uses: pypa/gh-action-pypi-publish@release/v1
