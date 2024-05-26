@@ -156,7 +156,7 @@ ignore_missing_imports = true
 
 [tool.cibuildwheel]
 test-extras = "test"
-test-command = "pytest --benchmark-disable {project}/tests"
+test-command = "python -m pytest --benchmark-disable {project}/tests"
 test-skip = [
   "pp37-*",
   "pp38-*",

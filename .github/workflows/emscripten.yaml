@@ -26,10 +26,10 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
 
       - name: Install pyodide-build
-        run: pip install pyodide-build==0.25.1
+        run: pip install pyodide-build==0.26.0a6
 
       - name: Compute emsdk version
         id: compute-emsdk-version
@@ -65,3 +65,26 @@ jobs:
         with:
           name: emscripten-wheel
           path: dist/*.whl
+
+  build-pyodide:
+    name: Pyodide cibuildwheel
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: hoodmane/cibuildwheel@emscripten
+        env:
+          CIBW_PLATFORM: pyodide
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: pyodide-wheel
+          path: wheelhouse/*.whl
