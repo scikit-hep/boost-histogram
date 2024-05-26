@@ -46,7 +46,7 @@ jobs:
           actions-cache-folder: emsdk-cache
 
       - name: Build
-        run: CFLAGS=-fexceptions LDFLAGS=-fexceptions pyodide build  --exports whole_archive
+        run: cflags=-fexceptions ldflags=-fexceptions pyodide build  --exports whole_archive
 
       - uses: actions/setup-node@v4
         with:
