@@ -29,24 +29,17 @@ jobs:
           python-version: "3.12"
 
       - name: Install pyodide-build
-        run: pip install pyodide-build==0.26.0
-
-      - name: Compute emsdk version
-        id: compute-emsdk-version
         run: |
-          # Prepare xbuild environment (side-effect)
-          pyodide config list
-          # Save EMSDK version
-          EMSCRIPTEN_VERSION=$(pyodide config get emscripten_version)
-          echo "emsdk-version=$EMSCRIPTEN_VERSION" >> $GITHUB_OUTPUT
+          pip install pyodide-build==0.26.0
+          echo EMSCRIPTEN_VERSION=$(pyodide config get emscripten_version | tail -n 1 | awk '{print $NF}') >> $GITHUB_ENV
 
       - uses: mymindstorm/setup-emsdk@v14
         with:
-          version: ${{ steps.compute-emsdk-version.outputs.emsdk-version }}
+          version: ${{ env.EMSCRIPTEN_VERSION }}
           actions-cache-folder: emsdk-cache
 
       - name: Build
-        run: CFLAGS=-fexceptions LDFLAGS=-fexceptions pyodide build  --exports whole_archive
+        run: CFLAGS=-fexceptions LDFLAGS=-fexceptions pyodide build --exports whole_archive
 
       - uses: actions/setup-node@v4
         with:

@@ -52,7 +52,7 @@ py::buffer_info make_buffer_impl(const Axes& axes, bool flow, T* ptr) {
         start,                              // Pointer to buffer
         sizeof(T),                          // Size of one scalar
         py::format_descriptor<T>::format(), // Python format descriptor
-        rank,                               // Number of dimensions
+        static_cast<py::ssize_t>(rank),     // Number of dimensions
         shape,                              // Buffer shape
         strides                             // Strides (in bytes) for each index
     );

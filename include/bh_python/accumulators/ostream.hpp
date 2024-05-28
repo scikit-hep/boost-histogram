@@ -20,7 +20,7 @@
 /**
   \file boost/histogram/accumulators/ostream.hpp
   Simple streaming operators for the builtin accumulator types.
-  Mostly similer to boost/histogram/accumulators/ostream.hpp
+  Mostly similar to boost/histogram/accumulators/ostream.hpp
  */
 
 template <class CharT, class Traits, class T>
