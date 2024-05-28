@@ -26,11 +26,11 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
 
       - name: Install pyodide-build
         run: |
-          pip install pyodide-build==0.25.1
+          pip install pyodide-build==0.26.0
           echo EMSCRIPTEN_VERSION=$(pyodide config get emscripten_version) >> $GITHUB_ENV
 
       - uses: mymindstorm/setup-emsdk@v14
