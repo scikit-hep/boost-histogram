@@ -31,7 +31,7 @@ jobs:
       - name: Install pyodide-build
         run: |
           pip install pyodide-build==0.26.1
-          echo EMSCRIPTEN_VERSION=$(pyodide config get emscripten_version >> $GITHUB_ENV
+          echo EMSCRIPTEN_VERSION=$(pyodide config get emscripten_version) >> $GITHUB_ENV
 
       - uses: mymindstorm/setup-emsdk@v14
         with:
