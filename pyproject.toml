@@ -118,7 +118,7 @@ write_to = "src/boost_histogram/version.py"
 
 
 [tool.pyodide.build]
-cflags = "-fexceptions"
+cxxflags = "-fexceptions"
 ldflags = "-fexceptions"
 
 
