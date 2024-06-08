@@ -117,11 +117,6 @@ sdist.exclude = [
 write_to = "src/boost_histogram/version.py"
 
 
-[tool.pyodide.build]
-cxxflags = "-fexceptions"
-ldflags = "-fexceptions"
-
-
 [tool.pytest.ini_options]
 minversion = "6.0"
 junit_family = "xunit2"
