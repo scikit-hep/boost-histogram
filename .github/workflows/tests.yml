@@ -124,7 +124,7 @@ jobs:
 
       - uses: yezz123/setup-uv@v4
 
-      - uses: pypa/cibuildwheel@v2.18
+      - uses: pypa/cibuildwheel@v2.19
         env:
           CIBW_BUILD: "${{ matrix.build }}"
           CIBW_BUILD_VERBOSITY: 1
