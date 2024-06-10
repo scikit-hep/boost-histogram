@@ -113,6 +113,8 @@ jobs:
           fetch-depth: 0
           submodules: true
 
+      - uses: yezz123/setup-uv@v4
+
       - uses: pypa/cibuildwheel@v2.18
         env:
           CIBW_BUILD: ${{ matrix.build }}
