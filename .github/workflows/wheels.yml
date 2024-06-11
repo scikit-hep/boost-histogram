@@ -57,7 +57,7 @@ jobs:
         with:
           platforms: all
 
-      - uses: pypa/cibuildwheel@v2.18
+      - uses: pypa/cibuildwheel@v2.19
         env:
           CIBW_BUILD: cp${{ matrix.python }}-manylinux_*
           CIBW_ARCHS: ${{ matrix.arch }}
