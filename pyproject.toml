@@ -155,6 +155,7 @@ ignore_missing_imports = true
 
 
 [tool.cibuildwheel]
+build-frontend = "build[uv]"
 test-extras = "test"
 test-command = "pytest --benchmark-disable {project}/tests"
 test-skip = [
