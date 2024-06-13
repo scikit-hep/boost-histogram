@@ -15,8 +15,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-wasm-emscripten:
-    name: Pyodide wheel
+  build-pyodide:
+    name: Pyodide cibuildwheel
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -24,39 +24,12 @@ jobs:
           submodules: true
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - uses: yezz123/setup-uv@v4
-
-      - name: Install pyodide-build
-        run: |
-          uv pip install --system pyodide-build==0.26.1
-          echo EMSCRIPTEN_VERSION=$(pyodide config get emscripten_version) >> $GITHUB_ENV
-
-      - uses: mymindstorm/setup-emsdk@v14
-        with:
-          version: ${{ env.EMSCRIPTEN_VERSION }}
-          actions-cache-folder: emsdk-cache
-
-      - name: Build
-        run: CXXFLAGS=-fexceptions LDFLAGS=-fexceptions pyodide build --exports whole_archive
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Set up Pyodide virtual environment
-        run: |
-          pyodide venv .venv-pyodide
-          .venv-pyodide/bin/pip install $(echo -n dist/*.whl)[test]
-
-      - name: Test
-        run: .venv-pyodide/bin/pytest
+      - uses: pypa/cibuildwheel@v2.19
+        env:
+          CIBW_PLATFORM: pyodide
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: emscripten-wheel
-          path: dist/*.whl
+          name: pyodide-wheel
+          path: wheelhouse/*.whl

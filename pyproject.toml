@@ -170,6 +170,13 @@ environment-pass = ["SETUPTOOLS_SCM_PRETEND_VERSION"]
 environment.PIP_ONLY_BINARY = "numpy"
 environment.PIP_PREFER_BINARY = "1"
 
+[[tool.cibuildwheel.overrides]]
+select = "*pyodide*"
+inherit.environment = "append"
+environment.CFLAGS = "-fexceptions"
+environment.LDFLAGS = "-fexceptions"
+build-frontend = {name = "build", args = ["--exports", "whole_archive"]}
+
 
 [tool.pylint]
 py-version = "3.7"
