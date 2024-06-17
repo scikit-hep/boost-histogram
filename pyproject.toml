@@ -46,7 +46,7 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
-    "numpy",
+    "numpy>=2",
     "typing-extensions;python_version<'3.8'",
 ]
 
