@@ -27,7 +27,7 @@ import boost_histogram
 from boost_histogram import _core
 
 from .axestuple import AxesTuple
-from .axis import Axis
+from .axis import Axis, Variable
 from .enum import Kind
 from .storage import Double, Storage
 from .typing import Accumulator, ArrayLike, CppHistogram, SupportsIndex
@@ -820,6 +820,7 @@ class Histogram:
         slices: list[_core.algorithm.reduce_command] = []
         pick_each: dict[int, int] = {}
         pick_set: dict[int, list[int]] = {}
+        reduced: CppHistogram | None = None
 
         # Compute needed slices and projections
         for i, ind in enumerate(indexes):
@@ -848,16 +849,19 @@ class Histogram:
             # This ensures that callable start/stop are handled
             start, stop = self.axes[i]._process_loc(ind.start, ind.stop)
 
+            groups = []
             if ind != slice(None):
                 merge = 1
                 if ind.step is not None:
-                    if hasattr(ind.step, "factor"):
+                    if getattr(ind.step, "factor", None) is not None:
                         merge = ind.step.factor
                     elif callable(ind.step):
                         if ind.step is sum:
                             integrations.add(i)
+                        elif getattr(ind.step, "groups", None) is not None:
+                            groups = ind.step.groups
                         else:
-                            raise RuntimeError("Full UHI not supported yet")
+                            raise NotImplementedError
 
                         if ind.start is not None or ind.stop is not None:
                             slices.append(
@@ -865,7 +869,8 @@ class Histogram:
                                     i, start, stop, _core.algorithm.slice_mode.crop
                                 )
                             )
-                        continue
+                        if len(groups) == 0:
+                            continue
                     else:
                         raise IndexError(
                             "The third argument to a slice must be rebin or projection"
@@ -873,13 +878,49 @@ class Histogram:
 
                 assert isinstance(start, int)
                 assert isinstance(stop, int)
-                slices.append(_core.algorithm.slice_and_rebin(i, start, stop, merge))
+                # rebinning with factor
+                if len(groups) == 0:
+                    slices.append(
+                        _core.algorithm.slice_and_rebin(i, start, stop, merge)
+                    )
+                # rebinning with groups
+                elif len(groups) != 0:
+                    if not reduced:
+                        reduced = self._hist
+                    axes = [reduced.axis(x) for x in range(reduced.rank())]
+                    reduced_view = reduced.view(flow=True)
+                    new_axes_indices = [axes[i].edges[0]]
+
+                    j = 0
+                    for group in groups:
+                        new_axes_indices += [axes[i].edges[j + group]]
+                        j += group
+
+                    variable_axis = Variable(
+                        new_axes_indices, metadata=axes[i].metadata
+                    )
+                    axes[i] = variable_axis._ax
+
+                    logger.debug("Axes: %s", axes)
+
+                    new_reduced = reduced.__class__(axes)
+                    new_view = new_reduced.view(flow=True)
+
+                    j = 1
+                    for new_j, group in enumerate(groups):
+                        for _ in range(group):
+                            pos = [slice(None)] * (i)
+                            new_view[(*pos, new_j + 1, ...)] += reduced_view[  # type: ignore[arg-type]
+                                (*pos, j, ...)  # type: ignore[arg-type]
+                            ]
+                            j += 1
+
+                    reduced = new_reduced
 
         # Will be updated below
-        if slices or pick_set or pick_each or integrations:
+        if (slices or pick_set or pick_each or integrations) and not reduced:
             reduced = self._hist
-        else:
-            logger.debug("Reduce actions are all empty, just making a copy")
+        elif not reduced:
             reduced = copy.copy(self._hist)
 
         if pick_each:
