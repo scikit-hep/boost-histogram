@@ -53,7 +53,7 @@ jobs:
           fetch-depth: 0
           submodules: true
 
-      - uses: docker/setup-qemu-action@v3.0.0
+      - uses: docker/setup-qemu-action@v3.2.0
         with:
           platforms: all
 
@@ -154,7 +154,7 @@ jobs:
         run: ls -lh dist
 
       - name: Generate artifact attestation for sdist and wheels
-        uses: actions/attest-build-provenance@173725a1209d09b31f9d30a3890cf2757ebbff0d # v1.1.2
+        uses: actions/attest-build-provenance@210c1913531870065f03ce1f9440dd87bc0938cd # v1.4.0
         with:
           subject-path: "dist/boost_histogram-*"
 
