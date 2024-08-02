@@ -190,19 +190,17 @@ when you run the above command on a supported platform. Wheels are produced usin
 [cibuildwheel](https://cibuildwheel.readthedocs.io/en/stable/); all common
 platforms have wheels provided in boost-histogram:
 
-| System           | Arch        | Python versions                 | PyPy versions       |
-| ---------------- | ----------- | ------------------------------- | ------------------- |
-| ManyLinux2014    | 64-bit      | 3.7, 3.8, 3.9, 3.10, 3.11, 3.12 | 3.7, 3.8, 3.9, 3.10 |
-| ManyLinux2014    | ARM64       | 3.7, 3.8, 3.9, 3.10, 3.11, 3.12 | 3.7, 3.8, 3.9, 3.10 |
-| MuslLinux_1_1    | 64-bit      | 3.7, 3.8, 3.9, 3.10, 3.11, 3.12 |                     |
-| macOS 10.9+      | 64-bit      | 3.7                             | 3.7, 3.8, 3.9, 3.10 |
-| macOS Universal2 | Arm64       | 3.8, 3.9, 3.10, 3.11, 3.12      |                     |
-| Windows          | 32 & 64-bit | 3.7, 3.8, 3.9, 3.10, 3.11, 3.12 |                     |
-| Windows          | 64-bit      |                                 | 3.7, 3.8, 3.9, 3.10 |
+| System            | Arch   | Python versions                 | PyPy versions |
+| ----------------- | ------ | ------------------------------- | ------------- |
+| manylinux2014     | 64-bit | 3.7, 3.8, 3.9, 3.10, 3.11, 3.12 | 3.9, 3.10     |
+| manylinux2014     | ARM64  | 3.7, 3.8, 3.9, 3.10, 3.11, 3.12 | 3.9, 3.10     |
+| musllinux_1_1     | 64-bit | 3.7, 3.8, 3.9, 3.10, 3.11, 3.12 |               |
+| macOS 10.9+ Intel | 64-bit | 3.7, 3.8, 3.9, 3.10, 3.11, 3.12 | 3.9, 3.10     |
+| macOS 11+ AS      | Arm64  | 3.8, 3.9, 3.10, 3.11, 3.12      | 3.9, 3.10     |
+| Windows           | 32-bit | 3.7, 3.8, 3.9, 3.10, 3.11, 3.12 |               |
+| Windows           | 64-bit | 3.7, 3.8, 3.9, 3.10, 3.11, 3.12 | 3.9, 3.10     |
 
-- manylinux2014: Requires pip 19.3.
-- ARM on Linux is supported. PowerPC or IBM-Z available on request.
-- macOS Universal2 wheels for Apple Silicon and Intel provided for Python 3.8+ (requires Pip 21.0.1 or newer).
+PowerPC or IBM-Z wheels are not provided but are available on request.
 
 If you are on a Linux system that is not part of the "many" in manylinux or musl in musllinux, such as ClearLinux, building from source is usually fine, since the compilers on those systems are often quite new. It will just take longer to install when it is using the sdist instead of a wheel. All dependencies are header-only and included.
 
@@ -216,7 +214,7 @@ conda install -c conda-forge boost-histogram
 
 #### Source builds
 
-For a source build, for example from an "SDist" package, the only requirements are a C++14 compatible compiler. The compiler requirements are dictated by Boost.Histogram's C++ requirements: gcc >= 5.5, clang >= 3.8, or msvc >= 14.1. You should have a version of pip less than 2-3 years old (10+).
+For a source build, for example from an "SDist" package, the only requirements are a C++14 compatible compiler. The compiler requirements are dictated by Boost.Histogram's C++ requirements: gcc >= 5.5, clang >= 3.8, or msvc >= 14.1.
 
 Boost is not required or needed (this only depends on included header-only dependencies). You can install directly from GitHub if you would like.
 
