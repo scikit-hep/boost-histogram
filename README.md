@@ -190,15 +190,15 @@ when you run the above command on a supported platform. Wheels are produced usin
 [cibuildwheel](https://cibuildwheel.readthedocs.io/en/stable/); all common
 platforms have wheels provided in boost-histogram:
 
-| System            | Arch        | Python versions                 | PyPy versions |
-| ----------------- | ----------- | ------------------------------- | ------------- |
-| manylinux2014     | 64-bit      | 3.7, 3.8, 3.9, 3.10, 3.11, 3.12 | 3.9, 3.10     |
-| manylinux2014     | ARM64       | 3.7, 3.8, 3.9, 3.10, 3.11, 3.12 | 3.9, 3.10     |
-| musllinux_1_1     | 64-bit      | 3.7, 3.8, 3.9, 3.10, 3.11, 3.12 |               |
-| macOS 10.9+ Intel | 64-bit      | 3.7, 3.8, 3.9, 3.10, 3.11, 3.12 | 3.9, 3.10     |
-| macOS 11+ AS      | Arm64       |      3.8, 3.9, 3.10, 3.11, 3.12 | 3.9, 3.10     |
-| Windows           | 32-bit      | 3.7, 3.8, 3.9, 3.10, 3.11, 3.12 |               |
-| Windows           | 64-bit      | 3.7, 3.8, 3.9, 3.10, 3.11, 3.12 | 3.9, 3.10     |
+| System            | Arch   | Python versions                 | PyPy versions |
+| ----------------- | ------ | ------------------------------- | ------------- |
+| manylinux2014     | 64-bit | 3.7, 3.8, 3.9, 3.10, 3.11, 3.12 | 3.9, 3.10     |
+| manylinux2014     | ARM64  | 3.7, 3.8, 3.9, 3.10, 3.11, 3.12 | 3.9, 3.10     |
+| musllinux_1_1     | 64-bit | 3.7, 3.8, 3.9, 3.10, 3.11, 3.12 |               |
+| macOS 10.9+ Intel | 64-bit | 3.7, 3.8, 3.9, 3.10, 3.11, 3.12 | 3.9, 3.10     |
+| macOS 11+ AS      | Arm64  | 3.8, 3.9, 3.10, 3.11, 3.12      | 3.9, 3.10     |
+| Windows           | 32-bit | 3.7, 3.8, 3.9, 3.10, 3.11, 3.12 |               |
+| Windows           | 64-bit | 3.7, 3.8, 3.9, 3.10, 3.11, 3.12 | 3.9, 3.10     |
 
 PowerPC or IBM-Z wheels are not provided but are available on request.
 
