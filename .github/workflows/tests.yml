@@ -86,7 +86,7 @@ jobs:
           create-symlink: true
 
       - name: Install python tools
-        run: uv pip install --system -r dev-requirements.txt pytest-github-actions-annotate-failures
+        run: uv pip install --system -r dev-requirements.txt pytest-github-actions-annotate-failures --extra-index-url https://pypi.anaconda.org/scientific-python-nightly-wheels/simple
 
       - name: Configure
         run: cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Debug -DBOOST_HISTOGRAM_ERRORS=ON ${{ matrix.cmake-extras }}
@@ -128,6 +128,7 @@ jobs:
         env:
           CIBW_BUILD: "${{ matrix.build }}"
           CIBW_BUILD_VERBOSITY: 1
+          PIP_EXTRA_INDEX_URL: https://pypi.anaconda.org/scientific-python-nightly-wheels/simple
 
       - uses: actions/upload-artifact@v4
         with:

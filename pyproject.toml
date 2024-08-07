@@ -35,6 +35,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
     "Programming Language :: Python",
@@ -59,6 +60,7 @@ dev = [
     "pytest-benchmark",
     "pytest>=6.0",
     "typer",
+    "numpy>=2.1.0dev0; python_version>='3.13'",
 ]
 docs = [
     "myst_parser>=0.13",
@@ -80,6 +82,7 @@ test = [
     "hypothesis>=6.0",
     "pytest-benchmark",
     "pytest>=6.0",
+    "numpy>=2.1.0dev0; python_version>='3.13'",
 ]
 
 [project.urls]
@@ -173,7 +176,7 @@ skip = [
   "pp37-*",
   "pp38-*",
 ]
-environment-pass = ["SETUPTOOLS_SCM_PRETEND_VERSION"]
+environment-pass = ["SETUPTOOLS_SCM_PRETEND_VERSION", "PIP_EXTRA_INDEX_URL"]
 environment.PIP_ONLY_BINARY = "numpy"
 environment.PIP_PREFER_BINARY = "1"
 
