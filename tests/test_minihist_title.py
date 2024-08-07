@@ -124,23 +124,23 @@ def test_hist_convert():
     hist_1 = CustomHist(Regular(10, 0, 1, name="a"), Integer(0, 4, name="b"))
     hist_bh = bh.Histogram(hist_1)
 
-    assert type(hist_bh.axes[0]) == bh.axis.Regular
-    assert type(hist_bh.axes[1]) == bh.axis.Integer
+    assert type(hist_bh.axes[0]) is bh.axis.Regular
+    assert type(hist_bh.axes[1]) is bh.axis.Integer
     assert hist_bh.axes[0].name == "a"
     assert hist_bh.axes[1].name == "b"
 
     hist_2 = CustomHist(hist_bh)
 
-    assert type(hist_2.axes[0]) == Regular
-    assert type(hist_2.axes[1]) == Integer
+    assert type(hist_2.axes[0]) is Regular
+    assert type(hist_2.axes[1]) is Integer
     assert hist_2.axes[0].name == "a"
     assert hist_2.axes[1].name == "b"
 
     # Just verify no-op status
     hist_3 = CustomHist(hist_1)
 
-    assert type(hist_3.axes[0]) == Regular
-    assert type(hist_3.axes[1]) == Integer
+    assert type(hist_3.axes[0]) is Regular
+    assert type(hist_3.axes[1]) is Integer
     assert hist_3.axes[0].name == "a"
     assert hist_3.axes[1].name == "b"
 
