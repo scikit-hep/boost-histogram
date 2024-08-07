@@ -84,3 +84,6 @@ compile_commands.json
 
 # Cache
 /emsdk-cache/*
+
+# Nox
+.nox/*
