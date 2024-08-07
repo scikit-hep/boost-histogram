@@ -86,7 +86,7 @@ jobs:
           create-symlink: true
 
       - name: Install python tools
-        run: uv pip install --system -r dev-requirements.txt pytest-github-actions-annotate-failures 'numpy>=2.0.0b1; python_version>="3.9"'
+        run: uv pip install --system -r dev-requirements.txt pytest-github-actions-annotate-failures
 
       - name: Configure
         run: cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Debug -DBOOST_HISTOGRAM_ERRORS=ON ${{ matrix.cmake-extras }}

@@ -21,16 +21,6 @@ def tests(session: nox.Session) -> None:
 
 
 @nox.session
-def testsnp2(session: nox.Session) -> None:
-    """
-    Run the unit and regular tests with NumPy 2.
-    """
-
-    session.install(".[test]", "numpy>=2.0a1")
-    session.run("pytest", *session.posargs)
-
-
-@nox.session
 def hist(session: nox.Session) -> None:
     """
     Run Hist's test suite
@@ -127,8 +117,8 @@ def pylint(session: nox.Session) -> None:
     """
 
     session.install("pylint==3.2.*")
-    session.install(".")
-    session.run("pylint", "src", *session.posargs)
+    session.install("-e.")
+    session.run("pylint", "boost_histogram", *session.posargs)
 
 
 @nox.session

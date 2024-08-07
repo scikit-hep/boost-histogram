@@ -10,6 +10,8 @@ from .tag import (  # pylint: disable=redefined-builtin
     sum,
     underflow,
 )
+
+# pylint: disable-next=import-error
 from .version import version as __version__
 
 try:
