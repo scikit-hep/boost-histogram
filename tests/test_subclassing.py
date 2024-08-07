@@ -20,10 +20,10 @@ def test_subclass():
 
     h = MyHist(MyRegular(10, 0, 2, transform=MyPowTransform(2)), storage=MyIntStorage())
 
-    assert type(h) == MyHist
+    assert type(h) is MyHist
     assert h.storage_type == MyIntStorage
-    assert type(h.axes[0]) == MyRegular
-    assert type(h.axes[0].transform) == MyPowTransform
+    assert type(h.axes[0]) is MyRegular
+    assert type(h.axes[0].transform) is MyPowTransform
 
 
 def test_subclass_hist_only():
@@ -32,8 +32,8 @@ def test_subclass_hist_only():
 
     h = MyHist(bh.axis.Regular(10, 0, 2))
 
-    assert type(h) == MyHist
-    assert type(h.axes[0]) == bh.axis.Regular
+    assert type(h) is MyHist
+    assert type(h.axes[0]) is bh.axis.Regular
 
 
 def test_copy():

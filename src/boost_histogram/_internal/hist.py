@@ -377,9 +377,7 @@ class Histogram:
 
         return self
 
-    def __radd__(  # type: ignore[misc]
-        self: H, other: np.typing.NDArray[Any] | float
-    ) -> H:
+    def __radd__(self: H, other: np.typing.NDArray[Any] | float) -> H:
         return self + other
 
     def __sub__(self: H, other: Histogram | np.typing.NDArray[Any] | float) -> H:
@@ -400,9 +398,7 @@ class Histogram:
         result = self.copy(deep=False)
         return result._compute_inplace_op("__imul__", other)
 
-    def __rmul__(  # type: ignore[misc]
-        self: H, other: np.typing.NDArray[Any] | float
-    ) -> H:
+    def __rmul__(self: H, other: np.typing.NDArray[Any] | float) -> H:
         return self * other
 
     def __truediv__(self: H, other: Histogram | np.typing.NDArray[Any] | float) -> H:
