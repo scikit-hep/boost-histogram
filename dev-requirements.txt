@@ -1,7 +1,6 @@
 cloudpickle
 hypothesis >=6.0
-numpy; python_version<'3.13'
-numpy>=2.1.0dev0; python_version>='3.13'
+numpy
 pytest >=6,!=6.1.0,!=7.1.0
 pytest-benchmark
 setuptools_scm[toml] >=3.4,!=4.0.0

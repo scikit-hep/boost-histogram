@@ -60,7 +60,6 @@ dev = [
     "pytest-benchmark",
     "pytest>=6.0",
     "typer",
-    "numpy>=2.1.0dev0; python_version>='3.13'",
 ]
 docs = [
     "myst_parser>=0.13",
@@ -82,7 +81,6 @@ test = [
     "hypothesis>=6.0",
     "pytest-benchmark",
     "pytest>=6.0",
-    "numpy>=2.1.0dev0; python_version>='3.13'",
 ]
 
 [project.urls]
