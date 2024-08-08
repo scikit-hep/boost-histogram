@@ -91,6 +91,8 @@ jobs:
 
       - name: Install python tools
         run: uv pip install --system -r dev-requirements.txt pytest-github-actions-annotate-failures
+        env:
+          PYO3_USE_ABI3_FORWARD_COMPATIBILITY: 1
 
       - name: Configure
         run: cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Debug -DBOOST_HISTOGRAM_ERRORS=ON ${{ matrix.cmake-extras }}

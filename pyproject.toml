@@ -185,6 +185,11 @@ environment.CFLAGS = "-fexceptions"
 environment.LDFLAGS = "-fexceptions"
 build-frontend = {name = "build", args = ["--exports", "whole_archive"]}
 
+[[tool.cibuildwheel.overrides]]
+select = "cp313*-"
+inherit.environment = "append"
+before-test = "uv pip install --index-url=https://pypi.anaconda.org/scientific-python-nightly-wheels/simple --prerelease=allow numpy"
+
 
 [tool.pylint]
 py-version = "3.7"
