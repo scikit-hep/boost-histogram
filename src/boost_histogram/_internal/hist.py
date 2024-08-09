@@ -357,7 +357,11 @@ class Histogram:
     def __array__(
         self, dtype: np.typing.DTypeLike | None = None, *, copy: bool | None = None
     ) -> np.typing.NDArray[Any]:
-        return np.asarray(self.view(False), dtype=dtype, copy=copy)  # type: ignore[no-any-return,call-overload]
+        # The copy kw is new in NumPy 2.0
+        kwargs = {}
+        if copy is not None:
+            kwargs["copy"] = copy
+        return np.asarray(self.view(False), dtype=dtype, **kwargs)  # type: ignore[no-any-return, call-overload]
 
     def __eq__(self, other: Any) -> bool:
         return hasattr(other, "_hist") and self._hist == other._hist

@@ -12,7 +12,11 @@ class Seriesish:
         self.array = np.asarray(array)
 
     def __array__(self, dtype=None, *, copy=None):
-        return np.asarray(self.array, dtype=dtype, copy=copy)
+        # Copy is new in NumPy 2.0
+        kw = {}
+        if copy is not None:
+            kw["copy"] = copy
+        return np.asarray(self.array, dtype=dtype, **kw)
 
 
 def test_setting_weighted_profile_convertable():
