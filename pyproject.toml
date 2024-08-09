@@ -168,6 +168,7 @@ test-skip = [
   "pp310-*",
   "*universal2:arm64",
   "cp*-*musllinux*",  # segfault
+  "cp313*linux_aarch64", # No NumPy available yet
 ]
 skip = [
   "pp37-*",
