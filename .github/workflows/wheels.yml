@@ -115,6 +115,11 @@ jobs:
 
       - uses: yezz123/setup-uv@v4
 
+      - uses: actions/setup-python@v4
+        if: matrix.os == 'macos-14'
+        with:
+          python-version: 3.8
+
       - uses: pypa/cibuildwheel@v2.20
         env:
           CIBW_BUILD: ${{ matrix.build }}

@@ -11,8 +11,8 @@ class Seriesish:
     def __init__(self, array):
         self.array = np.asarray(array)
 
-    def __array__(self):
-        return self.array
+    def __array__(self, dtype=None, *, copy=None):
+        return np.asarray(self.array, dtype=dtype, copy=copy)
 
 
 def test_setting_weighted_profile_convertable():

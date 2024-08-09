@@ -167,7 +167,6 @@ test-command = "pytest --benchmark-disable {project}/tests"
 test-skip = [
   "pp310-*",
   "*universal2:arm64",
-  "cp38-macosx_arm64",
   "cp*-*musllinux*",  # segfault
 ]
 skip = [

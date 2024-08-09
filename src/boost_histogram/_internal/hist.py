@@ -354,8 +354,10 @@ class Histogram:
         """
         return _to_view(self._hist.view(flow))
 
-    def __array__(self) -> np.typing.NDArray[Any]:
-        return self.view(False)
+    def __array__(
+        self, dtype: np.typing.DTypeLike | None = None, *, copy: bool | None = None
+    ) -> np.typing.NDArray[Any]:
+        return np.asarray(self.view(False), dtype=dtype, copy=copy)  # type: ignore[no-any-return,call-overload]
 
     def __eq__(self, other: Any) -> bool:
         return hasattr(other, "_hist") and self._hist == other._hist
