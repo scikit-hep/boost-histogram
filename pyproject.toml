@@ -167,7 +167,7 @@ test-command = "pytest --benchmark-disable {project}/tests"
 test-skip = [
   "pp310-*",
   "*universal2:arm64",
-  "cp38-macosx_*:arm64",
+  "cp38-macosx_arm64",
   "cp*-*musllinux*",  # segfault
 ]
 skip = [
@@ -186,7 +186,7 @@ environment.LDFLAGS = "-fexceptions"
 build-frontend = {name = "build", args = ["--exports", "whole_archive"]}
 
 [[tool.cibuildwheel.overrides]]
-select = "cp313*-"
+select = "cp313*"
 inherit.environment = "append"
 before-test = "uv pip install --index-url=https://pypi.anaconda.org/scientific-python-nightly-wheels/simple --prerelease=allow numpy"
 
