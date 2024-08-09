@@ -35,6 +35,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
     "Programming Language :: Python",
@@ -166,14 +167,14 @@ test-command = "pytest --benchmark-disable {project}/tests"
 test-skip = [
   "pp310-*",
   "*universal2:arm64",
-  "cp38-macosx_*:arm64",
   "cp*-*musllinux*",  # segfault
+  "cp313*linux_aarch64", # No NumPy available yet
 ]
 skip = [
   "pp37-*",
   "pp38-*",
 ]
-environment-pass = ["SETUPTOOLS_SCM_PRETEND_VERSION"]
+environment-pass = ["SETUPTOOLS_SCM_PRETEND_VERSION", "PIP_EXTRA_INDEX_URL"]
 environment.PIP_ONLY_BINARY = "numpy"
 environment.PIP_PREFER_BINARY = "1"
 
@@ -183,6 +184,11 @@ inherit.environment = "append"
 environment.CFLAGS = "-fexceptions"
 environment.LDFLAGS = "-fexceptions"
 build-frontend = {name = "build", args = ["--exports", "whole_archive"]}
+
+[[tool.cibuildwheel.overrides]]
+select = "cp313*"
+inherit.environment = "append"
+before-test = "uv pip install --index-url=https://pypi.anaconda.org/scientific-python-nightly-wheels/simple --prerelease=allow numpy"
 
 
 [tool.pylint]

@@ -45,7 +45,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        python: [37, 38, 39, 310, 311, 312]
+        python: [37, 38, 39, 310, 311, 312, 313]
         arch: [aarch64]
     steps:
       - uses: actions/checkout@v4
@@ -57,7 +57,7 @@ jobs:
         with:
           platforms: all
 
-      - uses: pypa/cibuildwheel@v2.19
+      - uses: pypa/cibuildwheel@v2.20
         env:
           CIBW_BUILD: cp${{ matrix.python }}-manylinux_*
           CIBW_ARCHS: ${{ matrix.arch }}
@@ -115,7 +115,12 @@ jobs:
 
       - uses: yezz123/setup-uv@v4
 
-      - uses: pypa/cibuildwheel@v2.19
+      - uses: actions/setup-python@v4
+        if: matrix.os == 'macos-14'
+        with:
+          python-version: 3.8
+
+      - uses: pypa/cibuildwheel@v2.20
         env:
           CIBW_BUILD: ${{ matrix.build }}
           CIBW_ARCHS: ${{ matrix.arch }}
