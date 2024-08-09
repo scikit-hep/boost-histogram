@@ -355,7 +355,11 @@ class Histogram:
         return _to_view(self._hist.view(flow))
 
     def __array__(
-        self, dtype: np.typing.DTypeLike | None = None, *, copy: bool | None = None
+        self,
+        dtype: np.typing.DTypeLike | None = None,
+        *,
+        # pylint: disable-next=redefined-outer-name
+        copy: bool | None = None,
     ) -> np.typing.NDArray[Any]:
         # The copy kw is new in NumPy 2.0
         kwargs = {}
