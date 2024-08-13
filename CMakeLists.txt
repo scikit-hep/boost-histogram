@@ -45,7 +45,7 @@ set(Python_ARTIFACTS_INTERACTIVE TRUE)
 FetchContent_Declare(
   pybind11
   GIT_REPOSITORY https://github.com/pybind/pybind11.git
-  GIT_TAG 07f30430d4186c2712761f1ffaea50ede63f2b2b # v2.13.2
+  GIT_TAG bd67643652d3800837f1f41549a2a5adbaa3fafe # v2.13.3
   FIND_PACKAGE_ARGS NAMES pybind11)
 FetchContent_MakeAvailable(pybind11)
 
