@@ -87,7 +87,7 @@ jobs:
 
       - name: Install NumPy pre-release
         if: matrix.python-version == '3.13'
-        run: uv pip install --system numpy>=2.1.0rc1
+        run: uv pip install --system "numpy>=2.1.0rc1"
 
       - name: Install python tools
         run: uv pip install --system -r dev-requirements.txt pytest-github-actions-annotate-failures

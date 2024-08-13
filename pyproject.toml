@@ -181,7 +181,7 @@ build-frontend = {name = "build", args = ["--exports", "whole_archive"]}
 [[tool.cibuildwheel.overrides]]
 select = "cp313*"
 inherit.environment = "append"
-before-test = "uv pip install numpy>=2.1"
+before-test = 'uv pip install "numpy>=2.1.0rc1"'
 
 
 [tool.pylint]
