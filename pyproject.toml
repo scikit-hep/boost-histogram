@@ -1,5 +1,5 @@
 [build-system]
-requires = ["scikit-build-core>=0.10", "pybind11>=2.12"]
+requires = ["scikit-build-core>=0.10", "pybind11>=2.13.2"]
 build-backend = "scikit_build_core.build"
 
 [project]
@@ -169,7 +169,8 @@ skip = [
   "cp313t-*win*"
 ]
 test-skip = [
-  "cp3[78]-musllinux_*",
+  "cp*-musllinux_*", # Segfaults
+  "pp310-macosx_arm64", # No binary (numpy 2.1.0 rc 1)
 ]
 free-threaded-support = true
 environment-pass = ["SETUPTOOLS_SCM_PRETEND_VERSION"]
@@ -179,8 +180,6 @@ environment.PIP_PREFER_BINARY = "1"
 [[tool.cibuildwheel.overrides]]
 select = "*pyodide*"
 inherit.environment = "append"
-environment.CFLAGS = "-fexceptions"
-environment.LDFLAGS = "-fexceptions"
 build-frontend = {name = "build", args = ["--exports", "whole_archive"]}
 
 [[tool.cibuildwheel.overrides]]
