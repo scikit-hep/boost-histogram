@@ -164,12 +164,6 @@ ignore_missing_imports = true
 build-frontend = "build[uv]"
 test-extras = "test"
 test-command = "pytest --benchmark-disable {project}/tests"
-test-skip = [
-  "pp310-*",
-  "*universal2:arm64",
-  "cp*-*musllinux*",  # segfault
-  "cp313*linux_aarch64", # No NumPy available yet
-]
 skip = [
   "pp37-*",
   "pp38-*",
@@ -187,7 +181,7 @@ build-frontend = {name = "build", args = ["--exports", "whole_archive"]}
 [[tool.cibuildwheel.overrides]]
 select = "cp313*"
 inherit.environment = "append"
-before-test = "uv pip install --index-url=https://pypi.anaconda.org/scientific-python-nightly-wheels/simple --prerelease=allow numpy"
+before-test = "uv pip install numpy>=2.1"
 
 
 [tool.pylint]
