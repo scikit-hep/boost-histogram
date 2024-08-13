@@ -1,5 +1,5 @@
 [build-system]
-requires = ["scikit-build-core>=0.10", "pybind11>=2.13.2"]
+requires = ["scikit-build-core>=0.10", "pybind11 @ git+https://github.com/henryiii/pybind11@henryiii/fix/emscripten3"]
 build-backend = "scikit_build_core.build"
 
 [project]
