@@ -87,3 +87,5 @@ compile_commands.json
 
 # Nox
 .nox/*
+/*venv*
+/build

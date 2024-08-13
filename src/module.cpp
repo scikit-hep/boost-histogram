@@ -12,7 +12,7 @@ void register_histograms(py::module&);
 void register_accumulators(py::module&);
 void register_transforms(py::module&);
 
-PYBIND11_MODULE(_core, m) {
+PYBIND11_MODULE(_core, m, py::mod_gil_not_used()) {
     py::module storage = m.def_submodule("storage");
     register_storages(storage);
 

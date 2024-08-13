@@ -1,5 +1,5 @@
 [build-system]
-requires = ["scikit-build-core>=0.10", "pybind11>=2.12"]
+requires = ["scikit-build-core>=0.10", "pybind11>=2.13.3"]
 build-backend = "scikit_build_core.build"
 
 [project]
@@ -116,7 +116,7 @@ sdist.exclude = [
 [[tool.scikit-build.generate]]
 path = "boost_histogram/version.py"
 template = '''
-__version__ = version = '$version'
+__version__ = version = "$version"
 '''
 
 
@@ -164,31 +164,27 @@ ignore_missing_imports = true
 build-frontend = "build[uv]"
 test-extras = "test"
 test-command = "pytest --benchmark-disable {project}/tests"
-test-skip = [
-  "pp310-*",
-  "*universal2:arm64",
-  "cp*-*musllinux*",  # segfault
-  "cp313*linux_aarch64", # No NumPy available yet
-]
 skip = [
-  "pp37-*",
-  "pp38-*",
+  "pp3[78]-*",
+  "cp313t-*win*"
 ]
-environment-pass = ["SETUPTOOLS_SCM_PRETEND_VERSION", "PIP_EXTRA_INDEX_URL"]
+test-skip = [
+  "cp*-musllinux_*", # Segfaults
+  "pp310-macosx_arm64", # No binary (numpy 2.1.0 rc 1)
+]
+free-threaded-support = true
+environment-pass = ["SETUPTOOLS_SCM_PRETEND_VERSION"]
 environment.PIP_ONLY_BINARY = "numpy"
 environment.PIP_PREFER_BINARY = "1"
 
 [[tool.cibuildwheel.overrides]]
 select = "*pyodide*"
 inherit.environment = "append"
-environment.CFLAGS = "-fexceptions"
-environment.LDFLAGS = "-fexceptions"
 build-frontend = {name = "build", args = ["--exports", "whole_archive"]}
 
 [[tool.cibuildwheel.overrides]]
-select = "cp313*"
-inherit.environment = "append"
-before-test = "uv pip install --index-url=https://pypi.anaconda.org/scientific-python-nightly-wheels/simple --prerelease=allow numpy"
+select = ["cp313*", "pp310*"]
+before-test = 'uv pip install --only-binary=:all: "numpy>=2.1.0rc1"'
 
 
 [tool.pylint]

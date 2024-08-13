@@ -87,7 +87,7 @@ jobs:
 
       - name: Install NumPy pre-release
         if: matrix.python-version == '3.13'
-        run: uv pip install --system numpy  --extra-index-url https://pypi.anaconda.org/scientific-python-nightly-wheels/simple --prerelease=allow
+        run: uv pip install --system "numpy>=2.1.0rc1"
 
       - name: Install python tools
         run: uv pip install --system -r dev-requirements.txt pytest-github-actions-annotate-failures
@@ -105,22 +105,24 @@ jobs:
         run: python -m pytest -ra
 
   build_wheels:
-    name: ${{ matrix.build }}
+    name: ${{ matrix.only }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
           - os: ubuntu-latest
-            build: cp313-manylinux_x86_64
+            only: cp313t-manylinux_x86_64
+          - os: ubuntu-latest
+            only: cp313-manylinux_x86_64
           - os: windows-2019
-            build: cp38-win32
+            only: cp38-win32
           - os: windows-2019
-            build: cp37-win_amd64
+            only: cp37-win_amd64
           - os: macos-13
-            build: cp39-macosx_x86_64
+            only: cp39-macosx_x86_64
           - os: macos-14
-            build: cp39-macosx_arm64
+            only: cp39-macosx_arm64
 
     steps:
       - uses: actions/checkout@v4
@@ -131,8 +133,9 @@ jobs:
       - uses: yezz123/setup-uv@v4
 
       - uses: pypa/cibuildwheel@v2.20
+        with:
+          only: "${{ matrix.only }}"
         env:
-          CIBW_BUILD: "${{ matrix.build }}"
           CIBW_BUILD_VERBOSITY: 1
 
       - uses: actions/upload-artifact@v4
