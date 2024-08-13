@@ -116,7 +116,7 @@ sdist.exclude = [
 [[tool.scikit-build.generate]]
 path = "boost_histogram/version.py"
 template = '''
-__version__ = version = '$version'
+__version__ = version = "$version"
 '''
 
 
@@ -165,11 +165,11 @@ build-frontend = "build[uv]"
 test-extras = "test"
 test-command = "pytest --benchmark-disable {project}/tests"
 skip = [
-  "pp37-*",
-  "pp38-*",
+  "pp3[78]-*",
+  "cp313t-*win*"
 ]
 test-skip = [
-  "cp37-musllinux_*",
+  "cp3[78]-musllinux_*",
 ]
 free-threaded-support = true
 environment-pass = ["SETUPTOOLS_SCM_PRETEND_VERSION"]
@@ -185,8 +185,7 @@ build-frontend = {name = "build", args = ["--exports", "whole_archive"]}
 
 [[tool.cibuildwheel.overrides]]
 select = ["cp313*", "pp310*"]
-inherit.environment = "append"
-before-test = 'uv pip install "numpy>=2.1.0rc1"'
+before-test = 'uv pip install --only-binary=:all: "numpy>=2.1.0rc1"'
 
 
 [tool.pylint]
