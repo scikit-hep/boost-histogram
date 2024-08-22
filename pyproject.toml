@@ -166,11 +166,10 @@ test-extras = "test"
 test-command = "pytest --benchmark-disable {project}/tests"
 skip = [
   "pp3[78]-*",
-  "cp313t-*win*"
 ]
 test-skip = [
   "cp*-musllinux_*", # Segfaults
-  "pp310-macosx_arm64", # No binary (numpy 2.1.0 rc 1)
+  "cp313t-*win*",
 ]
 free-threaded-support = true
 environment-pass = ["SETUPTOOLS_SCM_PRETEND_VERSION"]
@@ -183,8 +182,8 @@ inherit.environment = "append"
 build-frontend = {name = "build", args = ["--exports", "whole_archive"]}
 
 [[tool.cibuildwheel.overrides]]
-select = ["cp313*", "pp310*"]
-before-test = 'uv pip install --only-binary=:all: "numpy>=2.1.0rc1"'
+select = "pp310-macosx_arm64"
+environment.MACOSX_DEPLOYMENT_TARGET = "14.0"
 
 
 [tool.pylint]
