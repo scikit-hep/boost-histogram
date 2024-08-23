@@ -3,12 +3,10 @@ from __future__ import annotations
 from . import accumulators, axis, numpy, storage
 from ._internal.enum import Kind
 from ._internal.hist import Histogram, IndexingExpr
-from .tag import (
-    Rebinner as rebin,
-)
 from .tag import (  # pylint: disable=redefined-builtin
     loc,
     overflow,
+    rebin,
     sum,
     underflow,
 )

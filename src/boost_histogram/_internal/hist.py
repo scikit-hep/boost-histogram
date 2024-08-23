@@ -862,11 +862,11 @@ class Histogram:
                 if ind.step is not None:
                     if getattr(ind.step, "factor", None) is not None:
                         merge = ind.step.factor
+                    elif getattr(ind.step, "group_mapping", None) is not None:
+                        groups = ind.step.group_mapping(self.axes[i])
                     elif callable(ind.step):
                         if ind.step is sum:
                             integrations.add(i)
-                        elif getattr(ind.step, "groups", None) is not None:
-                            groups = ind.step.groups
                         else:
                             raise NotImplementedError
 

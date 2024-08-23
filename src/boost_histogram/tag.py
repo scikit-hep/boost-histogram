@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 from ._internal.typing import AxisLike
 
-__all__ = ("Slicer", "Locator", "at", "loc", "overflow", "underflow", "Rebinner", "sum")
+__all__ = ("Slicer", "Locator", "at", "loc", "overflow", "underflow", "sum", "rebin")
 
 
 class Slicer:
@@ -110,7 +110,7 @@ class at:
         return self.value
 
 
-class Rebinner:
+class rebin:
     __slots__ = (
         "factor",
         "groups",
@@ -139,11 +139,12 @@ class Rebinner:
                 break
         return return_str
 
-    def __call__(self, axis: PlottableAxis) -> int | Sequence[int]:
-        if self.factor is not None:
-            return [self.factor] * (len(axis) // self.factor)
-
+    def group_mapping(self, axis: PlottableAxis) -> Sequence[int]:
         if self.groups is not None:
+            if sum(self.groups) != len(axis):
+                msg = f"The sum of the groups ({sum(self.groups)}) must be equal to the number of bins in the axis ({len(axis)})"
+                raise ValueError(msg)
             return self.groups
-
-        raise NotImplementedError(axis)
+        if self.factor is not None:
+            return [self.factor] * len(axis)
+        raise ValueError("No rebinning factor or groups provided")
