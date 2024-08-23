@@ -13,22 +13,22 @@
 
 #### Backend and docs
 
-* Move build to scikit-build-core [#887][]
-* Clean up sdist files [#928][]
-* Minor touchup to build backend, use scikit-build-core 0.10+ [#948][]
+- Move build to scikit-build-core [#887][]
+- Clean up sdist files [#928][]
+- Minor touchup to build backend, use scikit-build-core 0.10+ [#948][]
 
 #### CI and testing
 
-* Try cibuildwheel pyodide [#935][]
-* Try to fix pyodide build [#934][]
-* Update emscripten build [#937][]
-* Bump to Pyodide 3.12 [#938][]
-* Speed up pyodide job by a few seconds [#941][]
-* Update jobs and noxfile [#929][]
-* Use pylint 3.2 github formatter instead [#932][]
-* Add some CI speedups [#939][]
-* Faster cibuildwheel [#942][]
-* Adapt to final release of NumPy 2.1.0 [#951][]
+- Try cibuildwheel pyodide [#935][]
+- Try to fix pyodide build [#934][]
+- Update emscripten build [#937][]
+- Bump to Pyodide 3.12 [#938][]
+- Speed up pyodide job by a few seconds [#941][]
+- Update jobs and noxfile [#929][]
+- Use pylint 3.2 github formatter instead [#932][]
+- Add some CI speedups [#939][]
+- Faster cibuildwheel [#942][]
+- Adapt to final release of NumPy 2.1.0 [#951][]
 
 [#887]: https://github.com/scikit-hep/boost-histogram/pull/887
 [#913]: https://github.com/scikit-hep/boost-histogram/pull/913
