@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 from ._internal.typing import AxisLike
 
-__all__ = ("Slicer", "Locator", "at", "loc", "overflow", "underflow", "sum", "rebin")
+__all__ = ("Slicer", "Locator", "at", "loc", "overflow", "underflow", "rebin", "sum")
 
 
 class Slicer:

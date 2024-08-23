@@ -862,8 +862,12 @@ class Histogram:
                 if ind.step is not None:
                     if getattr(ind.step, "factor", None) is not None:
                         merge = ind.step.factor
-                    elif getattr(ind.step, "group_mapping", None) is not None:
-                        groups = ind.step.group_mapping(self.axes[i])
+                    elif (
+                        hasattr(ind.step, "group_mapping")
+                        and (tmp_groups := ind.step.group_mapping(self.axes[i]))
+                        is not None
+                    ):
+                        groups = tmp_groups
                     elif callable(ind.step):
                         if ind.step is sum:
                             integrations.add(i)
