@@ -1,5 +1,53 @@
 # Changelog
 
+## Version 1.5
+
+### Version 1.5.0
+
+#### Features
+
+- Support variable rebinning [#913][]
+- Removed support for Python 3.7 [#952][]
+- Added support for Python 3.13 and free-threaded Python 3.13t [#950][]
+- Add GitHub artifact attestations to package distribution [#933][]
+
+#### Backend and docs
+
+- Move build to scikit-build-core [#887][]
+- Clean up sdist files [#928][]
+- Minor touchup to build backend, use scikit-build-core 0.10+ [#948][]
+
+#### CI and testing
+
+- Try cibuildwheel pyodide [#935][]
+- Try to fix pyodide build [#934][]
+- Update emscripten build [#937][]
+- Bump to Pyodide 3.12 [#938][]
+- Speed up pyodide job by a few seconds [#941][]
+- Update jobs and noxfile [#929][]
+- Use pylint 3.2 github formatter instead [#932][]
+- Add some CI speedups [#939][]
+- Faster cibuildwheel [#942][]
+- Adapt to final release of NumPy 2.1.0 [#951][]
+
+[#887]: https://github.com/scikit-hep/boost-histogram/pull/887
+[#913]: https://github.com/scikit-hep/boost-histogram/pull/913
+[#928]: https://github.com/scikit-hep/boost-histogram/pull/928
+[#929]: https://github.com/scikit-hep/boost-histogram/pull/929
+[#932]: https://github.com/scikit-hep/boost-histogram/pull/932
+[#933]: https://github.com/scikit-hep/boost-histogram/pull/933
+[#934]: https://github.com/scikit-hep/boost-histogram/pull/934
+[#935]: https://github.com/scikit-hep/boost-histogram/pull/935
+[#937]: https://github.com/scikit-hep/boost-histogram/pull/937
+[#938]: https://github.com/scikit-hep/boost-histogram/pull/938
+[#939]: https://github.com/scikit-hep/boost-histogram/pull/939
+[#941]: https://github.com/scikit-hep/boost-histogram/pull/941
+[#942]: https://github.com/scikit-hep/boost-histogram/pull/942
+[#948]: https://github.com/scikit-hep/boost-histogram/pull/948
+[#950]: https://github.com/scikit-hep/boost-histogram/pull/950
+[#951]: https://github.com/scikit-hep/boost-histogram/pull/951
+[#952]: https://github.com/scikit-hep/boost-histogram/pull/952
+
 ## Version 1.4
 
 ### Version 1.4.1
