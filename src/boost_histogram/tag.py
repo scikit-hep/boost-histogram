@@ -4,7 +4,10 @@ from __future__ import annotations
 
 import copy
 from builtins import sum
-from typing import TypeVar
+from typing import TYPE_CHECKING, Sequence, TypeVar
+
+if TYPE_CHECKING:
+    from uhi.typing.plottable import PlottableAxis
 
 from ._internal.typing import AxisLike
 
@@ -108,12 +111,40 @@ class at:
 
 
 class rebin:
-    __slots__ = ("factor",)
+    __slots__ = (
+        "factor",
+        "groups",
+    )
 
-    def __init__(self, value: int) -> None:
-        self.factor = value
+    def __init__(
+        self,
+        factor: int | None = None,
+        *,
+        groups: Sequence[int] | None = None,
+    ) -> None:
+        if not sum(i is None for i in [factor, groups]) == 1:
+            raise ValueError("Exactly one, a factor or groups should be provided")
+        self.factor = factor
+        self.groups = groups
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}({self.factor})"
+        repr_str = f"{self.__class__.__name__}"
+        args: dict[str, int | Sequence[int] | None] = {
+            "factor": self.factor,
+            "groups": self.groups,
+        }
+        for k, v in args.items():
+            if v is not None:
+                return_str = f"{repr_str}({k}={v})"
+                break
+        return return_str
 
-    # TODO: Add __call__ to support UHI
+    def group_mapping(self, axis: PlottableAxis) -> Sequence[int]:
+        if self.groups is not None:
+            if sum(self.groups) != len(axis):
+                msg = f"The sum of the groups ({sum(self.groups)}) must be equal to the number of bins in the axis ({len(axis)})"
+                raise ValueError(msg)
+            return self.groups
+        if self.factor is not None:
+            return [self.factor] * len(axis)
+        raise ValueError("No rebinning factor or groups provided")
