@@ -45,7 +45,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        python: [37, 38, 39, 310, 311, 312, 313]
+        python: ["38", "39", "310", "311", "312", "313", "313t"]
         arch: [aarch64]
     steps:
       - uses: actions/checkout@v4

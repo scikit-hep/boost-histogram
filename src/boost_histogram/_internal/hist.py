@@ -16,6 +16,7 @@ from typing import (
     List,
     Mapping,
     NewType,
+    SupportsIndex,
     Tuple,
     TypeVar,
     Union,
@@ -30,7 +31,7 @@ from .axestuple import AxesTuple
 from .axis import Axis
 from .enum import Kind
 from .storage import Double, Storage
-from .typing import Accumulator, ArrayLike, CppHistogram, SupportsIndex
+from .typing import Accumulator, ArrayLike, CppHistogram
 from .utils import cast, register, set_module
 from .view import MeanView, WeightedMeanView, WeightedSumView, _to_view
 

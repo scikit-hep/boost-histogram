@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from typing import Any, Callable, ClassVar, Mapping, MutableMapping
+from typing import Any, Callable, ClassVar, Literal, Mapping, MutableMapping
 
 import numpy as np
 
 from ..accumulators import Mean, WeightedMean, WeightedSum
-from .typing import ArrayLike, Literal, StrIndex, Ufunc
+from .typing import ArrayLike, StrIndex, Ufunc
 
 UFMethod = Literal["__call__", "reduce", "reduceat", "accumulate", "outer", "inner"]
 
@@ -50,7 +50,7 @@ class View(np.ndarray):  # type: ignore[type-arg]
         msg = "Needs matching ndarray or n+1 dim array"
         if array.ndim == current_ndim + 1:
             if len(self._FIELDS) == array.shape[-1]:
-                self.__setitem__(ind, self._PARENT._array(*np.moveaxis(array, -1, 0)))
+                self.__setitem__(ind, self._PARENT._array(*np.moveaxis(array, -1, 0)))  # type: ignore[assignment]
                 return
             msg += f", final dimension should be {len(self._FIELDS)} for this storage, got {array.shape[-1]} instead"
             raise ValueError(msg)
@@ -224,7 +224,7 @@ class WeightedSumView(View):
         # ufuncs that are allowed to reduce
         if ufunc in {np.add} and method == "reduce" and len(raw_inputs) == 1:
             results = (ufunc.reduce(self[field], **kwargs) for field in self._FIELDS)
-            return self._PARENT._make(*results)  # type: ignore[no-any-return]
+            return self._PARENT._make(*results)  # type: ignore[return-value]
 
         # ufuncs that are allowed to accumulate
         if ufunc in {np.add} and method == "accumulate" and len(raw_inputs) == 1:

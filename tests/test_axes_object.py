@@ -7,7 +7,7 @@ from pytest import approx
 import boost_histogram as bh
 
 
-@pytest.fixture()
+@pytest.fixture
 def h():
     return bh.Histogram(
         bh.axis.Regular(10, 0, 10, metadata=2),

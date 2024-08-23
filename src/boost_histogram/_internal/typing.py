@@ -1,12 +1,6 @@
 from __future__ import annotations
 
-import sys
-from typing import TYPE_CHECKING, Any, Tuple, Union
-
-if sys.version_info < (3, 8):
-    from typing_extensions import Literal, Protocol, SupportsIndex, TypedDict
-else:
-    from typing import Literal, Protocol, SupportsIndex, TypedDict
+from typing import TYPE_CHECKING, Any, Protocol, Tuple, Union
 
 if TYPE_CHECKING:
     from builtins import ellipsis
@@ -26,16 +20,12 @@ else:
 
 
 __all__ = (
-    "Protocol",
     "CppHistogram",
-    "SupportsIndex",
     "AxisLike",
     "ArrayLike",
     "Ufunc",
     "StdIndex",
     "StrIndex",
-    "Literal",
-    "TypedDict",
 )
 
 

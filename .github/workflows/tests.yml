@@ -114,7 +114,7 @@ jobs:
           - os: windows-2019
             only: cp38-win32
           - os: windows-2019
-            only: cp37-win_amd64
+            only: cp313-win_amd64
           - os: macos-13
             only: cp39-macosx_x86_64
           - os: macos-14
