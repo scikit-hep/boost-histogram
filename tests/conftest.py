@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import contextlib
+import importlib.metadata
 import sys
 from pathlib import Path
 
@@ -74,11 +75,6 @@ def count_single_storage(request):
 
 
 def pytest_report_header() -> str:
-    if sys.version_info < (3, 8):
-        import importlib_metadata as metadata
-    else:
-        from importlib import metadata
-
     with BASE.joinpath("pyproject.toml").open("rb") as f:
         pyproject = tomllib.load(f)
     project = pyproject.get("project", {})
@@ -94,7 +90,7 @@ def pytest_report_header() -> str:
     valid = []
     for package in sorted(interesting_packages):
         with contextlib.suppress(ModuleNotFoundError):
-            valid.append(f"{package}=={metadata.version(package)}")
+            valid.append(f"{package}=={importlib.metadata.version(package)}")
     reqs = " ".join(valid)
     lines = [
         f"installed packages of interest: {reqs}",

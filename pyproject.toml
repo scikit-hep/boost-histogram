@@ -7,7 +7,7 @@ name = "boost-histogram"
 dynamic = ["version"]
 description = "The Boost::Histogram Python wrapper."
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 authors = [
     { name = "Hans Dembinski", email = "hans.dembinski@gmail.com" },
     { name = "Henry Schreiner", email = "hschrein@cern.ch" },
@@ -29,7 +29,6 @@ classifiers = [
     "Programming Language :: C++",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -49,7 +48,6 @@ classifiers = [
 ]
 dependencies = [
     "numpy",
-    "typing-extensions;python_version<'3.8'",
 ]
 
 [project.optional-dependencies]
@@ -165,7 +163,7 @@ build-frontend = "build[uv]"
 test-extras = "test"
 test-command = "pytest --benchmark-disable {project}/tests"
 skip = [
-  "pp3[78]-*",
+  "pp38-*",
 ]
 test-skip = [
   "cp*-musllinux_*", # Segfaults
@@ -187,7 +185,7 @@ environment.MACOSX_DEPLOYMENT_TARGET = "14.0"
 
 
 [tool.pylint]
-py-version = "3.7"
+py-version = "3.8"
 ignore-patterns = ['.*\.pyi']
 extension-pkg-allow-list = ["boost_histogram._core"]
 reports.output-format = "colorized"
@@ -211,10 +209,6 @@ messages_control.disable = [
   "too-many-statements",
   "wrong-import-position",
 ]
-
-[tool.ruff]
-target-version = "py37"
-src = ["src"]
 
 [tool.ruff.lint]
 extend-select = [

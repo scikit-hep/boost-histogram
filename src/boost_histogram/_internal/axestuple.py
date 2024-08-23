@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 from functools import partial
-from typing import Any, ClassVar, Iterable, TypeVar
+from typing import Any, ClassVar, Iterable, Literal, TypedDict, TypeVar
 
 import numpy as np
 
 from .axis import Axis
-from .typing import Literal, TypedDict
 from .utils import set_module, zip_strict
 
 A = TypeVar("A", bound="ArrayTuple")

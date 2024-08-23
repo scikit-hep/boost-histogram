@@ -1104,10 +1104,6 @@ def test_fill_with_sequence_3():
     assert_array_equal(h.view(True), [3, 1])
 
 
-@pytest.mark.skipif(
-    platform.machine() == "ppc64le" and sys.version_info < (3, 8),
-    reason="ppc64le segfault",
-)
 def test_fill_with_sequence_4():
     h = bh.Histogram(
         bh.axis.StrCategory([], growth=True), bh.axis.Integer(0, 0, growth=True)
