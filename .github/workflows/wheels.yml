@@ -115,7 +115,7 @@ jobs:
 
       - uses: yezz123/setup-uv@v4
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         if: matrix.os == 'macos-14'
         with:
           python-version: 3.8
@@ -159,7 +159,7 @@ jobs:
         run: ls -lh dist
 
       - name: Generate artifact attestation for sdist and wheels
-        uses: actions/attest-build-provenance@210c1913531870065f03ce1f9440dd87bc0938cd # v1.4.0
+        uses: actions/attest-build-provenance@6149ea5740be74af77f260b9db67e633f6b0a9a1 # v1.4.2
         with:
           subject-path: "dist/boost_histogram-*"
 
