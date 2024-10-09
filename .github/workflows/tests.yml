@@ -60,7 +60,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.13", "pypy3.9"]
+        python-version: ["3.9", "3.13", "pypy3.10"]
         include:
           - python-version: "3.8"
             cmake-extras: "-DCMAKE_CXX_STANDARD=17"
