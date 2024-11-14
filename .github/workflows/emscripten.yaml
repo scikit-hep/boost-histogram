@@ -24,7 +24,7 @@ jobs:
           submodules: true
           fetch-depth: 0
 
-      - uses: pypa/cibuildwheel@v2.20
+      - uses: pypa/cibuildwheel@v2.21
         env:
           CIBW_PLATFORM: pyodide
 
