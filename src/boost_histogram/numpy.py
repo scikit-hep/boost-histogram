@@ -39,8 +39,7 @@ def histogramdd(
     storage: _storage.Storage = _storage.Double(),  # noqa: B008
     threads: int | None = None,
 ) -> Any:
-    # TODO: Might be a bug in MyPy? This should type
-    cls: type[_hist.Histogram] = _hist.Histogram if histogram is None else histogram  # type: ignore[assignment]
+    cls: type[_hist.Histogram] = _hist.Histogram if histogram is None else histogram
 
     if normed is not None:
         raise KeyError(
