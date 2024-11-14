@@ -175,11 +175,11 @@ environment.PIP_PREFER_BINARY = "1"
 
 [[tool.cibuildwheel.overrides]]
 select = "*pyodide*"
-inherit.environment = "append"
 build-frontend = {name = "build", args = ["--exports", "whole_archive"]}
 
 [[tool.cibuildwheel.overrides]]
 select = "pp310-macosx_arm64"
+inherit.environment = "append"
 environment.MACOSX_DEPLOYMENT_TARGET = "14.0"
 
 
