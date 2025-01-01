@@ -57,7 +57,7 @@ jobs:
         with:
           platforms: all
 
-      - uses: pypa/cibuildwheel@v2.21
+      - uses: pypa/cibuildwheel@v2.22
         env:
           CIBW_BUILD: cp${{ matrix.python }}-manylinux_*
           CIBW_ARCHS: ${{ matrix.arch }}
@@ -120,7 +120,7 @@ jobs:
         with:
           python-version: 3.8
 
-      - uses: pypa/cibuildwheel@v2.21
+      - uses: pypa/cibuildwheel@v2.22
         env:
           CIBW_BUILD: ${{ matrix.build }}
           CIBW_ARCHS: ${{ matrix.arch }}
@@ -159,7 +159,7 @@ jobs:
         run: ls -lh dist
 
       - name: Generate artifact attestation for sdist and wheels
-        uses: actions/attest-build-provenance@1c608d11d69870c2092266b3f9a6f3abbf17002c # v1.4.3
+        uses: actions/attest-build-provenance@7668571508540a607bdfd90a87a560489fe372eb # v2.1.0
         with:
           subject-path: "dist/boost_histogram-*"
 
