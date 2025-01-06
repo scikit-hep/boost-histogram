@@ -136,9 +136,9 @@ H = TypeVar("H", bound="Histogram")
 class Histogram:
     # Note this is a __slots__ __dict__ class!
     __slots__ = (
+        "__dict__",
         "_hist",
         "axes",
-        "__dict__",
     )
     # .metadata and ._variance_known are part of the dict
 

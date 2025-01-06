@@ -32,16 +32,16 @@ __all__ = (
     "Histogram",
     "IndexingExpr",
     "Kind",
-    "axis",
-    "storage",
+    "__version__",
     "accumulators",
-    "numpy",
+    "axis",
     "loc",
+    "numpy",
+    "overflow",
     "rebin",
+    "storage",
     "sum",
     "underflow",
-    "overflow",
-    "__version__",
 )
 
 

@@ -14,15 +14,15 @@ from .._internal.traits import Traits
 from . import transform
 
 __all__ = (
-    "Regular",
-    "Variable",
-    "Integer",
-    "IntCategory",
-    "StrCategory",
-    "Boolean",
-    "Axis",
-    "Traits",
-    "transform",
     "ArrayTuple",
     "AxesTuple",
+    "Axis",
+    "Boolean",
+    "IntCategory",
+    "Integer",
+    "Regular",
+    "StrCategory",
+    "Traits",
+    "Variable",
+    "transform",
 )

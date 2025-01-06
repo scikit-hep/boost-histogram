@@ -8,7 +8,7 @@ from ._core.accumulators import (  # pylint: disable=import-error,no-name-in-mod
 )
 from ._internal.typing import Accumulator
 
-__all__ = ("Sum", "Mean", "WeightedSum", "WeightedMean", "Accumulator")
+__all__ = ("Accumulator", "Mean", "Sum", "WeightedMean", "WeightedSum")
 
 for cls in (Sum, Mean, WeightedSum, WeightedMean):
     cls.__module__ = "boost_histogram.accumulators"

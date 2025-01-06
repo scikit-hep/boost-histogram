@@ -38,7 +38,7 @@ T = TypeVar("T", bound="Axis")
 # Contains common methods and properties to all axes
 @set_module("boost_histogram.axis")
 class Axis:
-    __slots__ = ("_ax", "__dict__")
+    __slots__ = ("__dict__", "_ax")
     _family: object
 
     def __init_subclass__(cls, *, family: object) -> None:
