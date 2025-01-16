@@ -110,7 +110,7 @@ jobs:
           - os: ubuntu-latest
             only: cp313t-manylinux_x86_64
           - os: ubuntu-24.04-arm
-            only: cp313-manylinux_x86_64
+            only: cp313-manylinux_aarch64
           - os: windows-latest
             only: cp38-win32
           - os: windows-latest
