@@ -140,7 +140,7 @@ jobs:
           name: test-wheels-${{ strategy.job-index }}
 
       - name: Check wheels
-        run: uvx twine check wheelhouse/*
+        run: pipx run twine check wheelhouse/*
         shell: bash
 
   pass:
