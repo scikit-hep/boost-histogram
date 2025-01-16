@@ -14,12 +14,10 @@ When you subclass, you will need to add a family. Any object can be used - the m
     import my_package
 
 
-    class Histogram(bh.Histogram, family=my_package):
-        ...
+    class Histogram(bh.Histogram, family=my_package): ...
 
 
-    class Regular(bh.axis.Regular, family=my_package):
-        ...
+    class Regular(bh.axis.Regular, family=my_package): ...
 
 If you only override ``Histogram``, you can leave off the ``family=`` argument, or set it to ``None``. It will generate a private ``object()`` in this case. You must add an explicit family to ``Histogram`` if you subclass any further components.
 

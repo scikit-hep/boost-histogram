@@ -1,7 +1,7 @@
 # This file lets you quickly build projects with the exact same boost-histogram
 # settings that the Python bindings use.
 
-cmake_minimum_required(VERSION 3.14...3.20)
+cmake_minimum_required(VERSION 3.24...3.31)
 
 project(BOOST_HISTOGRAM_CPP LANGUAGES CXX)
 

@@ -22,7 +22,7 @@ env:
 jobs:
   build_sdist:
     name: Build SDist
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
@@ -39,38 +39,6 @@ jobs:
         with:
           path: dist/*
           name: wheels-sdist
-
-  build_arch_wheels:
-    name: ${{ matrix.python }} on ${{ matrix.arch }}
-    runs-on: ubuntu-22.04
-    strategy:
-      matrix:
-        python: ["38", "39", "310", "311", "312", "313", "313t"]
-        arch: [aarch64]
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          submodules: true
-
-      - uses: docker/setup-qemu-action@v3.2.0
-        with:
-          platforms: all
-
-      - uses: pypa/cibuildwheel@v2.21
-        env:
-          CIBW_BUILD: cp${{ matrix.python }}-manylinux_*
-          CIBW_ARCHS: ${{ matrix.arch }}
-
-      - name: Verify clean directory
-        run: git diff --exit-code
-        shell: bash
-
-      - name: Upload wheels
-        uses: actions/upload-artifact@v4
-        with:
-          path: wheelhouse/*
-          name: wheels-aarch-${{ strategy.job-index }}
 
   build_wheels:
     name: ${{ matrix.build }} ${{ matrix.arch }} on ${{ matrix.os }}
@@ -107,20 +75,28 @@ jobs:
             arch: auto64
             build: "*musllinux*"
 
+          - os: ubuntu-24.04-arm
+            arch: auto64
+            build: "*manylinux*"
+
+          - os: ubuntu-24.04-arm
+            arch: auto64
+            build: "*musllinux*"
+
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: true
 
-      - uses: yezz123/setup-uv@v4
+      - uses: astral-sh/setup-uv@v4
 
       - uses: actions/setup-python@v5
         if: matrix.os == 'macos-14'
         with:
           python-version: 3.8
 
-      - uses: pypa/cibuildwheel@v2.21
+      - uses: pypa/cibuildwheel@v2.22
         env:
           CIBW_BUILD: ${{ matrix.build }}
           CIBW_ARCHS: ${{ matrix.arch }}
@@ -137,7 +113,7 @@ jobs:
 
   upload_all:
     name: Upload if release
-    needs: [build_wheels, build_arch_wheels, build_sdist]
+    needs: [build_wheels, build_sdist]
     runs-on: ubuntu-latest
     if: github.event_name == 'release' && github.event.action == 'published'
     environment:

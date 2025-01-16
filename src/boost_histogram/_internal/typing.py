@@ -20,12 +20,12 @@ else:
 
 
 __all__ = (
-    "CppHistogram",
-    "AxisLike",
     "ArrayLike",
-    "Ufunc",
+    "AxisLike",
+    "CppHistogram",
     "StdIndex",
     "StrIndex",
+    "Ufunc",
 )
 
 

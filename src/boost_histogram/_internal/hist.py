@@ -72,11 +72,11 @@ def _fill_cast(
     Convert to NumPy arrays. Some buffer objects do not get converted by forcecast.
     If not called by itself (inner=False), then will work through one level of tuple/list.
     """
-    if value is None or isinstance(value, (str, bytes)):  # type: ignore[redundant-expr]
-        return value  # type: ignore[return-value]
+    if value is None or isinstance(value, (str, bytes)):
+        return value
 
     if not inner and isinstance(value, (tuple, list)):
-        return tuple(_fill_cast(a, inner=True) for a in value)  # type: ignore[misc]
+        return tuple(_fill_cast(a, inner=True) for a in value)
 
     if hasattr(value, "__iter__") or hasattr(value, "__array__"):
         return np.asarray(value)
@@ -136,9 +136,9 @@ H = TypeVar("H", bound="Histogram")
 class Histogram:
     # Note this is a __slots__ __dict__ class!
     __slots__ = (
+        "__dict__",
         "_hist",
         "axes",
-        "__dict__",
     )
     # .metadata and ._variance_known are part of the dict
 
@@ -366,7 +366,7 @@ class Histogram:
         kwargs = {}
         if copy is not None:
             kwargs["copy"] = copy
-        return np.asarray(self.view(False), dtype=dtype, **kwargs)  # type: ignore[no-any-return, call-overload]
+        return np.asarray(self.view(False), dtype=dtype, **kwargs)  # type: ignore[call-overload]
 
     def __eq__(self, other: Any) -> bool:
         return hasattr(other, "_hist") and self._hist == other._hist
@@ -508,7 +508,7 @@ class Histogram:
             threads = cpu_count()
 
         if threads is None or threads == 1:
-            self._hist.fill(*args_ars, weight=weight_ars, sample=sample_ars)  # type: ignore[arg-type]
+            self._hist.fill(*args_ars, weight=weight_ars, sample=sample_ars)
             return self
 
         if self._hist._storage_type in {
@@ -518,7 +518,7 @@ class Histogram:
             raise RuntimeError("Mean histograms do not support threaded filling")
 
         data: list[list[np.typing.NDArray[Any]] | list[str]] = [
-            np.array_split(a, threads) if not isinstance(a, str) else [a] * threads  # type: ignore[arg-type, list-item]
+            np.array_split(a, threads) if not isinstance(a, str) else [a] * threads
             for a in args_ars
         ]
 
@@ -527,14 +527,14 @@ class Histogram:
             assert threads is not None
             weights = [weight_ars] * threads
         else:
-            weights = np.array_split(weight_ars, threads)  # type: ignore[arg-type]
+            weights = np.array_split(weight_ars, threads)
 
         samples: list[Any]
         if sample_ars is None or np.isscalar(sample_ars):
             assert threads is not None
             samples = [sample_ars] * threads
         else:
-            samples = np.array_split(sample_ars, threads)  # type: ignore[arg-type]
+            samples = np.array_split(sample_ars, threads)
 
         if self._hist._storage_type is _core.storage.atomic_int64:
 
@@ -767,7 +767,7 @@ class Histogram:
         hist, *edges = self._hist.to_numpy(flow)
         hist = self.view(flow=flow) if view else self.values(flow=flow)
 
-        return (hist, edges) if dd else (hist, *edges)  # type: ignore[return-value]
+        return (hist, edges) if dd else (hist, *edges)
 
     def copy(self: H, *, deep: bool = True) -> H:
         """
@@ -921,8 +921,8 @@ class Histogram:
                     for new_j, group in enumerate(groups):
                         for _ in range(group):
                             pos = [slice(None)] * (i)
-                            new_view[(*pos, new_j + 1, ...)] += reduced_view[  # type: ignore[arg-type]
-                                (*pos, j, ...)  # type: ignore[arg-type]
+                            new_view[(*pos, new_j + 1, ...)] += reduced_view[
+                                (*pos, j, ...)
                             ]
                             j += 1
 
@@ -1026,9 +1026,9 @@ class Histogram:
         # Support raw arrays for accumulators, the final dimension is the constructor values
         if (
             value.ndim > 0
-            and len(view.dtype) > 0  # type: ignore[arg-type]
-            and len(value.dtype) == 0  # type: ignore[arg-type]
-            and len(view.dtype) == value.shape[-1]  # type: ignore[arg-type]
+            and len(view.dtype) > 0
+            and len(value.dtype) == 0
+            and len(view.dtype) == value.shape[-1]
         ):
             value_shape = value.shape[:-1]
             value_ndim = value.ndim - 1
@@ -1101,7 +1101,7 @@ class Histogram:
         for arg in args:
             if arg < 0 or arg >= self.ndim:
                 raise ValueError(
-                    f"Projection axis must be a valid axis number 0 to {self.ndim-1}, not {arg}"
+                    f"Projection axis must be a valid axis number 0 to {self.ndim - 1}, not {arg}"
                 )
 
         return self._new_hist(self._hist.project(*args))
@@ -1139,9 +1139,9 @@ class Histogram:
 
         view = self.view(flow)
         # TODO: Might be a NumPy typing bug
-        if len(view.dtype) == 0:  # type: ignore[arg-type]
+        if len(view.dtype) == 0:
             return view
-        return view.value  # type: ignore[union-attr]
+        return view.value
 
     def variances(self, flow: bool = False) -> np.typing.NDArray[Any] | None:
         """
@@ -1168,13 +1168,13 @@ class Histogram:
         """
 
         view = self.view(flow)
-        if len(view.dtype) == 0:  # type: ignore[arg-type]
+        if len(view.dtype) == 0:
             return view if self._variance_known else None
 
         if hasattr(view, "sum_of_weights"):
             valid = view.sum_of_weights**2 > view.sum_of_weights_squared  # type: ignore[union-attr]
             return np.divide(
-                view.variance,  # type: ignore[union-attr]
+                view.variance,
                 view.sum_of_weights,
                 out=np.full(view.sum_of_weights.shape, np.nan),
                 where=valid,
@@ -1182,13 +1182,13 @@ class Histogram:
 
         if hasattr(view, "count"):
             return np.divide(
-                view.variance,  # type: ignore[union-attr]
+                view.variance,
                 view.count,
                 out=np.full(view.count.shape, np.nan),
                 where=view.count > 1,
             )
 
-        return view.variance  # type: ignore[union-attr]
+        return view.variance
 
     def counts(self, flow: bool = False) -> np.typing.NDArray[Any]:
         """
@@ -1215,7 +1215,7 @@ class Histogram:
 
         view = self.view(flow)
 
-        if len(view.dtype) == 0:  # type: ignore[arg-type]
+        if len(view.dtype) == 0:
             return view
 
         if hasattr(view, "sum_of_weights"):
@@ -1229,7 +1229,7 @@ class Histogram:
         if hasattr(view, "count"):
             return view.count
 
-        return view.value  # type: ignore[union-attr]
+        return view.value
 
 
 if TYPE_CHECKING:

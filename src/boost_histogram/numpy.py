@@ -71,7 +71,7 @@ def histogramdd(
             if r is None:
                 # Nextafter may affect bin edges slightly
                 r = (np.amin(a[n]), np.amax(a[n]))  # noqa: PLW2901
-                if r[0] == r[1]:
+                if r[0] == r[1]:  # type: ignore[operator]
                     r = (r[0] - 0.5, r[1] + 0.5)  # noqa: PLW2901
             new_ax = _axis.Regular(
                 typing.cast(int, b), r[0], r[1], underflow=False, overflow=False
@@ -159,7 +159,7 @@ def histogram(
     # I think it's safe and the union is in the wrong place
     result = histogramdd(
         (a,),
-        (bins,),  # type: ignore[arg-type]
+        (bins,),
         (range,),
         normed,
         weights,

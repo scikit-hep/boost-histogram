@@ -38,7 +38,7 @@ T = TypeVar("T", bound="Axis")
 # Contains common methods and properties to all axes
 @set_module("boost_histogram.axis")
 class Axis:
-    __slots__ = ("_ax", "__dict__")
+    __slots__ = ("__dict__", "_ax")
     _family: object
 
     def __init_subclass__(cls, *, family: object) -> None:
@@ -234,21 +234,21 @@ class Axis:
 
     @property
     def edges(self) -> np.typing.NDArray[Any]:
-        return self._ax.edges  # type: ignore[no-any-return]
+        return self._ax.edges
 
     @property
     def centers(self) -> np.typing.NDArray[Any]:
         """
         An array of bin centers.
         """
-        return self._ax.centers  # type: ignore[no-any-return]
+        return self._ax.centers
 
     @property
     def widths(self) -> np.typing.NDArray[Any]:
         """
         An array of bin widths.
         """
-        return self._ax.widths  # type: ignore[no-any-return]
+        return self._ax.widths
 
 
 # Contains all common methods and properties for Regular axes

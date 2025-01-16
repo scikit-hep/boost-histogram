@@ -93,7 +93,7 @@ auto vectorize_index(int (bh::axis::category<T, metadata_t, Options>::*pindex)(c
                 throw pybind11::key_error(py::str("{!r} not in axis").format(vp[i]));
         }
 
-        return std::move(indices);
+        return indices;
     };
 }
 
@@ -131,7 +131,7 @@ auto vectorize_value(R (bh::axis::category<U, metadata_t, Options>::*pvalue)(int
                 values, k, i < self.size() ? py::cast(value(self, i)) : py::none());
         }
 
-        return std::move(values);
+        return values;
     };
 }
 
