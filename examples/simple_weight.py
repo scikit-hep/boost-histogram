@@ -22,4 +22,4 @@ h.fill(x, weight=2)
 # Iterate over bins and access bin counter
 for idx, (lower, upper) in enumerate(h.axes[0]):
     val = h[idx]
-    print(f"bin {idx} in [{lower:g}, {upper:g}): {val.value} +/- {val.variance**.5}")
+    print(f"bin {idx} in [{lower:g}, {upper:g}): {val.value} +/- {val.variance**0.5}")
