@@ -2,6 +2,12 @@
 
 ## Version 1.5
 
+### Version 1.5.1
+
+Make non-uniform rebinning work for Weight() and friends [#972][]
+
+[#972]: https://github.com/scikit-hep/boost-histogram/pull/972
+
 ### Version 1.5.0
 
 #### Features
