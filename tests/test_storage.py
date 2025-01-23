@@ -301,3 +301,93 @@ def test_empty_axis_histogram(storage):
     )
     assert h2d.sum() == h2d.storage_type.accumulator()
     assert h2d.sum(flow=True) == h2d.storage_type.accumulator()
+
+
+# Issue #971
+def test_non_uniform_rebin_with_weights():
+    # 1D
+    h = bh.Histogram(bh.axis.Regular(20, 1, 5), storage=bh.storage.Weight())
+    h.fill([1.1, 2.2, 3.3, 4.4])
+
+    rslt = np.array(
+        [(1.0, 1.0), (1.0, 1.0), (1.0, 1.0), (0.0, 0.0), (1.0, 1.0)],
+        dtype=[("value", "<f8"), ("variance", "<f8")],
+    )
+
+    hs = h[{0: slice(None, None, bh.rebin(4))}]
+    assert_array_equal(hs.view(), rslt)
+
+    hs = h[{0: bh.rebin(4)}]
+    assert_array_equal(hs.view(), rslt)
+
+    hs = h[{0: bh.rebin(groups=[1, 2, 3, 14])}]
+    assert_array_equal(
+        hs.view(),
+        np.array(
+            [(1.0, 1.0), (0.0, 0.0), (0.0, 0.0), (3.0, 3.0)],
+            dtype=[("value", "<f8"), ("variance", "<f8")],
+        ),
+    )
+    assert_array_equal(hs.axes.edges[0], [1.0, 1.2, 1.6, 2.2, 5.0])
+
+    # nD
+    h = bh.Histogram(
+        bh.axis.Regular(20, 1, 3),
+        bh.axis.Regular(30, 1, 3),
+        bh.axis.Regular(40, 1, 3),
+        storage=bh.storage.Weight(),
+    )
+
+    s = bh.tag.Slicer()
+
+    assert h[{0: s[:: bh.rebin(groups=[1, 2, 17])]}].axes.size == (3, 30, 40)
+    assert h[{1: s[:: bh.rebin(groups=[1, 2, 27])]}].axes.size == (20, 3, 40)
+    assert h[{2: s[:: bh.rebin(groups=[1, 2, 37])]}].axes.size == (20, 30, 3)
+    assert np.all(
+        np.isclose(
+            h[{0: s[:: bh.rebin(groups=[1, 2, 17])]}].axes[0].edges,
+            [1.0, 1.1, 1.3, 3.0],
+        )
+    )
+    assert np.all(
+        np.isclose(
+            h[{1: s[:: bh.rebin(groups=[1, 2, 27])]}].axes[1].edges,
+            [1.0, 1.06666667, 1.2, 3.0],
+        )
+    )
+    assert np.all(
+        np.isclose(
+            h[{2: s[:: bh.rebin(groups=[1, 2, 37])]}].axes[2].edges,
+            [1.0, 1.05, 1.15, 3.0],
+        )
+    )
+
+    assert h[
+        {0: s[:: bh.rebin(groups=[1, 2, 17])], 2: s[:: bh.rebin(groups=[1, 2, 37])]}
+    ].axes.size == (3, 30, 3)
+    assert np.all(
+        np.isclose(
+            h[
+                {
+                    0: s[:: bh.rebin(groups=[1, 2, 17])],
+                    2: s[:: bh.rebin(groups=[1, 2, 37])],
+                }
+            ]
+            .axes[0]
+            .edges,
+            [1.0, 1.1, 1.3, 3],
+        )
+    )
+    assert np.all(
+        np.isclose(
+            h[
+                {
+                    0: s[:: bh.rebin(groups=[1, 2, 17])],
+                    2: s[:: bh.rebin(groups=[1, 2, 37])],
+                }
+            ]
+            .axes[2]
+            .edges,
+            [1.0, 1.05, 1.15, 3.0],
+        )
+    )

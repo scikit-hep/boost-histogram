@@ -42,12 +42,12 @@ specific jobs:
 ```console
 $ nox -l # List all the defined sessions
 $ nox -s lint  # Lint only
-$ nox -s tests-3.9  # Python 3.9 tests only
+$ nox -s tests  # Tests only
 $ nox -s docs -- serve  # Build and serve the docs
 $ nox -s make_pickle  # Make a pickle file for this version
 ```
 
-Nox handles everything for you, including setting up an temporary virtual
+Nox handles everything for you, including setting up a temporary virtual
 environment for each run.
 
 ### Pip
