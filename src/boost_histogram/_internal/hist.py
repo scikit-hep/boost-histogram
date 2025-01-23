@@ -830,7 +830,7 @@ class Histogram:
         reduced: CppHistogram | None = None
 
         # Compute needed slices and projections
-        for i, ind in enumerate(indexes):
+        for i, ind in enumerate(indexes):  # pylint: disable=too-many-nested-blocks
             if isinstance(ind, SupportsIndex):
                 pick_each[i] = ind.__index__() + (
                     1 if self.axes[i].traits.underflow else 0
