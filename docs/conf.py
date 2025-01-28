@@ -8,6 +8,7 @@ from __future__ import annotations
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import contextlib
+import importlib.metadata
 import shutil
 import sys
 from pathlib import Path
@@ -31,11 +32,8 @@ project = "boost_histogram"
 copyright = "2020, Henry Schreiner, Hans Dembinski"
 author = "Henry Schreiner, Hans Dembinski"
 
-# It is better to use pkg_resources, but we can't build on RtD
-from pkg_resources import DistributionNotFound, get_distribution
-
-with contextlib.suppress(DistributionNotFound):
-    version = get_distribution("boost_histogram").version
+with contextlib.suppress(ModuleNotFoundError):
+    version = importlib.metadata.version("boost_histogram")
     # passed if no version (latest/git hash)
 
 

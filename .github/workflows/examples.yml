@@ -6,6 +6,7 @@ on:
     paths:
       - "examples/*.py"
       - "notebooks/*.ipynb"
+      - ".github/workflows/examples.yml"
   push:
     branches:
       - master
@@ -21,13 +22,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.9"
-      - name: Pre-install NumPy
-        run: python -m pip install -r dev-requirements.txt nbconvert ipykernel
-      - name: Install kernel
-        run: python -m ipykernel install --user --name boost-hist
-      - name: Build
-        run: python -m pip install .[examples]
+      - uses: astral-sh/setup-uv@v4
+      - name: Build and install kernel
+        run: uv run --group examples -m ipykernel install --user --name boost-hist
       - name: Examples
-        run: for f in examples/*.py; do python "$f"; done
+        run: for f in examples/*.py; do uv run "$f"; done
       - name: Notebooks
-        run: jupyter nbconvert --execute --ExecutePreprocessor.timeout=90 --inplace notebooks/*.ipynb
+        run: uv run jupyter nbconvert --execute --ExecutePreprocessor.timeout=90 --inplace notebooks/*.ipynb

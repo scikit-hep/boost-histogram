@@ -78,12 +78,17 @@ jobs:
 
       - uses: rui314/setup-mold@v1
 
-      - uses: yezz123/setup-uv@v4
+      - uses: astral-sh/setup-uv@v4
 
       - uses: hendrikmuhs/ccache-action@v1.2
         with:
           key: ${{ matrix.python-version }}
           create-symlink: true
+
+      - name: Make requirements.txt
+        run: |
+          uv pip install --system dependency-groups
+          dependency-groups dev > dev-requirements.txt
 
       - name: Install python tools
         run: uv pip install --system -r dev-requirements.txt pytest-github-actions-annotate-failures
