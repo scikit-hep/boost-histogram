@@ -921,9 +921,9 @@ class Histogram:
                     for new_j, group in enumerate(groups):
                         for _ in range(group):
                             pos = [slice(None)] * (i)
-                            new_view[(*pos, new_j + 1, ...)] += reduced_view[
-                                (*pos, j, ...)
-                            ]
+                            new_view[(*pos, new_j + 1, ...)] += _to_view(
+                                reduced_view[(*pos, j, ...)]
+                            )
                             j += 1
 
                     reduced = new_reduced
