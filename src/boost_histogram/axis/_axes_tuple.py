@@ -5,8 +5,8 @@ from typing import Any, ClassVar, Iterable, Literal, TypedDict, TypeVar
 
 import numpy as np
 
-from .axis import Axis
-from .utils import set_module, zip_strict
+from .._internal.utils import zip_strict
+from . import Axis
 
 A = TypeVar("A", bound="ArrayTuple")
 
@@ -16,7 +16,6 @@ class MGridOpts(TypedDict):
     indexing: Literal["ij", "xy"]
 
 
-@set_module("boost_histogram.axis")
 class ArrayTuple(tuple):  # type: ignore[type-arg]
     __slots__ = ()
     # This is an exhaustive list as of NumPy 1.19
@@ -47,7 +46,6 @@ class ArrayTuple(tuple):  # type: ignore[type-arg]
 B = TypeVar("B", bound="AxesTuple")
 
 
-@set_module("boost_histogram.axis")
 class AxesTuple(tuple):  # type: ignore[type-arg]
     __slots__ = ()
     _MGRIDOPTS: ClassVar[MGridOpts] = {"sparse": True, "indexing": "ij"}
