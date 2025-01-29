@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+from dataclasses import dataclass
 from functools import partial
 from typing import (
     Any,
@@ -19,7 +20,6 @@ import numpy as np  # pylint: disable=unused-import
 import boost_histogram
 
 from .._core import axis as ca
-from .._internal.traits import Traits
 from .._internal.utils import cast, register, zip_strict
 from . import transform
 from .transform import AxisTransform
@@ -60,6 +60,21 @@ def _opts(**kwargs: bool) -> set[str]:
 
 
 AxCallOrInt = Union[int, Callable[["Axis"], int]]
+
+
+@dataclass(order=True, frozen=True)
+class Traits:
+    underflow: bool = False
+    overflow: bool = False
+    circular: bool = False
+    growth: bool = False
+    continuous: bool = False
+    ordered: bool = False
+
+    @property
+    def discrete(self) -> bool:
+        "True if axis is not continuous"
+        return not self.continuous
 
 
 T = TypeVar("T", bound="Axis")
