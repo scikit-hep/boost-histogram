@@ -208,6 +208,7 @@ messages_control.disable = [
   "too-many-locals",
   "too-many-return-statements",
   "too-many-statements",
+  "too-many-positional-arguments",
   "wrong-import-position",
 ]
 

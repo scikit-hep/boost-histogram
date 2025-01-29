@@ -19,7 +19,7 @@ def __dir__() -> list[str]:
 
 class AxisTransform:
     __slots__ = ("_this",)
-    _family: object
+    _family: ClassVar[object]  # pylint: disable=declare-non-slot
     _this: ca.transform._BaseTransform
 
     def __init_subclass__(cls, *, family: object) -> None:
