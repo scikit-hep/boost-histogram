@@ -4,8 +4,8 @@ from typing import Any, Callable, ClassVar, Literal, Mapping, MutableMapping
 
 import numpy as np
 
-from ..accumulators import Mean, WeightedMean, WeightedSum
-from ..typing import ArrayLike, StrIndex, Ufunc
+from .accumulators import Mean, WeightedMean, WeightedSum
+from .typing import ArrayLike, StrIndex, Ufunc
 
 UFMethod = Literal["__call__", "reduce", "reduceat", "accumulate", "outer", "at"]
 

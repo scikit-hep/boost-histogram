@@ -30,9 +30,9 @@ from boost_histogram import _core
 from ..axis import AxesTuple, Axis, Variable
 from ..storage import Double, Storage
 from ..typing import Accumulator, ArrayLike, CppHistogram
+from ..view import MeanView, WeightedMeanView, WeightedSumView, _to_view
 from .enum import Kind
 from .utils import cast, register, set_module
-from .view import MeanView, WeightedMeanView, WeightedSumView, _to_view
 
 if TYPE_CHECKING:
     from builtins import ellipsis
