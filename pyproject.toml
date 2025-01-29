@@ -50,27 +50,37 @@ dependencies = [
     "numpy",
 ]
 
-[project.optional-dependencies]
+[project.urls]
+"Bug Tracker" = "https://github.com/scikit-hep/boost-histogram/issues"
+Changelog = "https://boost-histogram.readthedocs.io/en/latest/CHANGELOG.html"
+Chat = " https://gitter.im/HSF/PyHEP-histogramming"
+Discussions = "https://github.com/scikit-hep/boost-histogram/discussions"
+Documentation = "https://boost-histogram.readthedocs.io/"
+Homepage = "https://github.com/scikit-hep/boost-histogram"
+
+[dependency-groups]
 dev = [
-    "cloudpickle",
-    "hypothesis>=6.0",
+    { include-group = "test" },
     "ipykernel",
-    "pytest-benchmark",
-    "pytest>=6.0",
+    "nbconvert",
+    "numpy",
+    "setuptools_scm",
     "typer",
 ]
 docs = [
+    "ipython",
     "myst_parser>=0.13",
     "nbsphinx",
+    "numpy",
     "sphinx-book-theme>=0.0.33",
-    "Sphinx>=4.0",
+    "sphinx>=4.0",
     "sphinx_copybutton",
 ]
 examples = [
     "matplotlib",
     "netCDF4",
     "numba",
-    "uproot3",
+    "uproot",
     "xarray",
     "xhistogram",
 ]
@@ -80,14 +90,6 @@ test = [
     "pytest-benchmark",
     "pytest>=6.0",
 ]
-
-[project.urls]
-"Bug Tracker" = "https://github.com/scikit-hep/boost-histogram/issues"
-Changelog = "https://boost-histogram.readthedocs.io/en/latest/CHANGELOG.html"
-Chat = " https://gitter.im/HSF/PyHEP-histogramming"
-Discussions = "https://github.com/scikit-hep/boost-histogram/discussions"
-Documentation = "https://boost-histogram.readthedocs.io/"
-Homepage = "https://github.com/scikit-hep/boost-histogram"
 
 
 [tool.scikit-build]
@@ -159,7 +161,7 @@ ignore_missing_imports = true
 
 [tool.cibuildwheel]
 build-frontend = "build[uv]"
-test-extras = "test"
+test-groups = ["test"]
 test-command = "pytest --benchmark-disable {project}/tests"
 skip = [
   "pp38-*",

@@ -57,10 +57,11 @@ package is in a virtual environment. This is how you would set one up with
 Python's built-in venv:
 
 ```bash
-python3 -m venv .env
-source ./.env/bin/activate
-pip install -U pip
-pip install -ve .[all]
+python3 -m venv .venv
+source ./.venv/bin/activate
+pip install dependency-groups
+pip-install-dependency-groups dev
+pip install -ve.
 ```
 
 <details><summary>Optional: External Jupyter kernel (click to expand)</summary>
@@ -109,7 +110,8 @@ Here is the recommendation for a CMake install:
 ```bash
 python3 -m venv env_cmake
 source ./env_cmake/bin/activate
-pip install -r dev-requirements.txt
+pip install dependency-groups
+pip-install-dependency-groups dev
 cmake -S . -B build-debug \
     -GNinja \
     -DCMAKE_INSTALL_PREFIX=$(python -c "import distutils.sysconfig; print(distutils.sysconfig.get_python_lib(plat_specific=False,standard_lib=False))")
@@ -285,7 +287,8 @@ This requires LLVM 9+, and is based on [this post](https://aras-p.info/blog/2019
 brew install llvm         # macOS way to get clang-9
 python3 -m venv .env_core # general environment (no install will be made)
 . .env_core/bin/activate
-pip install -r dev-requirements.txt
+pip install dependency-groups
+pip-install-dependency-groups dev
 CXX="/usr/local/opt/llvm/bin/clang++" cmake -S . -B build-llvm \
     -DCMAKE_CXX_FLAGS="-ftime-trace" \
     -DPYTHON_EXECUTABLE=$(which python)
