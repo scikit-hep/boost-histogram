@@ -20,7 +20,7 @@ import numpy as np  # pylint: disable=unused-import
 import boost_histogram
 
 from .._core import axis as ca
-from .._internal.utils import cast, register, zip_strict
+from .._utils import cast, register, zip_strict
 from . import transform
 from .transform import AxisTransform
 

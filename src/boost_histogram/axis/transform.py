@@ -6,7 +6,7 @@ from typing import Any, ClassVar, TypeVar
 import boost_histogram
 
 from .._core import axis as ca
-from .._internal.utils import register
+from .._utils import register
 
 T = TypeVar("T", bound="AxisTransform")
 
