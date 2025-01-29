@@ -239,7 +239,7 @@ ignore = [
   "PT011", "PT013", # Incorrect pytest codes
   "ISC001",         # Conflicts with the formatter
 ]
-typing-modules = ["boost_histogram._internal.typing"]
+typing-modules = ["boost_histogram.typing"]
 isort.required-imports = ["from __future__ import annotations"]
 
 

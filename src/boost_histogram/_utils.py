@@ -19,19 +19,6 @@ class HasFamily(Protocol):
 T = TypeVar("T")
 
 
-def set_module(name: str) -> Callable[[type[T]], type[T]]:
-    """
-    Set the __module__ attribute on a class. Very
-    similar to numpy.core.overrides.set_module.
-    """
-
-    def add_module(cls: type[T]) -> type[T]:
-        cls.__module__ = name
-        return cls
-
-    return add_module
-
-
 def register(
     cpp_types: set[type[object]] | None = None,
 ) -> Callable[[type[T]], type[T]]:

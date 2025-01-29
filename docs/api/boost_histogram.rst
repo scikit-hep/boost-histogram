@@ -42,10 +42,18 @@ boost\_histogram.tag
    :undoc-members:
    :show-inheritance:
 
-boost\_histogram.version
-========================
+boost\_histogram.typing
+=======================
 
-.. automodule:: boost_histogram.version
+.. automodule:: boost_histogram.typing
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+boost\_histogram.view
+=====================
+
+.. automodule:: boost_histogram.view
    :members:
    :undoc-members:
    :show-inheritance:
