@@ -27,10 +27,10 @@ import numpy as np
 import boost_histogram
 from boost_histogram import _core
 
+from ..storage import Double, Storage
 from .axestuple import AxesTuple
 from .axis import Axis, Variable
 from .enum import Kind
-from .storage import Double, Storage
 from .typing import Accumulator, ArrayLike, CppHistogram
 from .utils import cast, register, set_module
 from .view import MeanView, WeightedMeanView, WeightedSumView, _to_view
