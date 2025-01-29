@@ -18,6 +18,14 @@ boost\_histogram.accumulators
    :undoc-members:
    :show-inheritance:
 
+boost\_histogram.histogram
+==========================
+
+.. automodule:: boost_histogram.histogram
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 boost\_histogram.numpy
 ======================
 
@@ -57,3 +65,4 @@ boost\_histogram.view
    :members:
    :undoc-members:
    :show-inheritance:
+
