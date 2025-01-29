@@ -29,8 +29,8 @@ from boost_histogram import _core
 
 from ..axis import AxesTuple, Axis, Variable
 from ..storage import Double, Storage
+from ..typing import Accumulator, ArrayLike, CppHistogram
 from .enum import Kind
-from .typing import Accumulator, ArrayLike, CppHistogram
 from .utils import cast, register, set_module
 from .view import MeanView, WeightedMeanView, WeightedSumView, _to_view
 

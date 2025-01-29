@@ -6,7 +6,7 @@ from ._core.accumulators import (  # pylint: disable=import-error,no-name-in-mod
     WeightedMean,
     WeightedSum,
 )
-from ._internal.typing import Accumulator
+from .typing import Accumulator
 
 __all__ = ("Accumulator", "Mean", "Sum", "WeightedMean", "WeightedSum")
 

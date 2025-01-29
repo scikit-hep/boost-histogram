@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Sequence, TypeVar
 if TYPE_CHECKING:
     from uhi.typing.plottable import PlottableAxis
 
-from ._internal.typing import AxisLike
+from .typing import AxisLike
 
 __all__ = ("Locator", "Slicer", "at", "loc", "overflow", "rebin", "sum", "underflow")
 
