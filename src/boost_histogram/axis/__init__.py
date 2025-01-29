@@ -8,11 +8,11 @@ import numpy as np  # pylint: disable=unused-import
 import boost_histogram
 
 from .._core import axis as ca
-from .._internal.axis_transform import AxisTransform
 from .._internal.traits import Traits
 from .._internal.utils import cast, register
 from . import transform
 from ._axes_tuple import ArrayTuple, AxesTuple
+from .transform import AxisTransform
 
 __all__ = [
     "ArrayTuple",
