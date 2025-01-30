@@ -13,9 +13,9 @@ else:
 
 import numpy as np
 
-from .histogram import Histogram
 from . import axis as _axis
 from . import storage as _storage
+from .histogram import Histogram
 
 __all__ = ("histogram", "histogram2d", "histogramdd")
 
