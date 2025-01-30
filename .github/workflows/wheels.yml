@@ -91,11 +91,6 @@ jobs:
 
       - uses: astral-sh/setup-uv@v5
 
-      - uses: actions/setup-python@v5
-        if: matrix.os == 'macos-14'
-        with:
-          python-version: 3.8
-
       - uses: pypa/cibuildwheel@v2.23
         env:
           CIBW_BUILD: ${{ matrix.build }}

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Protocol, Tuple, Union
+from typing import TYPE_CHECKING, Any, Protocol, Union
 
 if TYPE_CHECKING:
     from builtins import ellipsis
@@ -38,9 +38,9 @@ class AxisLike(Protocol):
     def __len__(self) -> int: ...
 
 
-StdIndex = Union[int, slice, "ellipsis", Tuple[Union[slice, int, "ellipsis"], ...]]
+StdIndex = Union[int, slice, "ellipsis", tuple[Union[slice, int, "ellipsis"], ...]]
 StrIndex = Union[
-    int, slice, str, "ellipsis", Tuple[Union[slice, int, str, "ellipsis"], ...]
+    int, slice, str, "ellipsis", tuple[Union[slice, int, str, "ellipsis"], ...]
 ]
 
 

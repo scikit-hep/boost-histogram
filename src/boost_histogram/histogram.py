@@ -7,6 +7,7 @@ import sys
 import threading
 import typing
 import warnings
+from collections.abc import Iterable, Mapping
 from enum import Enum
 from os import cpu_count
 from typing import (
@@ -14,12 +15,8 @@ from typing import (
     Any,
     Callable,
     ClassVar,
-    Iterable,
-    List,
-    Mapping,
     NewType,
     SupportsIndex,
-    Tuple,
     TypeVar,
     Union,
 )
@@ -110,9 +107,9 @@ CppAxis = NewType("CppAxis", object)
 
 SimpleIndexing = Union[SupportsIndex, slice, RebinProtocol]
 InnerIndexing = Union[SimpleIndexing, Callable[[Axis], int]]
-FullInnerIndexing = Union[InnerIndexing, List[InnerIndexing]]
+FullInnerIndexing = Union[InnerIndexing, list[InnerIndexing]]
 IndexingWithMapping = Union[FullInnerIndexing, Mapping[int, FullInnerIndexing]]
-IndexingExpr = Union[IndexingWithMapping, Tuple[IndexingWithMapping, ...], "ellipsis"]
+IndexingExpr = Union[IndexingWithMapping, tuple[IndexingWithMapping, ...], "ellipsis"]
 
 T = TypeVar("T")
 
@@ -544,9 +541,9 @@ class Histogram:
         ----------
         *args : Union[Array[float], Array[int], Array[str], float, int, str]
             Provide one value or array per dimension.
-        weight : List[Union[Array[float], Array[int], float, int, str]]]
+        weight : list[Union[Array[float], Array[int], float, int, str]]]
             Provide weights (only if the histogram storage supports it)
-        sample : List[Union[Array[float], Array[int], Array[str], float, int, str]]]
+        sample : list[Union[Array[float], Array[int], Array[str], float, int, str]]]
             Provide samples (only if the histogram storage supports it)
         threads : Optional[int]
             Fill with threads. Defaults to None, which does not activate

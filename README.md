@@ -178,11 +178,11 @@ python3 -m pip install boost-histogram
 ```
 
 All the normal best-practices for Python apply; Pip should not be very old (Pip
-9 is very old), you should be in a virtual environment, etc. Python 3.8+ is
+9 is very old), you should be in a virtual environment, etc. Python 3.9+ is
 required; for older versions of Python (3.5 and 2.7), `0.13` will be installed
 instead, which is API equivalent to 1.0, but will not be gaining new features.
 1.3.x was the last series to support Python 3.6. 1.4.x was the last series to
-support Python 3.7.
+support Python 3.7. 1.5.x was the last series to support Python 3.8.
 
 #### Binaries available:
 
@@ -191,15 +191,15 @@ when you run the above command on a supported platform. Wheels are produced usin
 [cibuildwheel](https://cibuildwheel.readthedocs.io/en/stable/); all common
 platforms have wheels provided in boost-histogram:
 
-| System            | Arch   | Python versions                         | PyPy versions |
-| ----------------- | ------ | --------------------------------------- | ------------- |
-| manylinux2014     | 64-bit | 3.8, 3.9, 3.10, 3.11, 3.12, 3.13, 3.13t | 3.9, 3.10     |
-| manylinux2014     | ARM64  | 3.8, 3.9, 3.10, 3.11, 3.12, 3.13, 3.13t | 3.9, 3.10     |
-| musllinux_1_1     | 64-bit | 3.8, 3.9, 3.10, 3.11, 3.12, 3.13, 3.13t |               |
-| macOS 10.9+ Intel | 64-bit | 3.8, 3.9, 3.10, 3.11, 3.12, 3.13, 3.13t | 3.9, 3.10     |
-| macOS 11+ AS      | Arm64  | 3.8, 3.9, 3.10, 3.11, 3.12, 3.13, 3.13t | 3.9, 3.10     |
-| Windows           | 32-bit | 3.8, 3.9, 3.10, 3.11, 3.12, 3.13, 3.13t |               |
-| Windows           | 64-bit | 3.8, 3.9, 3.10, 3.11, 3.12, 3.13, 3.13t | 3.9, 3.10     |
+| System            | Arch   | Python versions                    | PyPy versions |
+| ----------------- | ------ | ---------------------------------- | ------------- |
+| manylinux2014     | 64-bit | 3.9, 3.10, 3.11, 3.12, 3.13, 3.13t | 3.9, 3.10     |
+| manylinux2014     | ARM64  | 3.9, 3.10, 3.11, 3.12, 3.13, 3.13t | 3.9, 3.10     |
+| musllinux_1_1     | 64-bit | 3.9, 3.10, 3.11, 3.12, 3.13, 3.13t |               |
+| macOS             | 64-bit | 3.9, 3.10, 3.11, 3.12, 3.13, 3.13t | 3.9, 3.10     |
+| macOS             | Arm64  | 3.9, 3.10, 3.11, 3.12, 3.13, 3.13t | 3.9, 3.10     |
+| Windows           | 32-bit | 3.9, 3.10, 3.11, 3.12, 3.13, 3.13t |               |
+| Windows           | 64-bit | 3.9, 3.10, 3.11, 3.12, 3.13, 3.13t | 3.9, 3.10     |
 
 PowerPC or IBM-Z wheels are not provided but are available on request.
 

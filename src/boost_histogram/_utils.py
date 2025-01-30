@@ -3,7 +3,8 @@ from __future__ import annotations
 import itertools
 import sys
 import typing
-from typing import Any, Callable, ClassVar, Iterator, Protocol, TypeVar
+from collections.abc import Iterator
+from typing import Any, Callable, ClassVar, Protocol, TypeVar
 
 import boost_histogram
 

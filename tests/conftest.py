@@ -16,7 +16,7 @@ from packaging.requirements import Requirement
 
 import boost_histogram as bh
 
-DIR = Path(__file__).parent.resolve()
+DIR = Path(__file__).parent
 BASE = DIR.parent
 
 

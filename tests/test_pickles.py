@@ -7,7 +7,7 @@ import pytest
 
 import boost_histogram as bh
 
-DIR = Path(__file__).parent.resolve()
+DIR = Path(__file__).parent
 
 
 @pytest.mark.parametrize("version", ["0.10.2", "0.6.2", "0.11.1", "1.1.0"])
