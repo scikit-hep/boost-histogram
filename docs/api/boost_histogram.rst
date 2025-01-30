@@ -1,8 +1,8 @@
 boost\_histogram
 ================
 
-.. automodule:: boost_histogram._internal.hist
-   :members: Histogram
+.. automodule:: boost_histogram
+   :members:
    :undoc-members:
    :show-inheritance:
 
