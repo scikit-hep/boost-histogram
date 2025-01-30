@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import copy
 from builtins import sum
-from typing import TYPE_CHECKING, Sequence, TypeVar
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, TypeVar
 
 if TYPE_CHECKING:
     from uhi.typing.plottable import PlottableAxis

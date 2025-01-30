@@ -1,4 +1,5 @@
-from typing import Any, Iterable, Iterator, Tuple, TypeVar
+from collections.abc import Iterable, Iterator
+from typing import Any
 
 import numpy as np
 from numpy.typing import ArrayLike

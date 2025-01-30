@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 import copy
+from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 from functools import partial
 from typing import (
     Any,
     Callable,
     ClassVar,
-    Iterable,
-    Iterator,
     Literal,
     TypedDict,
     TypeVar,
@@ -350,7 +349,7 @@ class Regular(Axis, family=boost_histogram):
             Filling wraps around.
         transform : Optional[AxisTransform] = None
             Transform the regular bins (Log, Sqrt, and Pow(v))
-        __dict__: Optional[Dict[str, Any]] = None
+        __dict__: Optional[dict[str, Any]] = None
             The full metadata dictionary
         """
 
@@ -466,7 +465,7 @@ class Variable(Axis, family=boost_histogram):
         growth : bool = False
             Allow the axis to grow if a value is encountered out of range.
             Be careful, the axis will grow as large as needed.
-        __dict__: Optional[Dict[str, Any]] = None
+        __dict__: Optional[dict[str, Any]] = None
             The full metadata dictionary
         """
 
@@ -565,7 +564,7 @@ class Integer(Axis, family=boost_histogram):
         growth : bool = False
             Allow the axis to grow if a value is encountered out of range.
             Be careful, the axis will grow as large as needed.
-        __dict__: Optional[Dict[str, Any]] = None
+        __dict__: Optional[dict[str, Any]] = None
             The full metadata dictionary
         """
 
@@ -661,7 +660,7 @@ class StrCategory(BaseCategory, family=boost_histogram):
             Be careful, the axis will grow as large as needed.
         overflow : bool = True
             Include an overflow bin for "missed" hits. Ignored if growth=True.
-        __dict__: Optional[Dict[str, Any]] = None
+        __dict__: Optional[dict[str, Any]] = None
             The full metadata dictionary
         """
 
@@ -733,7 +732,7 @@ class IntCategory(BaseCategory, family=boost_histogram):
             Be careful, the axis will grow as large as needed.
         overflow : bool = True
             Include an overflow bin for "missed" hits. Ignored if growth=True.
-        __dict__: Optional[Dict[str, Any]] = None
+        __dict__: Optional[dict[str, Any]] = None
             The full metadata dictionary
         """
 
@@ -773,7 +772,7 @@ class Boolean(Axis, family=boost_histogram):
         ----------
         metadata : object
             Any Python object to attach to the axis, like a label.
-        __dict__: Optional[Dict[str, Any]] = None
+        __dict__: Optional[dict[str, Any]] = None
             The full metadata dictionary
         """
 
