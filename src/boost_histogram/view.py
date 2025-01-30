@@ -13,7 +13,7 @@ UFMethod = Literal["__call__", "reduce", "reduceat", "accumulate", "outer", "at"
 class View(np.ndarray):  # type: ignore[type-arg]
     __slots__ = ()
     _FIELDS: ClassVar[tuple[str, ...]]
-    _PARENT: type[WeightedSum] | type[WeightedMean] | type[Mean]
+    _PARENT: type[WeightedSum | WeightedMean | Mean]
 
     def __getitem__(self, ind: StrIndex) -> np.typing.NDArray[Any]:  # type: ignore[override]
         sliced = super().__getitem__(ind)

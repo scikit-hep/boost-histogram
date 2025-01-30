@@ -214,17 +214,22 @@ messages_control.disable = [
 
 [tool.ruff.lint]
 extend-select = [
-  "B",           # flake8-bugbear
-  "I",           # isort
   "ARG",         # flake8-unused-arguments
+  "B",           # flake8-bugbear
   "C4",          # flake8-comprehensions
+  "EXE",         # flake8-executable
+  "FURB",        # refurb
+  "G",           # flake8-logging-format
+  "I",           # isort
   "ICN",         # flake8-import-conventions
   "ISC",         # flake8-implicit-str-concat
+  "PD",          # pandas-vet
   "PGH",         # pygrep-hooks
   "PIE",         # flake8-pie
   "PL",          # pylint
   "PT",          # flake8-pytest-style
   "PTH",         # flake8-use-pathlib
+  "PYI",         # flake8-pyi
   "RET",         # flake8-return
   "RUF",         # Ruff-specific
   "SIM",         # flake8-simplify
@@ -238,6 +243,7 @@ ignore = [
   "E501",           # Line too long
   "PT011", "PT013", # Incorrect pytest codes
   "ISC001",         # Conflicts with the formatter
+  "PYI034",         # We are returning Self, just generic
 ]
 typing-modules = ["boost_histogram.typing"]
 isort.required-imports = ["from __future__ import annotations"]

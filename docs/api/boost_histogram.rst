@@ -65,4 +65,3 @@ boost\_histogram.view
    :members:
    :undoc-members:
    :show-inheritance:
-

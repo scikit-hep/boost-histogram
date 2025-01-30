@@ -415,10 +415,10 @@ class Histogram:
             kwargs["copy"] = copy
         return np.asarray(self.view(False), dtype=dtype, **kwargs)  # type: ignore[call-overload]
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return hasattr(other, "_hist") and self._hist == other._hist
 
-    def __ne__(self, other: Any) -> bool:
+    def __ne__(self, other: object) -> bool:
         return (not hasattr(other, "_hist")) or self._hist != other._hist
 
     def __add__(self: H, other: Histogram | np.typing.NDArray[Any] | float) -> H:

@@ -36,11 +36,13 @@ class Storage:
 
     accumulator: ClassVar[
         (
-            type[int]
-            | type[float]
-            | type[accumulators.WeightedMean]
-            | type[accumulators.WeightedSum]
-            | type[accumulators.Mean]
+            type[
+                int
+                | float
+                | accumulators.WeightedMean
+                | accumulators.WeightedSum
+                | accumulators.Mean
+            ]
         )
     ]
 

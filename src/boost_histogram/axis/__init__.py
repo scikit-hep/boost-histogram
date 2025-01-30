@@ -166,10 +166,10 @@ class Axis:
 
         return self._ax.bin(index)  # type: ignore[no-any-return]
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return hasattr(other, "_ax") and self._ax == other._ax
 
-    def __ne__(self, other: Any) -> bool:
+    def __ne__(self, other: object) -> bool:
         return (not hasattr(other, "_ax")) or self._ax != other._ax
 
     @classmethod
@@ -838,7 +838,7 @@ class AxesTuple(tuple):  # type: ignore[type-arg]
     __slots__ = ()
     _MGRIDOPTS: ClassVar[MGridOpts] = {"sparse": True, "indexing": "ij"}
 
-    def __init__(self, __iterable: Iterable[Axis]) -> None:
+    def __init__(self, /, _iterable: Iterable[Axis]) -> None:
         for item in self:
             if not isinstance(item, Axis):
                 raise TypeError(
