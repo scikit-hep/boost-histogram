@@ -3,9 +3,11 @@ from __future__ import annotations
 import collections.abc
 import copy
 import logging
+import sys
 import threading
 import typing
 import warnings
+from enum import Enum
 from os import cpu_count
 from typing import (
     TYPE_CHECKING,
@@ -27,16 +29,66 @@ import numpy as np
 import boost_histogram
 from boost_histogram import _core
 
-from .axestuple import AxesTuple
-from .axis import Axis, Variable
-from .enum import Kind
+from ._utils import cast, register
+from .axis import AxesTuple, Axis, Variable
 from .storage import Double, Storage
 from .typing import Accumulator, ArrayLike, CppHistogram
-from .utils import cast, register, set_module
 from .view import MeanView, WeightedMeanView, WeightedSumView, _to_view
 
 if TYPE_CHECKING:
     from builtins import ellipsis
+
+try:
+    from . import _core
+except ImportError as err:
+    if "_core" not in str(err):
+        raise
+
+    new_msg = "Did you forget to compile boost-histogram? Use CMake or Setuptools to build, see the readme."
+
+    if sys.version_info >= (3, 11):
+        err.add_note(new_msg)
+        raise
+
+    total_msg = f"{err}\n{new_msg}"
+    new_exception = type(err)(new_msg, name=err.name, path=err.path)
+    raise new_exception from err
+
+
+# This is a StrEnum as defined in Python 3.10
+class Kind(str, Enum):
+    COUNT = "COUNT"
+    MEAN = "MEAN"
+
+    # This cast + type ignore is really odd, so it deserves a quick
+    # explanation. If we just set this like StrEnum does, then mypy complains
+    # that the type is changing (str -> Kind). If we type: ignore, then
+    # MyPy claims that the type: ignore is not needed. If we cast, we get the
+    # same error as before. But if we cast and type: ignore, it now works.
+    # Will report to MyPy. Tested on 0.800.
+    __str__ = typing.cast(Callable[["Kind"], str], str.__str__)  # type: ignore[assignment]
+
+
+__all__ = [
+    "Histogram",
+    "IndexingExpr",
+    "Kind",
+]
+
+
+def __dir__() -> list[str]:
+    return __all__
+
+
+# Support cloudpickle - pybind11 submodules do not have __file__ attributes
+# And setting this in C++ causes a segfault
+_core.accumulators.__file__ = _core.__file__
+_core.algorithm.__file__ = _core.__file__
+_core.axis.__file__ = _core.__file__
+_core.axis.transform.__file__ = _core.__file__
+_core.hist.__file__ = _core.__file__
+_core.storage.__file__ = _core.__file__
+
 
 NOTHING = object()
 
@@ -132,7 +184,6 @@ H = TypeVar("H", bound="Histogram")
 # We currently do not cast *to* a histogram, but this is consistent
 # and could be used later.
 @register(_histograms)  # type: ignore[arg-type]
-@set_module("boost_histogram")
 class Histogram:
     # Note this is a __slots__ __dict__ class!
     __slots__ = (
@@ -368,10 +419,10 @@ class Histogram:
             kwargs["copy"] = copy
         return np.asarray(self.view(False), dtype=dtype, **kwargs)  # type: ignore[call-overload]
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return hasattr(other, "_hist") and self._hist == other._hist
 
-    def __ne__(self, other: Any) -> bool:
+    def __ne__(self, other: object) -> bool:
         return (not hasattr(other, "_hist")) or self._hist != other._hist
 
     def __add__(self: H, other: Histogram | np.typing.NDArray[Any] | float) -> H:

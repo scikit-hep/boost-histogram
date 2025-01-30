@@ -15,7 +15,7 @@ import numpy as np
 
 from . import axis as _axis
 from . import storage as _storage
-from ._internal import hist as _hist
+from .histogram import Histogram
 
 __all__ = ("histogram", "histogram2d", "histogramdd")
 
@@ -35,11 +35,11 @@ def histogramdd(
     weights: ArrayLike | None = None,
     density: bool = False,
     *,
-    histogram: None | (type[_hist.Histogram]) = None,
+    histogram: None | (type[Histogram]) = None,
     storage: _storage.Storage = _storage.Double(),  # noqa: B008
     threads: int | None = None,
 ) -> Any:
-    cls: type[_hist.Histogram] = _hist.Histogram if histogram is None else histogram
+    cls: type[Histogram] = Histogram if histogram is None else histogram
 
     if normed is not None:
         raise KeyError(
@@ -104,7 +104,7 @@ def histogram2d(
     weights: ArrayLike | None = None,
     density: bool = False,
     *,
-    histogram: None | (type[_hist.Histogram]) = None,
+    histogram: None | (type[Histogram]) = None,
     storage: _storage.Storage = _storage.Double(),  # noqa: B008
     threads: int | None = None,
 ) -> Any:
@@ -135,7 +135,7 @@ def histogram(
     weights: ArrayLike | None = None,
     density: bool = False,
     *,
-    histogram: None | (type[_hist.Histogram]) = None,
+    histogram: None | (type[Histogram]) = None,
     storage: _storage.Storage | None = None,
     threads: int | None = None,
 ) -> Any:

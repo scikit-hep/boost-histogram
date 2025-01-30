@@ -377,7 +377,7 @@ def test_pick_flowbin(ax):
 
 def test_axes_tuple():
     h = bh.Histogram(bh.axis.Regular(10, 0, 1))
-    assert isinstance(h.axes[:1], bh._internal.axestuple.AxesTuple)
+    assert isinstance(h.axes[:1], bh.axis.AxesTuple)
     assert isinstance(h.axes[0], bh.axis.Regular)
 
     (before,) = h.axes.centers[:1]
@@ -390,7 +390,7 @@ def test_axes_tuple_Nd():
     h = bh.Histogram(
         bh.axis.Integer(0, 5), bh.axis.Integer(0, 4), bh.axis.Integer(0, 6)
     )
-    assert isinstance(h.axes[:2], bh._internal.axestuple.AxesTuple)
+    assert isinstance(h.axes[:2], bh.axis.AxesTuple)
     assert isinstance(h.axes[1], bh.axis.Integer)
 
     b1, b2 = h.axes.centers[1:3]
