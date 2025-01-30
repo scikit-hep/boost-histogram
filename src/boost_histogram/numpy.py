@@ -13,7 +13,7 @@ else:
 
 import numpy as np
 
-from . import Histogram
+from .histogram import Histogram
 from . import axis as _axis
 from . import storage as _storage
 
