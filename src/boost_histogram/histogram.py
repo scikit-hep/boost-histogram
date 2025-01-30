@@ -3,6 +3,7 @@ from __future__ import annotations
 import collections.abc
 import copy
 import logging
+import sys
 import threading
 import typing
 import warnings
@@ -40,13 +41,16 @@ if TYPE_CHECKING:
 try:
     from . import _core
 except ImportError as err:
-    msg = str(err)
-    if "_core" not in msg:
+    if "_core" not in str(err):
         raise
 
     new_msg = "Did you forget to compile boost-histogram? Use CMake or Setuptools to build, see the readme."
-    total_msg = f"{msg}\n{new_msg}"
 
+    if sys.version_info >= (3, 11):
+        err.add_note(new_msg)
+        raise
+
+    total_msg = f"{err}\n{new_msg}"
     new_exception = type(err)(new_msg, name=err.name, path=err.path)
     raise new_exception from err
 
