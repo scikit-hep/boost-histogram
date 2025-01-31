@@ -123,6 +123,7 @@ class rebin:
     def __init__(
         self,
         factor_or_axis: int | PlottableAxis | None = None,
+        /,
         *,
         factor: int | None = None,
         groups: Sequence[int] | None = None,
@@ -144,6 +145,9 @@ class rebin:
             self.factor = factor_or_axis
         elif factor_or_axis is not None:
             self.axis = factor_or_axis
+        else:
+            msg = "Unsupported type, only int or Axis supported for the first argument"
+            raise TypeError(msg)
 
     def __repr__(self) -> str:
         repr_str = f"{self.__class__.__name__}"
