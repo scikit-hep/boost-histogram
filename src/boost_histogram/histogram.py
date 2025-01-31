@@ -714,7 +714,9 @@ class Histogram:
             self._variance_known = True
             self.metadata = state.get("metadata", None)
             for i in range(self._hist.rank()):
-                self._hist.axis(i).raw_metadata = {"metadata": self._hist.axis(i).raw_metadata}
+                self._hist.axis(i).raw_metadata = {
+                    "metadata": self._hist.axis(i).raw_metadata
+                }
 
         self.axes = self._generate_axes_()
 
