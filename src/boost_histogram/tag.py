@@ -158,6 +158,15 @@ class rebin:
                 break
         return return_str
 
+    # Note: this preserves the input type of `self.axis`, so is safe within a
+    # single UHI library, but not cross-library. Returns None for the axis if
+    # an axis is not provided, the caller should make an axis if that's the
+    # case.
+    def axis_mapping(
+        self, axis: PlottableAxis
+    ) -> tuple[Sequence[int], PlottableAxis | None]:
+        return (self.group_mapping(axis), self.axis)
+
     def group_mapping(self, axis: PlottableAxis) -> Sequence[int]:
         if self.groups is not None:
             if sum(self.groups) != len(axis):

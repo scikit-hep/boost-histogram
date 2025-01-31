@@ -32,7 +32,7 @@ from boost_histogram import _core
 from ._utils import cast, register
 from .axis import AxesTuple, Axis, Variable
 from .storage import Double, Storage
-from .typing import Accumulator, ArrayLike, CppHistogram
+from .typing import Accumulator, ArrayLike, CppHistogram, RebinProtocol
 from .view import MeanView, WeightedMeanView, WeightedSumView, _to_view
 
 if TYPE_CHECKING:
@@ -108,7 +108,7 @@ logger = logging.getLogger(__name__)
 
 CppAxis = NewType("CppAxis", object)
 
-SimpleIndexing = Union[SupportsIndex, slice]
+SimpleIndexing = Union[SupportsIndex, slice, RebinProtocol]
 InnerIndexing = Union[SimpleIndexing, Callable[[Axis], int]]
 FullInnerIndexing = Union[InnerIndexing, List[InnerIndexing]]
 IndexingWithMapping = Union[FullInnerIndexing, Mapping[int, FullInnerIndexing]]
@@ -908,11 +908,18 @@ class Histogram:
             start, stop = self.axes[i]._process_loc(ind.start, ind.stop)
 
             groups = []
+            new_axis = None
             if ind != slice(None):
                 merge = 1
                 if ind.step is not None:
                     if getattr(ind.step, "factor", None) is not None:
                         merge = ind.step.factor
+                    elif (
+                        hasattr(ind.step, "axis_mapping")
+                        and (tmp_both := ind.step.axis_mapping(self.axes[i]))
+                        is not None
+                    ):
+                        groups, new_axis = tmp_both
                     elif (
                         hasattr(ind.step, "group_mapping")
                         and (tmp_groups := ind.step.group_mapping(self.axes[i]))
@@ -958,10 +965,15 @@ class Histogram:
                         new_axes_indices += [axes[i].edges[j + group]]
                         j += group
 
-                    variable_axis = Variable(
-                        new_axes_indices, __dict__=axes[i].metadata
-                    )
-                    axes[i] = variable_axis._ax
+                    if new_axis is None:
+                        new_axis = Variable(
+                            new_axes_indices,
+                            __dict__=axes[i].metadata,
+                            underflow=axes[i].traits_underflow,
+                            overflow=axes[i].traits_overflow,
+                        )
+                    old_axis = axes[i]
+                    axes[i] = new_axis._ax
 
                     logger.debug("Axes: %s", axes)
 
@@ -969,12 +981,15 @@ class Histogram:
                     new_view = new_reduced.view(flow=True)
                     j = 0
                     new_j_base = 0
-                    if self.axes[i].traits.underflow:
+
+                    if old_axis.traits_underflow and axes[i].traits_underflow:
                         groups.insert(0, 1)
-                    else:
+                    elif axes[i].traits_underflow:
                         new_j_base = 1
-                    if self.axes[i].traits.overflow:
+
+                    if old_axis.traits_overflow and axes[i].traits_overflow:
                         groups.append(1)
+
                     for new_j, group in enumerate(groups):
                         for _ in range(group):
                             pos = [slice(None)] * (i)

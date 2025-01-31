@@ -653,10 +653,12 @@ def test_rebin_1d(metadata):
     hs = h[bh.rebin(edges=[1.0, 1.2, 1.6, 2.2, 5.0])]
     assert_array_equal(hs.view(), [1, 0, 0, 3])
     assert_array_equal(hs.axes.edges[0], [1.0, 1.2, 1.6, 2.2, 5.0])
+    assert h.axes[0].metadata is hs.axes[0].metadata
 
-    hs = h[bh.rebin(axis=bh.axis.Variable([1.0, 1.2, 1.6, 2.2, 5.0]))]
+    hs = h[bh.rebin(axis=bh.axis.Variable([1.0, 1.2, 1.6, 2.2, 5.0], metadata="hi"))]
     assert_array_equal(hs.view(), [1, 0, 0, 3])
     assert_array_equal(hs.axes.edges[0], [1.0, 1.2, 1.6, 2.2, 5.0])
+    assert hs.axes[0].metadata == "hi"
 
 
 def test_rebin_1d_flow():
@@ -667,15 +669,23 @@ def test_rebin_1d_flow():
     assert_array_equal(hs.view(flow=True), [1, 2, 2, 1])
     assert_array_equal(hs.axes.edges[0], [0.0, 3.0, 5.0])
 
+    # Flow bins are kept from the original
     h = bh.Histogram(bh.axis.Regular(5, 0, 5, underflow=False, overflow=False))
     h.fill([-1, 1.1, 2.2, 3.3, 4.4, 5.5])
     hs = h[bh.rebin(edges=[0, 3, 5.0])]
-    assert_array_equal(hs.view(flow=True), [0, 2, 2, 0])
+    assert_array_equal(hs.view(flow=True), [2, 2])
 
     h = bh.Histogram(bh.axis.Regular(5, 0, 5, underflow=True, overflow=False))
     h.fill([-1, 1.1, 2.2, 3.3, 4.4, 5.5])
     hs = h[bh.rebin(edges=[0, 3, 5.0])]
-    assert_array_equal(hs.view(flow=True), [1, 2, 2, 0])
+    assert_array_equal(hs.view(flow=True), [1, 2, 2])
+
+    h = bh.Histogram(bh.axis.Regular(5, 0, 5, underflow=True, overflow=True))
+    h.fill([-1, 1.1, 2.2, 3.3, 4.4, 5.5])
+    hs = h[
+        bh.rebin(axis=bh.axis.Variable([0, 3, 5.0], underflow=False, overflow=False))
+    ]
+    assert_array_equal(hs.view(flow=True), [2, 2])
 
 
 def test_shrink_rebin_1d():
