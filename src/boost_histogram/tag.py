@@ -122,24 +122,28 @@ class rebin:
 
     def __init__(
         self,
-        factor: int | PlottableAxis | None = None,
+        factor_or_axis: int | PlottableAxis | None = None,
         *,
+        factor: int | None = None,
         groups: Sequence[int] | None = None,
         edges: Sequence[int | float] | None = None,
         axis: PlottableAxis | None = None,
     ) -> None:
-        if not sum(i is not None for i in [factor, groups, edges, axis]) == 1:
-            raise ValueError(
-                "Exactly one, a factor, groups, or axis should be provided"
+        if (
+            not sum(
+                i is not None for i in [factor_or_axis, factor, groups, edges, axis]
             )
+            == 1
+        ):
+            raise ValueError("Exactly one argument should be provided")
         self.groups = groups
         self.edges = edges
         self.axis = axis
-        if isinstance(factor, int) or factor is None:
-            self.factor = factor
-        elif axis is None and factor is not None:
-            self.factor = None
-            self.axis = factor
+        self.factor = factor
+        if isinstance(factor_or_axis, int):
+            self.factor = factor_or_axis
+        elif factor_or_axis is not None:
+            self.axis = factor_or_axis
 
     def __repr__(self) -> str:
         repr_str = f"{self.__class__.__name__}"
