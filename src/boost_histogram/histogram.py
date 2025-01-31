@@ -252,7 +252,7 @@ class Histogram:
         if len(axes) == 1 and isinstance(axes[0], tuple(_histograms)):
             cpp_hist: CppHistogram = axes[0]  # type: ignore[assignment]
             self._from_histogram_cpp(cpp_hist)
-            if metadata:
+            if metadata is not None:
                 self.metadata = metadata
             return
 
@@ -261,7 +261,7 @@ class Histogram:
         if len(axes) == 1 and isinstance(axes[0], Histogram):
             normal_hist: Histogram = axes[0]
             self._from_histogram_object(normal_hist)
-            if metadata:
+            if metadata is not None:
                 self.metadata = metadata
             return
 
@@ -959,7 +959,7 @@ class Histogram:
                         j += group
 
                     variable_axis = Variable(
-                        new_axes_indices, metadata=axes[i].metadata
+                        new_axes_indices, __dict__=axes[i].metadata
                     )
                     axes[i] = variable_axis._ax
 
