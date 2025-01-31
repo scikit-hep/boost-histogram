@@ -881,7 +881,7 @@ class Histogram:
         reduced: CppHistogram | None = None
 
         # Compute needed slices and projections
-        for i, ind in enumerate(indexes):
+        for i, ind in enumerate(indexes):  # pylint: disable=too-many-nested-blocks
             if isinstance(ind, SupportsIndex):
                 pick_each[i] = ind.__index__() + (
                     1 if self.axes[i].traits.underflow else 0
@@ -967,14 +967,26 @@ class Histogram:
 
                     new_reduced = reduced.__class__(axes)
                     new_view = new_reduced.view(flow=True)
-
-                    j = 1
+                    j = 0
+                    new_j_base = 0
+                    if self.axes[i].traits.underflow:
+                        groups.insert(0, 1)
+                    else:
+                        new_j_base = 1
+                    if self.axes[i].traits.overflow:
+                        groups.append(1)
                     for new_j, group in enumerate(groups):
                         for _ in range(group):
                             pos = [slice(None)] * (i)
-                            new_view[(*pos, new_j + 1, ...)] += _to_view(
-                                reduced_view[(*pos, j, ...)]
-                            )
+                            if new_view.dtype.names:
+                                for field in new_view.dtype.names:
+                                    new_view[(*pos, new_j + new_j_base, ...)][
+                                        field
+                                    ] += reduced_view[(*pos, j, ...)][field]
+                            else:
+                                new_view[(*pos, new_j + new_j_base, ...)] += (
+                                    reduced_view[(*pos, j, ...)]
+                                )
                             j += 1
 
                     reduced = new_reduced

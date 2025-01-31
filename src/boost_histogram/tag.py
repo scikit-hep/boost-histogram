@@ -6,6 +6,8 @@ import copy
 from builtins import sum
 from typing import TYPE_CHECKING, Sequence, TypeVar
 
+import numpy as np
+
 if TYPE_CHECKING:
     from uhi.typing.plottable import PlottableAxis
 
@@ -112,26 +114,43 @@ class at:
 
 class rebin:
     __slots__ = (
+        "axis",
+        "edges",
         "factor",
         "groups",
     )
 
     def __init__(
         self,
-        factor: int | None = None,
+        factor_or_axis: int | PlottableAxis | None = None,
+        /,
         *,
+        factor: int | None = None,
         groups: Sequence[int] | None = None,
+        edges: Sequence[int | float] | None = None,
+        axis: PlottableAxis | None = None,
     ) -> None:
-        if not sum(i is None for i in [factor, groups]) == 1:
-            raise ValueError("Exactly one, a factor or groups should be provided")
-        self.factor = factor
+        if (
+            sum(i is not None for i in [factor_or_axis, factor, groups, edges, axis])
+            != 1
+        ):
+            raise ValueError("Exactly one argument should be provided")
         self.groups = groups
+        self.edges = edges
+        self.axis = axis
+        self.factor = factor
+        if isinstance(factor_or_axis, int):
+            self.factor = factor_or_axis
+        elif factor_or_axis is not None:
+            self.axis = factor_or_axis
 
     def __repr__(self) -> str:
         repr_str = f"{self.__class__.__name__}"
-        args: dict[str, int | Sequence[int] | None] = {
+        args: dict[str, int | Sequence[int | float] | PlottableAxis | None] = {
             "factor": self.factor,
             "groups": self.groups,
+            "edges": self.edges,
+            "axis": self.axis,
         }
         for k, v in args.items():
             if v is not None:
@@ -147,4 +166,30 @@ class rebin:
             return self.groups
         if self.factor is not None:
             return [self.factor] * len(axis)
+        if self.edges is not None or self.axis is not None:
+            newedges = None
+            if self.axis is not None and hasattr(self.axis, "edges"):
+                newedges = self.axis.edges
+            elif self.edges is not None:
+                newedges = self.edges
+
+            if newedges is not None and hasattr(axis, "edges"):
+                assert newedges[0] == axis.edges[0], "Edges must start at first bin"
+                assert newedges[-1] == axis.edges[-1], "Edges must end at last bin"
+                assert all(
+                    np.isclose(
+                        axis.edges[np.abs(axis.edges - edge).argmin()],
+                        edge,
+                    )
+                    for edge in newedges
+                ), "Edges must be in the axis"
+                matched_ixes = np.where(
+                    np.isin(
+                        axis.edges,
+                        newedges,
+                    )
+                )[0]
+                return [
+                    int(ix - matched_ixes[i]) for i, ix in enumerate(matched_ixes[1:])
+                ]
         raise ValueError("No rebinning factor or groups provided")
