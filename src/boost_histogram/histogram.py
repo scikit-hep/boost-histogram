@@ -913,41 +913,6 @@ class Histogram:
                 if ind.step is not None:
                     if getattr(ind.step, "factor", None) is not None:
                         merge = ind.step.factor
-
-                    elif (
-                        getattr(ind.step, "edges", None) is not None
-                        or getattr(ind.step, "axis", None) is not None
-                    ):
-                        edges = (
-                            ind.step.edges
-                            if getattr(ind.step, "edges", None) is not None
-                            else ind.step.axis.edges
-                        )
-                        assert edges[0] == self.axes[i].edges[0], (
-                            "Edges must start at first bin"
-                        )
-                        assert edges[-1] == self.axes[i].edges[-1], (
-                            "Edges must end at last bin"
-                        )
-                        assert all(
-                            np.isclose(
-                                self.axes[0].edges[
-                                    np.abs(self.axes[0].edges - edge).argmin()
-                                ],
-                                edge,
-                            )
-                            for edge in edges
-                        ), "Edges must be in the axis"
-                        matched_ixes = np.where(
-                            np.isin(
-                                self.axes[i].edges,
-                                edges,
-                            )
-                        )[0]
-                        groups = [
-                            int(ix - matched_ixes[i])
-                            for i, ix in enumerate(matched_ixes[1:])
-                        ]
                     elif (
                         hasattr(ind.step, "group_mapping")
                         and (tmp_groups := ind.step.group_mapping(self.axes[i]))

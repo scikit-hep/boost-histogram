@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import copy
 from builtins import sum
+import numpy as np
 from typing import TYPE_CHECKING, Sequence, TypeVar
 
 if TYPE_CHECKING:
@@ -161,4 +162,32 @@ class rebin:
             return self.groups
         if self.factor is not None:
             return [self.factor] * len(axis)
+        if self.edges is not None or self.axis is not None:
+            edges = self.edges if self.edges is not None else self.axis.edges
+            assert edges[0] == axis.edges[0], (
+                "Edges must start at first bin"
+            )
+            assert edges[-1] == axis.edges[-1], (
+                "Edges must end at last bin"
+            )
+            assert all(
+                np.isclose(
+                    axis.edges[
+                        np.abs(axis.edges - edge).argmin()
+                    ],
+                    edge,
+                )
+                for edge in edges
+            ), "Edges must be in the axis"
+            matched_ixes = np.where(
+                np.isin(
+                    axis.edges,
+                    edges,
+                )
+            )[0]
+            groups = [
+                int(ix - matched_ixes[i])
+                for i, ix in enumerate(matched_ixes[1:])
+            ]
+            return groups
         raise ValueError("No rebinning factor or groups provided")
