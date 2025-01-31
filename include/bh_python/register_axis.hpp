@@ -189,10 +189,10 @@ py::class_<A> register_axis(py::module& m, Args&&... args) {
             [](const A& self) { return bh::axis::traits::ordered(self); })
 
         .def_property(
-            "metadata",
+            "raw_metadata",
             [](const A& self) { return self.metadata(); },
             [](A& self, const metadata_t& label) { self.metadata() = label; },
-            "Set the axis label")
+            "Set the metadata")
 
         .def_property_readonly(
             "size",
