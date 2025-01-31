@@ -351,9 +351,9 @@ class Histogram:
 
         for ax in self.axes:
             if memo is NOTHING:
-                ax.__dict__ = copy.copy(ax._ax.metadata)
+                ax.__dict__ = copy.copy(ax._ax.raw_metadata)
             else:
-                ax.__dict__ = copy.deepcopy(ax._ax.metadata, memo)
+                ax.__dict__ = copy.deepcopy(ax._ax.raw_metadata, memo)
         return self
 
     def _new_hist(self: H, _hist: CppHistogram, memo: Any = NOTHING) -> H:
@@ -380,7 +380,7 @@ class Histogram:
         self.__dict__ = copy.copy(other.__dict__)
         self.axes = self._generate_axes_()
         for ax in self.axes:
-            ax.__dict__ = copy.copy(ax._ax.metadata)
+            ax.__dict__ = copy.copy(ax._ax.raw_metadata)
 
         # Allow custom behavior on either "from" or "to"
         other._export_bh_(self)
@@ -714,7 +714,7 @@ class Histogram:
             self._variance_known = True
             self.metadata = state.get("metadata", None)
             for i in range(self._hist.rank()):
-                self._hist.axis(i).metadata = {"metadata": self._hist.axis(i).metadata}
+                self._hist.axis(i).raw_metadata = {"metadata": self._hist.axis(i).raw_metadata}
 
         self.axes = self._generate_axes_()
 
@@ -986,7 +986,7 @@ class Histogram:
                     if new_axis is None:
                         new_axis = Variable(
                             new_axes_indices,
-                            __dict__=axes[i].metadata,
+                            __dict__=axes[i].raw_metadata,
                             underflow=axes[i].traits_underflow,
                             overflow=axes[i].traits_overflow,
                         )
@@ -1072,7 +1072,7 @@ class Histogram:
                     selection.append(ax.size)
 
                 new_axis = axes[i].__class__([axes[i].value(j) for j in pick_set[i]])  # type: ignore[call-arg]
-                new_axis.metadata = axes[i].metadata
+                new_axis.raw_metadata = axes[i].raw_metadata
                 axes[i] = new_axis
                 reduced_view = np.take(reduced_view, selection, axis=i)
 

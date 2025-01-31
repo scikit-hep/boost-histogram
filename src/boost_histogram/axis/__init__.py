@@ -91,7 +91,7 @@ class Axis:
 
     def __setattr__(self, attr: str, value: Any) -> None:
         if attr == "__dict__":
-            self._ax.metadata = value
+            self._ax.raw_metadata = value
         object.__setattr__(self, attr, value)
 
     def __getattr__(self, attr: str) -> Any:
@@ -120,15 +120,15 @@ class Axis:
                 "Cannot provide metadata by keyword and __dict__, use __dict__ only"
             )
         if __dict__ is not None:
-            self._ax.metadata = __dict__
+            self._ax.raw_metadata = __dict__
         elif metadata is not None:
-            self._ax.metadata["metadata"] = metadata
+            self._ax.raw_metadata["metadata"] = metadata
 
-        self.__dict__ = self._ax.metadata
+        self.__dict__ = self._ax.raw_metadata
 
     def __setstate__(self, state: dict[str, Any]) -> None:
         self._ax = state["_ax"]
-        self.__dict__ = self._ax.metadata
+        self.__dict__ = self._ax.raw_metadata
 
     def __getstate__(self) -> dict[str, Any]:
         return {"_ax": self._ax}
@@ -136,7 +136,7 @@ class Axis:
     def __copy__(self: T) -> T:
         other: T = self.__class__.__new__(self.__class__)
         other._ax = copy.copy(self._ax)
-        other.__dict__ = other._ax.metadata
+        other.__dict__ = other._ax.raw_metadata
         return other
 
     def index(self, value: float | str) -> int:
@@ -176,7 +176,7 @@ class Axis:
     def _convert_cpp(cls: type[T], cpp_object: Any) -> T:
         nice_ax: T = cls.__new__(cls)
         nice_ax._ax = cpp_object
-        nice_ax.__dict__ = cpp_object.metadata
+        nice_ax.__dict__ = cpp_object.raw_metadata
         return nice_ax
 
     def __len__(self) -> int:
