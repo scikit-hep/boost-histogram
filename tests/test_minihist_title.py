@@ -46,7 +46,7 @@ class NamedAxesTuple(bh.axis.AxesTuple):
     @name.setter
     def name(self, values):
         for ax, val in zip(self, values):
-            ax._ax.metadata["name"] = f"test: {val}"
+            ax._ax.raw_metadata["name"] = f"test: {val}"
 
 
 # When you subclass Histogram or an Axes, you should register your family so
@@ -65,7 +65,7 @@ class AxesMixin:
         """
         Get the name for the Regular axis
         """
-        return self._ax.metadata.get("name", "")
+        return self._ax.raw_metadata.get("name", "")
 
 
 # The order of the mixin is important here - it must be first
@@ -78,7 +78,7 @@ class Regular(bh.axis.Regular, AxesMixin, family=CUSTOM_FAMILY):
 
     def __init__(self, bins, start, stop, name):
         super().__init__(bins, start, stop)
-        self._ax.metadata["name"] = name
+        self._ax.raw_metadata["name"] = name
 
 
 class Integer(AxesMixin, bh.axis.Integer, family=CUSTOM_FAMILY):
@@ -86,7 +86,7 @@ class Integer(AxesMixin, bh.axis.Integer, family=CUSTOM_FAMILY):
 
     def __init__(self, start, stop, name):
         super().__init__(start, stop)
-        self._ax.metadata["name"] = name
+        self._ax.raw_metadata["name"] = name
 
 
 class CustomHist(bh.Histogram, family=CUSTOM_FAMILY):
