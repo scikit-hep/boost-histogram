@@ -112,10 +112,10 @@ class at:
 
 class rebin:
     __slots__ = (
+        "axis",
+        "edges",
         "factor",
         "groups",
-        "edges",
-        "axis",
     )
 
     def __init__(
@@ -127,20 +127,21 @@ class rebin:
         axis: PlottableAxis | None = None,
     ) -> None:
         if not sum(i is not None for i in [factor, groups, edges, axis]) == 1:
-            raise ValueError("Exactly one, a factor, groups, or axis should be provided")
+            raise ValueError(
+                "Exactly one, a factor, groups, or axis should be provided"
+            )
         self.groups = groups
         self.edges = edges
         self.axis = axis
-        if isinstance(factor, int):
+        if isinstance(factor, int) or factor is None:
             self.factor = factor
         elif axis is None and factor is not None:
             self.factor = None
-            self.axis = factor   
-        
+            self.axis = factor
 
     def __repr__(self) -> str:
         repr_str = f"{self.__class__.__name__}"
-        args: dict[str, int | Sequence[int] | None] = {
+        args: dict[str, int | Sequence[int | float] | PlottableAxis | None] = {
             "factor": self.factor,
             "groups": self.groups,
             "edges": self.edges,
