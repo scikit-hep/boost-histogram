@@ -131,9 +131,7 @@ class rebin:
         axis: PlottableAxis | None = None,
     ) -> None:
         if (
-            sum(
-                i is not None for i in [factor_or_axis, factor, groups, edges, axis]
-            )
+            sum(i is not None for i in [factor_or_axis, factor, groups, edges, axis])
             != 1
         ):
             raise ValueError("Exactly one argument should be provided")
