@@ -923,8 +923,27 @@ class Histogram:
                             if getattr(ind.step, "edges", None) is not None
                             else ind.step.axis.edges
                         )
-                        assert all(edge in self.axes[i].edges for edge in edges)
-                        matched_ixes = np.where(np.isin(self.axes[i].edges, edges))[0]
+                        assert edges[0] == self.axes[i].edges[0], (
+                            "Edges must start at first bin"
+                        )
+                        assert edges[-1] == self.axes[i].edges[-1], (
+                            "Edges must end at last bin"
+                        )
+                        assert all(
+                            np.isclose(
+                                self.axes[0].edges[
+                                    np.abs(self.axes[0].edges - edge).argmin()
+                                ],
+                                edge,
+                            )
+                            for edge in edges
+                        ), "Edges must be in the axis"
+                        matched_ixes = np.where(
+                            np.isin(
+                                self.axes[i].edges,
+                                edges,
+                            )
+                        )[0]
                         groups = [
                             int(ix - matched_ixes[i])
                             for i, ix in enumerate(matched_ixes[1:])
@@ -984,19 +1003,25 @@ class Histogram:
                     new_reduced = reduced.__class__(axes)
                     new_view = new_reduced.view(flow=True)
                     j = 0
-                    groups = [1, *groups, 1]  # pad for flow bins
+                    new_j_base = 0
+                    if self.axes[i].traits.underflow:
+                        groups.insert(0, 1)
+                    else:
+                        new_j_base = 1
+                    if self.axes[i].traits.overflow:
+                        groups.append(1)
                     for new_j, group in enumerate(groups):
                         for _ in range(group):
                             pos = [slice(None)] * (i)
                             if new_view.dtype.names:
                                 for field in new_view.dtype.names:
-                                    new_view[(*pos, new_j, ...)][field] += reduced_view[
-                                        (*pos, j, ...)
-                                    ][field]
+                                    new_view[(*pos, new_j + new_j_base, ...)][
+                                        field
+                                    ] += reduced_view[(*pos, j, ...)][field]
                             else:
-                                new_view[(*pos, new_j, ...)] += reduced_view[
-                                    (*pos, j, ...)
-                                ]
+                                new_view[(*pos, new_j + new_j_base, ...)] += (
+                                    reduced_view[(*pos, j, ...)]
+                                )
                             j += 1
 
                     reduced = new_reduced
