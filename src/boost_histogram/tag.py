@@ -131,10 +131,10 @@ class rebin:
         axis: PlottableAxis | None = None,
     ) -> None:
         if (
-            not sum(
+            sum(
                 i is not None for i in [factor_or_axis, factor, groups, edges, axis]
             )
-            == 1
+            != 1
         ):
             raise ValueError("Exactly one argument should be provided")
         self.groups = groups
@@ -145,9 +145,6 @@ class rebin:
             self.factor = factor_or_axis
         elif factor_or_axis is not None:
             self.axis = factor_or_axis
-        else:
-            msg = "Unsupported type, only int or Axis supported for the first argument"
-            raise TypeError(msg)
 
     def __repr__(self) -> str:
         repr_str = f"{self.__class__.__name__}"
