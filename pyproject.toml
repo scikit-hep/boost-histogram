@@ -66,6 +66,7 @@ dev = [
     "numpy",
     "setuptools_scm",
     "typer",
+    "uhi",
 ]
 docs = [
     "ipython",
@@ -112,13 +113,11 @@ sdist.exclude = [
   "extern/*/README.md",
 ]
 
-
 [[tool.scikit-build.generate]]
 path = "boost_histogram/version.py"
 template = '''
 __version__ = version = "$version"
 '''
-
 
 [tool.setuptools_scm]
 

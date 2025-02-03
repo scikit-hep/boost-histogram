@@ -2,9 +2,31 @@
 
 ## Version 1.5
 
+### Version 1.5.2
+
+Fix for axis metadata not passing though non-uniform rebinning correctly. Flow
+bins are now preserved when doing a non-uniform rebinning. Also adds the
+ability to rebin by edges or an existing axis.
+
+#### Features
+
+- Support `edges=` and `axis=` in `bh.rebin` [#977][]
+- Allow axis to be passed through `bh.rebin` [#980][]
+
+#### Bug fixes
+
+- Axis metadata was broken when rebinning [#978][]
+- Flow bins were lost when using variable rebinning [#977][]
+
+[#977]: https://github.com/scikit-hep/boost-histogram/pull/977
+[#978]: https://github.com/scikit-hep/boost-histogram/pull/978
+[#980]: https://github.com/scikit-hep/boost-histogram/pull/980
+
 ### Version 1.5.1
 
-Make non-uniform rebinning work for Weight() and friends [#972][]
+#### Bug fixes
+
+- Make non-uniform rebinning work for Weight() and friends [#972][]
 
 [#972]: https://github.com/scikit-hep/boost-histogram/pull/972
 
