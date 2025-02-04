@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import contextlib
 import typing
+from collections.abc import Sequence
 from functools import reduce
 from operator import mul
-from typing import Any, Sequence
+from typing import Any
 
 if typing.TYPE_CHECKING:
     from numpy.typing import ArrayLike

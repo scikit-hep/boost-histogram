@@ -10,7 +10,7 @@ import typer
 
 import boost_histogram as bh
 
-DIR = Path(__file__).parent.resolve()
+DIR = Path(__file__).parent
 
 
 def make_pickle(
