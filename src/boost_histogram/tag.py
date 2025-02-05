@@ -136,7 +136,7 @@ class rebin:
             axis = factor_or_axis
 
         total_args = sum(i is not None for i in [factor, groups, edges])
-        if total_args !=1 and axis is None:
+        if total_args != 1 and axis is None:
             raise ValueError("Exactly one argument should be provided")
 
         self.groups = groups
