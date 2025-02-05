@@ -130,19 +130,19 @@ class rebin:
         edges: Sequence[int | float] | None = None,
         axis: PlottableAxis | None = None,
     ) -> None:
-        if (
-            sum(i is not None for i in [factor_or_axis, factor, groups, edges, axis])
-            != 1
-        ):
+        if isinstance(factor_or_axis, int):
+            factor = factor_or_axis
+        elif factor_or_axis is not None:
+            axis = factor_or_axis
+
+        total_args = sum(i is not None for i in [factor, groups, edges])
+        if total_args != 1 and axis is None:
             raise ValueError("Exactly one argument should be provided")
+
         self.groups = groups
         self.edges = edges
         self.axis = axis
         self.factor = factor
-        if isinstance(factor_or_axis, int):
-            self.factor = factor_or_axis
-        elif factor_or_axis is not None:
-            self.axis = factor_or_axis
 
     def __repr__(self) -> str:
         repr_str = f"{self.__class__.__name__}"
@@ -177,10 +177,10 @@ class rebin:
             return [self.factor] * len(axis)
         if self.edges is not None or self.axis is not None:
             newedges = None
-            if self.axis is not None and hasattr(self.axis, "edges"):
-                newedges = self.axis.edges
-            elif self.edges is not None:
+            if self.edges is not None:
                 newedges = self.edges
+            elif self.axis is not None and hasattr(self.axis, "edges"):
+                newedges = self.axis.edges
 
             if newedges is not None and hasattr(axis, "edges"):
                 assert newedges[0] == axis.edges[0], "Edges must start at first bin"
