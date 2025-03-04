@@ -38,7 +38,7 @@ class View(np.ndarray):  # type: ignore[type-arg]
         my_fields = ", ".join(self._FIELDS)
         return f"{self.__class__.__name__}: ({my_fields})\n{self.view(np.ndarray)}"
 
-    def __setitem__(self, ind: StrIndex, value: ArrayLike) -> None:
+    def __setitem__(self, ind: StrIndex, value: ArrayLike) -> None:  # type: ignore[override]
         # `.value` really is ["value"] for an record array
         if isinstance(ind, str):
             super().__setitem__(ind, value)

@@ -19,12 +19,17 @@ def dependency_groups(pyproject: dict[str, Any], *names: str) -> list[str]:
     return [item for name in names for item in _get_group(name, groups)]
 
 
+@nox.session
 def tests(session: nox.Session) -> None:
     """
     Run the unit and regular tests.
     """
+    opts = (
+        ["--reinstall-package=boost-histogram"] if session.venv_backend == "uv" else []
+    )
     pyproject = nox.project.load_toml("pyproject.toml")
-    session.install(".", *dependency_groups(pyproject, "test"))
+    session.install(*dependency_groups(pyproject, "test"))
+    session.install("-v", ".", *opts, silent=False)
     session.run("pytest", *session.posargs)
 
 
