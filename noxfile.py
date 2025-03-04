@@ -1,3 +1,7 @@
+# /// script
+# dependencies = ["nox>=2025.2.9"]
+# ///
+
 from __future__ import annotations
 
 import argparse
@@ -5,18 +9,8 @@ from typing import Any
 
 import nox
 
-nox.needs_version = ">=2024.4.15"
+nox.needs_version = ">=2025.2.9"
 nox.options.default_venv_backend = "uv|virtualenv"
-
-
-def _get_group(name: str, groups: dict[str, Any]) -> list[str]:
-    group = groups[name]
-    return [d if isinstance(d, str) else _get_group(d, groups) for d in group]
-
-
-def dependency_groups(pyproject: dict[str, Any], *names: str) -> list[str]:
-    groups = pyproject["dependency-groups"]
-    return [item for name in names for item in _get_group(name, groups)]
 
 
 @nox.session
@@ -27,10 +21,11 @@ def tests(session: nox.Session) -> None:
     opts = (
         ["--reinstall-package=boost-histogram"] if session.venv_backend == "uv" else []
     )
+    args = session.posargs or ["-n", "auto"]
     pyproject = nox.project.load_toml("pyproject.toml")
-    session.install(*dependency_groups(pyproject, "test"))
+    session.install(*nox.project.dependency_groups(pyproject, "test"))
     session.install("-v", ".", *opts, silent=False)
-    session.run("pytest", *session.posargs)
+    session.run("pytest", *args)
 
 
 @nox.session(default=False)
@@ -38,15 +33,16 @@ def hist(session: nox.Session) -> None:
     """
     Run Hist's test suite
     """
+    args = session.posargs or ["-n", "auto"]
     pyproject = nox.project.load_toml("pyproject.toml")
     session.install(".")
     tmpdir = session.create_tmp()
     session.chdir(tmpdir)
     session.run("git", "clone", "https://github.com/scikit-hep/hist", external=True)
     session.chdir("hist")
-    session.install(".", *dependency_groups(pyproject, "test", "plot"))
+    session.install(".", *nox.project.dependency_groups(pyproject, "test", "plot"))
     session.run("pip", "list")
-    session.run("pytest", *session.posargs)
+    session.run("pytest", *args)
 
 
 @nox.session(reuse_venv=True, default=False)
@@ -64,7 +60,7 @@ def docs(session: nox.Session) -> None:
     serve = args.builder == "html" and session.interactive
 
     extra_installs = ["sphinx-autobuild"] if serve else []
-    session.install(*dependency_groups(pyproject, "docs"), *extra_installs)
+    session.install(*nox.project.dependency_groups(pyproject, "docs"), *extra_installs)
 
     shared_args = (
         "-n",  # nitpicky mode
@@ -89,7 +85,7 @@ def build_api_docs(session: nox.Session) -> None:
     """
     pyproject = nox.project.load_toml("pyproject.toml")
 
-    session.install(*dependency_groups(pyproject, "docs"))
+    session.install(*nox.project.dependency_groups(pyproject, "docs"))
     session.run(
         "sphinx-apidoc",
         "-o",
@@ -129,5 +125,9 @@ def make_pickle(session: nox.Session) -> None:
     Make a pickle file for this version
     """
     pyproject = nox.project.load_toml("pyproject.toml")
-    session.install(".", *dependency_groups(pyproject, "dev"))
+    session.install(".", *nox.project.dependency_groups(pyproject, "dev"))
     session.run("python", "tests/pickles/make_pickle.py", *session.posargs)
+
+
+if __name__ == "__main__":
+    nox.main()
