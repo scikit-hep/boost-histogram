@@ -133,7 +133,7 @@ jobs:
 
       - uses: astral-sh/setup-uv@v5
 
-      - uses: pypa/cibuildwheel@v2.22
+      - uses: pypa/cibuildwheel@v2.23
         with:
           only: "${{ matrix.only }}"
         env:
