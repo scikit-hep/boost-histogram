@@ -242,13 +242,13 @@ extend-select = [
 ignore = [
   "PLR09",          # Too many X
   "PLR2004",        # Magic value in comparison
-  "E501",           # Line too long
-  "PT011", "PT013", # Incorrect pytest codes
-  "ISC001",         # Conflicts with the formatter
+  "PT013",          # from pytest import approx is fine
+  "PT011",          # pytest.raises too broad
   "PYI034",         # We are returning Self, just generic
 ]
 typing-modules = ["boost_histogram.typing"]
 isort.required-imports = ["from __future__ import annotations"]
+exclude = ["extern/*"]
 
 
 [tool.ruff.lint.mccabe]
@@ -258,12 +258,9 @@ max-complexity = 13
 "docs/*" = ["T20"]
 "examples/*" = ["T20"]
 "scripts/*" = ["T20"]
-"setup_helpers.py" = ["C901"]
-"setup.py" = ["T20"]
 "tests/*" = ["T20"]
 "notebooks/*" = ["T20"]
-"*.pyi" = ["F401", "F811", "ARG001"]
-"docs/conf.py" = ["E402", "ARG001"]
-# Several of these will be fixed in the next Ruff release
-# F401 is needed since Ruff doesn't realise some magics are code
-"**.ipynb" = ["E703", "I002", "E731", "B015", "B018", "F401"]
+"*.pyi" = ["F401"]
+"docs/conf.py" = ["ARG001"]
+"src/boost_histogram/test.py" = ["PT"]
+"**.ipynb" = ["I002", "E731"]
