@@ -13,6 +13,7 @@ build:
     - asdf plugin add uv
     - asdf install uv latest
     - asdf global uv latest
+    - touch extern/histogram/LICENSE
     - uv run --only-group docs sphinx-build -T -b html -d docs/_build/doctrees -D language=en docs $READTHEDOCS_OUTPUT/html
 
 submodules:
