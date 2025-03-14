@@ -13,7 +13,8 @@ build:
     - asdf plugin add uv
     - asdf install uv latest
     - asdf global uv latest
-    - uv run --inexact --only-group docs sphinx-build -T -b html -d docs/_build/doctrees -D language=en docs $READTHEDOCS_OUTPUT/html
+    - uv sync --inexact --only-group docs
+    - .venv/bin/sphinx-build -T -b html -d docs/_build/doctrees -D language=en docs $READTHEDOCS_OUTPUT/html
 
 submodules:
   exclude: all
