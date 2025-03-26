@@ -1004,6 +1004,22 @@ class Histogram:
                                 )
                             j += 1
 
+                        if (
+                            old_axis.traits_underflow
+                            and not axes[i].traits_ordered
+                            and axes[i].traits_overflow
+                        ):
+                            pos = [slice(None)] * (i)
+                            if new_view.dtype.names:
+                                for field in new_view.dtype.names:
+                                    new_view[(*pos, -1, ...)][field] += reduced_view[
+                                        (*pos, 0, ...)
+                                    ][field]
+                            else:
+                                new_view[(*pos, -1, ...)] += reduced_view[
+                                    (*pos, 0, ...)
+                                ]
+
                     reduced = new_reduced
 
         # Will be updated below
