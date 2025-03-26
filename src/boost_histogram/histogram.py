@@ -44,7 +44,7 @@ except ImportError as err:
     if "_core" not in str(err):
         raise
 
-    new_msg = "Did you forget to compile boost-histogram? Use CMake or Setuptools to build, see the readme."
+    new_msg = "Did you forget to compile boost-histogram? Use CMake or scikit-build-core to build, see the readme."
 
     if sys.version_info >= (3, 11):
         err.add_note(new_msg)
@@ -176,6 +176,24 @@ def _expand_ellipsis(indexes: Iterable[Any], rank: int) -> list[Any]:
         return indexes[:index] + [slice(None)] * additional + indexes[index + 1 :]
 
     raise IndexError("an index can only have a single ellipsis ('...')")
+
+
+def _combine_group_contents(
+    new_view: np.typing.NDArray[Any],
+    reduced_view: np.typing.NDArray[Any],
+    i: int,
+    j: int,
+    jj: int,
+) -> None:
+    """
+    Combine two views into one, in-place. This is used for threaded filling.
+    """
+    pos = [slice(None)] * (i)
+    if new_view.dtype.names:
+        for field in new_view.dtype.names:
+            new_view[(*pos, jj, ...)][field] += reduced_view[(*pos, j, ...)][field]
+    else:
+        new_view[(*pos, jj, ...)] += reduced_view[(*pos, j, ...)]
 
 
 H = TypeVar("H", bound="Histogram")
@@ -992,17 +1010,17 @@ class Histogram:
 
                     for new_j, group in enumerate(groups):
                         for _ in range(group):
-                            pos = [slice(None)] * (i)
-                            if new_view.dtype.names:
-                                for field in new_view.dtype.names:
-                                    new_view[(*pos, new_j + new_j_base, ...)][
-                                        field
-                                    ] += reduced_view[(*pos, j, ...)][field]
-                            else:
-                                new_view[(*pos, new_j + new_j_base, ...)] += (
-                                    reduced_view[(*pos, j, ...)]
-                                )
+                            _combine_group_contents(
+                                new_view, reduced_view, i, j, new_j + new_j_base
+                            )
                             j += 1
+
+                        if (
+                            old_axis.traits_underflow
+                            and not axes[i].traits_ordered
+                            and axes[i].traits_overflow
+                        ):
+                            _combine_group_contents(new_view, reduced_view, i, 0, -1)
 
                     reduced = new_reduced
 

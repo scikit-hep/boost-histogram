@@ -688,6 +688,24 @@ def test_rebin_1d_flow():
     assert_array_equal(hs.view(flow=True), [2, 2])
 
 
+def test_rebin_change_axis_int():
+    h = bh.Histogram(bh.axis.Regular(5, 0, 5))
+    h.fill([-1, 1.1, 2.2, 3.3, 4.4, 5.5])
+    hs = h[bh.rebin(edges=[0, 3, 5.0], axis=bh.axis.Integer(10, 12))]
+    assert_array_equal(hs.view(), [2, 2])
+    assert_array_equal(hs.view(flow=True), [1, 2, 2, 1])
+    assert_array_equal(hs.axes.edges[0], [10, 11, 12])
+
+
+def test_rebin_change_axis_cat():
+    h = bh.Histogram(bh.axis.Regular(5, 0, 5))
+    h.fill([-1, 1.1, 2.2, 3.3, 4.4, 5.5])
+    hs = h[bh.rebin(groups=[2, 3], axis=bh.axis.StrCategory(["a", "b"]))]
+    assert_array_equal(hs.view(), [1, 3])
+    assert_array_equal(hs.view(flow=True), [1, 3, 4])
+    assert_array_equal(list(hs.axes[0]), ["a", "b"])
+
+
 def test_shrink_rebin_1d():
     h = bh.Histogram(bh.axis.Regular(20, 0, 4))
     h.fill(1.1)
