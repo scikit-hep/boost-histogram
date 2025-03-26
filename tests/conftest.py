@@ -3,6 +3,7 @@ from __future__ import annotations
 import contextlib
 import importlib.metadata
 import sys
+import sysconfig
 from pathlib import Path
 
 if sys.version_info < (3, 11):
@@ -95,4 +96,6 @@ def pytest_report_header() -> str:
     lines = [
         f"installed packages of interest: {reqs}",
     ]
+    if sysconfig.get_config_var("Py_GIL_DISABLED"):
+        lines.append("free-threaded Python build")
     return "\n".join(lines)
