@@ -87,7 +87,7 @@ jobs:
           create-symlink: true
 
       - name: Install python tools
-        run: uv pip install --system --group dev pytest-github-actions-annotate-failures
+        run: uv pip install --python=python --group dev pytest-github-actions-annotate-failures
 
       - name: Configure
         run: cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Debug -DBOOST_HISTOGRAM_ERRORS=ON ${{ matrix.cmake-extras }}
