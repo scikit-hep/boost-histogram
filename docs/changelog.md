@@ -2,7 +2,6 @@
 
 ## Version 1.5
 
-
 ### Version 1.5.2
 
 Fix for axis metadata not passing though non-uniform rebinning correctly. Flow
