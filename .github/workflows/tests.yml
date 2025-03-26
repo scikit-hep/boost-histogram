@@ -64,6 +64,7 @@ jobs:
         include:
           - python-version: "3.8"
             cmake-extras: "-DCMAKE_CXX_STANDARD=17"
+          - python-version: "3.13t"
 
     steps:
       - uses: actions/checkout@v4
@@ -85,15 +86,8 @@ jobs:
           key: ${{ matrix.python-version }}
           create-symlink: true
 
-      - name: Make requirements.txt
-        run: |
-          uv pip install --system dependency-groups
-          dependency-groups dev > dev-requirements.txt
-
       - name: Install python tools
-        run: uv pip install --system -r dev-requirements.txt pytest-github-actions-annotate-failures
-        env:
-          PYO3_USE_ABI3_FORWARD_COMPATIBILITY: 1
+        run: uv pip install --system --python=python --group dev pytest-github-actions-annotate-failures
 
       - name: Configure
         run: cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Debug -DBOOST_HISTOGRAM_ERRORS=ON ${{ matrix.cmake-extras }}
