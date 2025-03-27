@@ -65,32 +65,19 @@ struct func_transform {
             throw py::type_error("Only ctypes double(double) and C++ functions allowed "
                                  "(must be function)");
 
-        auto func = py::reinterpret_borrow<py::function>(src);
-
-        if(auto cfunc = func.cpp_function()) {
-            auto c = py::reinterpret_borrow<py::capsule>(
-                PyCFunction_GET_SELF(cfunc.ptr()));
-
-            auto rec = c.get_pointer<py::detail::function_record>();
-
-            if(rec && rec->is_stateless
-               && py::detail::same_type(
-                   typeid(raw_t*),
-                   *reinterpret_cast<const std::type_info*>(rec->data[1]))) {
-                struct capture {
-                    raw_t* f;
-                };
-                return std::make_tuple((reinterpret_cast<capture*>(&rec->data))->f,
-                                       src);
-            }
-
+        py::detail::make_caster<std::function<raw_t>> func_caster;
+        if(!func_caster.load(src, /*convert*/ false)) {
             // Note that each error is slightly different just to help with debugging
             throw py::type_error("Only ctypes double(double) and C++ functions allowed "
                                  "(must be stateless)");
         }
-
-        throw py::type_error("Only ctypes double(double) and C++ functions allowed "
-                             "(must be cpp function)");
+        auto func  = static_cast<std::function<raw_t>&>(func_caster);
+        auto cfunc = func.target<raw_t*>();
+        if(cfunc == nullptr) {
+            throw py::type_error(
+                "Retrieving double(double) function failed (must be stateless)");
+        }
+        return std::make_tuple(*cfunc, src);
     }
 
     func_transform(py::object f, py::object i, py::object c, py::str n)
