@@ -58,39 +58,10 @@ struct func_transform {
             return std::make_tuple(ptr, src);
         }
 
-        // If we made it to this point, we probably have a C++ pybind object or an
-        // invalid object. The following is based on the std::function conversion in
-        // pybind11/functional.hpp
-        if(!py::isinstance<py::function>(src))
-            throw py::type_error("Only ctypes double(double) and C++ functions allowed "
-                                 "(must be function)");
-
-        auto func = py::reinterpret_borrow<py::function>(src);
-
-        if(auto cfunc = func.cpp_function()) {
-            auto c = py::reinterpret_borrow<py::capsule>(
-                PyCFunction_GET_SELF(cfunc.ptr()));
-
-            auto rec = c.get_pointer<py::detail::function_record>();
-
-            if(rec && rec->is_stateless
-               && py::detail::same_type(
-                   typeid(raw_t*),
-                   *reinterpret_cast<const std::type_info*>(rec->data[1]))) {
-                struct capture {
-                    raw_t* f;
-                };
-                return std::make_tuple((reinterpret_cast<capture*>(&rec->data))->f,
-                                       src);
-            }
-
-            // Note that each error is slightly different just to help with debugging
-            throw py::type_error("Only ctypes double(double) and C++ functions allowed "
-                                 "(must be stateless)");
-        }
+        // If we made it to this point, we probably have an invalid object.
 
         throw py::type_error("Only ctypes double(double) and C++ functions allowed "
-                             "(must be cpp function)");
+                             "(must be a stateless cpp function)");
     }
 
     func_transform(py::object f, py::object i, py::object c, py::str n)

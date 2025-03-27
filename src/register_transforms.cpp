@@ -32,10 +32,10 @@ py::class_<T> register_transform(py::module& mod, Args&&... args) {
 }
 
 extern "C" {
-double _log_fn(double v) { return std::log(v); }
-double _exp_fn(double v) { return std::exp(v); }
-double _sqrt_fn(double v) { return std::sqrt(v); }
-double _sq_fn(double v) { return v * v; }
+PYBIND11_EXPORT double _log_fn(double v) { return std::log(v); }
+PYBIND11_EXPORT double _exp_fn(double v) { return std::exp(v); }
+PYBIND11_EXPORT double _sqrt_fn(double v) { return std::sqrt(v); }
+PYBIND11_EXPORT double _sq_fn(double v) { return v * v; }
 }
 
 void register_transforms(py::module& mod) {

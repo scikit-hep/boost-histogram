@@ -1,16 +1,20 @@
 from __future__ import annotations
 
 import copy
+import ctypes
 from typing import Any, ClassVar, TypeVar
 
 import boost_histogram
 
+from .. import _core
 from .._core import axis as ca
 from .._utils import register
 
 T = TypeVar("T", bound="AxisTransform")
 
 __all__ = ["AxisTransform", "Function", "Pow", "log", "sqrt"]
+
+LIB = ctypes.CDLL(_core.__file__)
 
 
 def __dir__() -> list[str]:
@@ -150,7 +154,8 @@ class Function(AxisTransform, family=boost_histogram):
 
 
 def _internal_conversion(name: str) -> Any:
-    return getattr(ca.transform, name)
+    ftype = ctypes.CFUNCTYPE(ctypes.c_double, ctypes.c_double)
+    return ctypes.cast(getattr(LIB, name), ftype)
 
 
 sqrt = Function("_sqrt_fn", "_sq_fn", convert=_internal_conversion, name="sqrt")
