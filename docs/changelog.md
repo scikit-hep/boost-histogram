@@ -21,6 +21,7 @@ support will likely be bumped from `2024` to `2_28` soon, as well.
 - Axis metadata was broken when rebinning [#978][]
 - Flow bins were lost when using variable rebinning [#977][]
 - Scikit-build-core 0.11, with PEP 639 license metadata [#986][], [#988][]
+- Prepare for an potential upcoming pybind11 3 change [#994][]
 
 #### CI and testing
 
@@ -36,6 +37,7 @@ support will likely be bumped from `2024` to `2_28` soon, as well.
 [#986]: https://github.com/scikit-hep/boost-histogram/pull/986
 [#987]: https://github.com/scikit-hep/boost-histogram/pull/987
 [#988]: https://github.com/scikit-hep/boost-histogram/pull/988
+[#994]: https://github.com/scikit-hep/boost-histogram/pull/994
 
 ### Version 1.5.1
 
