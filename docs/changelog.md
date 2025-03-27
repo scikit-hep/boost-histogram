@@ -8,19 +8,36 @@ Fix for axis metadata not passing though non-uniform rebinning correctly. Flow
 bins are now preserved when doing a non-uniform rebinning. Also adds the
 ability to rebin by edges or an existing axis.
 
+This is expected to be the last release with Python 3.8 support. Manylinux
+support will likely be bumped from `2024` to `2_28` soon, as well.
+
 #### Features
 
 - Support `edges=` and `axis=` in `bh.rebin` [#977][]
-- Allow axis to be passed through `bh.rebin` [#980][]
+- Allow axis to be passed through `bh.rebin` [#980][], [#982][]
 
 #### Bug fixes
 
 - Axis metadata was broken when rebinning [#978][]
 - Flow bins were lost when using variable rebinning [#977][]
+- Scikit-build-core 0.11, with PEP 639 license metadata [#986][], [#988][]
+- Prepare for an potential upcoming pybind11 3 change [#994][]
 
+#### CI and testing
+
+- Remove extras like `[test]` in favor of dependency-groups [#973][]
+- Multithreaded test running [#987][]
+
+[#959]: https://github.com/scikit-hep/boost-histogram/pull/959
+[#973]: https://github.com/scikit-hep/boost-histogram/pull/973
 [#977]: https://github.com/scikit-hep/boost-histogram/pull/977
 [#978]: https://github.com/scikit-hep/boost-histogram/pull/978
 [#980]: https://github.com/scikit-hep/boost-histogram/pull/980
+[#982]: https://github.com/scikit-hep/boost-histogram/pull/982
+[#986]: https://github.com/scikit-hep/boost-histogram/pull/986
+[#987]: https://github.com/scikit-hep/boost-histogram/pull/987
+[#988]: https://github.com/scikit-hep/boost-histogram/pull/988
+[#994]: https://github.com/scikit-hep/boost-histogram/pull/994
 
 ### Version 1.5.1
 
