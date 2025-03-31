@@ -60,9 +60,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.13", "pypy3.10"]
+        python-version: ["3.11", "3.13", "pypy3.10"]
         include:
-          - python-version: "3.8"
+          - python-version: "3.9"
             cmake-extras: "-DCMAKE_CXX_STANDARD=17"
           - python-version: "3.13t"
 
@@ -111,13 +111,13 @@ jobs:
           - os: ubuntu-24.04-arm
             only: cp313-manylinux_aarch64
           - os: windows-latest
-            only: cp38-win32
+            only: cp39-win32
           - os: windows-latest
             only: cp313-win_amd64
           - os: macos-13
-            only: cp39-macosx_x86_64
+            only: cp310-macosx_x86_64
           - os: macos-14
-            only: cp39-macosx_arm64
+            only: cp312-macosx_arm64
 
     steps:
       - uses: actions/checkout@v4

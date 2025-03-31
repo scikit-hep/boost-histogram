@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Any, Callable, ClassVar, Literal, Mapping, MutableMapping
+from collections.abc import Mapping, MutableMapping
+from typing import Any, Callable, ClassVar, Literal
 
 import numpy as np
 

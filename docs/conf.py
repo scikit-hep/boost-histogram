@@ -21,7 +21,7 @@ from pathlib import Path
 # -- Path setup --------------------------------------------------------------
 
 
-DIR = Path(__file__).parent.resolve()
+DIR = Path(__file__).parent
 BASEDIR = DIR.parent
 
 sys.path.append(str(BASEDIR / "src"))
