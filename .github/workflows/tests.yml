@@ -90,6 +90,10 @@ jobs:
         run: |
           uv pip install --system --python=python --group dev --only-binary numpy pytest-github-actions-annotate-failures
 
+      - name: Also install hdf5 if supported
+        if: matrix.python-version == '3.11' || matrix.python-version == '3.13'
+        run: uv pip install --system --python=python h5py
+
       - name: Configure
         run: cmake --preset default -DCMAKE_BUILD_TYPE=Debug ${{ matrix.cmake-extras }}
 
