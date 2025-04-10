@@ -22,11 +22,11 @@ from typing import (
 )
 
 import numpy as np
-from typing_extensions import Self
 
 import boost_histogram
 from boost_histogram import _core
 
+from ._compat.typing import Self
 from ._utils import cast, register
 from .axis import AxesTuple, Axis, Variable
 from .storage import Double, Storage
@@ -35,6 +35,7 @@ from .view import MeanView, WeightedMeanView, WeightedSumView, _to_view
 
 if TYPE_CHECKING:
     from builtins import ellipsis
+
 
 try:
     from . import _core

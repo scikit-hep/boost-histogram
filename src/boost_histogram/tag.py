@@ -12,8 +12,7 @@ import numpy as np
 if TYPE_CHECKING:
     from uhi.typing.plottable import PlottableAxis
 
-from typing_extensions import Self
-
+from ._compat.typing import Self
 from .typing import AxisLike
 
 __all__ = ("Locator", "Slicer", "at", "loc", "overflow", "rebin", "sum", "underflow")

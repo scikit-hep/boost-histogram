@@ -15,10 +15,10 @@ from typing import (
 )
 
 import numpy as np  # pylint: disable=unused-import
-from typing_extensions import Self
 
 import boost_histogram
 
+from .._compat.typing import Self
 from .._core import axis as ca
 from .._utils import cast, register, zip_strict
 from . import transform

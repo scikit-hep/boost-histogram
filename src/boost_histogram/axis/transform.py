@@ -3,10 +3,9 @@ from __future__ import annotations
 import copy
 from typing import Any, ClassVar, TypeVar
 
-from typing_extensions import Self
-
 import boost_histogram
 
+from .._compat.typing import Self
 from .._core import axis as ca
 from .._utils import register
 
