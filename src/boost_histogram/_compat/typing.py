@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import sys
 import typing
 
@@ -9,6 +11,7 @@ else:
     Self = object
 
 __all__ = ["Self"]
+
 
 def __dir__() -> list[str]:
     return __all__
