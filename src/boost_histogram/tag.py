@@ -12,6 +12,7 @@ import numpy as np
 if TYPE_CHECKING:
     from uhi.typing.plottable import PlottableAxis
 
+from ._compat.typing import Self
 from .typing import AxisLike
 
 __all__ = ("Locator", "Slicer", "at", "loc", "overflow", "rebin", "sum", "underflow")
@@ -45,12 +46,12 @@ class Locator:
 
         self.offset = offset
 
-    def __add__(self: T, offset: int) -> T:
+    def __add__(self, offset: int) -> Self:
         other = copy.copy(self)
         other.offset += offset
         return other
 
-    def __sub__(self: T, offset: int) -> T:
+    def __sub__(self, offset: int) -> Self:
         other = copy.copy(self)
         other.offset -= offset
         return other

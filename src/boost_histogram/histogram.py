@@ -26,6 +26,7 @@ import numpy as np
 import boost_histogram
 from boost_histogram import _core
 
+from ._compat.typing import Self
 from ._utils import cast, register
 from .axis import AxesTuple, Axis, Variable
 from .storage import Double, Storage
@@ -34,6 +35,7 @@ from .view import MeanView, WeightedMeanView, WeightedSumView, _to_view
 
 if TYPE_CHECKING:
     from builtins import ellipsis
+
 
 try:
     from . import _core
@@ -316,12 +318,12 @@ class Histogram:
 
     @classmethod
     def _clone(
-        cls: type[H],
+        cls,
         _hist: Histogram | CppHistogram,
         *,
         other: Histogram | None = None,
         memo: Any = NOTHING,
-    ) -> H:
+    ) -> Self:
         """
         Clone a histogram (possibly of a different base). Does not trigger __init__.
         This will copy data from `other=` if non-None, otherwise metadata gets copied from the input.
@@ -353,7 +355,7 @@ class Histogram:
                 ax.__dict__ = copy.deepcopy(ax._ax.raw_metadata, memo)
         return self
 
-    def _new_hist(self: H, _hist: CppHistogram, memo: Any = NOTHING) -> H:
+    def _new_hist(self, _hist: CppHistogram, memo: Any = NOTHING) -> Self:
         """
         Return a new histogram given a new _hist, copying current metadata.
         """
@@ -440,11 +442,11 @@ class Histogram:
     def __ne__(self, other: object) -> bool:
         return (not hasattr(other, "_hist")) or self._hist != other._hist
 
-    def __add__(self: H, other: Histogram | np.typing.NDArray[Any] | float) -> H:
+    def __add__(self, other: Histogram | np.typing.NDArray[Any] | float) -> Self:
         result = self.copy(deep=False)
         return result.__iadd__(other)
 
-    def __iadd__(self: H, other: Histogram | np.typing.NDArray[Any] | float) -> H:
+    def __iadd__(self, other: Histogram | np.typing.NDArray[Any] | float) -> Self:
         if isinstance(other, (int, float)) and other == 0:
             return self
         self._compute_inplace_op("__iadd__", other)
@@ -454,14 +456,14 @@ class Histogram:
 
         return self
 
-    def __radd__(self: H, other: np.typing.NDArray[Any] | float) -> H:
+    def __radd__(self, other: np.typing.NDArray[Any] | float) -> Self:
         return self + other
 
-    def __sub__(self: H, other: Histogram | np.typing.NDArray[Any] | float) -> H:
+    def __sub__(self, other: Histogram | np.typing.NDArray[Any] | float) -> Self:
         result = self.copy(deep=False)
         return result.__isub__(other)
 
-    def __isub__(self: H, other: Histogram | np.typing.NDArray[Any] | float) -> H:
+    def __isub__(self, other: Histogram | np.typing.NDArray[Any] | float) -> Self:
         if isinstance(other, (int, float)) and other == 0:
             return self
         self._compute_inplace_op("__isub__", other)
@@ -471,33 +473,33 @@ class Histogram:
         return self
 
     # If these fail, the underlying object throws the correct error
-    def __mul__(self: H, other: Histogram | np.typing.NDArray[Any] | float) -> H:
+    def __mul__(self, other: Histogram | np.typing.NDArray[Any] | float) -> Self:
         result = self.copy(deep=False)
         return result._compute_inplace_op("__imul__", other)
 
-    def __rmul__(self: H, other: np.typing.NDArray[Any] | float) -> H:
+    def __rmul__(self, other: np.typing.NDArray[Any] | float) -> Self:
         return self * other
 
-    def __truediv__(self: H, other: Histogram | np.typing.NDArray[Any] | float) -> H:
+    def __truediv__(self, other: Histogram | np.typing.NDArray[Any] | float) -> Self:
         result = self.copy(deep=False)
         return result._compute_inplace_op("__itruediv__", other)
 
-    def __div__(self: H, other: Histogram | np.typing.NDArray[Any] | float) -> H:
+    def __div__(self, other: Histogram | np.typing.NDArray[Any] | float) -> Self:
         result = self.copy(deep=False)
         return result._compute_inplace_op("__idiv__", other)
 
-    def __idiv__(self: H, other: Histogram | np.typing.NDArray[Any] | float) -> H:
+    def __idiv__(self, other: Histogram | np.typing.NDArray[Any] | float) -> Self:
         return self._compute_inplace_op("__idiv__", other)
 
-    def __itruediv__(self: H, other: Histogram | np.typing.NDArray[Any] | float) -> H:
+    def __itruediv__(self, other: Histogram | np.typing.NDArray[Any] | float) -> Self:
         return self._compute_inplace_op("__itruediv__", other)
 
-    def __imul__(self: H, other: Histogram | np.typing.NDArray[Any] | float) -> H:
+    def __imul__(self, other: Histogram | np.typing.NDArray[Any] | float) -> Self:
         return self._compute_inplace_op("__imul__", other)
 
     def _compute_inplace_op(
-        self: H, name: str, other: Histogram | np.typing.NDArray[Any] | float
-    ) -> H:
+        self, name: str, other: Histogram | np.typing.NDArray[Any] | float
+    ) -> Self:
         # Also takes CppHistogram, but that confuses mypy because it's hard to pick out
         if isinstance(other, Histogram):
             getattr(self._hist, name)(other._hist)
@@ -528,12 +530,12 @@ class Histogram:
 
     # TODO: Marked as too complex by flake8. Should be factored out a bit.
     def fill(
-        self: H,
+        self,
         *args: ArrayLike | str,
         weight: ArrayLike | None = None,
         sample: ArrayLike | None = None,
         threads: int | None = None,
-    ) -> H:
+    ) -> Self:
         """
         Insert data into the histogram.
 
@@ -671,13 +673,13 @@ class Histogram:
         )
         return cast(self, self._hist._storage_type, Storage)  # type: ignore[return-value]
 
-    def _reduce(self: H, *args: Any) -> H:
+    def _reduce(self, *args: Any) -> Self:
         return self._new_hist(self._hist.reduce(*args))
 
-    def __copy__(self: H) -> H:
+    def __copy__(self) -> Self:
         return self._new_hist(copy.copy(self._hist))
 
-    def __deepcopy__(self: H, memo: Any) -> H:
+    def __deepcopy__(self, memo: Any) -> Self:
         return self._new_hist(copy.deepcopy(self._hist), memo=memo)
 
     def __getstate__(self) -> tuple[int, dict[str, Any]]:
@@ -837,7 +839,7 @@ class Histogram:
 
         return (hist, edges) if dd else (hist, *edges)
 
-    def copy(self: H, *, deep: bool = True) -> H:
+    def copy(self, *, deep: bool = True) -> Self:
         """
         Make a copy of the histogram. Defaults to making a
         deep copy (axis metadata copied); use deep=False
@@ -846,7 +848,7 @@ class Histogram:
 
         return copy.deepcopy(self) if deep else copy.copy(self)
 
-    def reset(self: H) -> H:
+    def reset(self) -> Self:
         """
         Clear the bin counters.
         """
@@ -881,7 +883,7 @@ class Histogram:
         return self.axes.size
 
     # TODO: Marked as too complex by flake8. Should be factored out a bit.
-    def __getitem__(self: H, index: IndexingExpr) -> H | float | Accumulator:
+    def __getitem__(self, index: IndexingExpr) -> Self | float | Accumulator:
         indexes = self._compute_commonindex(index)
 
         # If this is (now) all integers, return the bin contents
@@ -1187,7 +1189,7 @@ class Histogram:
 
         view[tuple(indexes)] = value  # type: ignore[arg-type]
 
-    def project(self: H, *args: int) -> H | float | Accumulator:
+    def project(self, *args: int) -> Self | float | Accumulator:
         """
         Project to a single axis or several axes on a multidimensional histogram.
         Provided a list of axis numbers, this will produce the histogram over

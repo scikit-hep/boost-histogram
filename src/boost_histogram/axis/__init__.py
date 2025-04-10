@@ -18,6 +18,7 @@ import numpy as np  # pylint: disable=unused-import
 
 import boost_histogram
 
+from .._compat.typing import Self
 from .._core import axis as ca
 from .._utils import cast, register, zip_strict
 from . import transform
@@ -132,8 +133,8 @@ class Axis:
     def __getstate__(self) -> dict[str, Any]:
         return {"_ax": self._ax}
 
-    def __copy__(self: T) -> T:
-        other: T = self.__class__.__new__(self.__class__)
+    def __copy__(self) -> Self:
+        other: Self = self.__class__.__new__(self.__class__)
         other._ax = copy.copy(self._ax)
         other.__dict__ = other._ax.raw_metadata
         return other
@@ -172,8 +173,8 @@ class Axis:
         return (not hasattr(other, "_ax")) or self._ax != other._ax
 
     @classmethod
-    def _convert_cpp(cls: type[T], cpp_object: Any) -> T:
-        nice_ax: T = cls.__new__(cls)
+    def _convert_cpp(cls, cpp_object: Any) -> Self:
+        nice_ax: Self = cls.__new__(cls)
         nice_ax._ax = cpp_object
         nice_ax.__dict__ = cpp_object.raw_metadata
         return nice_ax
@@ -821,7 +822,7 @@ class ArrayTuple(tuple):  # type: ignore[type-arg]
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         return self.__class__(a(*args, **kwargs) for a in self)
 
-    def broadcast(self: A) -> A:
+    def broadcast(self) -> Self:
         """
         The arrays in this tuple will be compressed if possible to save memory.
         Use this method to broadcast them out into their full memory

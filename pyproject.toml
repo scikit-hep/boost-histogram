@@ -233,6 +233,7 @@ extend-select = [
   "PT",          # flake8-pytest-style
   "PTH",         # flake8-use-pathlib
   "PYI",         # flake8-pyi
+  "TID251",      # flake8-tidy-imports.banned-api
   "RET",         # flake8-return
   "RUF",         # Ruff-specific
   "SIM",         # flake8-simplify
@@ -247,10 +248,13 @@ ignore = [
   "PT011",          # pytest.raises too broad
   "PYI034",         # We are returning Self, just generic
 ]
-typing-modules = ["boost_histogram.typing"]
+typing-modules = ["boost_histogram._compat.typing"]
 isort.required-imports = ["from __future__ import annotations"]
 exclude = ["extern/*"]
 
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+"typing.Self".msg = "Use boost_histogram._compat.typing.Self instead."
+"typing_extensions.Self".msg = "Use boost_histogram._compat.typing.Self instead."
 
 [tool.ruff.lint.mccabe]
 max-complexity = 13
@@ -261,7 +265,8 @@ max-complexity = 13
 "scripts/*" = ["T20"]
 "tests/*" = ["T20"]
 "notebooks/*" = ["T20"]
-"*.pyi" = ["F401"]
+"*.pyi" = ["F401", "TID251"]
 "docs/conf.py" = ["ARG001"]
 "src/boost_histogram/test.py" = ["PT"]
 "**.ipynb" = ["I002", "E731"]
+"src/boost_histogram/_compat/**.py" = ["TID251"]

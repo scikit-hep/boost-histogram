@@ -5,6 +5,7 @@ from typing import Any, ClassVar, TypeVar
 
 import boost_histogram
 
+from .._compat.typing import Self
 from .._core import axis as ca
 from .._utils import register
 
@@ -26,14 +27,14 @@ class AxisTransform:
         super().__init_subclass__()
         cls._family = family
 
-    def __copy__(self: T) -> T:
-        other: T = self.__class__.__new__(self.__class__)
+    def __copy__(self) -> Self:
+        other: Self = self.__class__.__new__(self.__class__)
         other._this = copy.copy(self._this)
         return other
 
     @classmethod
-    def _convert_cpp(cls: type[T], this: Any) -> T:
-        self: T = cls.__new__(cls)
+    def _convert_cpp(cls, this: Any) -> Self:
+        self: Self = cls.__new__(cls)
         self._this = this
         return self
 

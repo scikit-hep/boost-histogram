@@ -22,7 +22,7 @@ def make_pickle(
     Make a pickle file with the current boost-histogram for use in tests.
     """
 
-    VER = tuple(map(int, bh.__version__.split(".")))
+    VER = tuple(map(int, bh.__version__.split(".")[:3]))
 
     if output is None:
         output = DIR / f"bh_{bh.__version__}.pkl"
