@@ -89,6 +89,10 @@ jobs:
       - name: Install python tools
         run: uv pip install --system --python=python --group github
 
+      - name: Also install hdf5 if supported
+        if: matrix.python-version == '3.11' || matrix.python-version == '3.13'
+        run: uv pip install --system --python=python h5py
+
       - name: Configure
         run: cmake --preset default ${{ matrix.cmake-extras }}
 
