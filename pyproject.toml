@@ -98,6 +98,11 @@ test = [
     "pytest-xdist",
     "numpy",
 ]
+github = [
+  { include-group = "test" },
+  "setuptools_scm",
+  "pytest-github-actions-annotate-failures"
+]
 
 
 [tool.scikit-build]
@@ -126,6 +131,10 @@ __version__ = version = "$version"
 '''
 
 [tool.setuptools_scm]
+
+
+[tool.uv.pip]
+only-binary = ["numpy"]
 
 
 [tool.pytest.ini_options]
