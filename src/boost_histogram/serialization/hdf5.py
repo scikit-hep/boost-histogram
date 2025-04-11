@@ -29,20 +29,20 @@ def write_hdf5_schema(f: h5py.File, /, histograms: dict[str, Histogram]) -> None
         # Metadata
 
         f[group_prefix].create_group("metadata")
-        f[group_prefix + "/metadata"].attrs["description"] = (
+        f[f"{group_prefix}/metadata"].attrs["description"] = (
             "Arbitrary metadata dictionary."
         )
         if histogram.metadata is not None:
             for key, value in histogram.metadata.items():
-                f[group_prefix + "/metadata"].attrs[key] = value
+                f[f"{group_prefix}/metadata"].attrs[key] = value
 
         # Axes
 
         f[group_prefix].create_group("axes")
-        f[group_prefix + "/axes"].attrs["description"] = (
+        f[f"{group_prefix}/axes"].attrs["description"] = (
             "A list of the axes of the histogram."
         )
-        f[group_prefix + "/axes"].create_dataset(
+        f[f"{group_prefix}/axes"].create_dataset(
             "items", len(histogram.axes), dtype=h5py.special_dtype(ref=h5py.Reference)
         )
         for i, axis in enumerate(histogram.axes):
@@ -50,7 +50,7 @@ def write_hdf5_schema(f: h5py.File, /, histograms: dict[str, Histogram]) -> None
             # creating references to new groups and appending it to the `items` dataset defined above
 
             current_axis = AXIS_MAP[str(axis)[: str(axis).index("(")]]
-            dataset = f[group_prefix + "/axes/items"]
+            dataset = f[f"{group_prefix}/axes/items"]
             args_dict: dict[str, object] = {}
             if current_axis == "regular":
                 args_dict["bins"] = len(axis.edges) - 1
@@ -87,7 +87,7 @@ def write_hdf5_schema(f: h5py.File, /, histograms: dict[str, Histogram]) -> None
         # Storage
 
         f[group_prefix].create_group("storage")
-        f[group_prefix + "/storage"].attrs["description"] = (
+        f["{group_prefix}/storage"].attrs["description"] = (
             "The storage of the bins of the histogram."
         )
         hist_str_type = str(histogram.storage_type)
@@ -126,14 +126,14 @@ def read_hdf5_schema(input_file: h5py.File | Path) -> dict[str, Histogram]:
 
         #### `metadata` code start
         metadata = {}
-        metadata_ref = f[base_prefix + "/metadata"]
+        metadata_ref = f[f"{base_prefix}/metadata"]
         for key, value in metadata_ref.attrs.items():
             metadata[key] = value
         #### `metadata` code end
 
         #### `axes` code start
         axes: list[baxis.Axis] = []
-        axes_ref = f[base_prefix + "/axes"]
+        axes_ref = f["{base_prefix}/axes"]
         for i, unref_axis_ref in enumerate(axes_ref["items"]):
             deref_axis_ref = f[unref_axis_ref]
             axis_type = deref_axis_ref.attrs["type"]
@@ -189,7 +189,7 @@ def read_hdf5_schema(input_file: h5py.File | Path) -> dict[str, Histogram]:
         #### `axes` code end
 
         #### `storage` code start
-        storage_ref = f[base_prefix + "/storage"]
+        storage_ref = f[f"{base_prefix}/storage"]
         storage_type = storage_ref.attrs["type"]
         # NOTE: We construct the corresponding `bh.Histogram` object and assign the values
         # from the serialization directly
