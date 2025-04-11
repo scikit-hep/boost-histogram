@@ -19,8 +19,7 @@ def __dir__() -> list[str]:
     return __all__
 
 
-def write_hdf5_schema(file_name: str, histograms: dict[str, Histogram]) -> h5py.File:
-    f = h5py.File(file_name, "w")
+def write_hdf5_schema(f: h5py.File, /, histograms: dict[str, Histogram]) -> None:
     for name, histogram in histograms.items():
         # All referenced objects will be stored inside of /{name}/ref_storage
         f.create_group(f"{name}")
@@ -116,8 +115,6 @@ def write_hdf5_schema(file_name: str, histograms: dict[str, Histogram]) -> h5py.
             args_dict["sum_of_weights_squared"] = view.sum_of_weights_squared
 
         create_storage_object(hist_str_type, f, name, args_dict)
-    f.close()
-    return f
 
 
 def read_hdf5_schema(input_file: h5py.File | Path) -> dict[str, Histogram]:
