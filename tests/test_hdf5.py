@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import h5py
 import numpy as np
 import pytest
 
 import boost_histogram as bh
 
+h5py = pytest.importorskip("h5py")
 s = pytest.importorskip("boost_histogram.serialization.hdf5")
 
 
