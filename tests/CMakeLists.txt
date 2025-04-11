@@ -23,4 +23,5 @@ foreach(TEST_FILE IN LISTS BOOST_HIST_PY_TESTS)
     NAME ${TEST_NAME}
     COMMAND ${Python_EXECUTABLE} -m pytest "${TEST_FILE}" --rootdir=.
     WORKING_DIRECTORY "${PROJECT_BINARY_DIR}")
+  set_tests_properties(${TEST_NAME} PROPERTIES SKIP_RETURN_CODE 5)
 endforeach()

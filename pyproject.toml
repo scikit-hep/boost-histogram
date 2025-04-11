@@ -65,7 +65,6 @@ dev = [
     { include-group = "test" },
     "ipykernel",
     "nbconvert",
-    "numpy",
     "setuptools_scm",
     "typer",
     "uhi",
@@ -93,6 +92,7 @@ test = [
     "pytest-benchmark",
     "pytest>=6.0",
     "pytest-xdist",
+    "numpy",
 ]
 
 

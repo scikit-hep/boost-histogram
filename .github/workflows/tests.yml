@@ -55,16 +55,16 @@ jobs:
   cmake:
     name: CMake 🐍 ${{ matrix.python-version }}
     runs-on: ubuntu-latest
-    env:
-      PIP_ONLY_BINARY: numpy
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11", "3.13", "pypy3.10"]
         include:
           - python-version: "3.9"
             cmake-extras: "-DCMAKE_CXX_STANDARD=17"
+          - python-version: "3.11"
+          - python-version: "3.13"
           - python-version: "3.13t"
+          - python-version: "pypy3.10"
 
     steps:
       - uses: actions/checkout@v4
@@ -87,17 +87,17 @@ jobs:
           create-symlink: true
 
       - name: Install python tools
-        run: uv pip install --system --python=python --group dev pytest-github-actions-annotate-failures
+        run: |
+          uv pip install --system --python=python --group dev --only-binary numpy pytest-github-actions-annotate-failures
 
       - name: Configure
-        run: cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Debug -DBOOST_HISTOGRAM_ERRORS=ON ${{ matrix.cmake-extras }}
+        run: cmake --preset default -DCMAKE_BUILD_TYPE=Debug ${{ matrix.cmake-extras }}
 
       - name: Build
-        run: cmake --build build -j 4
+        run: cmake --build --preset default -j 4
 
       - name: Test
-        working-directory: ./build
-        run: python -m pytest -ra
+        run: ctest --preset default -j 4
 
   build_wheels:
     name: ${{ matrix.only }}
