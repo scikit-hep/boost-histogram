@@ -64,6 +64,13 @@ pip-install-dependency-groups dev
 pip install -ve.
 ```
 
+Or if you use uv:
+
+
+```bash
+uv sync
+```
+
 <details><summary>Optional: External Jupyter kernel (click to expand)</summary>
 
 You can set up a kernel for external Jupyter then deactivate your environment:
@@ -100,11 +107,10 @@ pytest`, and not others, like `pytest`
 3. Set `CMAKE_INSTALL_PREFIX` to your site-packages and install (recommended
    for virtual environments).
 
-Here is the recommendation for a CMake install:
+Here is the recommendation for a CMake install, using uv:
 
 ```bash
 uv venv
-. .venv/bin/activate
 uv pip install --group dev
 cmake --workflow default
 

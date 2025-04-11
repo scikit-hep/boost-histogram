@@ -37,6 +37,14 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
                                                "RelWithDebInfo")
 endif()
 
+# If no Python venv set, and .venv exists, use it.
+if(NOT DEFINED ENV{VIRTUALENV}
+   AND NOT DEFINED Python_ROOT_DIR
+   AND NOT DEFINED Python_EXECUTABLE
+   AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/.venv")
+  set(Python_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/.venv")
+endif()
+
 # Adding pybind11 and setting up Python
 # Will display pybind11 version
 set(PYBIND11_FINDPYTHON TRUE)
