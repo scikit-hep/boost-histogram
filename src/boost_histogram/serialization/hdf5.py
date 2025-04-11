@@ -87,7 +87,7 @@ def write_hdf5_schema(f: h5py.File, /, histograms: dict[str, Histogram]) -> None
         # Storage
 
         f[group_prefix].create_group("storage")
-        f["{group_prefix}/storage"].attrs["description"] = (
+        f[f"{group_prefix}/storage"].attrs["description"] = (
             "The storage of the bins of the histogram."
         )
         hist_str_type = str(histogram.storage_type)
@@ -133,7 +133,7 @@ def read_hdf5_schema(input_file: h5py.File | Path) -> dict[str, Histogram]:
 
         #### `axes` code start
         axes: list[baxis.Axis] = []
-        axes_ref = f["{base_prefix}/axes"]
+        axes_ref = f[f"{base_prefix}/axes"]
         for i, unref_axis_ref in enumerate(axes_ref["items"]):
             deref_axis_ref = f[unref_axis_ref]
             axis_type = deref_axis_ref.attrs["type"]
