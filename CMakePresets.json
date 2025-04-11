@@ -33,9 +33,9 @@
       "name": "default",
       "displayName": "Default workflow",
       "steps": [
-        {"type": "configure", "name": "default"},
-        {"type": "build", "name": "default"},
-        {"type": "test", "name": "default"}
+        { "type": "configure", "name": "default" },
+        { "type": "build", "name": "default" },
+        { "type": "test", "name": "default" }
       ]
     }
   ]
