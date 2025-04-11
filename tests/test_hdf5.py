@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pytest
@@ -11,14 +12,38 @@ h5py = pytest.importorskip("h5py")
 s = pytest.importorskip("boost_histogram.serialization.hdf5")
 
 
-def test_weighted_storge(tmp_path: Path) -> None:
-    h = bh.Histogram(bh.axis.Regular(10, 0, 10), storage=bh.storage.Weight())
-    h.fill([0.3, 0.3, 0.4, 1.2])
+@pytest.mark.parametrize(
+    ("storage_type", "fill_args", "fill_kwargs"),
+    [
+        pytest.param(bh.storage.Weight(), [0.3, 0.3, 0.4, 1.2], {}, id="weight"),
+        pytest.param(
+            bh.storage.WeightedMean(),
+            [0.3, 0.3, 0.4, 1.2, 1.6],
+            {"sample": [1, 2, 3, 4, 4], "weight": [1, 1, 1, 1, 2]},
+            id="weighted_mean",
+        ),
+        pytest.param(
+            bh.storage.Mean(),
+            [0.3, 0.3, 0.4, 1.2, 1.6],
+            {"sample": [1, 2, 3, 4, 4]},
+            id="mean",
+        ),
+    ],
+)
+def test_hdf5_storage(
+    tmp_path: Path,
+    storage_type: bh.storage.Storage,
+    fill_args: list[float],
+    fill_kwargs: dict[str, Any],
+) -> None:
+    h = bh.Histogram(bh.axis.Regular(10, 0, 10), storage=storage_type)
+    h.fill(fill_args, **fill_kwargs)
 
-    with h5py.File(tmp_path / "test_weighted_storage.h5", "x") as f:
+    filepath = tmp_path / "hist.h5"
+    with h5py.File(filepath, "x") as f:
         s.write_hdf5_schema(f, {"test_hist": h})
 
-    h_constructed = s.read_hdf5_schema(tmp_path / "test_weighted_storage.h5")
+    h_constructed = s.read_hdf5_schema(filepath)
 
     assert {"test_hist"} == h_constructed.keys()
 
@@ -28,6 +53,7 @@ def test_weighted_storge(tmp_path: Path) -> None:
     # checking types of the reconstructed axes
     assert type(actual_hist.axes[0]) is type(re_constructed_hist.axes[0])
     assert actual_hist.storage_type == re_constructed_hist.storage_type
+
     # checking values of the essential inputs of the axes
     assert actual_hist.axes[0].traits == re_constructed_hist.axes[0].traits
     assert np.allclose(
@@ -36,82 +62,18 @@ def test_weighted_storge(tmp_path: Path) -> None:
         atol=1e-4,
         rtol=1e-9,
     )
+
     # checking storage values
     assert np.allclose(
         actual_hist.values(), re_constructed_hist.values(), atol=1e-4, rtol=1e-9
     )
-    # checking variance variances
-    variances = re_constructed_hist.variances()
-    assert variances is not None
-    assert actual_hist.variances() == pytest.approx(variances, abs=1e-4, rel=1e-9)
 
-
-def test_weighted_mean_storage(tmp_path: Path) -> None:
-    h = bh.Histogram(bh.axis.Regular(10, 0, 10), storage=bh.storage.WeightedMean())
-    h.fill([0.3, 0.3, 0.4, 1.2, 1.6], sample=[1, 2, 3, 4, 4], weight=[1, 1, 1, 1, 2])
-
-    with h5py.File(tmp_path / "test_weighted_mean_storage.h5", "x") as f:
-        s.write_hdf5_schema(f, {"test_hist": h})
-
-    h_constructed = s.read_hdf5_schema(tmp_path / "test_weighted_mean_storage.h5")
-
-    assert {"test_hist"} == h_constructed.keys()
-
-    actual_hist = h.copy()
-    re_constructed_hist = h_constructed["test_hist"]
-
-    # checking types of the reconstructed axes
-    assert type(actual_hist.axes[0]) is type(re_constructed_hist.axes[0])
-    assert actual_hist.storage_type == re_constructed_hist.storage_type
-    # checking values of the essential inputs of the axes
-    assert actual_hist.axes[0].traits == re_constructed_hist.axes[0].traits
-    assert np.allclose(
-        actual_hist.axes[0].centers,
-        re_constructed_hist.axes[0].centers,
-        atol=1e-4,
-        rtol=1e-9,
-    )
-    # checking storage values
-    assert np.allclose(
-        actual_hist.values(), re_constructed_hist.values(), atol=1e-4, rtol=1e-9
-    )
-    # checking variance variances
-    print(actual_hist.view(), re_constructed_hist.view())
-    print(actual_hist.variances())
-    # assert np.allclose(actual_hist.variances(), re_constructed_hist.variances(), atol=1e-4, rtol=1e-9)
-
-
-def test_mean_storage(tmp_path: Path) -> None:
-    h = bh.Histogram(bh.axis.Regular(10, 0, 10), storage=bh.storage.Mean())
-    h.fill([0.3, 0.3, 0.4, 1.2, 1.6], sample=[1, 2, 3, 4, 4])
-
-    with h5py.File(tmp_path / "test_mean_storage.h5", "x") as f:
-        s.write_hdf5_schema(f, {"test_hist": h})
-
-    h_constructed = s.read_hdf5_schema(tmp_path / "test_mean_storage.h5")
-
-    assert {"test_hist"} == h_constructed.keys()
-
-    actual_hist = h.copy()
-    re_constructed_hist = h_constructed["test_hist"]
-
-    # checking types of the reconstructed axes
-    assert type(actual_hist.axes[0]) is type(re_constructed_hist.axes[0])
-    assert actual_hist.storage_type == re_constructed_hist.storage_type
-    # checking values of the essential inputs of the axes
-    assert actual_hist.axes[0].traits == re_constructed_hist.axes[0].traits
-    assert np.allclose(
-        actual_hist.axes[0].centers,
-        re_constructed_hist.axes[0].centers,
-        atol=1e-4,
-        rtol=1e-9,
-    )
-    # checking storage values
-    assert np.allclose(
-        actual_hist.values(), re_constructed_hist.values(), atol=1e-4, rtol=1e-9
-    )
-    # checking variance variances
-    # assert np.allclose(actual_hist.variances(), re_constructed_hist.variances(), atol=1e-4, rtol=1e-9)
-    assert np.allclose(
-        actual_hist.counts(), re_constructed_hist.counts(), atol=1e-4, rtol=1e-9
-    )
+    # checking variance or counts if applicable
+    if isinstance(storage_type, bh.storage.Weight):
+        assert actual_hist.variances() == pytest.approx(
+            re_constructed_hist.variances(), abs=1e-4, rel=1e-9
+        )
+    if isinstance(storage_type, (bh.storage.WeightedMean, bh.storage.Mean)):
+        assert actual_hist.counts() == pytest.approx(
+            re_constructed_hist.counts(), abs=1e-4, rel=1e-9
+        )
