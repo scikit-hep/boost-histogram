@@ -15,7 +15,7 @@ def test_weighted_storge(tmp_path: Path) -> None:
     h = bh.Histogram(bh.axis.Regular(10, 0, 10), storage=bh.storage.Weight())
     h.fill([0.3, 0.3, 0.4, 1.2])
 
-    with h5py.File(tmp_path / "test_weighted_storage.h5", "w") as f:
+    with h5py.File(tmp_path / "test_weighted_storage.h5", "x") as f:
         s.write_hdf5_schema(f, {"test_hist": h})
 
     h_constructed = s.read_hdf5_schema(tmp_path / "test_weighted_storage.h5")
@@ -50,7 +50,7 @@ def test_weighted_mean_storage(tmp_path: Path) -> None:
     h = bh.Histogram(bh.axis.Regular(10, 0, 10), storage=bh.storage.WeightedMean())
     h.fill([0.3, 0.3, 0.4, 1.2, 1.6], sample=[1, 2, 3, 4, 4], weight=[1, 1, 1, 1, 2])
 
-    with h5py.File(tmp_path / "test_weighted_mean_storage.h5", "w") as f:
+    with h5py.File(tmp_path / "test_weighted_mean_storage.h5", "x") as f:
         s.write_hdf5_schema(f, {"test_hist": h})
 
     h_constructed = s.read_hdf5_schema(tmp_path / "test_weighted_mean_storage.h5")
@@ -85,7 +85,7 @@ def test_mean_storage(tmp_path: Path) -> None:
     h = bh.Histogram(bh.axis.Regular(10, 0, 10), storage=bh.storage.Mean())
     h.fill([0.3, 0.3, 0.4, 1.2, 1.6], sample=[1, 2, 3, 4, 4])
 
-    with h5py.File(tmp_path / "test_mean_storage.h5", "w") as f:
+    with h5py.File(tmp_path / "test_mean_storage.h5", "x") as f:
         s.write_hdf5_schema(f, {"test_hist": h})
 
     h_constructed = s.read_hdf5_schema(tmp_path / "test_mean_storage.h5")
