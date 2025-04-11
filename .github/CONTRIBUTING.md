@@ -66,7 +66,6 @@ pip install -ve.
 
 Or if you use uv:
 
-
 ```bash
 uv sync
 ```
