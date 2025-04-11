@@ -7,7 +7,8 @@
       "binaryDir": "${sourceDir}/build/default",
       "warnings": { "dev": true },
       "cacheVariables": {
-        "BOOST_HISTOGRAM_ERRORS": "ON"
+        "BOOST_HISTOGRAM_ERRORS": "ON",
+        "CMAKE_BUILD_TYPE": "Debug"
       }
     }
   ],

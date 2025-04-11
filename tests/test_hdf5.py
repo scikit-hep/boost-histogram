@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import h5py
 import numpy as np
 import pytest
 
@@ -14,7 +15,8 @@ def test_weighted_storge(tmp_path: Path) -> None:
     h = bh.Histogram(bh.axis.Regular(10, 0, 10), storage=bh.storage.Weight())
     h.fill([0.3, 0.3, 0.4, 1.2])
 
-    s.write_hdf5_schema(tmp_path / "test_weighted_storage.h5", {"test_hist": h})
+    with h5py.File(tmp_path / "test_weighted_storage.h5", "w") as f:
+        s.write_hdf5_schema(f, {"test_hist": h})
 
     h_constructed = s.read_hdf5_schema(tmp_path / "test_weighted_storage.h5")
 
@@ -41,14 +43,15 @@ def test_weighted_storge(tmp_path: Path) -> None:
     # checking variance variances
     variances = re_constructed_hist.variances()
     assert variances is not None
-    assert np.allclose(actual_hist.variances(), variances, atol=1e-4, rtol=1e-9)
+    assert actual_hist.variances() == pytest.approx(variances, abs=1e-4, rel=1e-9)
 
 
 def test_weighted_mean_storage(tmp_path: Path) -> None:
     h = bh.Histogram(bh.axis.Regular(10, 0, 10), storage=bh.storage.WeightedMean())
     h.fill([0.3, 0.3, 0.4, 1.2, 1.6], sample=[1, 2, 3, 4, 4], weight=[1, 1, 1, 1, 2])
 
-    s.write_hdf5_schema(tmp_path / "test_weighted_mean_storage.h5", {"test_hist": h})
+    with h5py.File(tmp_path / "test_weighted_mean_storage.h5", "w") as f:
+        s.write_hdf5_schema(f, {"test_hist": h})
 
     h_constructed = s.read_hdf5_schema(tmp_path / "test_weighted_mean_storage.h5")
 
@@ -82,7 +85,8 @@ def test_mean_storage(tmp_path: Path) -> None:
     h = bh.Histogram(bh.axis.Regular(10, 0, 10), storage=bh.storage.Mean())
     h.fill([0.3, 0.3, 0.4, 1.2, 1.6], sample=[1, 2, 3, 4, 4])
 
-    s.write_hdf5_schema(tmp_path / "test_mean_storage.h5", {"test_hist": h})
+    with h5py.File(tmp_path / "test_mean_storage.h5", "w") as f:
+        s.write_hdf5_schema(f, {"test_hist": h})
 
     h_constructed = s.read_hdf5_schema(tmp_path / "test_mean_storage.h5")
 
