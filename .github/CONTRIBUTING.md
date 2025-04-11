@@ -87,15 +87,10 @@ a rebuild.
 CMake is common for C++ development, and ties nicely to many C++ tools, like
 IDEs. If you want to use it for building, you can. Make a build directory and
 run CMake. If you have a specific Python you want to use, add
-`-DPYTHON_EXECUTABLE=$(which python)` or similar to the CMake line. If you need
+`-DPython_EXECUTABLE=$(which python)` or similar to the CMake line. If you need
 help installing the latest CMake version, [visit this
 page](https://cliutils.gitlab.io/modern-cmake/chapters/intro/installing.html);
 one option is to use pip to install CMake.
-
-> Note: Since setuptools uses a subdirectory called `build`, it is _slightly_
-> better to avoid making your CMake directory `build` as well. Also, you will
-> often have multiple CMake directories (`build-release`, `build-debug`, etc.),
-> so avoiding the descriptive name `build` is not a bad idea.
 
 You have three options for running code in python:
 
@@ -108,21 +103,17 @@ pytest`, and not others, like `pytest`
 Here is the recommendation for a CMake install:
 
 ```bash
-python3 -m venv env_cmake
-source ./env_cmake/bin/activate
-pip install dependency-groups
-pip-install-dependency-groups dev
-cmake -S . -B build-debug \
-    -GNinja \
-    -DCMAKE_INSTALL_PREFIX=$(python -c "import distutils.sysconfig; print(distutils.sysconfig.get_python_lib(plat_specific=False,standard_lib=False))")
-cmake --build build-debug -j4
-cmake --install build-debug # Option 3 only
+uv venv
+. .venv/bin/activate
+uv pip install --group dev
+cmake --workflow default
+
+# Option 3 only:
+cmake --install --preset default --prefix $(python -c "import distutils.sysconfig; print(distutils.sysconfig.get_python_lib(plat_specific=False,standard_lib=False))")
 ```
 
 Note that option 3 will require reinstalling if the python files change, while
 options 1-2 will not if you have a recent version of CMake (symlinks are made).
-
-This could be simplified if pybind11 supported the new CMake FindPython tools.
 
 ## Testing
 
@@ -132,8 +123,7 @@ Run the unit tests (requires pytest and NumPy).
 python3 -m pytest
 ```
 
-For CMake, you can also use the `test` target from anywhere, or use `python3 -m
-pytest` or `ctest` from the build directory.
+For CMake, you can use `ctest --preset default` (the workflow above will run the tests).
 
 The build requires `setuptools_scm`. The tests require `numpy`, `pytest`, and
 `pytest-benchmark`. `pytest-sugar` adds some nice formatting.
