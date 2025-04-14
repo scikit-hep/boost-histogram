@@ -1157,12 +1157,8 @@ class Histogram:
                 request_len = stop - start
 
                 # If set to a scalar, then treat it like broadcasting without flow bins
-                if value_ndim == 0:
-                    start = 0 + has_overflow
-                    stop = len(self.axes[n]) + has_underflow
-
-                # Normal setting
-                elif request_len == value_shape[value_n]:
+                # Normal requests here too
+                if value_ndim == 0 or request_len == value_shape[value_n]:
                     start += has_underflow
                     stop += has_underflow
 
