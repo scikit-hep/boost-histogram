@@ -185,21 +185,23 @@ class rebin:
                 newedges = self.axis.edges
 
             if newedges is not None and hasattr(axis, "edges"):
-                assert newedges[0] == axis.edges[0], "Edges must start at first bin"
-                assert newedges[-1] == axis.edges[-1], "Edges must end at last bin"
-                assert all(
+                if newedges[0] != axis.edges[0]:
+                    msg = "Edges must start at first bin"
+                    raise ValueError(msg)
+                if newedges[-1] != axis.edges[-1]:
+                    msg = "Edges must end at last bin"
+                    raise ValueError(msg)
+                matched_ixes = [np.abs(axis.edges - edge).argmin() for edge in newedges]
+                all_close = all(
                     np.isclose(
-                        axis.edges[np.abs(axis.edges - edge).argmin()],
+                        axis.edges[ix],
                         edge,
                     )
-                    for edge in newedges
-                ), "Edges must be in the axis"
-                matched_ixes = np.where(
-                    np.isin(
-                        axis.edges,
-                        newedges,
-                    )
-                )[0]
+                    for ix, edge in zip(matched_ixes, newedges)
+                )
+                if not all_close:
+                    msg = "Edges must be in the axis"
+                    raise ValueError(msg)
                 return [
                     int(ix - matched_ixes[i]) for i, ix in enumerate(matched_ixes[1:])
                 ]
