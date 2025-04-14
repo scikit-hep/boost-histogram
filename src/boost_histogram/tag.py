@@ -192,15 +192,14 @@ class rebin:
                     msg = "Edges must end at last bin"
                     raise ValueError(msg)
                 matched_ixes = [np.abs(axis.edges - edge).argmin() for edge in newedges]
-                all_close = all(
-                    np.isclose(
-                        axis.edges[ix],
-                        edge,
-                    )
+                missing_edges = [
+                    edge
                     for ix, edge in zip(matched_ixes, newedges)
-                )
-                if not all_close:
-                    msg = "Edges must be in the axis"
+                    if not np.isclose(axis.edges[ix], edge)
+                ]
+                if missing_edges:
+                    missing_edges_repr = ", ".join(map(str, missing_edges))
+                    msg = f"Edge(s) {missing_edges_repr} not found in axis"
                     raise ValueError(msg)
                 return [
                     int(ix - matched_ixes[i]) for i, ix in enumerate(matched_ixes[1:])
