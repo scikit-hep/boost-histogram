@@ -650,15 +650,16 @@ def test_rebin_1d(metadata):
     assert_array_equal(hs.axes.edges[0], [1.0, 1.2, 1.6, 2.2, 5.0])
     assert h.axes[0].metadata is hs.axes[0].metadata
 
-    hs = h[bh.rebin(edges=[1.0, 1.2, 1.6, 2.2, 5.0])]
+    exact_edges = [1.0, 1.2, 1.6, 2.2, 5.0]
+    hs = h[bh.rebin(edges=exact_edges)]
     assert_array_equal(hs.view(), [1, 0, 0, 3])
-    assert_array_equal(hs.axes.edges[0], [1.0, 1.2, 1.6, 2.2, 5.0])
+    assert_array_equal(hs.axes.edges[0], exact_edges)
     assert h.axes[0].metadata is hs.axes[0].metadata
 
     fuzzy_edges = [1.0, 1.200000000000001, 1.6, 2.2, 5.0]
     hs = h[bh.rebin(edges=fuzzy_edges)]
     assert_array_equal(hs.view(), [1, 0, 0, 3])
-    assert_array_equal(hs.axes.edges[0], fuzzy_edges)
+    assert_array_equal(hs.axes.edges[0], exact_edges)
     assert h.axes[0].metadata is hs.axes[0].metadata
 
     hs = h[bh.rebin(axis=bh.axis.Variable([1.0, 1.2, 1.6, 2.2, 5.0], metadata="hi"))]
