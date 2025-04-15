@@ -284,6 +284,26 @@ def test_singleflow_slicing():
     assert_array_equal(h[1 : 3 : bh.sum, :], vals[1:3, :].sum(axis=0))
 
 
+def test_set_range_with_scalar():
+    h = bh.Histogram(bh.axis.Integer(0, 10))
+    h[2:5] = 42
+
+    assert h[1] == 0
+    assert h[2] == 42
+    assert h[3] == 42
+    assert h[4] == 42
+    assert h[5] == 0
+
+
+def test_set_all_with_scalar():
+    h = bh.Histogram(bh.axis.Integer(0, 10))
+    h[:] = 42
+
+    assert h[0] == 42
+    assert h[9] == 42
+    assert h[::sum] == 42 * 10
+
+
 def test_pick_str_category():
     noflow = {"underflow": False, "overflow": False}
 
