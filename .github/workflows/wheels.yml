@@ -67,6 +67,10 @@ jobs:
             arch: auto32
             build: "*"
 
+          - os: windows-11-arm
+            arch: auto
+            build: "*"
+
           - os: ubuntu-latest
             arch: auto64
             build: "*manylinux*"

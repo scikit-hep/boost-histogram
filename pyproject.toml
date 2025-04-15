@@ -169,8 +169,9 @@ skip = [
 ]
 test-skip = [
   "cp*-musllinux_*", # Segfaults
-  "cp313t-*win*",
+  "cp313t-win*",
   "pp311-*", # no numpy wheels
+  "cp*-win_arm64", # no numpy wheels
 ]
 enable = ["cpython-freethreading", "pypy"]
 environment-pass = ["SETUPTOOLS_SCM_PRETEND_VERSION"]
