@@ -1,0 +1,136 @@
+from __future__ import annotations
+
+import functools
+from collections.abc import Generator
+from typing import Any
+
+from .. import axis
+
+__all__ = ["_axes_from_dict", "_axis_to_dict"]
+
+
+def __dir__() -> list[str]:
+    return __all__
+
+
+@functools.singledispatch
+def _axis_to_dict(ax: Any, /) -> dict[str, Any]:
+    """Convert an axis to a dictionary."""
+    raise TypeError(f"Unsupported axis type: {type(ax)}")
+
+
+@_axis_to_dict.register(axis.Regular)
+@_axis_to_dict.register(axis.Integer)
+def _(ax: axis.Regular | axis.Integer, /) -> dict[str, Any]:
+    """Convert a Regular axis to a dictionary."""
+    data = {
+        "type": "regular",
+        "lower": ax.edges[0],
+        "upper": ax.edges[-1],
+        "bins": ax.size,
+        "underflow": ax.traits.underflow,
+        "overflow": ax.traits.overflow,
+        "circular": ax.traits.circular,
+    }
+    if ax.metadata is not None:
+        data["metadata"] = ax.metadata
+
+    return data
+
+
+@_axis_to_dict.register
+def _(ax: axis.Variable, /) -> dict[str, Any]:
+    """Convert a Variable or Integer axis to a dictionary."""
+    data = {
+        "type": "variable",
+        "edges": ax.edges,
+        "underflow": ax.traits.underflow,
+        "overflow": ax.traits.overflow,
+        "circular": ax.traits.circular,
+    }
+    if ax.metadata is not None:
+        data["metadata"] = ax.metadata
+
+    return data
+
+
+@_axis_to_dict.register
+def _(ax: axis.IntCategory, /) -> dict[str, Any]:
+    """Convert an IntCategory axis to a dictionary."""
+    data = {
+        "type": "category_int",
+        "categories": list(ax),
+        "flow": ax.traits.overflow,
+    }
+    if ax.metadata is not None:
+        data["metadata"] = ax.metadata
+
+    return data
+
+
+@_axis_to_dict.register
+def _(ax: axis.StrCategory, /) -> dict[str, Any]:
+    """Convert a StrCategory axis to a dictionary."""
+    data = {
+        "type": "category_str",
+        "categories": list(ax),
+        "flow": ax.traits.overflow,
+    }
+    if ax.metadata is not None:
+        data["metadata"] = ax.metadata
+
+    return data
+
+
+@_axis_to_dict.register
+def _(ax: axis.Boolean, /) -> dict[str, Any]:
+    """Convert a Boolean axis to a dictionary."""
+    data = {
+        "type": "boolean",
+    }
+    if ax.metadata is not None:
+        data["metadata"] = ax.metadata
+
+    return data
+
+
+def _axes_from_dict(
+    data_list: list[dict[str, Any]], /
+) -> Generator[axis.Axis, None, None]:
+    for data in data_list:
+        hist_type = data["type"]
+        opts = {"metadata": data["metadata"]} if "metadata" in data else {}
+        if hist_type == "regular":
+            yield axis.Regular(
+                data["bins"],
+                data["lower"],
+                data["upper"],
+                underflow=data["underflow"],
+                overflow=data["overflow"],
+                circular=data["circular"],
+                **opts,
+            )
+        elif hist_type == "variable":
+            yield axis.Variable(
+                data["edges"],
+                underflow=data["underflow"],
+                overflow=data["overflow"],
+                circular=data["circular"],
+                **opts,
+            )
+        elif hist_type == "category_int":
+            yield axis.IntCategory(
+                data["categories"],
+                overflow=data["flow"],
+                **opts,
+            )
+        elif hist_type == "category_str":
+            yield axis.StrCategory(
+                data["categories"],
+                overflow=data["flow"],
+                **opts,
+            )
+        elif hist_type == "boolean":
+            yield axis.Boolean(**opts)
+        else:
+            raise TypeError(f"Unsupported axis type: {hist_type}")
