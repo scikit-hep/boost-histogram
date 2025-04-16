@@ -99,6 +99,26 @@ def test_weighted_mean_to_dict() -> None:
     assert data["storage"]["data"]["variances"] == pytest.approx(np.zeros(4))
 
 
+def test_transform_log_axis_to_dict() -> None:
+    h = bh.Histogram(bh.axis.Regular(10, 1, 10, transform=bh.axis.transform.log))
+    data = generic.to_dict(h)
+
+    assert data["axes"][0]["type"] == "variable"
+    assert data["axes"][0]["edges"] == pytest.approx(
+        np.exp(np.linspace(0, np.log(10), 11))
+    )
+
+
+def test_transform_sqrt_axis_to_dict() -> None:
+    h = bh.Histogram(bh.axis.Regular(10, 0, 10, transform=bh.axis.transform.sqrt))
+    data = generic.to_dict(h)
+
+    assert data["axes"][0]["type"] == "variable"
+    assert data["axes"][0]["edges"] == pytest.approx(
+        (np.linspace(0, np.sqrt(10), 11)) ** 2
+    )
+
+
 @pytest.mark.parametrize(
     "storage_type",
     [
