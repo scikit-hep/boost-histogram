@@ -227,6 +227,8 @@ messages_control.disable = [
   "too-many-statements",
   "too-many-positional-arguments",
   "wrong-import-position",
+  "unused-argument", # Covered by ruff
+  "unsubscriptable-object", # Wrongly triggered
 ]
 
 [tool.ruff.lint]

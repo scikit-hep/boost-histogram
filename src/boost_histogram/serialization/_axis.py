@@ -22,15 +22,26 @@ def _axis_to_dict(ax: Any, /) -> dict[str, Any]:
 @_axis_to_dict.register(axis.Integer)
 def _(ax: axis.Regular | axis.Integer, /) -> dict[str, Any]:
     """Convert a Regular axis to a dictionary."""
-    data = {
-        "type": "regular",
-        "lower": ax.edges[0],
-        "upper": ax.edges[-1],
-        "bins": ax.size,
-        "underflow": ax.traits.underflow,
-        "overflow": ax.traits.overflow,
-        "circular": ax.traits.circular,
-    }
+
+    # Special handling if the axis has a transform
+    if isinstance(ax, axis.Regular) and ax.transform is not None:
+        data = {
+            "type": "variable",
+            "edges": ax.edges,
+            "underflow": ax.traits.underflow,
+            "overflow": ax.traits.overflow,
+            "circular": ax.traits.circular,
+        }
+    else:
+        data = {
+            "type": "regular",
+            "lower": ax.edges[0],
+            "upper": ax.edges[-1],
+            "bins": ax.size,
+            "underflow": ax.traits.underflow,
+            "overflow": ax.traits.overflow,
+            "circular": ax.traits.circular,
+        }
     if ax.metadata is not None:
         data["metadata"] = ax.metadata
 
