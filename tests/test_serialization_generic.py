@@ -12,9 +12,12 @@ from boost_histogram.serialization import generic
     [
         pytest.param(bh.storage.AtomicInt64(), "int", id="atomic_int"),
         pytest.param(bh.storage.Int64(), "int", id="int"),
-        pytest.param(bh.storage.Unlimited(), "double", id="unlimited"), # This always renders as double
+        pytest.param(
+            bh.storage.Unlimited(), "double", id="unlimited"
+        ),  # This always renders as double
         pytest.param(bh.storage.Double(), "double", id="double"),
-    ])
+    ],
+)
 def test_simple_to_dict(storage_type: bh.storage.Storage, expected_type: str) -> None:
     h = bh.Histogram(
         bh.axis.Regular(10, 0, 1),
@@ -32,6 +35,7 @@ def test_simple_to_dict(storage_type: bh.storage.Storage, expected_type: str) ->
     assert not data["axes"][0]["circular"]
     assert data["storage"]["type"] == expected_type
     assert data["storage"]["data"] == pytest.approx(np.zeros(12))
+
 
 def test_weighed_to_dict() -> None:
     h = bh.Histogram(
@@ -51,11 +55,12 @@ def test_weighed_to_dict() -> None:
     assert data["storage"]["data"]["values"] == pytest.approx(np.zeros(14))
     assert data["storage"]["data"]["variances"] == pytest.approx(np.zeros(14))
 
+
 def test_mean_to_dict() -> None:
     h = bh.Histogram(
         bh.axis.StrCategory(["one", "two", "three"]),
         storage=bh.storage.Mean(),
-        metadata = {"name": "hi"},
+        metadata={"name": "hi"},
     )
     data = generic.to_dict(h)
 
@@ -67,6 +72,7 @@ def test_mean_to_dict() -> None:
     assert data["storage"]["data"]["counts"] == pytest.approx(np.zeros(4))
     assert data["storage"]["data"]["values"] == pytest.approx(np.zeros(4))
     assert data["storage"]["data"]["variances"] == pytest.approx(np.zeros(4))
+
 
 def test_weighted_mean_to_dict() -> None:
     h = bh.Histogram(
@@ -81,9 +87,15 @@ def test_weighted_mean_to_dict() -> None:
     assert data["axes"][0]["categories"] == pytest.approx([1, 2, 3])
     assert data["axes"][0]["flow"]
     assert data["storage"]["type"] == "weighted_mean"
-    assert data["storage"]["data"]["sum_of_weights"] == pytest.approx(np.array([20, 40, 60, 10]))
-    assert data["storage"]["data"]["sum_of_weights_squared"] == pytest.approx(np.array([200, 800, 1800, 50]))
-    assert data["storage"]["data"]["values"] == pytest.approx(np.array([100, 200, 300, 1]))
+    assert data["storage"]["data"]["sum_of_weights"] == pytest.approx(
+        np.array([20, 40, 60, 10])
+    )
+    assert data["storage"]["data"]["sum_of_weights_squared"] == pytest.approx(
+        np.array([200, 800, 1800, 50])
+    )
+    assert data["storage"]["data"]["values"] == pytest.approx(
+        np.array([100, 200, 300, 1])
+    )
     assert data["storage"]["data"]["variances"] == pytest.approx(np.zeros(4))
 
 
@@ -94,7 +106,8 @@ def test_weighted_mean_to_dict() -> None:
         pytest.param(bh.storage.Int64(), id="int"),
         pytest.param(bh.storage.Double(), id="double"),
         pytest.param(bh.storage.Unlimited(), id="unlimited"),
-    ])
+    ],
+)
 def test_round_trip_simple(storage_type: bh.storage.Storage) -> None:
     h = bh.Histogram(
         bh.axis.Regular(10, 0, 10),
@@ -126,6 +139,7 @@ def test_round_trip_weighted() -> None:
     assert pytest.approx(np.array(h.axes[0])) == np.array(h2.axes[0])
     assert np.asarray(h) == pytest.approx(h2)
 
+
 def test_round_trip_mean() -> None:
     h = bh.Histogram(
         bh.axis.StrCategory(["1", "2", "3"]),
@@ -138,6 +152,7 @@ def test_round_trip_mean() -> None:
 
     assert pytest.approx(np.array(h.axes[0])) == np.array(h2.axes[0])
     assert np.asarray(h) == pytest.approx(h2)
+
 
 def test_round_trip_weighted_mean() -> None:
     h = bh.Histogram(

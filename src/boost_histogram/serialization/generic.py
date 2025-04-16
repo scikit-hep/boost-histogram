@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from .. import Histogram
-from ._axis import _axes_from_dict, _axis_to_dict
+from ._axis import _axis_from_dict, _axis_to_dict
 from ._storage import _data_from_dict, _storage_from_dict, _storage_to_dict
 
 __all__ = ["from_dict", "to_dict"]
@@ -31,7 +31,7 @@ def from_dict(data: dict[str, Any], /) -> Histogram:
     """Convert a dictionary to an Histogram."""
 
     h = Histogram(
-        *_axes_from_dict(data["axes"]),
+        *(_axis_from_dict(ax) for ax in data["axes"]),
         storage=_storage_from_dict(data["storage"]),
         metadata=data.get("metadata"),
     )

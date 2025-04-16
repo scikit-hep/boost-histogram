@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 import functools
-from collections.abc import Generator
 from typing import Any
 
 from .. import axis
 
-__all__ = ["_axes_from_dict", "_axis_to_dict"]
+__all__ = ["_axis_from_dict", "_axis_to_dict"]
 
 
 def __dir__() -> list[str]:
@@ -94,43 +93,39 @@ def _(ax: axis.Boolean, /) -> dict[str, Any]:
     return data
 
 
-def _axes_from_dict(
-    data_list: list[dict[str, Any]], /
-) -> Generator[axis.Axis, None, None]:
-    for data in data_list:
-        hist_type = data["type"]
-        opts = {"metadata": data["metadata"]} if "metadata" in data else {}
-        if hist_type == "regular":
-            yield axis.Regular(
-                data["bins"],
-                data["lower"],
-                data["upper"],
-                underflow=data["underflow"],
-                overflow=data["overflow"],
-                circular=data["circular"],
-                **opts,
-            )
-        elif hist_type == "variable":
-            yield axis.Variable(
-                data["edges"],
-                underflow=data["underflow"],
-                overflow=data["overflow"],
-                circular=data["circular"],
-                **opts,
-            )
-        elif hist_type == "category_int":
-            yield axis.IntCategory(
-                data["categories"],
-                overflow=data["flow"],
-                **opts,
-            )
-        elif hist_type == "category_str":
-            yield axis.StrCategory(
-                data["categories"],
-                overflow=data["flow"],
-                **opts,
-            )
-        elif hist_type == "boolean":
-            yield axis.Boolean(**opts)
-        else:
-            raise TypeError(f"Unsupported axis type: {hist_type}")
+def _axis_from_dict(data: dict[str, Any], /) -> axis.Axis:
+    hist_type = data["type"]
+    if hist_type == "regular":
+        return axis.Regular(
+            data["bins"],
+            data["lower"],
+            data["upper"],
+            underflow=data["underflow"],
+            overflow=data["overflow"],
+            circular=data["circular"],
+            metadata=data.get("metadata"),
+        )
+    if hist_type == "variable":
+        return axis.Variable(
+            data["edges"],
+            underflow=data["underflow"],
+            overflow=data["overflow"],
+            circular=data["circular"],
+            metadata=data.get("metadata"),
+        )
+    if hist_type == "category_int":
+        return axis.IntCategory(
+            data["categories"],
+            overflow=data["flow"],
+            metadata=data.get("metadata"),
+        )
+    if hist_type == "category_str":
+        return axis.StrCategory(
+            data["categories"],
+            overflow=data["flow"],
+            metadata=data.get("metadata"),
+        )
+    if hist_type == "boolean":
+        return axis.Boolean(metadata=data.get("metadata"))
+
+    raise TypeError(f"Unsupported axis type: {hist_type}")
