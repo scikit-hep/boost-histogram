@@ -41,14 +41,13 @@ def test_hdf5_storage(
 
     filepath = tmp_path / "hist.h5"
     with h5py.File(filepath, "x") as f:
-        s.write_hdf5_schema(f, {"test_hist": h})
+        grp = f.create_group("test_hist")
+        s.write_hdf5_schema(grp, h)
 
-    h_constructed = s.read_hdf5_schema(filepath)
-
-    assert {"test_hist"} == h_constructed.keys()
+    with h5py.File(filepath) as f:
+        re_constructed_hist = s.read_hdf5_schema(f["test_hist"])
 
     actual_hist = h.copy()
-    re_constructed_hist = h_constructed["test_hist"]
 
     # checking types of the reconstructed axes
     assert type(actual_hist.axes[0]) is type(re_constructed_hist.axes[0])
