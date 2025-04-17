@@ -16,19 +16,18 @@ from .typing import AxisLike
 __all__ = ("Locator", "Slicer", "at", "loc", "overflow", "rebin", "sum", "underflow")
 
 
-class Slicer:
+def Slicer() -> np.lib._index_tricks_impl.IndexExpression:
     """
-    This is a simple class to make slicing inside dictionaries simpler.
+    This is a simple function to make slicing inside dictionaries simpler.
     This is how it should be used:
 
         s = bh.tag.Slicer()
 
         h[{0: s[::bh.rebin(2)]}]   # rebin axis 0 by two
 
+    Note: It is encouraged to use "np.s_" directly instead of this function.
     """
-
-    def __getitem__(self, item: slice) -> slice:
-        return item
+    return np.s_
 
 
 T = TypeVar("T", bound="Locator")
