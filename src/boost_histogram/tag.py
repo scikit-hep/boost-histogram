@@ -18,14 +18,11 @@ __all__ = ("Locator", "Slicer", "at", "loc", "overflow", "rebin", "sum", "underf
 
 def Slicer() -> np.lib._index_tricks_impl.IndexExpression:
     """
-    This is a simple function to make slicing inside dictionaries simpler.
-    This is how it should be used:
+    It is encouraged to use "np.s_" directly instead of this function:
 
-        s = bh.tag.Slicer()
+        h[{0: np.s_[::bh.rebin(2)]}]   # rebin axis 0 by two
 
-        h[{0: s[::bh.rebin(2)]}]   # rebin axis 0 by two
-
-    Note: It is encouraged to use "np.s_" directly instead of this function.
+    This is provided for backward compatibility.
     """
     return np.s_
 

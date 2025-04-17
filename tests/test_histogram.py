@@ -718,45 +718,50 @@ def test_rebin_nd():
         bh.axis.Regular(20, 1, 3), bh.axis.Regular(30, 1, 3), bh.axis.Regular(40, 1, 3)
     )
 
-    s = bh.tag.Slicer()
+    assert h[{0: np.s_[:: bh.rebin(2)]}].axes.size == (10, 30, 40)
+    assert h[{1: np.s_[:: bh.rebin(2)]}].axes.size == (20, 15, 40)
+    assert h[{2: np.s_[:: bh.rebin(2)]}].axes.size == (20, 30, 20)
 
-    assert h[{0: s[:: bh.rebin(2)]}].axes.size == (10, 30, 40)
-    assert h[{1: s[:: bh.rebin(2)]}].axes.size == (20, 15, 40)
-    assert h[{2: s[:: bh.rebin(2)]}].axes.size == (20, 30, 20)
-
-    assert h[{0: s[:: bh.rebin(groups=[1, 2, 17])]}].axes.size == (3, 30, 40)
-    assert h[{1: s[:: bh.rebin(groups=[1, 2, 27])]}].axes.size == (20, 3, 40)
-    assert h[{2: s[:: bh.rebin(groups=[1, 2, 37])]}].axes.size == (20, 30, 3)
+    assert h[{0: np.s_[:: bh.rebin(groups=[1, 2, 17])]}].axes.size == (3, 30, 40)
+    assert h[{1: np.s_[:: bh.rebin(groups=[1, 2, 27])]}].axes.size == (20, 3, 40)
+    assert h[{2: np.s_[:: bh.rebin(groups=[1, 2, 37])]}].axes.size == (20, 30, 3)
     assert np.all(
         np.isclose(
-            h[{0: s[:: bh.rebin(groups=[1, 2, 17])]}].axes[0].edges,
+            h[{0: np.s_[:: bh.rebin(groups=[1, 2, 17])]}].axes[0].edges,
             [1.0, 1.1, 1.3, 3.0],
         )
     )
     assert np.all(
         np.isclose(
-            h[{1: s[:: bh.rebin(groups=[1, 2, 27])]}].axes[1].edges,
+            h[{1: np.s_[:: bh.rebin(groups=[1, 2, 27])]}].axes[1].edges,
             [1.0, 1.06666667, 1.2, 3.0],
         )
     )
     assert np.all(
         np.isclose(
-            h[{2: s[:: bh.rebin(groups=[1, 2, 37])]}].axes[2].edges,
+            h[{2: np.s_[:: bh.rebin(groups=[1, 2, 37])]}].axes[2].edges,
             [1.0, 1.05, 1.15, 3.0],
         )
     )
 
-    assert h[{0: s[:: bh.rebin(2)], 2: s[:: bh.rebin(2)]}].axes.size == (10, 30, 20)
+    assert h[{0: np.s_[:: bh.rebin(2)], 2: np.s_[:: bh.rebin(2)]}].axes.size == (
+        10,
+        30,
+        20,
+    )
 
     assert h[
-        {0: s[:: bh.rebin(groups=[1, 2, 17])], 2: s[:: bh.rebin(groups=[1, 2, 37])]}
+        {
+            0: np.s_[:: bh.rebin(groups=[1, 2, 17])],
+            2: np.s_[:: bh.rebin(groups=[1, 2, 37])],
+        }
     ].axes.size == (3, 30, 3)
     assert np.all(
         np.isclose(
             h[
                 {
-                    0: s[:: bh.rebin(groups=[1, 2, 17])],
-                    2: s[:: bh.rebin(groups=[1, 2, 37])],
+                    0: np.s_[:: bh.rebin(groups=[1, 2, 17])],
+                    2: np.s_[:: bh.rebin(groups=[1, 2, 37])],
                 }
             ]
             .axes[0]
@@ -768,8 +773,8 @@ def test_rebin_nd():
         np.isclose(
             h[
                 {
-                    0: s[:: bh.rebin(groups=[1, 2, 17])],
-                    2: s[:: bh.rebin(groups=[1, 2, 37])],
+                    0: np.s_[:: bh.rebin(groups=[1, 2, 17])],
+                    2: np.s_[:: bh.rebin(groups=[1, 2, 37])],
                 }
             ]
             .axes[2]
@@ -778,7 +783,7 @@ def test_rebin_nd():
         )
     )
 
-    assert h[{1: s[:: bh.sum]}].axes.size == (20, 40)
+    assert h[{1: np.s_[:: bh.sum]}].axes.size == (20, 40)
     assert h[{1: bh.sum}].axes.size == (20, 40)
 
 
