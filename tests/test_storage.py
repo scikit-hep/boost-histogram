@@ -338,39 +338,40 @@ def test_non_uniform_rebin_with_weights():
         storage=bh.storage.Weight(),
     )
 
-    s = bh.tag.Slicer()
-
-    assert h[{0: s[:: bh.rebin(groups=[1, 2, 17])]}].axes.size == (3, 30, 40)
-    assert h[{1: s[:: bh.rebin(groups=[1, 2, 27])]}].axes.size == (20, 3, 40)
-    assert h[{2: s[:: bh.rebin(groups=[1, 2, 37])]}].axes.size == (20, 30, 3)
+    assert h[{0: np.s_[:: bh.rebin(groups=[1, 2, 17])]}].axes.size == (3, 30, 40)
+    assert h[{1: np.s_[:: bh.rebin(groups=[1, 2, 27])]}].axes.size == (20, 3, 40)
+    assert h[{2: np.s_[:: bh.rebin(groups=[1, 2, 37])]}].axes.size == (20, 30, 3)
     assert np.all(
         np.isclose(
-            h[{0: s[:: bh.rebin(groups=[1, 2, 17])]}].axes[0].edges,
+            h[{0: np.s_[:: bh.rebin(groups=[1, 2, 17])]}].axes[0].edges,
             [1.0, 1.1, 1.3, 3.0],
         )
     )
     assert np.all(
         np.isclose(
-            h[{1: s[:: bh.rebin(groups=[1, 2, 27])]}].axes[1].edges,
+            h[{1: np.s_[:: bh.rebin(groups=[1, 2, 27])]}].axes[1].edges,
             [1.0, 1.06666667, 1.2, 3.0],
         )
     )
     assert np.all(
         np.isclose(
-            h[{2: s[:: bh.rebin(groups=[1, 2, 37])]}].axes[2].edges,
+            h[{2: np.s_[:: bh.rebin(groups=[1, 2, 37])]}].axes[2].edges,
             [1.0, 1.05, 1.15, 3.0],
         )
     )
 
     assert h[
-        {0: s[:: bh.rebin(groups=[1, 2, 17])], 2: s[:: bh.rebin(groups=[1, 2, 37])]}
+        {
+            0: np.s_[:: bh.rebin(groups=[1, 2, 17])],
+            2: np.s_[:: bh.rebin(groups=[1, 2, 37])],
+        }
     ].axes.size == (3, 30, 3)
     assert np.all(
         np.isclose(
             h[
                 {
-                    0: s[:: bh.rebin(groups=[1, 2, 17])],
-                    2: s[:: bh.rebin(groups=[1, 2, 37])],
+                    0: np.s_[:: bh.rebin(groups=[1, 2, 17])],
+                    2: np.s_[:: bh.rebin(groups=[1, 2, 37])],
                 }
             ]
             .axes[0]
@@ -382,8 +383,8 @@ def test_non_uniform_rebin_with_weights():
         np.isclose(
             h[
                 {
-                    0: s[:: bh.rebin(groups=[1, 2, 17])],
-                    2: s[:: bh.rebin(groups=[1, 2, 37])],
+                    0: np.s_[:: bh.rebin(groups=[1, 2, 17])],
+                    2: np.s_[:: bh.rebin(groups=[1, 2, 37])],
                 }
             ]
             .axes[2]
