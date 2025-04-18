@@ -186,6 +186,69 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "jonas-eschle",
+      "name": "Jonas Eschle",
+      "avatar_url": "https://avatars.githubusercontent.com/u/17454848?v=4",
+      "profile": "https://github.com/jonas-eschle",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "Saransh-cpp",
+      "name": "Saransh Chopra",
+      "avatar_url": "https://avatars.githubusercontent.com/u/74055102?v=4",
+      "profile": "https://saransh-cpp.github.io/",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "matthewfeickert",
+      "name": "Matthew Feickert",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5142394?v=4",
+      "profile": "http://www.matthewfeickert.com/",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "andrzejnovak",
+      "name": "Andrzej Novak",
+      "avatar_url": "https://avatars.githubusercontent.com/u/13226500?v=4",
+      "profile": "http://andrzejnovak.github.io/",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "veprbl",
+      "name": "Dmitry Kalinkin",
+      "avatar_url": "https://avatars.githubusercontent.com/u/245573?v=4",
+      "profile": "https://github.com/veprbl",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "klieret",
+      "name": "Kilian Lieret",
+      "avatar_url": "https://avatars.githubusercontent.com/u/13602468?v=4",
+      "profile": "https://www.lieret.net/",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "riga",
+      "name": "Marcel Rieger",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1908734?v=4",
+      "profile": "https://github.com/riga",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
