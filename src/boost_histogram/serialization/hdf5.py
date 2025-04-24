@@ -58,16 +58,13 @@ def write_hdf5_schema(grp: h5py.Group, /, histogram: Histogram) -> None:
     # Storage
     storage_grp = grp.create_group("storage")
     storage_type = hist_dict["storage"]["type"]
-    storage_data = hist_dict["storage"]["data"]
 
     storage_grp.attrs["type"] = storage_type
 
-    if not isinstance(storage_data, dict):
-        storage_grp.create_dataset("data", shape=storage_data.shape, data=storage_data)
-    else:
-        storage_data_grp = storage_grp.create_group("data")
-        for key, value in storage_data.items():
-            storage_data_grp.create_dataset(key, shape=value.shape, data=value)
+    for key, value in hist_dict["storage"].items():
+        if key == "type":
+            continue
+        storage_grp.create_dataset(key, shape=value.shape, data=value)
 
 
 def read_hdf5_schema(grp: h5py.Group, /) -> Histogram:
@@ -84,12 +81,8 @@ def read_hdf5_schema(grp: h5py.Group, /) -> Histogram:
     storage_grp = grp["storage"]
     assert isinstance(storage_grp, h5py.Group)
     storage: dict[str, Any] = {"type": storage_grp.attrs["type"]}
-    data_grp = storage_grp["data"]
-    if isinstance(data_grp, h5py.Dataset):
-        storage["data"] = np.array(data_grp)
-    else:
-        assert isinstance(data_grp, h5py.Group)
-        storage["data"] = {key: np.array(data_grp[key]) for key in data_grp}
+    for key in storage_grp:
+        storage[key] = np.asarray(storage_grp[key])
 
     histogram_dict = {"axes": axes, "storage": storage}
     if "metadata" in grp:
