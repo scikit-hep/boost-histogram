@@ -34,7 +34,7 @@ def test_simple_to_dict(storage_type: bh.storage.Storage, expected_type: str) ->
     assert data["axes"][0]["overflow"]
     assert not data["axes"][0]["circular"]
     assert data["storage"]["type"] == expected_type
-    assert data["storage"]["data"] == pytest.approx(np.zeros(12))
+    assert data["storage"]["values"] == pytest.approx(np.zeros(12))
 
 
 def test_weighed_to_dict() -> None:
@@ -52,8 +52,8 @@ def test_weighed_to_dict() -> None:
     assert data["axes"][0]["overflow"]
     assert not data["axes"][0]["circular"]
     assert data["storage"]["type"] == "weighted"
-    assert data["storage"]["data"]["values"] == pytest.approx(np.zeros(14))
-    assert data["storage"]["data"]["variances"] == pytest.approx(np.zeros(14))
+    assert data["storage"]["values"] == pytest.approx(np.zeros(14))
+    assert data["storage"]["variances"] == pytest.approx(np.zeros(14))
 
 
 def test_mean_to_dict() -> None:
@@ -69,9 +69,9 @@ def test_mean_to_dict() -> None:
     assert data["axes"][0]["categories"] == ["one", "two", "three"]
     assert data["axes"][0]["flow"]
     assert data["storage"]["type"] == "mean"
-    assert data["storage"]["data"]["counts"] == pytest.approx(np.zeros(4))
-    assert data["storage"]["data"]["values"] == pytest.approx(np.zeros(4))
-    assert data["storage"]["data"]["variances"] == pytest.approx(np.zeros(4))
+    assert data["storage"]["counts"] == pytest.approx(np.zeros(4))
+    assert data["storage"]["values"] == pytest.approx(np.zeros(4))
+    assert data["storage"]["variances"] == pytest.approx(np.zeros(4))
 
 
 def test_weighted_mean_to_dict() -> None:
@@ -87,16 +87,14 @@ def test_weighted_mean_to_dict() -> None:
     assert data["axes"][0]["categories"] == pytest.approx([1, 2, 3])
     assert data["axes"][0]["flow"]
     assert data["storage"]["type"] == "weighted_mean"
-    assert data["storage"]["data"]["sum_of_weights"] == pytest.approx(
+    assert data["storage"]["sum_of_weights"] == pytest.approx(
         np.array([20, 40, 60, 10])
     )
-    assert data["storage"]["data"]["sum_of_weights_squared"] == pytest.approx(
+    assert data["storage"]["sum_of_weights_squared"] == pytest.approx(
         np.array([200, 800, 1800, 50])
     )
-    assert data["storage"]["data"]["values"] == pytest.approx(
-        np.array([100, 200, 300, 1])
-    )
-    assert data["storage"]["data"]["variances"] == pytest.approx(np.zeros(4))
+    assert data["storage"]["values"] == pytest.approx(np.array([100, 200, 300, 1]))
+    assert data["storage"]["variances"] == pytest.approx(np.zeros(4))
 
 
 def test_transform_log_axis_to_dict() -> None:

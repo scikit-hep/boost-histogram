@@ -32,7 +32,7 @@ def _(
 ) -> dict[str, Any]:
     return {
         "type": "int" if np.issubdtype(data.dtype, np.integer) else "double",
-        "data": data,
+        "values": data,
     }
 
 
@@ -40,10 +40,8 @@ def _(
 def _(_storage: storage.Weight, /, data: Any) -> dict[str, Any]:
     return {
         "type": "weighted",
-        "data": {
-            "values": data.value,
-            "variances": data.variance,
-        },
+        "values": data.value,
+        "variances": data.variance,
     }
 
 
@@ -51,11 +49,9 @@ def _(_storage: storage.Weight, /, data: Any) -> dict[str, Any]:
 def _(_storage: storage.Mean, /, data: Any) -> dict[str, Any]:
     return {
         "type": "mean",
-        "data": {
-            "counts": data.count,
-            "values": data.value,
-            "variances": data.variance,
-        },
+        "counts": data.count,
+        "values": data.value,
+        "variances": data.variance,
     }
 
 
@@ -63,12 +59,10 @@ def _(_storage: storage.Mean, /, data: Any) -> dict[str, Any]:
 def _(_storage: storage.WeightedMean, /, data: Any) -> dict[str, Any]:
     return {
         "type": "weighted_mean",
-        "data": {
-            "sum_of_weights": data.sum_of_weights,
-            "sum_of_weights_squared": data.sum_of_weights_squared,
-            "values": data.value,
-            "variances": data.variance,
-        },
+        "sum_of_weights": data.sum_of_weights,
+        "sum_of_weights_squared": data.sum_of_weights_squared,
+        "values": data.value,
+        "variances": data.variance,
     }
 
 
@@ -95,20 +89,20 @@ def _data_from_dict(data: dict[str, Any], /) -> np.typing.NDArray[Any]:
     storage_type = data["type"]
 
     if storage_type in {"int", "double"}:
-        return data["data"]
+        return data["values"]
     if storage_type == "weighted":
-        return np.stack([data["data"]["values"], data["data"]["variances"]]).T
+        return np.stack([data["values"], data["variances"]]).T
     if storage_type == "mean":
         return np.stack(
-            [data["data"]["counts"], data["data"]["values"], data["data"]["variances"]],
+            [data["counts"], data["values"], data["variances"]],
         ).T
     if storage_type == "weighted_mean":
         return np.stack(
             [
-                data["data"]["sum_of_weights"],
-                data["data"]["sum_of_weights_squared"],
-                data["data"]["values"],
-                data["data"]["variances"],
+                data["sum_of_weights"],
+                data["sum_of_weights_squared"],
+                data["values"],
+                data["variances"],
             ],
         ).T
 
