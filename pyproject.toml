@@ -60,9 +60,6 @@ Discussions = "https://github.com/scikit-hep/boost-histogram/discussions"
 Documentation = "https://boost-histogram.readthedocs.io/"
 Homepage = "https://github.com/scikit-hep/boost-histogram"
 
-[project.optional-dependencies]
-hdf5 = ["h5py"]
-
 
 [dependency-groups]
 dev = [
