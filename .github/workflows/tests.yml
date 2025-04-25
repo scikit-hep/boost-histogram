@@ -87,14 +87,13 @@ jobs:
           create-symlink: true
 
       - name: Install python tools
-        run: |
-          uv pip install --system --python=python --group dev --only-binary numpy pytest-github-actions-annotate-failures
+        run: uv pip install --system --python=python --group github
 
       - name: Configure
-        run: cmake --preset default -DCMAKE_BUILD_TYPE=Debug ${{ matrix.cmake-extras }}
+        run: cmake --preset default ${{ matrix.cmake-extras }}
 
       - name: Build
-        run: cmake --build --preset default -j 4
+        run: cmake --build --preset default
 
       - name: Test
         run: ctest --preset default -j 4
