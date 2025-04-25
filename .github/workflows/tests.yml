@@ -61,11 +61,8 @@ jobs:
         include:
           - python-version: "3.9"
             cmake-extras: "-DCMAKE_CXX_STANDARD=17"
-            extras: h5py
           - python-version: "3.11"
-            extras: h5py
           - python-version: "3.13"
-            extras: h5py
           - python-version: "3.13t"
           - python-version: "pypy3.10"
 
@@ -90,11 +87,7 @@ jobs:
           create-symlink: true
 
       - name: Install python tools
-        run: uv pip install --system --python=python --group github ${{ matrix.extras }}
-
-      - name: Also install hdf5 if supported
-        if: matrix.python-version == '3.11' || matrix.python-version == '3.13'
-        run: uv pip install --system --python=python h5py
+        run: uv pip install --system --python=python --group github
 
       - name: Configure
         run: cmake --preset default ${{ matrix.cmake-extras }}
