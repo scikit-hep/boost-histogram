@@ -79,7 +79,7 @@ jobs:
 
       - uses: rui314/setup-mold@v1
 
-      - uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v6
 
       - uses: hendrikmuhs/ccache-action@v1.2
         with:
@@ -127,7 +127,7 @@ jobs:
           submodules: true
           fetch-depth: 0
 
-      - uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v6
 
       - uses: pypa/cibuildwheel@v2.23
         with:
