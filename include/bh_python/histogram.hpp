@@ -7,6 +7,7 @@
 
 #include <bh_python/pybind11.hpp>
 
+#include <bh_python/multi_weight.hpp>
 #include <bh_python/accumulators/mean.hpp>
 #include <bh_python/accumulators/weighted_mean.hpp>
 #include <bh_python/accumulators/weighted_sum.hpp>
@@ -94,6 +95,14 @@ py::buffer_info make_buffer(bh::histogram<A, bh::unlimited_storage<Allocator>>& 
     auto& buffer = bh::unsafe_access::unlimited_storage_buffer(storage);
     buffer.visit(detail::double_converter(), buffer);
     return detail::make_buffer_impl(axes, flow, static_cast<double*>(buffer.ptr));
+}
+
+/// Specialization for multi_weight buffer
+template <class A, class T>
+py::buffer_info make_buffer(bh::histogram<A, bh::multi_weight<T>>& h, bool flow) {
+    const auto& axes = bh::unsafe_access::axes(h);
+    auto& storage    = bh::unsafe_access::storage(h);
+    return detail::make_buffer_impl(axes, flow, static_cast<double*>(storage.buffer_.get()));
 }
 
 /// Compute the bin of an array from a runtime list
