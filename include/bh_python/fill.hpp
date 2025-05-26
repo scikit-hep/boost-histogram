@@ -213,6 +213,36 @@ void fill_impl(bh::detail::accumulator_traits_holder<true, const double&>,
         weight);
 }
 
+// for multi_weight
+template <class Histogram, class VArgs>
+void fill_impl(bh::detail::accumulator_traits_holder<false, boost::span<double>>,
+               Histogram& h,
+               const VArgs& vargs,
+               const weight_t& weight,
+               py::kwargs& kwargs) {
+    // weight is not used, "use" it once to suppress "unused variable" complaints by compiler
+    (void)weight;
+    auto s = required_arg(kwargs, "sample");
+    finalize_args(kwargs);
+    auto sarray = py::cast<c_array_t<double>>(s);
+    if(sarray.ndim() != 2)
+        throw std::invalid_argument("Sample array for MultiWeight must be 2D");
+
+
+    auto buf = sarray.request();
+    std::size_t buf_shape0  = static_cast<std::size_t>(buf.shape[0]);
+    std::size_t buf_shape1  = static_cast<std::size_t>(buf.shape[1]);
+    double* src = static_cast<double*>(buf.ptr);
+    std::vector<boost::span<double>> vec_s;
+    vec_s.reserve(buf_shape0);
+    for (std::size_t i = 0; i < buf_shape0; i++) {
+        vec_s.emplace_back(boost::span<double>{src + i * buf_shape1, buf_shape1});
+    }
+    // releasing gil here is safe, we don't manipulate refcounts
+    py::gil_scoped_release lock;
+    h.fill(vargs, bh::sample(vec_s));
+}
+
 } // namespace detail
 
 template <class Histogram>
