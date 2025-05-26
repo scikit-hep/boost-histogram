@@ -54,5 +54,6 @@ void register_histograms(py::module& hist) {
     register_histogram<storage::multi_weight>(
         hist,
         "any_multi_weight",
-        "N-dimensional histogram for storing multiple weights at once with any axis types.");
+        "N-dimensional histogram for storing multiple weights at once with any axis "
+        "types.");
 }

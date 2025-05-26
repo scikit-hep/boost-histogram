@@ -211,8 +211,10 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
 }
 
 template <>
-auto register_histogram<bh::multi_weight<double>>(py::module& m, const char* name, const char* desc) {
-    using S = bh::multi_weight<double>;
+auto register_histogram<bh::multi_weight<double>>(py::module& m,
+                                                  const char* name,
+                                                  const char* desc) {
+    using S           = bh::multi_weight<double>;
     using histogram_t = bh::histogram<vector_axis_variant, S>;
     using value_type  = std::vector<double>;
 
@@ -341,10 +343,10 @@ auto register_histogram<bh::multi_weight<double>>(py::module& m, const char* nam
              [](const histogram_t& self, py::args& args) -> value_type {
                  auto int_args = py::cast<std::vector<int>>(args);
                  auto at_value = self.at(int_args);
-                 //value_type return_obj;
-                 //return_obj.insert(return_obj.end(), at_value.begin(), at_value.end());
-                 //return_obj.assign(at_value.begin(), at_value.end());
-                 //return return_obj;
+                 // value_type return_obj;
+                 // return_obj.insert(return_obj.end(), at_value.begin(),
+                 // at_value.end()); return_obj.assign(at_value.begin(),
+                 // at_value.end()); return return_obj;
                  return value_type(at_value.begin(), at_value.end());
              })
 
@@ -358,7 +360,7 @@ auto register_histogram<bh::multi_weight<double>>(py::module& m, const char* nam
 
         .def(
             "sum",
-            [](const histogram_t& self, bool flow) -> value_type{
+            [](const histogram_t& self, bool flow) -> value_type {
                 py::gil_scoped_release release;
                 return bh::algorithm::sum(
                     self, flow ? bh::coverage::all : bh::coverage::inner);
