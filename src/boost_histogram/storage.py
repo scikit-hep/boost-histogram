@@ -12,11 +12,11 @@ __all__ = [
     "Double",
     "Int64",
     "Mean",
+    "MultiWeight",
     "Storage",
     "Unlimited",
     "Weight",
     "WeightedMean",
-    "MultiWeight",
 ]
 
 
@@ -74,6 +74,7 @@ class Mean(store.mean, Storage, family=boost_histogram):
 
 class WeightedMean(store.weighted_mean, Storage, family=boost_histogram):
     accumulator = accumulators.WeightedMean
+
 
 class MultiWeight(store.multi_weight, Storage, family=boost_histogram):
     accumulator = float
