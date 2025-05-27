@@ -31,13 +31,11 @@ struct multi_weight_value : public boost::span<T> {
         return !operator==(values);
     }
 
-    void operator+=(const std::vector<T> values) {
-         operator+=(boost::span<T>(values));
-    }
+    void operator+=(const std::vector<T> values) { operator+=(boost::span<T>(values)); }
 
     void operator+=(const boost::span<T> values) {
-    //template <class S>
-    //void operator+=(const S values) {
+        // template <class S>
+        // void operator+=(const S values) {
         if(values.size() != this->size())
             throw std::runtime_error("size does not match");
         auto it = this->begin();
