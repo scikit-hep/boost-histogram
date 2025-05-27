@@ -12,6 +12,7 @@
 #include <bh_python/overload.hpp>
 #include <bh_python/vector_string_caster.hpp>
 
+#include <boost/core/ignore_unused.hpp>
 #include <boost/histogram/detail/accumulator_traits.hpp>
 #include <boost/histogram/detail/axes.hpp>
 #include <boost/histogram/sample.hpp>
@@ -19,7 +20,6 @@
 #include <boost/histogram/weight.hpp>
 #include <boost/mp11.hpp>
 #include <boost/variant2/variant.hpp>
-#include <boost/core/ignore_unused.hpp>
 
 #include <stdexcept>
 #include <type_traits>
@@ -228,7 +228,7 @@ void fill_impl(bh::detail::accumulator_traits_holder<false, boost::span<double>>
     if(sarray.ndim() != 2)
         throw std::invalid_argument("Sample array for MultiWeight must be 2D");
 
-    auto buf               = sarray.request();
+    auto buf = sarray.request();
     // releasing gil here is safe, we don't manipulate refcounts
     py::gil_scoped_release lock;
     std::size_t buf_shape0 = static_cast<std::size_t>(buf.shape[0]);
