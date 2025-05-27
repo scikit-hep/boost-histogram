@@ -19,6 +19,7 @@
 #include <boost/histogram/weight.hpp>
 #include <boost/mp11.hpp>
 #include <boost/variant2/variant.hpp>
+#include <boost/core/ignore_unused.hpp>
 
 #include <stdexcept>
 #include <type_traits>
@@ -220,9 +221,7 @@ void fill_impl(bh::detail::accumulator_traits_holder<false, boost::span<double>>
                const VArgs& vargs,
                const weight_t& weight,
                py::kwargs& kwargs) {
-    // weight is not used, "use" it once to suppress "unused variable" complaints by
-    // compiler
-    (void)weight;
+    boost::ignore_unused(weight);
     auto s = required_arg(kwargs, "sample");
     finalize_args(kwargs);
     auto sarray = py::cast<c_array_t<double>>(s);
@@ -230,6 +229,8 @@ void fill_impl(bh::detail::accumulator_traits_holder<false, boost::span<double>>
         throw std::invalid_argument("Sample array for MultiWeight must be 2D");
 
     auto buf               = sarray.request();
+    // releasing gil here is safe, we don't manipulate refcounts
+    py::gil_scoped_release lock;
     std::size_t buf_shape0 = static_cast<std::size_t>(buf.shape[0]);
     std::size_t buf_shape1 = static_cast<std::size_t>(buf.shape[1]);
     double* src            = static_cast<double*>(buf.ptr);
@@ -238,8 +239,6 @@ void fill_impl(bh::detail::accumulator_traits_holder<false, boost::span<double>>
     for(std::size_t i = 0; i < buf_shape0; i++) {
         vec_s.emplace_back(boost::span<double>{src + i * buf_shape1, buf_shape1});
     }
-    // releasing gil here is safe, we don't manipulate refcounts
-    py::gil_scoped_release lock;
     h.fill(vargs, bh::sample(vec_s));
 }
 
