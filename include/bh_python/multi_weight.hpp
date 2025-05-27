@@ -17,35 +17,41 @@ struct multi_weight_value : public boost::span<T> {
     using boost::span<T>::span;
 
     void operator()(const boost::span<T> values) {
-        if(values.size() != this->size())
-            throw std::runtime_error("size does not match");
-        auto it = this->begin();
-        for(const T& x : values)
-            *it++ += x;
+        operator+=(values);
     }
 
-    bool operator==(const boost::span<T> values) const {
+    template <class S>
+    bool operator==(const S values) const {
         if(values.size() != this->size())
             return false;
 
         return std::equal(this->begin(), this->end(), values.begin());
     }
-    bool operator!=(const boost::span<T> values) const { return !operator==(values); }
-    void operator+=(const std::vector<T> values) {
+
+    template <class S>
+    bool operator!=(const S values) const { return !operator==(values); }
+    
+    //template <class S>
+    //void operator+=(const S values) {
+    //void operator+=(const std::vector<T> values) {
+    //    if(values.size() != this->size())
+    //        throw std::runtime_error("size does not match");
+    //    auto it = this->begin();
+    //    for(const T& x : values)
+    //        *it++ += x;
+    //}
+    //void operator+=(const boost::span<T> values) {
+    template <class S>
+    void operator+=(const S values) {
         if(values.size() != this->size())
             throw std::runtime_error("size does not match");
         auto it = this->begin();
         for(const T& x : values)
             *it++ += x;
     }
-    void operator+=(const boost::span<T> values) {
-        if(values.size() != this->size())
-            throw std::runtime_error("size does not match");
-        auto it = this->begin();
-        for(const T& x : values)
-            *it++ += x;
-    }
-    void operator=(const std::vector<T> values) {
+
+    template <class S>
+    void operator=(const S values) {
         if(values.size() != this->size())
             throw std::runtime_error("size does not match");
         auto it = this->begin();
@@ -60,7 +66,7 @@ class multi_weight {
     using element_type    = ElementType;
     using value_type      = multi_weight_value<element_type>;
     using reference       = value_type;
-    using const_reference = const value_type&;
+    using const_reference = const value_type;
 
     template <class Value, class Reference, class MWPtr>
     struct iterator_base
@@ -79,7 +85,7 @@ class multi_weight {
             : base_type{idx}
             , par_{par} {}
 
-        Reference operator*() const { return par_->span_buffer_[this->base()]; }
+        decltype(auto) operator*() const { return Reference{par_->buffer_.get() + this->base() * par_->nelem_, par_->nelem_}; }
 
         MWPtr par_ = nullptr;
     };
@@ -93,18 +99,15 @@ class multi_weight {
     multi_weight(const std::size_t k = 0)
         : nelem_{k} {}
 
-    multi_weight(const multi_weight& other)
-        : nelem_{other.nelem_} {
-        reset(other.size_);
-        std::copy(
-            other.buffer_.get(), other.buffer_.get() + buffer_length_, buffer_.get());
+    multi_weight(const multi_weight& other) {
+        *this = other;
     }
 
     multi_weight& operator=(const multi_weight& other) {
         nelem_ = other.nelem_;
         reset(other.size_);
         std::copy(
-            other.buffer_.get(), other.buffer_.get() + buffer_length_, buffer_.get());
+            other.buffer_.get(), other.buffer_.get() + size_ * nelem_, buffer_.get());
         return *this;
     }
 
@@ -112,16 +115,8 @@ class multi_weight {
 
     void reset(std::size_t n) {
         size_          = n;
-        buffer_length_ = n * nelem_;
-        buffer_.reset(new element_type[buffer_length_]);
+        buffer_.reset(new element_type[size_ * nelem_]);
         default_fill();
-        span_buffer_.reset(new value_type[size_]);
-        std::size_t i = 0;
-        std::generate_n(span_buffer_.get(), size_, [&]() {
-            auto tmp_span = value_type{buffer_.get() + i * nelem_, nelem_};
-            i++;
-            return tmp_span;
-        });
     }
 
     template <class T                                               = element_type,
@@ -131,7 +126,7 @@ class multi_weight {
     template <class T                                              = element_type,
               std::enable_if_t<std::is_arithmetic<T>::value, bool> = true>
     void default_fill() {
-        std::fill_n(buffer_.get(), buffer_length_, 0);
+        std::fill_n(buffer_.get(), size_ * nelem_, 0);
     }
 
     iterator begin() { return {this, 0}; }
@@ -140,15 +135,15 @@ class multi_weight {
     const_iterator begin() const { return {this, 0}; }
     const_iterator end() const { return {this, size_}; }
 
-    reference operator[](std::size_t i) { return span_buffer_[i]; }
-    const_reference operator[](std::size_t i) const { return span_buffer_[i]; }
+    reference operator[](std::size_t i) { return reference{buffer_.get() + i * nelem_, nelem_}; }
+    const_reference operator[](std::size_t i) const { return const_reference{buffer_.get() + i * nelem_, nelem_}; }
 
     template <class T>
     bool operator==(const multi_weight<T>& other) const {
-        if(buffer_length_ != other.buffer_length_)
+        if(size_ * nelem_ != other.size_ * other.nelem_)
             return false;
         return std::equal(
-            buffer_.get(), buffer_.get() + buffer_length_, other.buffer_.get());
+            buffer_.get(), buffer_.get() + size_ * nelem_, other.buffer_.get());
     }
 
     template <class T>
@@ -158,10 +153,10 @@ class multi_weight {
 
     template <class T>
     void operator+=(const multi_weight<T>& other) {
-        if(buffer_length_ != other.buffer_length_) {
+        if(size_ * nelem_ != other.size_ * other.nelem_) {
             throw std::runtime_error("size does not match");
         }
-        for(std::size_t i = 0; i < buffer_length_; i++) {
+        for(std::size_t i = 0; i < size_ * nelem_; i++) {
             buffer_[i] += other.buffer_[i];
         }
     }
@@ -174,19 +169,17 @@ class multi_weight {
         if(Archive::is_loading::value) {
             ar& make_nvp("buffer", w);
             reset(size_);
-            std::swap_ranges(buffer_.get(), buffer_.get() + buffer_length_, w.data());
+            std::swap_ranges(buffer_.get(), buffer_.get() + size_ * nelem_, w.data());
         } else {
-            w.assign(buffer_.get(), buffer_.get() + buffer_length_);
+            w.assign(buffer_.get(), buffer_.get() + size_ * nelem_);
             ar& make_nvp("buffer", w);
         }
     }
 
   public:
-    std::size_t size_          = 0;
-    std::size_t nelem_         = 0;
-    std::size_t buffer_length_ = 0;
+    std::size_t size_          = 0; // Number of bins
+    std::size_t nelem_         = 0; // Number of weights per bin
     std::unique_ptr<element_type[]> buffer_;
-    std::unique_ptr<value_type[]> span_buffer_;
 };
 
 template <class T>
