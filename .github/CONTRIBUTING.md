@@ -59,9 +59,7 @@ Python's built-in venv:
 ```bash
 python3 -m venv .venv
 source ./.venv/bin/activate
-pip install dependency-groups
-pip-install-dependency-groups dev
-pip install -ve.
+pip install -ve. --group dev
 ```
 
 Or if you use uv:
@@ -204,10 +202,10 @@ To run Clang tidy, the following recipe should work. Files will be modified in
 place, so you can use git to monitor the changes.
 
 ```bash
-docker run --rm -v $PWD:/pybind11 -it silkeh/clang:10
-apt-get update && apt-get install python3-dev
-cmake -S pybind11/ -B build -DCMAKE_CXX_CLANG_TIDY="$(which clang-tidy);-fix"
-cmake --build build
+docker run --rm -v $PWD:/pybind11 -it silkeh/clang:20
+apt-get update && apt-get install python3-dev ninja-build
+cmake --preset tidy
+cmake --build --preset tidy
 ```
 
 Remember to build single-threaded if applying fixes!
@@ -262,7 +260,7 @@ end
 - Finish merging open PRs that you want in the new version
 - Add most recent changes to the `docs/CHANGELOG.md`
 - Sync master with develop using `git checkout master; git merge develop --ff-only` and push
-- Make sure the full wheel build runs on master without issues (manually trigger if needed)
+- Make sure the `cmake --preset tidy` build runs on master without issues (manually trigger if needed)
 - Make the GitHub release in the GitHub UI. Copy the changelog entries and
   links for that version; this has to be done as part of the release and tag
   procedure for archival tools (Zenodo) to pick them up correctly.

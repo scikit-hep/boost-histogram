@@ -60,6 +60,7 @@ Discussions = "https://github.com/scikit-hep/boost-histogram/discussions"
 Documentation = "https://boost-histogram.readthedocs.io/"
 Homepage = "https://github.com/scikit-hep/boost-histogram"
 
+
 [dependency-groups]
 dev = [
     { include-group = "test" },
@@ -94,6 +95,11 @@ test = [
     "pytest-xdist",
     "numpy",
 ]
+github = [
+  { include-group = "test" },
+  "setuptools_scm",
+  "pytest-github-actions-annotate-failures"
+]
 
 
 [tool.scikit-build]
@@ -122,6 +128,10 @@ __version__ = version = "$version"
 '''
 
 [tool.setuptools_scm]
+
+
+[tool.uv.pip]
+only-binary = ["numpy"]
 
 
 [tool.pytest.ini_options]
@@ -214,6 +224,8 @@ messages_control.disable = [
   "too-many-statements",
   "too-many-positional-arguments",
   "wrong-import-position",
+  "unused-argument", # Covered by ruff
+  "unsubscriptable-object", # Wrongly triggered
 ]
 
 [tool.ruff.lint]
