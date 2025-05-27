@@ -16,9 +16,7 @@ template <class T>
 struct multi_weight_value : public boost::span<T> {
     using boost::span<T>::span;
 
-    void operator()(const boost::span<T> values) {
-        operator+=(values);
-    }
+    void operator()(const boost::span<T> values) { operator+=(values); }
 
     template <class S>
     bool operator==(const S values) const {
@@ -29,18 +27,20 @@ struct multi_weight_value : public boost::span<T> {
     }
 
     template <class S>
-    bool operator!=(const S values) const { return !operator==(values); }
-    
-    //template <class S>
-    //void operator+=(const S values) {
-    //void operator+=(const std::vector<T> values) {
-    //    if(values.size() != this->size())
-    //        throw std::runtime_error("size does not match");
-    //    auto it = this->begin();
-    //    for(const T& x : values)
-    //        *it++ += x;
-    //}
-    //void operator+=(const boost::span<T> values) {
+    bool operator!=(const S values) const {
+        return !operator==(values);
+    }
+
+    // template <class S>
+    // void operator+=(const S values) {
+    // void operator+=(const std::vector<T> values) {
+    //     if(values.size() != this->size())
+    //         throw std::runtime_error("size does not match");
+    //     auto it = this->begin();
+    //     for(const T& x : values)
+    //         *it++ += x;
+    // }
+    // void operator+=(const boost::span<T> values) {
     template <class S>
     void operator+=(const S values) {
         if(values.size() != this->size())
@@ -85,7 +85,10 @@ class multi_weight {
             : base_type{idx}
             , par_{par} {}
 
-        decltype(auto) operator*() const { return Reference{par_->buffer_.get() + this->base() * par_->nelem_, par_->nelem_}; }
+        decltype(auto) operator*() const {
+            return Reference{par_->buffer_.get() + this->base() * par_->nelem_,
+                             par_->nelem_};
+        }
 
         MWPtr par_ = nullptr;
     };
@@ -99,9 +102,7 @@ class multi_weight {
     multi_weight(const std::size_t k = 0)
         : nelem_{k} {}
 
-    multi_weight(const multi_weight& other) {
-        *this = other;
-    }
+    multi_weight(const multi_weight& other) { *this = other; }
 
     multi_weight& operator=(const multi_weight& other) {
         nelem_ = other.nelem_;
@@ -114,7 +115,7 @@ class multi_weight {
     std::size_t size() const { return size_; }
 
     void reset(std::size_t n) {
-        size_          = n;
+        size_ = n;
         buffer_.reset(new element_type[size_ * nelem_]);
         default_fill();
     }
@@ -135,8 +136,12 @@ class multi_weight {
     const_iterator begin() const { return {this, 0}; }
     const_iterator end() const { return {this, size_}; }
 
-    reference operator[](std::size_t i) { return reference{buffer_.get() + i * nelem_, nelem_}; }
-    const_reference operator[](std::size_t i) const { return const_reference{buffer_.get() + i * nelem_, nelem_}; }
+    reference operator[](std::size_t i) {
+        return reference{buffer_.get() + i * nelem_, nelem_};
+    }
+    const_reference operator[](std::size_t i) const {
+        return const_reference{buffer_.get() + i * nelem_, nelem_};
+    }
 
     template <class T>
     bool operator==(const multi_weight<T>& other) const {
@@ -177,8 +182,8 @@ class multi_weight {
     }
 
   public:
-    std::size_t size_          = 0; // Number of bins
-    std::size_t nelem_         = 0; // Number of weights per bin
+    std::size_t size_  = 0; // Number of bins
+    std::size_t nelem_ = 0; // Number of weights per bin
     std::unique_ptr<element_type[]> buffer_;
 };
 
