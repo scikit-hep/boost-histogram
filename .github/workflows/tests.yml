@@ -19,11 +19,11 @@ jobs:
   clang-tidy:
     name: Clang-Tidy
     runs-on: ubuntu-latest
-    container: silkeh/clang:18-bookworm
+    container: silkeh/clang:20
 
     steps:
       - name: Install requirements
-        run: apt-get update && apt-get install -y python3-dev python3-pip git
+        run: apt-get update && apt-get install -y python3-dev python3-pip git ninja-build
 
       - uses: actions/checkout@v4
         with:
@@ -34,10 +34,10 @@ jobs:
         run: python3 -m pip install setuptools_scm --break-system-packages
 
       - name: Configure
-        run: cmake -S. -Bbuild -DCMAKE_CXX_CLANG_TIDY="$(which clang-tidy);--warnings-as-errors=*"
+        run: cmake --preset tidy
 
       - name: Build
-        run: cmake --build build -j 4
+        run: cmake --build --preset tidy
 
   pylint:
     runs-on: ubuntu-latest
@@ -87,14 +87,13 @@ jobs:
           create-symlink: true
 
       - name: Install python tools
-        run: |
-          uv pip install --system --python=python --group dev --only-binary numpy pytest-github-actions-annotate-failures
+        run: uv pip install --system --python=python --group github
 
       - name: Configure
-        run: cmake --preset default -DCMAKE_BUILD_TYPE=Debug ${{ matrix.cmake-extras }}
+        run: cmake --preset default ${{ matrix.cmake-extras }}
 
       - name: Build
-        run: cmake --build --preset default -j 4
+        run: cmake --build --preset default
 
       - name: Test
         run: ctest --preset default -j 4

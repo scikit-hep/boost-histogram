@@ -3,25 +3,47 @@
   "configurePresets": [
     {
       "name": "default",
+      "displayName": "Default configure",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/default",
-      "warnings": { "dev": true },
+      "binaryDir": "build",
+      "warnings": {
+        "dev": true,
+        "deprecated": true
+      },
       "cacheVariables": {
-        "BOOST_HISTOGRAM_ERRORS": "ON"
+        "BOOST_HISTOGRAM_ERRORS": "ON",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": true
+      }
+    },
+    {
+      "name": "tidy",
+      "displayName": "Clang-tidy",
+      "inherits": "default",
+      "binaryDir": "build-tidy",
+      "cacheVariables": {
+        "CMAKE_CXX_CLANG_TIDY": "clang-tidy;--use-color;--warnings-as-errors=*"
       }
     }
   ],
   "buildPresets": [
     {
       "name": "default",
+      "displayName": "Default build",
       "verbose": true,
       "configurePreset": "default"
+    },
+    {
+      "name": "tidy",
+      "displayName": "Clang-tidy build",
+      "configurePreset": "tidy",
+      "nativeToolOptions": ["-k0"]
     }
   ],
   "testPresets": [
     {
       "name": "default",
-      "displayName": "Default Test",
+      "displayName": "Default test",
       "configurePreset": "default",
       "output": {
         "outputOnFailure": true
