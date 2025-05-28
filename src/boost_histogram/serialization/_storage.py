@@ -26,11 +26,12 @@ def _storage_to_dict(_storage: Any, /, data: Any) -> dict[str, Any]:  # noqa: AR
 @_storage_to_dict.register(storage.Int64)
 @_storage_to_dict.register(storage.Unlimited)
 def _(
-    _storage: storage.AtomicInt64 | storage.Double | storage.Int64 | storage.Unlimited,
+    storage_: storage.AtomicInt64 | storage.Double | storage.Int64 | storage.Unlimited,
     /,
     data: Any,
 ) -> dict[str, Any]:
     return {
+        "writer_info": {"boost-histogram": {"orig_type": type(storage_).__name__}},
         "type": "int" if np.issubdtype(data.dtype, np.integer) else "double",
         "values": data,
     }

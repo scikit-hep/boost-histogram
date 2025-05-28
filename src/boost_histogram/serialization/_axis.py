@@ -42,6 +42,8 @@ def _(ax: axis.Regular | axis.Integer, /) -> dict[str, Any]:
             "overflow": ax.traits.overflow,
             "circular": ax.traits.circular,
         }
+    if isinstance(ax, axis.Integer):
+        data["writer_info"] = {"boost-histogram": {"orig_type": "Integer"}}
     if ax.metadata is not None:
         data["metadata"] = ax.metadata
 

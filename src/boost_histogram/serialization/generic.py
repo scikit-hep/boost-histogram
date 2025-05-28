@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .. import Histogram
+from .. import Histogram, __version__
 from ._axis import _axis_from_dict, _axis_to_dict
 from ._storage import _data_from_dict, _storage_from_dict, _storage_to_dict
 
@@ -18,6 +18,7 @@ def to_dict(h: Histogram, /) -> dict[str, Any]:
 
     # Convert the histogram to a dictionary
     data = {
+        "writer_info": {"boost-histogram": {"version": __version__}},
         "axes": [_axis_to_dict(axis) for axis in h.axes],
         "storage": _storage_to_dict(h.storage_type(), h.view(flow=True)),
     }
