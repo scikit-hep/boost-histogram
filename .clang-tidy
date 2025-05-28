@@ -11,7 +11,7 @@ Checks: "
   -readability-named-parameter,
   -readability-function-cognitive-complexity,
   llvm-namespace-comment,
-google-readability-casting,
+  google-readability-casting,
   "
 
 HeaderFilterRegex: "bh_python/.*hpp"

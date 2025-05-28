@@ -174,14 +174,15 @@ it yourself (even without installing the hooks) using:
 ```bash
 pre-commit run --all-files
 ```
-```
+
+````
 
 Developers should update the pre-commit dependencies once in a while, you can
 do this automatically with:
 
 ```bash
 pre-commit autoupdate -j8
-```
+````
 
 > #### Note about skipping Docker
 >
