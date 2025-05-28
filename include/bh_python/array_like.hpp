@@ -12,7 +12,7 @@
 
 /// Generate empty array with same shape and strides as argument
 template <class T>
-py::array_t<T> array_like(py::object obj) {
+py::array_t<T> array_like(const py::object& obj) {
     if(!py::isinstance<py::array>(obj)) {
         py::ssize_t shape[1] = {0}; // if scalar
         if(py::isinstance<py::sequence>(obj) && !py::isinstance<py::str>(obj)) {

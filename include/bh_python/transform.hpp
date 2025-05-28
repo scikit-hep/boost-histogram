@@ -54,7 +54,8 @@ struct func_transform {
             // ctypes.cast(in, ctypes.c_void_p).value
             py::object addr_obj = cast(src, c_void_p);
             auto addr           = py::cast<std::uintptr_t>(addr_obj.attr("value"));
-            auto ptr            = reinterpret_cast<raw_t*>(addr);
+            auto ptr
+                = reinterpret_cast<raw_t*>(addr); // NOLINT(performance-no-int-to-ptr)
             return std::make_tuple(ptr, src);
         }
 
@@ -134,7 +135,7 @@ inline const char* axis_suffix(const ::func_transform&) { return "_trans"; }
 
 /// Simple deep copy for any class *without* a python component
 template <class T>
-T deep_copy(const T& input, py::object) {
+T deep_copy(const T& input, py::object&) {
     return T(input);
 }
 
@@ -142,7 +143,7 @@ T deep_copy(const T& input, py::object) {
 /// (Function transform in this case)
 template <>
 inline func_transform deep_copy<func_transform>(const func_transform& input,
-                                                py::object memo) {
+                                                py::object& memo) {
     py::module copy = py::module::import("copy");
 
     py::object forward = copy.attr("deepcopy")(input._forward_ob, memo);

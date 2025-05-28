@@ -196,7 +196,7 @@ struct type_caster<storage::atomic_int64::value_type> {
         return PyErr_Occurred() == nullptr;
     }
 
-    static handle cast(storage::atomic_int64::value_type src,
+    static handle cast(const storage::atomic_int64::value_type& src,
                        return_value_policy /* policy */,
                        handle /* parent */) {
         return PyLong_FromLongLong(src.value());

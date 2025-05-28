@@ -375,7 +375,7 @@ decltype(auto) make_pickle() {
             oa << obj;
             return tup;
         },
-        [](py::tuple tup) {
+        [](const py::tuple& tup) {
             tuple_iarchive ia{tup};
             T obj;
             ia >> obj;

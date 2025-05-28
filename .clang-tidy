@@ -4,6 +4,7 @@ Checks: "
   modernize-*,
   readability-*,
   bugprone-*,
+  performance-*,
   -bugprone-easily-swappable-parameters,
   -modernize-avoid-c-arrays,
   -modernize-avoid-c-arrays,

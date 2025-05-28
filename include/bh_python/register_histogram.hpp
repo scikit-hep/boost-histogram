@@ -48,7 +48,7 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
 
         .def("__copy__", [](const histogram_t& self) { return histogram_t(self); })
         .def("__deepcopy__",
-             [](const histogram_t& self, py::object memo) {
+             [](const histogram_t& self, const py::object& memo) {
                  auto* a         = new histogram_t(self);
                  py::module copy = py::module::import("copy");
                  for(unsigned i = 0; i < a->rank(); i++) {
@@ -79,7 +79,7 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
 
         .def_property_readonly_static(
             "_storage_type",
-            [](py::object) {
+            [](const py::object&) {
                 return py::type::of<typename histogram_t::storage_type>();
             })
 
@@ -123,7 +123,7 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
 
         .def(
             "view",
-            [](py::object self, bool flow) {
+            [](const py::object& self, bool flow) {
                 auto& h = py::cast<histogram_t&>(self);
                 return py::array(make_buffer(h, flow), self);
             },
@@ -186,7 +186,7 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
             "flow"_a = false)
 
         .def("reduce",
-             [](const histogram_t& self, py::args args) {
+             [](const histogram_t& self, const py::args& args) {
                  auto commands
                      = py::cast<std::vector<bh::algorithm::reduce_command>>(args);
                  py::gil_scoped_release release;
@@ -194,7 +194,7 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
              })
 
         .def("project",
-             [](const histogram_t& self, py::args values) {
+             [](const histogram_t& self, const py::args& values) {
                  auto cpp_values = py::cast<std::vector<unsigned>>(values);
                  py::gil_scoped_release release;
                  return bh::algorithm::project(self, cpp_values);
