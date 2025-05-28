@@ -109,8 +109,8 @@ void save(Archive& ar,
                       && sizeof(T) == 2 * sizeof(double),
                   "weighted_sum cannot be fast serialized");
     // view storage buffer as flat numpy array
-    py::array_t<double> a(static_cast<py::ssize_t>(s.size()) * 2,
-                          reinterpret_cast<const double*>(s.data()));
+    py::array_t<double> const a(static_cast<py::ssize_t>(s.size()) * 2,
+                                reinterpret_cast<const double*>(s.data()));
     ar << a;
 }
 
@@ -136,8 +136,8 @@ void save(Archive& ar,
                       && sizeof(T) == 3 * sizeof(double),
                   "mean cannot be fast serialized");
     // view storage buffer as flat numpy array
-    py::array_t<double> a(static_cast<py::ssize_t>(s.size()) * 3,
-                          reinterpret_cast<const double*>(s.data()));
+    py::array_t<double> const a(static_cast<py::ssize_t>(s.size()) * 3,
+                                reinterpret_cast<const double*>(s.data()));
     ar << a;
 }
 
@@ -163,8 +163,8 @@ void save(Archive& ar,
                       && sizeof(T) == 4 * sizeof(double),
                   "weighted_mean cannot be fast serialized");
     // view storage buffer as flat numpy array
-    py::array_t<double> a(static_cast<py::ssize_t>(s.size()) * 4,
-                          reinterpret_cast<const double*>(s.data()));
+    py::array_t<double> const a(static_cast<py::ssize_t>(s.size()) * 4,
+                                reinterpret_cast<const double*>(s.data()));
     ar << a;
 }
 

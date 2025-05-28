@@ -9,6 +9,7 @@
 #include <bh_python/storage.hpp>
 #include <boost/histogram/storage_adaptor.hpp>
 
+// NOLINTNEXTLINE(misc-use-internal-linkage)
 void register_storages(py::module& storage) {
     register_storage<storage::int64>(
         storage, "int64", "Integers in vectors storage type");

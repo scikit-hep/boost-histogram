@@ -33,26 +33,26 @@ struct func_transform {
     /// else with a defined convert function
     std::tuple<raw_t*, py::object> compute(py::object& input) {
         // Run the conversion function on the input (unless conversion is None)
-        py::object tmp_src = _convert_ob.is_none() ? input : _convert_ob(input);
+        py::object const tmp_src = _convert_ob.is_none() ? input : _convert_ob(input);
 
         // If a CTypes object is present, just use that (numba, for example)
-        py::object src = py::getattr(tmp_src, "ctypes", tmp_src);
+        py::object const src = py::getattr(tmp_src, "ctypes", tmp_src);
 
         // import ctypes
-        py::module ctypes = py::module::import("ctypes");
+        py::module const ctypes = py::module::import("ctypes");
 
         // Get the type: double(double)
         // function_type = ctypes.CFUNCTYPE(ctypes.c_double, ctypes.c_double)
-        py::handle CFUNCTYPE     = ctypes.attr("CFUNCTYPE");
-        py::handle c_double      = ctypes.attr("c_double");
-        py::object function_type = CFUNCTYPE(c_double, c_double);
+        py::handle const CFUNCTYPE     = ctypes.attr("CFUNCTYPE");
+        py::handle const c_double      = ctypes.attr("c_double");
+        py::object const function_type = CFUNCTYPE(c_double, c_double);
 
         if(py::isinstance(src, function_type)) {
-            py::handle cast     = ctypes.attr("cast");
-            py::handle c_void_p = ctypes.attr("c_void_p");
+            py::handle const cast     = ctypes.attr("cast");
+            py::handle const c_void_p = ctypes.attr("c_void_p");
 
             // ctypes.cast(in, ctypes.c_void_p).value
-            py::object addr_obj = cast(src, c_void_p);
+            py::object const addr_obj = cast(src, c_void_p);
             auto addr           = py::cast<std::uintptr_t>(addr_obj.attr("value"));
             auto ptr
                 = reinterpret_cast<raw_t*>(addr); // NOLINT(performance-no-int-to-ptr)
@@ -144,12 +144,12 @@ T deep_copy(const T& input, py::object&) {
 template <>
 inline func_transform deep_copy<func_transform>(const func_transform& input,
                                                 py::object& memo) {
-    py::module copy = py::module::import("copy");
+    py::module const copy = py::module::import("copy");
 
-    py::object forward = copy.attr("deepcopy")(input._forward_ob, memo);
-    py::object inverse = copy.attr("deepcopy")(input._inverse_ob, memo);
-    py::object convert = copy.attr("deepcopy")(input._convert_ob, memo);
-    py::str name       = copy.attr("deepcopy")(input._name, memo);
+    py::object const forward = copy.attr("deepcopy")(input._forward_ob, memo);
+    py::object const inverse = copy.attr("deepcopy")(input._inverse_ob, memo);
+    py::object const convert = copy.attr("deepcopy")(input._convert_ob, memo);
+    py::str const name       = copy.attr("deepcopy")(input._name, memo);
 
     return {forward, inverse, convert, name};
 }

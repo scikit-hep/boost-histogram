@@ -12,6 +12,7 @@
 #include <boost/mp11.hpp>
 #include <vector>
 
+namespace {
 template <class... Ts, class Func>
 void register_axis_each(py::module& mod, Func&& function) {
     using namespace boost::mp11;
@@ -23,7 +24,9 @@ void register_axis_each(py::module& mod, Func&& function) {
         function(ax);
     });
 }
+} // namespace
 
+// NOLINTNEXTLINE(misc-use-internal-linkage)
 void register_axes(py::module& mod) {
     register_axis_each<axis::regular_none,
                        axis::regular_uflow,

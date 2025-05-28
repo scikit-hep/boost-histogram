@@ -13,6 +13,7 @@
 #include <bh_python/transform.hpp>
 #include <boost/histogram/axis/regular.hpp>
 
+namespace {
 template <class T, class... Args>
 py::class_<T> register_transform(py::module& mod, Args&&... args) {
     py::class_<T> transform(mod, std::forward<Args>(args)...);
@@ -30,6 +31,7 @@ py::class_<T> register_transform(py::module& mod, Args&&... args) {
 
     return transform;
 }
+} // namespace
 
 extern "C" {
 double _log_fn(double v) { return std::log(v); }
@@ -38,6 +40,7 @@ double _sqrt_fn(double v) { return std::sqrt(v); }
 double _sq_fn(double v) { return v * v; }
 }
 
+// NOLINTNEXTLINE(misc-use-internal-linkage)
 void register_transforms(py::module& mod) {
     mod.def("_log_fn", &_log_fn);
     mod.def("_exp_fn", &_exp_fn);
@@ -76,7 +79,7 @@ void register_transforms(py::module& mod) {
         .def_readonly("power", &bh::axis::transform::pow::power)
         .def("__repr__",
              [](const py::object& self) {
-                 double power = py::cast<bh::axis::transform::pow>(self).power;
+                 double const power = py::cast<bh::axis::transform::pow>(self).power;
                  return py::str("{}({:g})")
                      .format(self.attr("__class__").attr("__name__"), power);
              })
