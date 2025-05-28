@@ -102,8 +102,12 @@ struct func_transform {
     double inverse(double x) const { return _inverse(x); }
 
     bool operator==(const func_transform& other) const noexcept {
-        return _forward_ob.equal(other._forward_ob)
-               && _inverse_ob.equal(other._inverse_ob);
+        try {
+            return _forward_ob.equal(other._forward_ob)
+                   && _inverse_ob.equal(other._inverse_ob);
+        } catch(const py::error_already_set&) {
+            return false;
+        }
     }
 
     template <class Archive>
