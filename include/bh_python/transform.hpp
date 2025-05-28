@@ -53,7 +53,7 @@ struct func_transform {
 
             // ctypes.cast(in, ctypes.c_void_p).value
             py::object const addr_obj = cast(src, c_void_p);
-            auto addr           = py::cast<std::uintptr_t>(addr_obj.attr("value"));
+            auto addr = py::cast<std::uintptr_t>(addr_obj.attr("value"));
             auto ptr
                 = reinterpret_cast<raw_t*>(addr); // NOLINT(performance-no-int-to-ptr)
             return std::make_tuple(ptr, src);
