@@ -175,8 +175,6 @@ it yourself (even without installing the hooks) using:
 pre-commit run --all-files
 ```
 
-````
-
 Developers should update the pre-commit dependencies once in a while, you can
 do this automatically with:
 
@@ -310,4 +308,3 @@ yarn all-contributors add henryiii maintenance,code,doc
 ```
 
 </details>
-````
