@@ -97,8 +97,8 @@ void register_transforms(py::module& mod) {
                          .format(self.attr("__class__").attr("__name__"),
                                  s._forward_ob,
                                  s._inverse_ob);
-                 } else
-                     return s._name;
+                 }
+                 return s._name;
              })
 
         ;

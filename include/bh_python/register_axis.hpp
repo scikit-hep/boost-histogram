@@ -85,8 +85,8 @@ auto vectorize_index(int (bh::axis::category<T, metadata_t, Options>::*pindex)(c
         auto indices = array_like<int>(arg);
         auto values  = detail::special_cast<detail::c_array_t<T>>(arg);
 
-        auto ip = indices.mutable_data();
-        auto vp = values.data();
+        auto* ip = indices.mutable_data();
+        auto vp  = values.data();
         for(std::size_t i = 0, n = values.size(); i < n; ++i) {
             ip[i] = index(self, vp[i]);
             if(ip[i] >= self.size())
@@ -124,7 +124,7 @@ auto vectorize_value(R (bh::axis::category<U, metadata_t, Options>::*pvalue)(int
         const auto n = static_cast<std::size_t>(indices.size());
         py::tuple values(n);
 
-        auto pi = indices.data();
+        const auto* pi = indices.data();
         for(std::size_t k = 0; k < n; ++k) {
             const auto i = pi[k];
             unchecked_set(
@@ -247,7 +247,8 @@ py::class_<A> register_axis(py::module& m, Args&&... args) {
                     }
                 };
 
-                iterator begin(ax, 0), end(ax, ax.size());
+                iterator begin(ax, 0);
+                iterator end(ax, ax.size());
                 return py::make_iterator(std::move(begin), std::move(end));
             },
             py::keep_alive<0, 1>())

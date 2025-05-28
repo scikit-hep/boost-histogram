@@ -30,8 +30,7 @@ class regular_numpy : public bh::axis::regular<double, bh::use_default, metadata
         : regular(a, i, j, n)
         , stop_(a.stop_) {}
 
-    regular_numpy()
-        : regular() {}
+    regular_numpy() = default;
 
     bh::axis::index_type index(value_type v) const {
         return v <= stop_ ? std::min(regular::index(v), size() - 1) : regular::index(v);
