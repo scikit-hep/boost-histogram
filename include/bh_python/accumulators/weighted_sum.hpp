@@ -26,12 +26,12 @@ struct weighted_sum {
     weighted_sum() = default;
 
     /// Initialize sum to value and allow implicit conversion
-    weighted_sum(const_reference value) noexcept
+    explicit weighted_sum(const_reference value) noexcept
         : weighted_sum(value, value) {}
 
     /// Allow implicit conversion from sum<T>
     template <class T>
-    weighted_sum(const weighted_sum<T>& s) noexcept
+    explicit weighted_sum(const weighted_sum<T>& s) noexcept
         : weighted_sum(s.value(), s.variance()) {}
 
     /// Initialize sum to value and variance
