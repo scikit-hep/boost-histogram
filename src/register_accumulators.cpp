@@ -87,7 +87,9 @@ void register_accumulators(py::module& accumulators) {
 
         .def(
             "fill",
-            [](weighted_sum& self, const py::object& value, const py::object& variance) {
+            [](weighted_sum& self,
+               const py::object& value,
+               const py::object& variance) {
                 if(variance.is_none()) {
                     py::vectorize([](weighted_sum& self, double val) {
                         self += bh::weight(val);
@@ -135,7 +137,9 @@ void register_accumulators(py::module& accumulators) {
              })
 
         .def("_ipython_key_completions_",
-             [](const py::object& /* self */) { return py::make_tuple("value", "variance"); })
+             [](const py::object& /* self */) {
+                 return py::make_tuple("value", "variance");
+             })
 
         ;
 
