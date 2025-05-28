@@ -104,7 +104,7 @@ struct func_transform {
     bool operator==(const func_transform& other) const noexcept {
         try {
             return _forward_ob.equal(other._forward_ob)
-               && _inverse_ob.equal(other._inverse_ob);
+                   && _inverse_ob.equal(other._inverse_ob);
         } catch(const py::error_already_set&) {
             return false;
         }
