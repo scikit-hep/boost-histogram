@@ -182,7 +182,7 @@ do this automatically with:
 
 ```bash
 pre-commit autoupdate -j8
-````
+```
 
 > #### Note about skipping Docker
 >
