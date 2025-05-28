@@ -51,6 +51,7 @@ struct c_array_t<std::string> : std::vector<std::string> {
     using base_t::base_t;
     using base_t::operator=;
 
+    // NOLINTNEXTLINE(google-explicit-constructor)
     c_array_t(base_t&& x)
         : base_t(std::move(x)) {}
 

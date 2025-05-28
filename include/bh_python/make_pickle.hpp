@@ -134,7 +134,7 @@ class tuple_oarchive {
     using is_saving  = std::true_type;
     using is_loading = std::false_type;
 
-    tuple_oarchive(py::tuple& tup)
+    explicit tuple_oarchive(py::tuple& tup)
         : tup_(tup) {}
 
     template <class T>
@@ -250,7 +250,7 @@ class tuple_iarchive {
     using is_saving  = std::false_type;
     using is_loading = std::true_type;
 
-    tuple_iarchive(const py::tuple& t)
+    explicit tuple_iarchive(const py::tuple& t)
         : tup_(t) {}
 
     // no object tracking
