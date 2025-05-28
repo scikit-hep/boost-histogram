@@ -17,7 +17,7 @@
 /// The mean fill can be implemented once. (sum fill varies slightly)
 template <class T>
 decltype(auto) make_mean_fill() {
-    return [](T& self, py::object value, py::object weight) {
+    return [](T& self, const py::object& value, const py::object& weight) {
         if(weight.is_none()) {
             py::vectorize([](T& self, double val) { self(val); })(self, value);
         } else {
@@ -32,7 +32,7 @@ decltype(auto) make_mean_fill() {
 /// The mean call can be implemented once. (sum uses +=)
 template <class T>
 decltype(auto) make_mean_call() {
-    return [](T& self, double value, py::object weight) {
+    return [](T& self, double value, const py::object& weight) {
         if(weight.is_none())
             self(value);
         else
@@ -87,7 +87,7 @@ void register_accumulators(py::module& accumulators) {
 
         .def(
             "fill",
-            [](weighted_sum& self, py::object value, py::object variance) {
+            [](weighted_sum& self, const py::object& value, const py::object& variance) {
                 if(variance.is_none()) {
                     py::vectorize([](weighted_sum& self, double val) {
                         self += bh::weight(val);
@@ -115,7 +115,7 @@ void register_accumulators(py::module& accumulators) {
                     }))
 
         .def("__getitem__",
-             [](const weighted_sum& self, py::str key) {
+             [](const weighted_sum& self, const py::str& key) {
                  if(key.equal(py::str("value")))
                      return self.value;
                  if(key.equal(py::str("variance")))
@@ -124,7 +124,7 @@ void register_accumulators(py::module& accumulators) {
                      py::str("{0} not one of value, variance").format(key));
              })
         .def("__setitem__",
-             [](weighted_sum& self, py::str key, double value) {
+             [](weighted_sum& self, const py::str& key, double value) {
                  if(key.equal(py::str("value")))
                      self.value = value;
                  else if(key.equal(py::str("variance")))
@@ -135,7 +135,7 @@ void register_accumulators(py::module& accumulators) {
              })
 
         .def("_ipython_key_completions_",
-             [](py::object /* self */) { return py::make_tuple("value", "variance"); })
+             [](const py::object& /* self */) { return py::make_tuple("value", "variance"); })
 
         ;
 
@@ -150,7 +150,7 @@ void register_accumulators(py::module& accumulators) {
 
         .def(
             "fill",
-            [](sum& self, py::object value) {
+            [](sum& self, const py::object& value) {
                 py::vectorize([](sum& self, double v) { self += v; })(self, value);
                 return self;
             },
@@ -217,7 +217,7 @@ void register_accumulators(py::module& accumulators) {
                 }))
 
         .def("__getitem__",
-             [](const weighted_mean& self, py::str key) {
+             [](const weighted_mean& self, const py::str& key) {
                  if(key.equal(py::str("value")))
                      return self.value;
                  if(key.equal(py::str("sum_of_weights")))
@@ -232,7 +232,7 @@ void register_accumulators(py::module& accumulators) {
                          .format(key));
              })
         .def("__setitem__",
-             [](weighted_mean& self, py::str key, double value) {
+             [](weighted_mean& self, const py::str& key, double value) {
                  if(key.equal(py::str("value")))
                      self.value = value;
                  else if(key.equal(py::str("sum_of_weights")))
@@ -250,7 +250,7 @@ void register_accumulators(py::module& accumulators) {
              })
 
         .def("_ipython_key_completions_",
-             [](py::object /* self */) {
+             [](const py::object& /* self */) {
                  return py::make_tuple("value",
                                        "sum_of_weights",
                                        "sum_of_weights_squared",
@@ -303,7 +303,7 @@ void register_accumulators(py::module& accumulators) {
             }))
 
         .def("__getitem__",
-             [](const mean& self, py::str key) {
+             [](const mean& self, const py::str& key) {
                  if(key.equal(py::str("count")))
                      return self.count;
                  if(key.equal(py::str("value")))
@@ -315,7 +315,7 @@ void register_accumulators(py::module& accumulators) {
                          .format(key));
              })
         .def("__setitem__",
-             [](mean& self, py::str key, double value) {
+             [](mean& self, const py::str& key, double value) {
                  if(key.equal(py::str("count")))
                      self.count = value;
                  else if(key.equal(py::str("value")))
@@ -329,7 +329,7 @@ void register_accumulators(py::module& accumulators) {
              })
 
         .def("_ipython_key_completions_",
-             [](py::object /* self */) {
+             [](const py::object& /* self */) {
                  return py::make_tuple("count", "value", "_sum_of_deltas_squared");
              })
 

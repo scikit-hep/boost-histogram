@@ -215,7 +215,7 @@ void fill_impl(bh::detail::accumulator_traits_holder<true, const double&>,
 } // namespace detail
 
 template <class Histogram>
-Histogram& fill(Histogram& self, py::args args, py::kwargs kwargs) {
+Histogram& fill(Histogram& self, const py::args& args, py::kwargs kwargs) {
     using value_type = typename Histogram::value_type;
     detail::fill_impl(bh::detail::accumulator_traits<value_type>{},
                       self,

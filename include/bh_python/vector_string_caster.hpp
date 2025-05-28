@@ -38,7 +38,7 @@ struct type_caster<std::vector<std::string>>
         return n;
     }
 
-    bool load_from_array_s(array src) {
+    bool load_from_array_s(const array& src) {
         const auto step = static_cast<std::size_t>(src.itemsize());
         const auto size = static_cast<std::size_t>(src.size());
         const auto* p   = static_cast<const char*>(src.data());
@@ -49,7 +49,7 @@ struct type_caster<std::vector<std::string>>
         return true;
     }
 
-    bool load_from_array_u(array src) {
+    bool load_from_array_u(const array& src) {
         const auto step
             = static_cast<std::size_t>(src.itemsize()) / sizeof(std::uint32_t);
         const auto size = static_cast<std::size_t>(src.size());

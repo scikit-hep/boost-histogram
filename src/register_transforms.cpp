@@ -47,7 +47,7 @@ void register_transforms(py::module& mod) {
     register_transform<bh::axis::transform::id>(mod, "id")
         .def(py::init<>())
         .def("__repr__",
-             [](py::object self) {
+             [](const py::object& self) {
                  return py::str("{}()").format(self.attr("__class__").attr("__name__"));
              })
 
@@ -56,7 +56,7 @@ void register_transforms(py::module& mod) {
     register_transform<bh::axis::transform::sqrt>(mod, "sqrt")
         .def(py::init<>())
         .def("__repr__",
-             [](py::object self) {
+             [](const py::object& self) {
                  return py::str("{}()").format(self.attr("__class__").attr("__name__"));
              })
 
@@ -65,7 +65,7 @@ void register_transforms(py::module& mod) {
     register_transform<bh::axis::transform::log>(mod, "log")
         .def(py::init<>())
         .def("__repr__",
-             [](py::object self) {
+             [](const py::object& self) {
                  return py::str("{}()").format(self.attr("__class__").attr("__name__"));
              })
 
@@ -75,7 +75,7 @@ void register_transforms(py::module& mod) {
         .def(py::init<double>(), "power"_a)
         .def_readonly("power", &bh::axis::transform::pow::power)
         .def("__repr__",
-             [](py::object self) {
+             [](const py::object& self) {
                  double power = py::cast<bh::axis::transform::pow>(self).power;
                  return py::str("{}({:g})")
                      .format(self.attr("__class__").attr("__name__"), power);
@@ -90,7 +90,7 @@ void register_transforms(py::module& mod) {
              "convert"_a,
              "name"_a)
         .def("__repr__",
-             [](py::object self) {
+             [](const py::object& self) {
                  auto& s = py::cast<func_transform&>(self);
                  if(s._name.equal(py::str(""))) {
                      return py::str("{}({}, {})")

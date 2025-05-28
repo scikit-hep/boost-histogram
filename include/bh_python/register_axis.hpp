@@ -72,7 +72,7 @@ template <class T, class Options>
 auto vectorize_index(int (bh::axis::category<T, metadata_t, Options>::*pindex)(const T&)
                          const BHP_NOEXCEPT_17) {
     return [pindex](const bh::axis::category<T, metadata_t, Options>& self,
-                    py::object arg) -> py::object {
+                    const py::object& arg) -> py::object {
         auto index = std::mem_fn(pindex);
 
         if(detail::is_value<T>(arg)) {
@@ -107,7 +107,7 @@ template <class R, class U, class Options>
 auto vectorize_value(R (bh::axis::category<U, metadata_t, Options>::*pvalue)(int)
                          const) {
     return [pvalue](const bh::axis::category<U, metadata_t, Options>& self,
-                    py::object arg) -> py::object {
+                    const py::object& arg) -> py::object {
         auto value = std::mem_fn(pvalue);
 
         if(detail::is_value<int>(arg)) {
@@ -206,7 +206,7 @@ py::class_<A> register_axis(py::module& m, Args&&... args) {
 
         .def("__copy__", [](const A& self) { return A(self); })
         .def("__deepcopy__",
-             [](const A& self, py::object memo) {
+             [](const A& self, const py::object& memo) {
                  A* a            = new A(self);
                  py::module copy = py::module::import("copy");
                  a->metadata()   = copy.attr("deepcopy")(a->metadata(), memo);

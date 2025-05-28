@@ -30,7 +30,7 @@ std::basic_ostream<CharT, Traits>& operator<<(std::basic_ostream<CharT, Traits>&
 
 template <class A, class... Args>
 py::class_<A> register_accumulator(py::module acc, Args&&... args) {
-    return py::class_<A>(acc, std::forward<Args>(args)...)
+    return py::class_<A>(std::move(acc), std::forward<Args>(args)...)
         .def(py::init<>())
 
         .def(py::self += py::self)
@@ -62,14 +62,14 @@ py::class_<A> register_accumulator(py::module acc, Args&&... args) {
 
         // The c++ name is replaced with the Python name here
         .def("__repr__",
-             [](py::object self) {
+             [](const py::object& self) {
                  const A& item = py::cast<const A&>(self);
                  py::str str   = shift_to_string(item);
                  return py::str("{0.__class__.__name__}({1})").format(self, str);
              })
 
         .def("__copy__", [](const A& self) { return A(self); })
-        .def("__deepcopy__", [](const A& self, py::object) { return A(self); })
+        .def("__deepcopy__", [](const A& self, const py::object&) { return A(self); })
 
         .def(make_pickle<A>());
 }

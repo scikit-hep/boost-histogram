@@ -9,6 +9,7 @@
 
 #include <boost/core/nvp.hpp>
 #include <boost/histogram/axis/regular.hpp>
+#include <utility>
 
 namespace bh = boost::histogram;
 
@@ -23,7 +24,7 @@ class regular_numpy : public bh::axis::regular<double, bh::use_default, metadata
 
   public:
     regular_numpy(unsigned n, value_type start, value_type stop, metadata_t meta = {})
-        : regular(n, start, stop, meta)
+        : regular(n, start, stop, std::move(meta))
         , stop_(stop) {}
 
     regular_numpy(const regular_numpy& a, index_type i, index_type j, unsigned n)
