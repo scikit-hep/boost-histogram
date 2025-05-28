@@ -3,15 +3,19 @@ FormatStyle: file
 Checks: "
   modernize-*,
   readability-*,
-  -modernize-use-trailing-return-type,
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
   -modernize-avoid-c-arrays,
-  -readability-identifier-length,
+  -modernize-avoid-c-arrays,
+  -modernize-use-trailing-return-type,
+  -modernize-use-trailing-return-type,
   -readability-braces-around-statements,
+  -readability-function-cognitive-complexity,
+  -readability-identifier-length,
   -readability-magic-numbers,
   -readability-named-parameter,
-  -readability-function-cognitive-complexity,
-  llvm-namespace-comment,
   google-readability-casting,
+  llvm-namespace-comment,
   "
 
 HeaderFilterRegex: "bh_python/.*hpp"
