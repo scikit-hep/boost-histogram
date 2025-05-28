@@ -207,9 +207,9 @@ py::class_<A> register_axis(py::module& m, Args&&... args) {
         .def("__copy__", [](const A& self) { return A(self); })
         .def("__deepcopy__",
              [](const A& self, const py::object& memo) {
-                 A* a            = new A(self);
-                 py::module copy = py::module::import("copy");
-                 a->metadata()   = copy.attr("deepcopy")(a->metadata(), memo);
+                 A* a                  = new A(self);
+                 py::module const copy = py::module::import("copy");
+                 a->metadata()         = copy.attr("deepcopy")(a->metadata(), memo);
                  return a;
              })
 

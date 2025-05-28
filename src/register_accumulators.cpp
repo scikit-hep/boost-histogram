@@ -14,6 +14,7 @@
 #include <boost/histogram/accumulators/sum.hpp>
 #include <pybind11/operators.h>
 
+namespace {
 /// The mean fill can be implemented once. (sum fill varies slightly)
 template <class T>
 decltype(auto) make_mean_fill() {
@@ -57,6 +58,9 @@ decltype(auto) make_buffer() {
     };
 }
 
+} // namespace
+
+// NOLINTNEXTLINE(misc-use-internal-linkage)
 void register_accumulators(py::module& accumulators) {
     // Naming convention:
     // If a value is publicly available in Boost.Histogram accumulators

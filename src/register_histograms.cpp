@@ -11,6 +11,7 @@
 #include <bh_python/storage.hpp>
 #include <boost/histogram/storage_adaptor.hpp>
 
+// NOLINTNEXTLINE(misc-use-internal-linkage)
 void register_histograms(py::module& hist) {
     hist.attr("_axes_limit") = BOOST_HISTOGRAM_DETAIL_AXES_LIMIT;
 

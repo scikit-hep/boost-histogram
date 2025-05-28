@@ -63,8 +63,8 @@ py::class_<A> register_accumulator(py::module acc, Args&&... args) {
         // The c++ name is replaced with the Python name here
         .def("__repr__",
              [](const py::object& self) {
-                 const A& item = py::cast<const A&>(self);
-                 py::str str   = shift_to_string(item);
+                 const A& item     = py::cast<const A&>(self);
+                 py::str const str = shift_to_string(item);
                  return py::str("{0.__class__.__name__}({1})").format(self, str);
              })
 
