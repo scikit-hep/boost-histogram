@@ -82,8 +82,8 @@ void save(Archive& ar, const storage::atomic_int64& s, unsigned /* version */) {
     // std::atomic is undefined. So no reinterpret_casts are allowed.
     py::array_t<std::int64_t> a(static_cast<py::ssize_t>(s.size()));
 
-    auto in_ptr  = s.begin();
-    auto out_ptr = a.mutable_data();
+    auto in_ptr   = s.begin();
+    auto* out_ptr = a.mutable_data();
     for(; in_ptr != s.end(); ++in_ptr, ++out_ptr)
         *out_ptr = in_ptr->value();
     ar << a;
@@ -188,12 +188,12 @@ struct type_caster<storage::atomic_int64::value_type> {
     PYBIND11_TYPE_CASTER(storage::atomic_int64::value_type, _("atomic_int64"));
 
     bool load(handle src, bool) {
-        auto ptr = PyNumber_Long(src.ptr());
-        if(!ptr)
+        auto* ptr = PyNumber_Long(src.ptr());
+        if(ptr == nullptr)
             return false;
         value = PyLong_AsLongLong(ptr);
         Py_DECREF(ptr);
-        return !PyErr_Occurred();
+        return PyErr_Occurred() == nullptr;
     }
 
     static handle cast(storage::atomic_int64::value_type src,

@@ -63,7 +63,7 @@
 // Available as make_span in boost/core/make_span.hpp in 1.82+
 namespace {
 template <class T>
-inline constexpr boost::span<T> make_span(T* begin, std::size_t size) noexcept {
+constexpr boost::span<T> make_span(T* begin, std::size_t size) noexcept {
     return boost::span<T>{begin, size};
 }
 } // namespace
@@ -107,7 +107,7 @@ void save(Archive& ar, const T& t, unsigned version) {
 template <class Archive, class T>
 void load(Archive& ar, T& t, unsigned version) {
     // default implementation calls serialize method
-    static_assert(std::is_const<T>::value == false, "T must be non-const");
+    static_assert(!static_cast<bool>(std::is_const<T>::value), "T must be non-const");
     t.serialize(ar, version);
 }
 
@@ -124,7 +124,7 @@ void split_serialize(std::false_type, Archive& ar, const T& t, unsigned version)
 template <class Archive, class T>
 void serialize(Archive& ar, T& t, unsigned version) {
     // default implementation calls serialize method
-    static_assert(std::is_const<T>::value == false, "T must be non-const");
+    static_assert(!static_cast<bool>(std::is_const<T>::value), "T must be non-const");
     split_serialize(typename Archive::is_loading{}, ar, t, version);
 }
 
@@ -153,7 +153,8 @@ class tuple_oarchive {
     }
 
     template <class T>
-    std::enable_if_t<is_serialization_primitive<T>::value == true, tuple_oarchive&>
+    std::enable_if_t<static_cast<bool>(is_serialization_primitive<T>::value),
+                     tuple_oarchive&>
     operator<<(const T& t) {
         // no version number is saved for primitives
         this->operator<<(py::cast(t));
@@ -161,7 +162,8 @@ class tuple_oarchive {
     }
 
     template <class T>
-    std::enable_if_t<is_serialization_primitive<T>::value == false, tuple_oarchive&>
+    std::enable_if_t<!static_cast<bool>(is_serialization_primitive<T>::value),
+                     tuple_oarchive&>
     operator<<(const T& t) {
         // save current class version with each non-primitive type
         const unsigned version = boost::serialization::version<T>::value;
@@ -203,7 +205,7 @@ class tuple_oarchive {
     }
 
     template <class T>
-    std::enable_if_t<std::is_arithmetic<T>::value == true, tuple_oarchive&>
+    std::enable_if_t<static_cast<bool>(std::is_arithmetic<T>::value), tuple_oarchive&>
     operator<<(const std::vector<T>& v) {
         // fast version for vector of arithmetic types
         py::array_t<T> a(static_cast<py::ssize_t>(v.size()), v.data());
@@ -212,7 +214,7 @@ class tuple_oarchive {
     }
 
     template <class T>
-    std::enable_if_t<std::is_arithmetic<T>::value == false, tuple_oarchive&>
+    std::enable_if_t<!static_cast<bool>(std::is_arithmetic<T>::value), tuple_oarchive&>
     operator<<(const std::vector<T>& v) {
         // generic version
         this->operator<<(v.size());
@@ -222,7 +224,7 @@ class tuple_oarchive {
     }
 
     template <class T>
-    std::enable_if_t<std::is_arithmetic<T>::value == true, tuple_oarchive&>
+    std::enable_if_t<static_cast<bool>(std::is_arithmetic<T>::value), tuple_oarchive&>
     operator<<(const bh::detail::array_wrapper<T>& w) {
         // fast version
         py::array_t<T> a(static_cast<py::ssize_t>(w.size), w.ptr);
@@ -231,7 +233,7 @@ class tuple_oarchive {
     }
 
     template <class T>
-    std::enable_if_t<std::is_arithmetic<T>::value == false, tuple_oarchive&>
+    std::enable_if_t<!static_cast<bool>(std::is_arithmetic<T>::value), tuple_oarchive&>
     operator<<(const bh::detail::array_wrapper<T>& w) {
         // generic version
         for(auto&& item : ::make_span(w.ptr, w.size))
@@ -270,7 +272,8 @@ class tuple_iarchive {
     }
 
     template <class T>
-    std::enable_if_t<is_serialization_primitive<T>::value == true, tuple_iarchive&>
+    std::enable_if_t<static_cast<bool>(is_serialization_primitive<T>::value),
+                     tuple_iarchive&>
     operator>>(T& t) {
         // no version number is saved for primitives
         py::object obj;
@@ -280,7 +283,8 @@ class tuple_iarchive {
     }
 
     template <class T>
-    std::enable_if_t<is_serialization_primitive<T>::value == false, tuple_iarchive&>
+    std::enable_if_t<!static_cast<bool>(is_serialization_primitive<T>::value),
+                     tuple_iarchive&>
     operator>>(T& t) {
         // load saved class version of each non-primitive type to call legacy code
         unsigned saved_version;
@@ -311,7 +315,7 @@ class tuple_iarchive {
     }
 
     template <class T>
-    std::enable_if_t<std::is_arithmetic<T>::value == true, tuple_iarchive&>
+    std::enable_if_t<static_cast<bool>(std::is_arithmetic<T>::value), tuple_iarchive&>
     operator>>(std::vector<T>& v) {
         // fast version for vector of arithmetic types
         py::array_t<T> a;
@@ -323,7 +327,7 @@ class tuple_iarchive {
     }
 
     template <class T>
-    std::enable_if_t<std::is_arithmetic<T>::value == false, tuple_iarchive&>
+    std::enable_if_t<!static_cast<bool>(std::is_arithmetic<T>::value), tuple_iarchive&>
     operator>>(std::vector<T>& v) {
         // generic version
         std::size_t new_size;
@@ -335,7 +339,7 @@ class tuple_iarchive {
     }
 
     template <class T>
-    std::enable_if_t<std::is_arithmetic<T>::value == true, tuple_iarchive&>
+    std::enable_if_t<static_cast<bool>(std::is_arithmetic<T>::value), tuple_iarchive&>
     operator>>(bh::detail::array_wrapper<T>& w) {
         // fast version
         py::array_t<T> a;
@@ -348,7 +352,7 @@ class tuple_iarchive {
     }
 
     template <class T>
-    std::enable_if_t<std::is_arithmetic<T>::value == false, tuple_iarchive&>
+    std::enable_if_t<!static_cast<bool>(std::is_arithmetic<T>::value), tuple_iarchive&>
     operator>>(bh::detail::array_wrapper<T>& w) {
         // generic version
         for(auto&& item : ::make_span(w.ptr, w.size))

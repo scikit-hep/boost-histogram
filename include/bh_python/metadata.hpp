@@ -15,8 +15,7 @@ struct metadata_t : py::dict {
     using dict::dict;
 
     // default initialize to empty dict (must not be explicit)
-    metadata_t()
-        : dict() {}
+    metadata_t() = default;
 
     bool operator==(const metadata_t& other) const { return py::dict::equal(other); }
     bool operator!=(const metadata_t& other) const {

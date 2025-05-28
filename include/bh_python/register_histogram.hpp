@@ -113,7 +113,7 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
                 unchecked_set(tup, 0, py::array(make_buffer(h, flow)));
 
                 // Add the axis edges
-                h.for_each_axis([&tup, flow, i = 0u](const auto& ax) mutable {
+                h.for_each_axis([&tup, flow, i = 0U](const auto& ax) mutable {
                     unchecked_set(tup, ++i, axis::edges(ax, flow, true));
                 });
 
@@ -146,12 +146,9 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
                             return py::cast(item, py::return_value_policy::reference);
                         },
                         var);
-
                 }
 
-                else
-                    throw std::out_of_range(
-                        "The axis value must be less than the rank");
+                throw std::out_of_range("The axis value must be less than the rank");
             },
             "i"_a = 0,
             py::keep_alive<0, 1>())

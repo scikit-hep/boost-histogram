@@ -175,18 +175,11 @@ it yourself (even without installing the hooks) using:
 pre-commit run --all-files
 ```
 
-We do not check `check-manifest` every time locally, since it is slow. You can trigger
-this manual check with:
-
-```bash
-pre-commit run --all-files --hook-stage manual check-manifest
-```
-
 Developers should update the pre-commit dependencies once in a while, you can
 do this automatically with:
 
 ```bash
-pre-commit autoupdate
+pre-commit autoupdate -j8
 ```
 
 > #### Note about skipping Docker
@@ -203,9 +196,17 @@ place, so you can use git to monitor the changes.
 
 ```bash
 docker run --rm -v $PWD:/pybind11 -it silkeh/clang:20
-apt-get update && apt-get install python3-dev ninja-build
+apt update && apt install -y python3-dev python3-pip git ninja-build
+python3 -m pip install setuptools_scm --break-system-packages
 cmake --preset tidy
 cmake --build --preset tidy
+```
+
+To autofix, use:
+
+```bash
+cmake --preset --preset tidy -DCMAKE_CXX_CLANG_TIDY="clang-tidy;--fix"
+cmake --build --preset tidy -j1
 ```
 
 Remember to build single-threaded if applying fixes!

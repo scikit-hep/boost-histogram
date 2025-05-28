@@ -71,8 +71,8 @@ struct func_transform {
             throw py::type_error("Only ctypes double(double) and C++ functions allowed "
                                  "(must be stateless)");
         }
-        auto func  = static_cast<std::function<raw_t>&>(func_caster);
-        auto cfunc = func.target<raw_t*>();
+        auto func   = static_cast<std::function<raw_t>&>(func_caster);
+        auto* cfunc = func.target<raw_t*>();
         if(cfunc == nullptr) {
             throw py::type_error(
                 "Retrieving double(double) function failed (must be stateless)");

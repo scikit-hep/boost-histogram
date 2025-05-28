@@ -33,12 +33,10 @@ void register_algorithms(py::module& algorithm) {
                                 self.end.index,
                                 merge,
                                 self.crop ? "slice_mode.crop" : "slice_mode.shrink");
-                } else {
-                    return py::
-                        str("reduce_command(shrink{0}({1}, lower={2}, upper={3}{4}))")
-                            .format(
-                                suffix, start, self.begin.value, self.end.value, merge);
                 }
+                return py::str(
+                           "reduce_command(shrink{0}({1}, lower={2}, upper={3}{4}))")
+                    .format(suffix, start, self.begin.value, self.end.value, merge);
             }
 
             // self.range == range_t::none

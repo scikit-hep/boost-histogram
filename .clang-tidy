@@ -2,10 +2,15 @@ FormatStyle: file
 
 Checks: "
   modernize-*,
+  readability-*,
   -modernize-use-trailing-return-type,
   -modernize-avoid-c-arrays,
+  -readability-identifier-length,
+  -readability-braces-around-statements,
+  -readability-magic-numbers,
+  -readability-named-parameter,
+  -readability-function-cognitive-complexity,
   llvm-namespace-comment,
-  readability-container-size-empty,
   google-readability-casting,
   "
 

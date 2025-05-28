@@ -12,18 +12,16 @@ template <class T = py::object>
 T required_arg(py::kwargs& kwargs, const char* name) {
     if(kwargs.contains(name)) {
         return py::cast<T>(kwargs.attr("pop")(name));
-    } else {
-        throw py::key_error(std::string(name) + " is required");
     }
+    throw py::key_error(std::string(name) + " is required");
 }
 
 /// Get and remove a value from a keyword argument dict or return None
 inline py::object optional_arg(py::kwargs& kwargs, const char* name) {
     if(kwargs.contains(name)) {
         return kwargs.attr("pop")(name);
-    } else {
-        return py::none();
     }
+    return py::none();
 }
 
 /// Get and remove a value from a keyword argument dict or return default value
@@ -31,9 +29,8 @@ template <class T>
 T optional_arg(py::kwargs& kwargs, const char* name, T original_value) {
     if(kwargs.contains(name)) {
         return py::cast<T>(kwargs.attr("pop")(name));
-    } else {
-        return original_value;
     }
+    return original_value;
 }
 
 /// Remove a value from a keyword argument dict if None, do not remove if non None

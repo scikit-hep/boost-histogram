@@ -118,11 +118,10 @@ void register_accumulators(py::module& accumulators) {
              [](const weighted_sum& self, py::str key) {
                  if(key.equal(py::str("value")))
                      return self.value;
-                 else if(key.equal(py::str("variance")))
+                 if(key.equal(py::str("variance")))
                      return self.variance;
-                 else
-                     throw py::key_error(
-                         py::str("{0} not one of value, variance").format(key));
+                 throw py::key_error(
+                     py::str("{0} not one of value, variance").format(key));
              })
         .def("__setitem__",
              [](weighted_sum& self, py::str key, double value) {
@@ -221,18 +220,16 @@ void register_accumulators(py::module& accumulators) {
              [](const weighted_mean& self, py::str key) {
                  if(key.equal(py::str("value")))
                      return self.value;
-                 else if(key.equal(py::str("sum_of_weights")))
+                 if(key.equal(py::str("sum_of_weights")))
                      return self.sum_of_weights;
-                 else if(key.equal(py::str("sum_of_weights_squared")))
+                 if(key.equal(py::str("sum_of_weights_squared")))
                      return self.sum_of_weights_squared;
-                 else if(key.equal(py::str("_sum_of_weighted_deltas_squared")))
+                 if(key.equal(py::str("_sum_of_weighted_deltas_squared")))
                      return self._sum_of_weighted_deltas_squared;
-                 else
-                     throw py::key_error(
-                         py::str(
-                             "{0} not one of value, sum_of_weights, "
+                 throw py::key_error(
+                     py::str("{0} not one of value, sum_of_weights, "
                              "sum_of_weights_squared, _sum_of_weighted_deltas_squared")
-                             .format(key));
+                         .format(key));
              })
         .def("__setitem__",
              [](weighted_mean& self, py::str key, double value) {
@@ -309,14 +306,13 @@ void register_accumulators(py::module& accumulators) {
              [](const mean& self, py::str key) {
                  if(key.equal(py::str("count")))
                      return self.count;
-                 else if(key.equal(py::str("value")))
+                 if(key.equal(py::str("value")))
                      return self.value;
-                 else if(key.equal(py::str("_sum_of_deltas_squared")))
+                 if(key.equal(py::str("_sum_of_deltas_squared")))
                      return self._sum_of_deltas_squared;
-                 else
-                     throw py::key_error(
-                         py::str("{0} not one of count, value, _sum_of_deltas_squared")
-                             .format(key));
+                 throw py::key_error(
+                     py::str("{0} not one of count, value, _sum_of_deltas_squared")
+                         .format(key));
              })
         .def("__setitem__",
              [](mean& self, py::str key, double value) {
