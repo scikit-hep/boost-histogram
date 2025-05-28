@@ -241,16 +241,10 @@ Make time/memory taken can be set
 
 <details><summary>Updating dependencies (click to expand)</summary>
 
-This will checkout new versions of the dependencies. Example given using the
-fish shell.
+This will checkout new versions of the dependencies.
 
-```fish
-for f in *
-    cd $f
-    git fetch
-    git checkout boost-1.75.0 || echo "Not found"
-    cd ..
-end
+```bash
+nox -s bump_boost -- 1.88.0
 ```
 
 </details>
