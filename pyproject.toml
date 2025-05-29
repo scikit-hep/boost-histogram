@@ -92,6 +92,8 @@ test-core = [
     "cloudpickle",
     "pytest-benchmark",
     "pytest>=6.0",
+    "pytest-benchmark",
+    "pytest>=6.0",
     "numpy",
 ]
 test = [
@@ -186,8 +188,11 @@ test-skip = [
   "pp310-manylinux_aarch64",
   "pp310-macosx_arm64",
   "cp31*-musllinux_*", # Threading test crashes
+  "gp311_242-macosx_x86_64",
+  "gp311_242-manylinux_aarch64",
+  "gp311_242-win*",  # pytest crashes with module 'io' has no attribute '_WindowsConsoleIO'
 ]
-enable = ["cpython-freethreading", "pypy", "cpython-prerelease"]
+enable = ["cpython-freethreading", "pypy", "cpython-prerelease", "graalpy"]
 environment-pass = ["SETUPTOOLS_SCM_PRETEND_VERSION"]
 environment.PIP_ONLY_BINARY = "numpy"
 environment.PIP_PREFER_BINARY = "1"
@@ -205,6 +210,12 @@ xbuild-tools = ["cmake", "ninja"]
 test-command = "pytest --benchmark-disable tests"
 environment.PIP_EXTRA_INDEX_URL = "https://pypi.anaconda.org/beeware/simple/"
 
+[tool.cibuildwheel.android]
+build-frontend = "build"
+xbuild-tools = ["cmake", "ninja"]
+test-command = "pytest --benchmark-disable tests"
+environment.PIP_EXTRA_INDEX_URL = "https://chaquo.com/pypi-13.1"
+
 [[tool.cibuildwheel.overrides]]
 select = "pp310-macosx_arm64"
 inherit.environment = "append"
@@ -216,6 +227,13 @@ inherit.environment = "append"
 environment.UV_EXTRA_INDEX_URL = "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple/"
 environment.UV_INDEX_STRATEGY = "unsafe-best-match"
 environment.UV_PRERELEASE = "allow"
+
+[[tool.cibuildwheel.overrides]]
+select = ["gp*"]
+inherit.environment = "append"
+environment.UV_EXTRA_INDEX_URL = "https://www.graalvm.org/python/wheels/"
+environment.UV_INDEX_STRATEGY = "unsafe-best-match"
+test-command = "pytest --benchmark-disable tests"
 
 [tool.pylint]
 py-version = "3.9"

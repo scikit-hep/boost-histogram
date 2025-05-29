@@ -191,6 +191,10 @@ def test_histogram_metadata(copy_fn, metadata):
     sys.implementation.name == "pypy",
     reason="Not remotely supported on PyPY, hangs forever",
 )
+@pytest.mark.skipif(
+    sys.implementation.name == "graalpy",
+    reason="Not supported, throws exception",
+)
 @pytest.mark.parametrize("mod", [np, math])
 def test_pickle_transforms(mod, copy_fn):
     ax1 = bh.axis.Regular(
