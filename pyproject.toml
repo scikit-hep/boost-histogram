@@ -1,5 +1,5 @@
 [build-system]
-requires = ["scikit-build-core>=0.11", "pybind11==3.0.0b2"]
+requires = ["scikit-build-core>=0.11", "pybind11==3.0.0rc2"]
 build-backend = "scikit_build_core.build"
 
 [project]
@@ -175,15 +175,7 @@ build-frontend = "build[uv]"
 test-groups = ["test"]
 test-command = "python -m pytest -n auto --benchmark-disable tests"
 test-sources = ["pyproject.toml", "tests"]
-skip = [
-  "pp38-*",
-]
-test-skip = [
-  "cp*-musllinux_*", # Segfaults
-  "cp313t-win*",
-  "pp311-*", # no numpy wheels
-  "cp*-win_arm64", # no numpy wheels
-]
+test-skip = ["cp3{9,10}-win_arm64", "cp3{9,10}-musllinux_*"]
 enable = ["cpython-freethreading", "pypy", "cpython-prerelease", "graalpy"]
 environment-pass = ["SETUPTOOLS_SCM_PRETEND_VERSION"]
 environment.PIP_ONLY_BINARY = "numpy"
@@ -195,12 +187,25 @@ test-command = "pytest --benchmark-disable {project}/tests"
 
 [tool.cibuildwheel.ios]
 build-frontend = "build"
+xbuild-tools = ["cmake", "ninja"]
+environment.IPHONEOS_DEPLOYMENT_TARGET = "7"
 
 [[tool.cibuildwheel.overrides]]
 select = "pp310-macosx_arm64"
 inherit.environment = "append"
 environment.MACOSX_DEPLOYMENT_TARGET = "14.0"
 
+[[tool.cibuildwheel.overrides]]
+select = ["cp314*", "pp311*", "cp*-musllinux_*"]
+build-frontend = "build"
+inherit.environment = "append"
+environment.PIP_EXTRA_INDEX_URL = "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple"
+
+[[tool.cibuildwheel.overrides]]
+select = ["*graalpy*"]
+build-frontend = "build"
+inherit.environment = "append"
+environment.PIP_EXTRA_INDEX_URL = "https://www.graalvm.org/python/wheels/simple"
 
 [tool.pylint]
 py-version = "3.9"

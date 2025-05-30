@@ -82,7 +82,6 @@ repos:
     hooks:
       - id: check-readthedocs
       - id: check-github-workflows
-
 # TMP: waiting for cibuildwheel 3.0
 #  - repo: https://github.com/henryiii/validate-pyproject-schema-store
 #    rev: 2025.04.28
