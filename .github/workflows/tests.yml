@@ -128,11 +128,9 @@ jobs:
 
       - uses: astral-sh/setup-uv@v6
 
-      - uses: pypa/cibuildwheel@v2.23
+      - uses: henryiii/cibuildwheel@72d263930ad04fb48fb9d660c1e38a79c9675bf7
         with:
           only: "${{ matrix.only }}"
-        env:
-          CIBW_BUILD_VERBOSITY: 1
 
       - uses: actions/upload-artifact@v4
         with:

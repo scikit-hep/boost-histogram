@@ -1,5 +1,5 @@
 [build-system]
-requires = ["scikit-build-core>=0.11", "pybind11>=2.13.3"]
+requires = ["scikit-build-core>=0.11", "pybind11 @ git+https://github.com/henryiii/pybind11@ba78f4caf1a06cbaa2ad5057445d56cc07621ab8"]
 build-backend = "scikit_build_core.build"
 
 [project]
@@ -173,31 +173,48 @@ ignore_missing_imports = true
 [tool.cibuildwheel]
 build-frontend = "build[uv]"
 test-groups = ["test"]
-test-command = "pytest -n auto --benchmark-disable {project}/tests"
-skip = [
-  "pp38-*",
-]
+test-command = "python -m pytest -n auto --benchmark-disable tests"
+test-sources = ["pyproject.toml", "tests"]
 test-skip = [
-  "cp*-musllinux_*", # Segfaults
-  "cp313t-win*",
-  "pp311-*", # no numpy wheels
-  "cp*-win_arm64", # no numpy wheels
+  "cp3{9,10}-win_arm64",
+  "cp3{9,10}-musllinux_*",
+  "pp310-manylinux_aarch64",
+  "cp31*-musllinux_*", # Threading test crashes
 ]
-enable = ["cpython-freethreading", "pypy"]
+enable = ["cpython-freethreading", "pypy", "cpython-prerelease", "graalpy"]
 environment-pass = ["SETUPTOOLS_SCM_PRETEND_VERSION"]
 environment.PIP_ONLY_BINARY = "numpy"
 environment.PIP_PREFER_BINARY = "1"
 
-[[tool.cibuildwheel.overrides]]
-select = "*pyodide*"
+[tool.cibuildwheel.pyodide]
 build-frontend = {name = "build", args = ["--exports", "whole_archive"]}
-test-command = "pytest --benchmark-disable {project}/tests"
+test-command = "pytest --benchmark-disable tests"
+
+[tool.cibuildwheel.ios]
+build-frontend = "build"
+xbuild-tools = ["cmake", "ninja"]
+test-command = "pytest --benchmark-disable tests"
+environment.PIP_EXTRA_INDEX_URL = "https://pypi.anaconda.org/beeware/simple"
+config-settings."cmake.define.CMAKE_CXX_FLAGS" = "-DPYBIND11_HAS_SUBINTERPRETER_SUPPORT=0"
 
 [[tool.cibuildwheel.overrides]]
 select = "pp310-macosx_arm64"
 inherit.environment = "append"
 environment.MACOSX_DEPLOYMENT_TARGET = "14.0"
 
+[[tool.cibuildwheel.overrides]]
+select = ["cp314*", "pp311*", "cp*-musllinux_*"]
+build-frontend = "build"
+inherit.environment = "append"
+environment.PIP_EXTRA_INDEX_URL = "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple"
+environment.PIP_PRERELEASE = "allow"
+
+[[tool.cibuildwheel.overrides]]
+select = ["gp*"]
+build-frontend = "build"
+inherit.environment = "append"
+environment.PIP_EXTRA_INDEX_URL = "https://www.graalvm.org/python/wheels/simple"
+test-command = "pytest --benchmark-disable tests"
 
 [tool.pylint]
 py-version = "3.9"
