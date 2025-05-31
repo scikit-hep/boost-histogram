@@ -193,6 +193,7 @@ test-command = "pytest --benchmark-disable tests"
 [tool.cibuildwheel.ios]
 build-frontend = "build"
 xbuild-tools = ["cmake", "ninja"]
+test-command = "pytest --benchmark-disable tests"
 environment.PIP_EXTRA_INDEX_URL = "https://pypi.anaconda.org/beeware/simple"
 config-settings."cmake.define.CMAKE_CXX_FLAGS" = "-DPYBIND11_HAS_SUBINTERPRETER_SUPPORT=0"
 
@@ -213,6 +214,7 @@ select = ["gp*"]
 build-frontend = "build"
 inherit.environment = "append"
 environment.PIP_EXTRA_INDEX_URL = "https://www.graalvm.org/python/wheels/simple"
+test-command = "pytest --benchmark-disable tests"
 
 [tool.pylint]
 py-version = "3.9"
