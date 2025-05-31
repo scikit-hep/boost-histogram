@@ -1,5 +1,5 @@
 [build-system]
-requires = ["scikit-build-core>=0.11", "pybind11==3.0.0rc2"]
+requires = ["scikit-build-core>=0.11", "pybind11 @ git+https://gitub.com/henryiii/pybind11@ba78f4caf1a06cbaa2ad5057445d56cc07621ab8"]
 build-backend = "scikit_build_core.build"
 
 [project]
@@ -183,12 +183,13 @@ environment.PIP_PREFER_BINARY = "1"
 
 [tool.cibuildwheel.pyodide]
 build-frontend = {name = "build", args = ["--exports", "whole_archive"]}
-test-command = "pytest --benchmark-disable {project}/tests"
+test-command = "pytest --benchmark-disable tests"
 
 [tool.cibuildwheel.ios]
 build-frontend = "build"
 xbuild-tools = ["cmake", "ninja"]
-environment.IPHONEOS_DEPLOYMENT_TARGET = "7"
+environment.PIP_EXTRA_INDEX_URL = "https://pypi.anaconda.org/beeware/simple"
+config-settings."cmake.define.CMAKE_CXX_FLAGS" = "-DPYBIND11_HAS_SUBINTERPRETER_SUPPORT=0"
 
 [[tool.cibuildwheel.overrides]]
 select = "pp310-macosx_arm64"
