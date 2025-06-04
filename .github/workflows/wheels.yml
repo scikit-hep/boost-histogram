@@ -55,15 +55,15 @@ jobs:
             arch: auto64
             build: "*"
 
-          - os: windows-2019
+          - os: windows-latest
             arch: auto64
             build: "cp*"
 
-          - os: windows-2019
+          - os: windows-latest
             arch: auto64
-            build: "pp*"
+            build: "{p,g}p*"
 
-          - os: windows-2019
+          - os: windows-latest
             arch: auto32
             build: "*"
 
@@ -95,7 +95,7 @@ jobs:
 
       - uses: astral-sh/setup-uv@v6
 
-      - uses: pypa/cibuildwheel@v2.23
+      - uses: mhsmith/cibuildwheel@android
         env:
           CIBW_BUILD: ${{ matrix.build }}
           CIBW_ARCHS: ${{ matrix.arch }}

@@ -1,5 +1,5 @@
 [build-system]
-requires = ["scikit-build-core>=0.11", "pybind11>=2.13.3"]
+requires = ["scikit-build-core>=0.11", "pybind11==3.0.0rc2"]
 build-backend = "scikit_build_core.build"
 
 [project]
@@ -37,6 +37,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
     "Programming Language :: Python",
@@ -120,6 +121,7 @@ sdist.exclude = [
   "extern/pybind11/tests/**",
   "extern/*/README.md",
 ]
+logging.level = "INFO"
 
 [[tool.scikit-build.generate]]
 path = "boost_histogram/version.py"
@@ -173,23 +175,22 @@ ignore_missing_imports = true
 [tool.cibuildwheel]
 build-frontend = "build[uv]"
 test-groups = ["test"]
-test-command = "pytest -n auto --benchmark-disable {project}/tests"
-skip = [
-  "pp38-*",
-]
+test-command = "python -m pytest -n auto --benchmark-disable {project}/tests"
 test-skip = [
-  "cp*-musllinux_*", # Segfaults
-  "cp313t-win*",
-  "pp311-*", # no numpy wheels
-  "cp*-win_arm64", # no numpy wheels
+  "cp3{9,10}-win_arm64",
+  "cp3{9,10}-musllinux_*",
+  "pp310-manylinux_aarch64",
+  "pp310-macosx_arm64",
+  "cp31*-musllinux_*", # Threading test crashes
 ]
-enable = ["cpython-freethreading", "pypy"]
+enable = ["cpython-freethreading", "pypy", "cpython-prerelease"]
 environment-pass = ["SETUPTOOLS_SCM_PRETEND_VERSION"]
 environment.PIP_ONLY_BINARY = "numpy"
 environment.PIP_PREFER_BINARY = "1"
+environment.UV_ONLY_BINARY = "numpy"
+environment.UV_PREFER_BINARY = "1"
 
-[[tool.cibuildwheel.overrides]]
-select = "*pyodide*"
+[tool.cibuildwheel.pyodide]
 build-frontend = {name = "build", args = ["--exports", "whole_archive"]}
 test-command = "pytest --benchmark-disable {project}/tests"
 
@@ -198,6 +199,12 @@ select = "pp310-macosx_arm64"
 inherit.environment = "append"
 environment.MACOSX_DEPLOYMENT_TARGET = "14.0"
 
+[[tool.cibuildwheel.overrides]]
+select = ["cp314*", "pp311*", "cp*-musllinux_*", "cp31*-win_arm64"]
+inherit.environment = "append"
+environment.UV_EXTRA_INDEX_URL = "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple/"
+environment.UV_INDEX_STRATEGY = "unsafe-best-match"
+environment.UV_PRERELEASE = "allow"
 
 [tool.pylint]
 py-version = "3.9"
