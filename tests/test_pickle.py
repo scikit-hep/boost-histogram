@@ -3,7 +3,7 @@ from __future__ import annotations
 import copy
 import ctypes
 import math
-import platform
+import sys
 from pickle import dumps, loads
 
 import numpy as np
@@ -188,7 +188,7 @@ def test_histogram_metadata(copy_fn, metadata):
 
 
 @pytest.mark.skipif(
-    platform.python_implementation() == "PyPy",
+    sys.implementation.name == "pypy",
     reason="Not remotely supported on PyPY, hangs forever",
 )
 @pytest.mark.parametrize("mod", [np, math])

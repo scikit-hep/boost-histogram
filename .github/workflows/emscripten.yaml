@@ -17,14 +17,14 @@ concurrency:
 jobs:
   build-pyodide:
     name: Pyodide cibuildwheel
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: true
           fetch-depth: 0
 
-      - uses: pypa/cibuildwheel@v2.23
+      - uses: pypa/cibuildwheel@v3.0.0b5
         env:
           CIBW_PLATFORM: pyodide
 
