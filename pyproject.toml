@@ -90,10 +90,10 @@ examples = [
 ]
 test = [
     "cloudpickle",
-    "hypothesis>=6.0; sys_platform != 'ios'", # slow on iOS, can fail health check
+    "hypothesis>=6.0",
     "pytest-benchmark",
     "pytest>=6.0",
-    "pytest-xdist; sys_platform != 'ios'",  # No processes on iOS
+    "pytest-xdist",
     "numpy",
 ]
 github = [
