@@ -11,9 +11,14 @@ on:
   pull_request:
     paths:
       - .github/workflows/wheels.yml
+  schedule:
+    - cron: "34 3 * * *"
+
+permissions:
+  actions: read
 
 concurrency:
-  group: wheels-${{ github.head_ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 env:
@@ -139,3 +144,27 @@ jobs:
           subject-path: "dist/boost_histogram-*"
 
       - uses: pypa/gh-action-pypi-publish@release/v1
+
+  upload_nightly_wheels:
+    name: Upload nightly wheels to Anaconda Cloud
+    if: |
+      (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule') &&
+      !github.event.repository.fork &&
+      github.ref == 'refs/heads/develop'
+    needs: [build_wheels]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: wheels-*
+          merge-multiple: true
+          path: dist
+
+      - name: List all files
+        run: ls -lh dist
+
+      - name: Upload wheel to Anaconda Cloud as nightly
+        uses: scientific-python/upload-nightly-action@b36e8c0c10dbcfd2e05bf95f17ef8c14fd708dbf # 0.6.2
+        with:
+          artifacts_path: dist
+          anaconda_nightly_upload_token: ${{ secrets.ANACONDA_ORG_UPLOAD_TOKEN }}

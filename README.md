@@ -13,6 +13,7 @@
 [![GitHub Discussion][github-discussions-badge]][github-discussions-link]
 [![Gitter][gitter-badge]][gitter-link]
 [![Scikit-HEP][sk-badge]](https://scikit-hep.org/)
+[![SPEC 4 — Using and Creating Nightly Wheels][spec4-badge]][spec4-link]
 
 Python bindings for [Boost::Histogram][] ([source][Boost::Histogram source]), a C++14 library. This is one of the [fastest libraries][] for
 histogramming, while still providing the power of a full histogram object. See
@@ -314,3 +315,5 @@ Support for this work was provided by the National Science Foundation cooperativ
 [Boost::Histogram source]: https://github.com/boostorg/histogram
 [Hist]: https://github.com/scikit-hep/hist
 [fastest libraries]: https://iscinumpy.gitlab.io/post/histogram-speeds-in-python/
+[spec4-badge]: https://img.shields.io/badge/SPEC-4-green?labelColor=%23004811&color=%235CA038
+[spec4-link]: https://scientific-python.org/specs/spec-0004/
