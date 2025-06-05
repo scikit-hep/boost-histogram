@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 import boost_histogram as bh
-from boost_histogram.serialization import generic
+from boost_histogram.serialization import from_uhi, to_uhi
 
 
 @pytest.mark.parametrize(
@@ -23,7 +23,7 @@ def test_simple_to_dict(storage_type: bh.storage.Storage, expected_type: str) ->
         bh.axis.Regular(10, 0, 1),
         storage=storage_type,
     )
-    data = generic.to_dict(h)
+    data = to_uhi(h)
 
     assert "metadata" not in data
     assert data["axes"][0]["type"] == "regular"
@@ -42,7 +42,7 @@ def test_weighed_to_dict() -> None:
         bh.axis.Integer(3, 15),
         storage=bh.storage.Weight(),
     )
-    data = generic.to_dict(h)
+    data = to_uhi(h)
 
     assert data["axes"][0]["type"] == "regular"
     assert data["axes"][0]["lower"] == 3
@@ -62,7 +62,7 @@ def test_mean_to_dict() -> None:
         storage=bh.storage.Mean(),
         metadata={"name": "hi"},
     )
-    data = generic.to_dict(h)
+    data = to_uhi(h)
 
     assert data["metadata"]["name"] == "hi"
     assert data["axes"][0]["type"] == "category_str"
@@ -81,7 +81,7 @@ def test_weighted_mean_to_dict() -> None:
     )
     h.fill([1, 2, 3, 50], weight=[10, 20, 30, 5], sample=[100, 200, 300, 1])
     h.fill([1, 2, 3, -3], weight=[10, 20, 30, 5], sample=[100, 200, 300, 1])
-    data = generic.to_dict(h)
+    data = to_uhi(h)
 
     assert data["axes"][0]["type"] == "category_int"
     assert data["axes"][0]["categories"] == pytest.approx([1, 2, 3])
@@ -99,7 +99,7 @@ def test_weighted_mean_to_dict() -> None:
 
 def test_transform_log_axis_to_dict() -> None:
     h = bh.Histogram(bh.axis.Regular(10, 1, 10, transform=bh.axis.transform.log))
-    data = generic.to_dict(h)
+    data = to_uhi(h)
 
     assert data["axes"][0]["type"] == "variable"
     assert data["axes"][0]["edges"] == pytest.approx(
@@ -109,7 +109,7 @@ def test_transform_log_axis_to_dict() -> None:
 
 def test_transform_sqrt_axis_to_dict() -> None:
     h = bh.Histogram(bh.axis.Regular(10, 0, 10, transform=bh.axis.transform.sqrt))
-    data = generic.to_dict(h)
+    data = to_uhi(h)
 
     assert data["axes"][0]["type"] == "variable"
     assert data["axes"][0]["edges"] == pytest.approx(
@@ -132,8 +132,8 @@ def test_round_trip_simple(storage_type: bh.storage.Storage) -> None:
         storage=storage_type,
     )
     h.fill([-1, 0, 0, 1, 20, 20, 20])
-    data = generic.to_dict(h)
-    h2 = generic.from_dict(data)
+    data = to_uhi(h)
+    h2 = from_uhi(data)
 
     if isinstance(storage_type, (bh.storage.Int64, bh.storage.Double)):
         assert h == h2
@@ -148,8 +148,8 @@ def test_round_trip_weighted() -> None:
     )
     h.fill(["1", "2", "3"], weight=[10, 20, 30])
     h.fill(["1", "2", "3"], weight=[10, 20, 30])
-    data = generic.to_dict(h)
-    h2 = generic.from_dict(data)
+    data = to_uhi(h)
+    h2 = from_uhi(data)
 
     print(h.view())
     print(h2.view())
@@ -165,8 +165,8 @@ def test_round_trip_mean() -> None:
     )
     h.fill(["1", "2", "3"], weight=[10, 20, 30], sample=[100, 200, 300])
     h.fill(["1", "2", "3"], weight=[10, 20, 30], sample=[100, 200, 300])
-    data = generic.to_dict(h)
-    h2 = generic.from_dict(data)
+    data = to_uhi(h)
+    h2 = from_uhi(data)
 
     assert pytest.approx(np.array(h.axes[0])) == np.array(h2.axes[0])
     assert np.asarray(h) == pytest.approx(h2)
@@ -179,8 +179,8 @@ def test_round_trip_weighted_mean() -> None:
     )
     h.fill([1, 2, 3], weight=[10, 20, 30], sample=[100, 200, 300])
     h.fill([1, 2, 3], weight=[10, 20, 30], sample=[100, 200, 300])
-    data = generic.to_dict(h)
-    h2 = generic.from_dict(data)
+    data = to_uhi(h)
+    h2 = from_uhi(data)
 
     assert pytest.approx(np.array(h.axes[0])) == np.array(h2.axes[0])
     assert np.asarray(h) == pytest.approx(h2)
