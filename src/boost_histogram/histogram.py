@@ -26,6 +26,7 @@ import numpy as np
 import boost_histogram
 from boost_histogram import _core
 
+from . import serialization
 from ._compat.typing import Self
 from ._utils import cast, register
 from .axis import AxesTuple, Axis, Variable
@@ -401,6 +402,19 @@ class Histogram:
         """
 
         return AxesTuple(self._axis(i) for i in range(self.ndim))
+
+    def _to_uhi_(self) -> dict[str, Any]:
+        """
+        Convert to a UHI histogram.
+        """
+        return serialization.to_uhi(self)
+
+    @classmethod
+    def _from_uhi_(cls, inp: dict[str, Any], /) -> Self:
+        """
+        Convert from a UHI histogram.
+        """
+        return cls(serialization.from_uhi(inp))
 
     @property
     def ndim(self) -> int:
