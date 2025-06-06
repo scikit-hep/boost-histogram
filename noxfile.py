@@ -20,10 +20,10 @@ def tests(session: nox.Session) -> None:
     opts = (
         ["--reinstall-package=boost-histogram"] if session.venv_backend == "uv" else []
     )
-    args = session.posargs or ["-n", "auto"]
+    args = session.posargs or ["-n", "auto", "--benchmark-disable"]
     pyproject = nox.project.load_toml("pyproject.toml")
     session.install(*nox.project.dependency_groups(pyproject, "test"))
-    session.install("-v", ".", *opts, silent=False)
+    session.install("-v", "-e.", *opts, silent=False)
     session.run("pytest", *args)
 
 

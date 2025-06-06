@@ -118,16 +118,10 @@ source_group(
 option(BOOST_HISTOGRAM_ERRORS "Make warnings errors (for CI mostly)")
 
 # Adding warnings
+# Boost.Histogram doesn't pass sign -Wsign-conversion
 if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang" OR "${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-  target_compile_options(
-    _core
-    PRIVATE -Wall
-            -Wextra
-            -pedantic-errors
-            -Wconversion
-            -Wsign-conversion
-            -Wsign-compare
-            -Wno-unused-value)
+  target_compile_options(_core PRIVATE -Wall -Wextra -pedantic-errors -Wconversion -Wsign-compare
+                                       -Wno-unused-value)
   if(BOOST_HISTOGRAM_ERRORS)
     target_compile_options(_core PRIVATE -Werror)
   endif()
