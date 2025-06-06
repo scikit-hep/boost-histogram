@@ -202,6 +202,7 @@ environment.MACOSX_DEPLOYMENT_TARGET = "14.0"
 [tool.pylint]
 py-version = "3.9"
 ignore-patterns = ['.*\.pyi']
+ignore = "version.py"
 extension-pkg-allow-list = ["boost_histogram._core"]
 reports.output-format = "colorized"
 similarities.ignore-imports = "yes"
