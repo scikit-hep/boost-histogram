@@ -197,10 +197,10 @@ environment.UV_PREFER_BINARY = "1"
 [tool.cibuildwheel.pyodide]
 build-frontend = {name = "build", args = ["--exports", "whole_archive"]}
 test-command = "pytest --benchmark-disable tests"
+test-groups = ["test-core"]  # Working around a bug with markers in pyodide
 
 [tool.cibuildwheel.ios]
 build-frontend = "build"
-test-groups = ["test-core"]
 xbuild-tools = ["cmake", "ninja"]
 test-command = "pytest --benchmark-disable tests"
 environment.PIP_EXTRA_INDEX_URL = "https://pypi.anaconda.org/beeware/simple/"
