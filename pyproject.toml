@@ -1,5 +1,5 @@
 [build-system]
-requires = ["scikit-build-core>=0.11", "pybind11==3.0.0rc2"]
+requires = ["scikit-build-core>=0.11", "pybind11==3.0.0rc3"]
 build-backend = "scikit_build_core.build"
 
 [project]
@@ -88,13 +88,16 @@ examples = [
     "xarray",
     "xhistogram",
 ]
-test = [
+test-core = [
     "cloudpickle",
-    "hypothesis>=6.0",
     "pytest-benchmark",
     "pytest>=6.0",
-    "pytest-xdist",
     "numpy",
+]
+test = [
+    { include-group = "test-core" },
+    "hypothesis>=6.0; sys_platform != 'ios'", # slow on iOS, can fail health check
+    "pytest-xdist; sys_platform != 'ios'",  # No processes on iOS
 ]
 github = [
   { include-group = "test" },
@@ -175,7 +178,8 @@ ignore_missing_imports = true
 [tool.cibuildwheel]
 build-frontend = "build[uv]"
 test-groups = ["test"]
-test-command = "python -m pytest -n auto --benchmark-disable {project}/tests"
+test-command = "python -m pytest -n auto --benchmark-disable tests"
+test-sources = ["pyproject.toml", "tests"]
 test-skip = [
   "cp3{9,10}-win_arm64",
   "cp3{9,10}-musllinux_*",
@@ -192,7 +196,14 @@ environment.UV_PREFER_BINARY = "1"
 
 [tool.cibuildwheel.pyodide]
 build-frontend = {name = "build", args = ["--exports", "whole_archive"]}
-test-command = "pytest --benchmark-disable {project}/tests"
+test-command = "pytest --benchmark-disable tests"
+test-groups = ["test-core"]  # Working around a bug with markers in pyodide
+
+[tool.cibuildwheel.ios]
+build-frontend = "build"
+xbuild-tools = ["cmake", "ninja"]
+test-command = "pytest --benchmark-disable tests"
+environment.PIP_EXTRA_INDEX_URL = "https://pypi.anaconda.org/beeware/simple/"
 
 [[tool.cibuildwheel.overrides]]
 select = "pp310-macosx_arm64"
