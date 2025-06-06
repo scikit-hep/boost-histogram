@@ -88,13 +88,16 @@ examples = [
     "xarray",
     "xhistogram",
 ]
-test = [
+test-core = [
     "cloudpickle",
-    "hypothesis>=6.0; sys_platform != 'ios'", # slow on iOS, can fail health check
     "pytest-benchmark",
     "pytest>=6.0",
-    "pytest-xdist; sys_platform != 'ios'",  # No processes on iOS
     "numpy",
+]
+test = [
+    { include-group = "test-core" },
+    "hypothesis>=6.0; sys_platform != 'ios'", # slow on iOS, can fail health check
+    "pytest-xdist; sys_platform != 'ios'",  # No processes on iOS
 ]
 github = [
   { include-group = "test" },
@@ -197,6 +200,7 @@ test-command = "pytest --benchmark-disable tests"
 
 [tool.cibuildwheel.ios]
 build-frontend = "build"
+test-groups = ["test-core"]
 xbuild-tools = ["cmake", "ninja"]
 test-command = "pytest --benchmark-disable tests"
 environment.PIP_EXTRA_INDEX_URL = "https://pypi.anaconda.org/beeware/simple/"
