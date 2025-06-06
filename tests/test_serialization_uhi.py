@@ -185,6 +185,7 @@ def test_round_trip_weighted_mean() -> None:
     assert pytest.approx(np.array(h.axes[0])) == np.array(h2.axes[0])
     assert np.asarray(h) == pytest.approx(h2)
 
+
 def test_uhi_wrapper():
     h = bh.Histogram(
         bh.axis.IntCategory([1, 2, 3]),
