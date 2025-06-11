@@ -100,7 +100,7 @@ jobs:
 
       - uses: astral-sh/setup-uv@v6
 
-      - uses: pypa/cibuildwheel@v3.0.0rc2
+      - uses: pypa/cibuildwheel@v3.0.0rc3
         env:
           CIBW_BUILD: ${{ matrix.build }}
           CIBW_ARCHS: ${{ matrix.arch }}
@@ -131,7 +131,7 @@ jobs:
 
       - run: brew upgrade cmake
 
-      - uses: pypa/cibuildwheel@v3.0.0rc2
+      - uses: pypa/cibuildwheel@v3.0.0rc3
         env:
           CIBW_PLATFORM: ios
 

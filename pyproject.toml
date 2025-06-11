@@ -222,16 +222,16 @@ inherit.environment = "append"
 environment.MACOSX_DEPLOYMENT_TARGET = "14.0"
 
 [[tool.cibuildwheel.overrides]]
-select = ["cp314*", "pp311*", "cp*-musllinux_*", "cp31*-win_arm64"]
+select = ["cp314*",]
 inherit.environment = "append"
-environment.UV_EXTRA_INDEX_URL = "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple/"
+environment.UV_INDEX = "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple/"
 environment.UV_INDEX_STRATEGY = "unsafe-best-match"
 environment.UV_PRERELEASE = "allow"
 
 [[tool.cibuildwheel.overrides]]
 select = ["gp*"]
 inherit.environment = "append"
-environment.UV_EXTRA_INDEX_URL = "https://www.graalvm.org/python/wheels/"
+environment.UV_INDEX = "https://www.graalvm.org/python/wheels/"
 environment.UV_INDEX_STRATEGY = "unsafe-best-match"
 test-command = "pytest --benchmark-disable tests"
 
