@@ -145,32 +145,32 @@ jobs:
           path: wheelhouse/*.whl
           name: wheels-ios-${{ matrix.runs-on }}
 
-#  build_android_wheels:
-#    name: Android ${{ matrix.runs-on }}
-#    runs-on: ${{ matrix.runs-on }}
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        runs-on: [ubuntu-latest, macos-latest]
-#    steps:
-#      - uses: actions/checkout@v4
-#        with:
-#          fetch-depth: 0
-#          submodules: true
-#
-#      - uses: mhsmith/cibuildwheel@android
-#        env:
-#          CIBW_PLATFORM: android
-#
-#      - name: Verify clean directory
-#        run: git diff --exit-code
-#        shell: bash
-#
-#      - name: Upload wheels
-#        uses: actions/upload-artifact@v4
-#        with:
-#          path: wheelhouse/*.whl
-#          name: wheels-android-${{ matrix.runs-on }}
+  #  build_android_wheels:
+  #    name: Android ${{ matrix.runs-on }}
+  #    runs-on: ${{ matrix.runs-on }}
+  #    strategy:
+  #      fail-fast: false
+  #      matrix:
+  #        runs-on: [ubuntu-latest, macos-latest]
+  #    steps:
+  #      - uses: actions/checkout@v4
+  #        with:
+  #          fetch-depth: 0
+  #          submodules: true
+  #
+  #      - uses: mhsmith/cibuildwheel@android
+  #        env:
+  #          CIBW_PLATFORM: android
+  #
+  #      - name: Verify clean directory
+  #        run: git diff --exit-code
+  #        shell: bash
+  #
+  #      - name: Upload wheels
+  #        uses: actions/upload-artifact@v4
+  #        with:
+  #          path: wheelhouse/*.whl
+  #          name: wheels-android-${{ matrix.runs-on }}
 
   upload_all:
     name: Upload if release
