@@ -343,10 +343,6 @@ auto register_histogram<bh::multi_weight<double>>(py::module& m,
              [](const histogram_t& self, py::args& args) -> value_type {
                  auto int_args = py::cast<std::vector<int>>(args);
                  auto at_value = self.at(int_args);
-                 // value_type return_obj;
-                 // return_obj.insert(return_obj.end(), at_value.begin(),
-                 // at_value.end()); return_obj.assign(at_value.begin(),
-                 // at_value.end()); return return_obj;
                  return value_type(at_value.begin(), at_value.end());
              })
 
