@@ -36,7 +36,7 @@ struct multi_weight_base : public BASE {
 template <class T>
 struct multi_weight_reference : public multi_weight_base<T, boost::span<T>> {
     //using boost::span<T>::span;
-    using multi_weight_base::multi_weight_base;
+    using multi_weight_base<T, boost::span<T>>::multi_weight_base;
 
     void operator()(const boost::span<T> values) { operator+=(values); }
 
@@ -77,7 +77,7 @@ struct multi_weight_reference : public multi_weight_base<T, boost::span<T>> {
 
 template <class T>
 struct multi_weight_value : public multi_weight_base<T, std::vector<T>> {
-    using multi_weight_base::multi_weight_base;
+    using multi_weight_base<T, std::vector<T>>::multi_weight_base;
 
     multi_weight_value(const boost::span<T> values) {
         this->assign(values.begin(), values.end());
