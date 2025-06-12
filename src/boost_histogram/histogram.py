@@ -95,6 +95,7 @@ _histograms: set[type[CppHistogram]] = {
     _core.hist.any_weight,
     _core.hist.any_mean,
     _core.hist.any_weighted_mean,
+    _core.hist.any_multi_weight,
 }
 
 logger = logging.getLogger(__name__)
