@@ -12,11 +12,10 @@
 namespace boost {
 namespace histogram {
 
-template <class T>
-struct multi_weight_value : public boost::span<T> {
-    using boost::span<T>::span;
 
-    void operator()(const boost::span<T> values) { operator+=(values); }
+template <class T, class BASE>
+struct multi_weight_base : public BASE {
+    using BASE::BASE;
 
     template <class S>
     bool operator==(const S values) const {
@@ -31,7 +30,30 @@ struct multi_weight_value : public boost::span<T> {
         return !operator==(values);
     }
 
-    void operator+=(const std::vector<T> values) { operator+=(boost::span<T>(values)); }
+
+};
+
+template <class T>
+struct multi_weight_reference : public multi_weight_base<T, boost::span<T>> {
+    //using boost::span<T>::span;
+    using multi_weight_base::multi_weight_base;
+
+    void operator()(const boost::span<T> values) { operator+=(values); }
+
+    //template <class S>
+    //bool operator==(const S values) const {
+    //    if(values.size() != this->size())
+    //        return false;
+//
+    //    return std::equal(this->begin(), this->end(), values.begin());
+    //}
+//
+    //template <class S>
+    //bool operator!=(const S values) const {
+    //    return !operator==(values);
+    //}
+
+    //void operator+=(const std::vector<T> values) { operator+=(boost::span<T>(values)); }
 
     void operator+=(const boost::span<T> values) {
         // template <class S>
@@ -53,13 +75,60 @@ struct multi_weight_value : public boost::span<T> {
     }
 };
 
+template <class T>
+struct multi_weight_value : public multi_weight_base<T, std::vector<T>> {
+    using multi_weight_base::multi_weight_base;
+
+    multi_weight_value(const boost::span<T> values) {
+        this->assign(values.begin(), values.end());
+    }    
+    multi_weight_value() = default;
+
+    void operator()(const boost::span<T> values) { operator+=(values); }
+
+    //template <class S>
+    //bool operator==(const S values) const {
+    //    if(values.size() != this->size())
+    //        return false;
+//
+    //    return std::equal(this->begin(), this->end(), values.begin());
+    //}
+//
+    //template <class S>
+    //bool operator!=(const S values) const {
+    //    return !operator==(values);
+    //}
+//
+    //void operator+=(const std::vector<T> values) { operator+=(boost::span<T>(values)); }
+    
+    //template <class S>
+    //void operator+=(const S values) {
+    void operator+=(const boost::span<T> values) {
+        if(values.size() != this->size()) {
+            if (this->size() > 0) {
+                throw std::runtime_error("size does not match");
+            }
+            this->assign(values.begin(), values.end());
+            return;
+        }
+        auto it = this->begin();
+        for(const T& x : values)
+            *it++ += x;
+    }
+
+    template <class S>
+    void operator=(const S values) {
+        this->assign(values.begin(), values.end());
+    }
+};
+
 template <class ElementType = double>
 class multi_weight {
   public:
     using element_type    = ElementType;
     using value_type      = multi_weight_value<element_type>;
-    using reference       = value_type;
-    using const_reference = const value_type;
+    using reference       = multi_weight_reference<element_type>;
+    using const_reference = const reference;
 
     template <class Value, class Reference, class MWPtr>
     struct iterator_base
@@ -195,10 +264,24 @@ std::ostream& operator<<(std::ostream& os, const multi_weight_value<T>& v) {
 }
 
 template <class T>
+std::ostream& operator<<(std::ostream& os, const multi_weight_reference<T>& v) {
+    os << "multi_weight_reference(";
+    bool first = true;
+    for(const T& x : v)
+        if(first) {
+            first = false;
+            os << x;
+        } else
+            os << ", " << x;
+    os << ")";
+    return os;
+}
+
+template <class T>
 std::ostream& operator<<(std::ostream& os, const multi_weight<T>& v) {
     os << "multi_weight(\n";
     int index = 0;
-    for(const multi_weight_value<T>& x : v) {
+    for(const multi_weight_reference<T>& x : v) {
         os << "Index " << index << ": " << x << "\n";
         index++;
     }
@@ -206,56 +289,6 @@ std::ostream& operator<<(std::ostream& os, const multi_weight<T>& v) {
     return os;
 }
 
-namespace algorithm {
-
-/** Compute the sum over all histogram cells (underflow/overflow included by default).
-
-  The implementation favors accuracy and protection against overflow over speed. If the
-  value type of the histogram is an integral or floating point type,
-  accumulators::sum<double> is used to compute the sum, else the original value type is
-  used. Compilation fails, if the value type does not support operator+=. The return
-  type is double if the value type of the histogram is integral or floating point, and
-  the original value type otherwise.
-
-  If you need a different trade-off, you can write your own loop or use
-  `std::accumulate`:
-  ```
-  // iterate over all bins
-  auto sum_all = std::accumulate(hist.begin(), hist.end(), 0.0);
-
-  // skip underflow/overflow bins
-  double sum = 0;
-  for (auto&& x : indexed(hist))
-    sum += *x; // dereference accessor
-
-  // or:
-  // auto ind = boost::histogram::indexed(hist);
-  // auto sum = std::accumulate(ind.begin(), ind.end(), 0.0);
-  ```
-
-  @returns accumulator type or double
-
-  @param hist Const reference to the histogram.
-  @param cov  Iterate over all or only inner bins (optional, default: all).
-*/
-template <class A, class B>
-std::vector<B> sum(const histogram<A, multi_weight<B>>& hist,
-                   const coverage cov = coverage::all) {
-    using sum_type = typename histogram<A, multi_weight<B>>::value_type;
-    // T is arithmetic, compute sum accurately with high dynamic range
-    std::vector<B> v(unsafe_access::storage(hist).nelem_, 0.);
-    sum_type sum(v);
-    if(cov == coverage::all)
-        for(auto&& x : hist)
-            sum += x;
-    else
-        // sum += x also works if sum_type::operator+=(const sum_type&) exists
-        for(auto&& x : indexed(hist))
-            sum += *x;
-    return v;
-}
-
-} // namespace algorithm
 } // namespace histogram
 } // namespace boost
 
