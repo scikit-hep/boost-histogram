@@ -12,7 +12,6 @@
 namespace boost {
 namespace histogram {
 
-
 template <class T, class BASE>
 struct multi_weight_base : public BASE {
     using BASE::BASE;
@@ -29,31 +28,30 @@ struct multi_weight_base : public BASE {
     bool operator!=(const S values) const {
         return !operator==(values);
     }
-
-
 };
 
 template <class T>
 struct multi_weight_reference : public multi_weight_base<T, boost::span<T>> {
-    //using boost::span<T>::span;
+    // using boost::span<T>::span;
     using multi_weight_base<T, boost::span<T>>::multi_weight_base;
 
     void operator()(const boost::span<T> values) { operator+=(values); }
 
-    //template <class S>
-    //bool operator==(const S values) const {
-    //    if(values.size() != this->size())
-    //        return false;
-//
+    // template <class S>
+    // bool operator==(const S values) const {
+    //     if(values.size() != this->size())
+    //         return false;
+    //
     //    return std::equal(this->begin(), this->end(), values.begin());
     //}
-//
-    //template <class S>
-    //bool operator!=(const S values) const {
+    //
+    // template <class S>
+    // bool operator!=(const S values) const {
     //    return !operator==(values);
     //}
 
-    //void operator+=(const std::vector<T> values) { operator+=(boost::span<T>(values)); }
+    // void operator+=(const std::vector<T> values) {
+    // operator+=(boost::span<T>(values)); }
 
     void operator+=(const boost::span<T> values) {
         // template <class S>
@@ -81,31 +79,32 @@ struct multi_weight_value : public multi_weight_base<T, std::vector<T>> {
 
     multi_weight_value(const boost::span<T> values) {
         this->assign(values.begin(), values.end());
-    }    
+    }
     multi_weight_value() = default;
 
     void operator()(const boost::span<T> values) { operator+=(values); }
 
-    //template <class S>
-    //bool operator==(const S values) const {
-    //    if(values.size() != this->size())
-    //        return false;
-//
+    // template <class S>
+    // bool operator==(const S values) const {
+    //     if(values.size() != this->size())
+    //         return false;
+    //
     //    return std::equal(this->begin(), this->end(), values.begin());
     //}
-//
-    //template <class S>
-    //bool operator!=(const S values) const {
+    //
+    // template <class S>
+    // bool operator!=(const S values) const {
     //    return !operator==(values);
     //}
-//
-    //void operator+=(const std::vector<T> values) { operator+=(boost::span<T>(values)); }
-    
-    //template <class S>
-    //void operator+=(const S values) {
+    //
+    // void operator+=(const std::vector<T> values) {
+    // operator+=(boost::span<T>(values)); }
+
+    // template <class S>
+    // void operator+=(const S values) {
     void operator+=(const boost::span<T> values) {
         if(values.size() != this->size()) {
-            if (this->size() > 0) {
+            if(this->size() > 0) {
                 throw std::runtime_error("size does not match");
             }
             this->assign(values.begin(), values.end());
