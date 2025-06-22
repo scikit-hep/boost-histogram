@@ -392,3 +392,12 @@ def test_non_uniform_rebin_with_weights():
             [1.0, 1.05, 1.15, 3.0],
         )
     )
+
+
+def test_multi_weight():
+    x = np.array([1, 2])
+    weights = np.array([[1, 2, 3], [4, 5, 6]])
+    h = bh.Histogram(bh.axis.Regular(5, 0, 5), storage=bh.storage.MultiWeight(3))
+    h.fill(x, sample=weights)
+    assert_array_equal(h[1], [1, 2, 3])
+    assert_array_equal(h[2], [4, 5, 6])
