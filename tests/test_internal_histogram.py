@@ -120,10 +120,10 @@ def test_select_many():
     )
 
     pick_a = hist[bh.loc("a"), ...]
-    with pytest.warns(UserWarning):
+    with pytest.warns(UserWarning, match="List indexing selection is experimental"):
         pick_b = pick_a[[bh.loc("x"), bh.loc("y")], ...]
 
-    with pytest.warns(UserWarning):
+    with pytest.warns(UserWarning, match="List indexing selection is experimental"):
         pick = hist[bh.loc("a"), [bh.loc("x"), bh.loc("y")], ...]
 
     assert pick_b.axes[0] == pick.axes[0]
