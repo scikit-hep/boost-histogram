@@ -11,7 +11,7 @@ from .typing import ArrayLike, StrIndex, Ufunc
 UFMethod = Literal["__call__", "reduce", "reduceat", "accumulate", "outer", "at"]
 
 
-class View(np.ndarray):  # type: ignore[type-arg]
+class View(np.ndarray):
     __slots__ = ()
     _FIELDS: ClassVar[tuple[str, ...]]
     _PARENT: type[WeightedSum | WeightedMean | Mean]
