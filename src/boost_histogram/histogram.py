@@ -444,6 +444,8 @@ class Histogram:
             kwargs["copy"] = copy
         return np.asarray(self.view(False), dtype=dtype, **kwargs)  # type: ignore[call-overload]
 
+    __hash__ = None  # type: ignore[assignment]
+
     def __eq__(self, other: object) -> bool:
         return hasattr(other, "_hist") and self._hist == other._hist
 

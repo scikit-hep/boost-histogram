@@ -166,6 +166,8 @@ class Axis:
 
         return self._ax.bin(index)  # type: ignore[no-any-return]
 
+    __hash__ = None  # type: ignore[assignment]
+
     def __eq__(self, other: object) -> bool:
         return hasattr(other, "_ax") and self._ax == other._ax
 

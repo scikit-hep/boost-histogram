@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import copy
 import functools
 import operator
 import pickle
 import platform
 import sys
+import threading
 from collections import OrderedDict
 from io import BytesIO
 
@@ -47,7 +49,6 @@ def test_init():
 
 def test_copy():
     a = bh.Histogram(bh.axis.Integer(-1, 1))
-    import copy
 
     b = copy.copy(a)
     assert a == b
@@ -1395,8 +1396,6 @@ def test_add_broadcast():
 
 # Issue #431
 def test_mul_shallow():
-    import threading
-
     my_lock = threading.Lock()
 
     h = bh.Histogram(bh.axis.Integer(0, 3, metadata=my_lock), metadata=my_lock)
