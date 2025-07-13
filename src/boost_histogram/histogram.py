@@ -1127,7 +1127,7 @@ class Histogram:
             raise TypeError("Not supported yet")
 
         value = np.asarray(value)
-        view = self.view(flow=True)
+        view: Any = self.view(flow=True)
 
         value_shape: tuple[int, ...]
         # Support raw arrays for accumulators, the final dimension is the constructor values
@@ -1193,7 +1193,7 @@ class Histogram:
             else:
                 indexes[n] = request + has_underflow
 
-        view[tuple(indexes)] = value  # type: ignore[arg-type]
+        view[tuple(indexes)] = value
 
     def project(self, *args: int) -> Self | float | Accumulator:
         """
@@ -1240,7 +1240,7 @@ class Histogram:
         :return: "np.typing.NDArray[Any]"[np.float64]
         """
 
-        view = self.view(flow)
+        view: Any = self.view(flow)
         # TODO: Might be a NumPy typing bug
         if len(view.dtype) == 0:
             return view
@@ -1270,12 +1270,12 @@ class Histogram:
         :return: "np.typing.NDArray[Any]"[np.float64]
         """
 
-        view = self.view(flow)
+        view: Any = self.view(flow)
         if len(view.dtype) == 0:
             return view if self._variance_known else None
 
         if hasattr(view, "sum_of_weights"):
-            valid = view.sum_of_weights**2 > view.sum_of_weights_squared  # type: ignore[union-attr]
+            valid = view.sum_of_weights**2 > view.sum_of_weights_squared
             return np.divide(
                 view.variance,
                 view.sum_of_weights,
@@ -1316,7 +1316,7 @@ class Histogram:
         :return: "np.typing.NDArray[Any]"[np.float64]
         """
 
-        view = self.view(flow)
+        view: Any = self.view(flow)
 
         if len(view.dtype) == 0:
             return view
@@ -1324,9 +1324,9 @@ class Histogram:
         if hasattr(view, "sum_of_weights"):
             return np.divide(
                 view.sum_of_weights**2,
-                view.sum_of_weights_squared,  # type: ignore[union-attr]
+                view.sum_of_weights_squared,
                 out=np.zeros_like(view.sum_of_weights, dtype=np.float64),
-                where=view.sum_of_weights_squared != 0,  # type: ignore[union-attr]
+                where=view.sum_of_weights_squared != 0,
             )
 
         if hasattr(view, "count"):

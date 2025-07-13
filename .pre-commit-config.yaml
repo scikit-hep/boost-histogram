@@ -8,7 +8,7 @@ repos:
     rev: "1.19.1"
     hooks:
       - id: blacken-docs
-        additional_dependencies: [black==24.*]
+        additional_dependencies: [black==25.*]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
@@ -38,7 +38,7 @@ repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: "v0.12.2"
     hooks:
-      - id: ruff
+      - id: ruff-check
         args: ["--fix", "--show-fixes"]
       - id: ruff-format
 
@@ -47,7 +47,7 @@ repos:
     hooks:
       - id: mypy
         files: ^src
-        additional_dependencies: [numpy~=2.2.0, pytest, uhi]
+        additional_dependencies: [numpy~=2.3.0, pytest, uhi]
 
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
@@ -82,8 +82,8 @@ repos:
     hooks:
       - id: check-readthedocs
       - id: check-github-workflows
-# TMP: waiting for cibuildwheel 3.0
-#  - repo: https://github.com/henryiii/validate-pyproject-schema-store
-#    rev: 2025.05.12
-#    hooks:
-#      - id: validate-pyproject
+
+  - repo: https://github.com/henryiii/validate-pyproject-schema-store
+    rev: 2025.07.07
+    hooks:
+      - id: validate-pyproject
