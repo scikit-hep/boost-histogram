@@ -28,7 +28,19 @@ or you can use Conda through
 All the normal best-practices for Python apply; you should be in a
 virtual environment, etc.
 
+If you built from source, you can quickly verify the build with:
 
+.. code-block:: bash
+
+   python -m boost_histogram.test
+
+Or, from Python:
+
+.. code-block:: python
+
+   import unittest
+
+   assert unittest.main("boost_histogram.test", warnings="error", exit=False).result == 0
 
 Supported platforms
 -------------------
