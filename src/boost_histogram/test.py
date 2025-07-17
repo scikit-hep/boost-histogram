@@ -28,10 +28,22 @@ class TestBoostHistogram(unittest.TestCase):
             storage=bh.storage.Weight(),
         )
         h.fill([5, 5, 5, 7], ["a", "b", "b", "c"])
-        self.assertEqual(h[bh.loc(5), bh.loc("a")].value, 1)
-        self.assertEqual(h[bh.loc(5), bh.loc("b")].value, 2)
-        self.assertEqual(h[bh.loc(7), bh.loc("c")].value, 1)
-        self.assertEqual(h[bh.loc(8), bh.loc("c")].value, 0)
+
+        val = h[bh.loc(5), bh.loc("a")]
+        assert isinstance(val, bh.accumulators.WeightedSum)
+        self.assertEqual(val.value, 1)
+
+        val = h[bh.loc(5), bh.loc("b")]
+        assert isinstance(val, bh.accumulators.WeightedSum)
+        self.assertEqual(val.value, 2)
+
+        val = h[bh.loc(7), bh.loc("c")]
+        assert isinstance(val, bh.accumulators.WeightedSum)
+        self.assertEqual(val.value, 1)
+
+        val = h[bh.loc(8), bh.loc("c")]
+        assert isinstance(val, bh.accumulators.WeightedSum)
+        self.assertEqual(val.value, 0)
 
     def test_pickle(self) -> None:
         h = bh.Histogram(
@@ -57,10 +69,17 @@ class TestBoostHistogram(unittest.TestCase):
         self.assertEqual(a.index(11), 10)
         self.assertEqual(a.index(1000), 10)
 
-        self.assertAlmostEqual(a.bin(0)[0], 0)
-        self.assertAlmostEqual(a.bin(1)[0], 0.1)
-        self.assertAlmostEqual(a.bin(1)[1], 0.4)
-        self.assertAlmostEqual(a.bin(2)[0], 0.4)
+        val = a.bin(0)
+        assert isinstance(val, tuple)
+        self.assertAlmostEqual(val[0], 0.0)
+
+        val = a.bin(1)
+        assert isinstance(val, tuple)
+        self.assertAlmostEqual(val[0], 0.1)
+
+        val = a.bin(2)
+        assert isinstance(val, tuple)
+        self.assertAlmostEqual(val[0], 0.4)
 
 
 if __name__ == "__main__":
