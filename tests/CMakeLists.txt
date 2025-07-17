@@ -25,3 +25,8 @@ foreach(TEST_FILE IN LISTS BOOST_HIST_PY_TESTS)
     WORKING_DIRECTORY "${PROJECT_BINARY_DIR}")
   set_tests_properties(${TEST_NAME} PROPERTIES SKIP_RETURN_CODE 5)
 endforeach()
+
+add_test(
+  NAME boost_histogram_test
+  COMMAND ${Python_EXECUTABLE} -m boost_histogram.test
+  WORKING_DIRECTORY "${PROJECT_BINARY_DIR}")
