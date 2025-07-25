@@ -114,7 +114,7 @@ jobs:
           - os: windows-latest
             only: cp313-win_amd64
           - os: macos-13
-            only: cp310-macosx_x86_64
+            only: cp314t-macosx_x86_64
           - os: macos-14
             only: cp312-macosx_arm64
           - os: windows-11-arm
