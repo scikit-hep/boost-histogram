@@ -182,9 +182,6 @@ build-frontend = "build[uv]"
 test-groups = ["test"]
 test-command = "python -m pytest -n auto --benchmark-disable tests"
 test-sources = ["pyproject.toml", "tests"]
-skip = [
-  "cp314*-ios_*",
-]
 test-skip = [
   "cp3{9,10}-win_arm64",
   "cp3{9,10}-musllinux_*",
@@ -194,6 +191,7 @@ test-skip = [
   "gp311_242-macosx_x86_64",
   "gp311_242-manylinux_aarch64",
   "gp311_242-win*",  # pytest crashes with module 'io' has no attribute '_WindowsConsoleIO'
+  "cp314*-ios_*",  # No numpy wheels yet
 ]
 enable = ["cpython-freethreading", "pypy", "graalpy"]
 environment-pass = ["SETUPTOOLS_SCM_PRETEND_VERSION"]
