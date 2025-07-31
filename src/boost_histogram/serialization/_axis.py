@@ -23,25 +23,36 @@ def _axis_to_dict(ax: Any, /) -> dict[str, Any]:
 def _(ax: axis.Regular | axis.Integer, /) -> dict[str, Any]:
     """Convert a Regular axis to a dictionary."""
 
+    shared = {
+        "underflow": ax.traits.underflow,
+        "overflow": ax.traits.overflow,
+        "circular": ax.traits.circular,
+    }
+
     # Special handling if the axis has a transform
     if isinstance(ax, axis.Regular) and ax.transform is not None:
         data = {
             "type": "variable",
             "edges": ax.edges,
-            "underflow": ax.traits.underflow,
-            "overflow": ax.traits.overflow,
-            "circular": ax.traits.circular,
+            **shared,
+        }
+    elif isinstance(ax, axis.Integer):
+        data = {
+            "type": "regular",
+            "lower": int(ax.edges[0]),
+            "upper": int(ax.edges[-1]),
+            "bins": ax.size,
+            **shared,
         }
     else:
         data = {
             "type": "regular",
-            "lower": ax.edges[0],
-            "upper": ax.edges[-1],
+            "lower": float(ax.edges[0]),
+            "upper": float(ax.edges[-1]),
             "bins": ax.size,
-            "underflow": ax.traits.underflow,
-            "overflow": ax.traits.overflow,
-            "circular": ax.traits.circular,
+            **shared,
         }
+
     if isinstance(ax, axis.Integer):
         data["writer_info"] = {"boost-histogram": {"orig_type": "Integer"}}
     if ax.metadata is not None:
@@ -107,6 +118,20 @@ def _(ax: axis.Boolean, /) -> dict[str, Any]:
 
 
 def _axis_from_dict(data: dict[str, Any], /) -> axis.Axis:
+    orig_type = (
+        data.get("writer_info", {}).get("boost-histogram", {}).get("orig_type", "")
+    )
+    if orig_type == "Integer":
+        assert data["upper"] - data["lower"] == data["bins"]
+        return axis.Integer(
+            data["lower"],
+            data["upper"],
+            underflow=data["underflow"],
+            overflow=data["overflow"],
+            circular=data["circular"],
+            metadata=data.get("metadata"),
+        )
+
     hist_type = data["type"]
     if hist_type == "regular":
         return axis.Regular(
