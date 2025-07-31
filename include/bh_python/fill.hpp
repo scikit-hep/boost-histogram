@@ -182,7 +182,7 @@ void fill_impl(bh::detail::accumulator_traits_holder<true>,
     finalize_args(kwargs);
 
     // releasing gil here is safe, we don't manipulate refcounts
-    py::gil_scoped_release const lock;
+    const py::gil_scoped_release lock;
     variant::visit(
         overload([&h, &vargs](const variant::monostate&) { h.fill(vargs); },
                  [&h, &vargs](const auto& w) { h.fill(vargs, bh::weight(w)); }),
@@ -204,7 +204,7 @@ void fill_impl(bh::detail::accumulator_traits_holder<true, const double&>,
         throw std::invalid_argument("Sample array must be 1D");
 
     // releasing gil here is safe, we don't manipulate refcounts
-    py::gil_scoped_release const lock;
+    const py::gil_scoped_release lock;
     variant::visit(
         overload([&h, &vargs, &sarray](
                      const variant::monostate&) { h.fill(vargs, bh::sample(sarray)); },
@@ -216,7 +216,7 @@ void fill_impl(bh::detail::accumulator_traits_holder<true, const double&>,
 
 // for multi_weight
 template <class Histogram, class VArgs>
-void fill_impl(bh::detail::accumulator_traits_holder<false, boost::span<double>>,
+void fill_impl(bh::detail::accumulator_traits_holder<false, const boost::span<double>&>,
                Histogram& h,
                const VArgs& vargs,
                const weight_t& weight,
@@ -230,10 +230,10 @@ void fill_impl(bh::detail::accumulator_traits_holder<false, boost::span<double>>
 
     auto buf = sarray.request();
     // releasing gil here is safe, we don't manipulate refcounts
-    py::gil_scoped_release lock;
-    std::size_t buf_shape0 = static_cast<std::size_t>(buf.shape[0]);
-    std::size_t buf_shape1 = static_cast<std::size_t>(buf.shape[1]);
-    double* src            = static_cast<double*>(buf.ptr);
+    const py::gil_scoped_release lock;
+    const auto buf_shape0 = static_cast<std::size_t>(buf.shape[0]);
+    const auto buf_shape1 = static_cast<std::size_t>(buf.shape[1]);
+    double* src           = static_cast<double*>(buf.ptr);
     std::vector<boost::span<double>> vec_s;
     vec_s.reserve(buf_shape0);
     for(std::size_t i = 0; i < buf_shape0; i++) {

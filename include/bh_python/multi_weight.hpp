@@ -57,7 +57,7 @@ struct multi_weight_reference : public multi_weight_base<T, boost::span<T>> {
         // template <class S>
         // void operator+=(const S values) {
         if(values.size() != this->size())
-            throw std::runtime_error("size does not match");
+            throw std::range_error("size does not match for += ref");
         auto it = this->begin();
         for(const T& x : values)
             *it++ += x;
@@ -66,7 +66,7 @@ struct multi_weight_reference : public multi_weight_base<T, boost::span<T>> {
     template <class S>
     void operator=(const S values) {
         if(values.size() != this->size())
-            throw std::runtime_error("size does not match");
+            throw std::range_error("size does not match for = ref");
         auto it = this->begin();
         for(const T& x : values)
             *it++ = x;
@@ -82,7 +82,7 @@ struct multi_weight_value : public multi_weight_base<T, std::vector<T>> {
     }
     multi_weight_value() = default;
 
-    void operator()(const boost::span<T> values) { operator+=(values); }
+    void operator()(const boost::span<T>& values) { operator+=(values); }
 
     // template <class S>
     // bool operator==(const S values) const {
@@ -102,10 +102,10 @@ struct multi_weight_value : public multi_weight_base<T, std::vector<T>> {
 
     // template <class S>
     // void operator+=(const S values) {
-    void operator+=(const boost::span<T> values) {
+    void operator+=(const boost::span<T>& values) {
         if(values.size() != this->size()) {
             if(this->size() > 0) {
-                throw std::runtime_error("size does not match");
+                throw std::range_error("size does not match for += val");
             }
             this->assign(values.begin(), values.end());
             return;
@@ -220,7 +220,7 @@ class multi_weight {
     template <class T>
     void operator+=(const multi_weight<T>& other) {
         if(size_ * nelem_ != other.size_ * other.nelem_) {
-            throw std::runtime_error("size does not match");
+            throw std::range_error("size does not match");
         }
         for(std::size_t i = 0; i < size_ * nelem_; i++) {
             buffer_[i] += other.buffer_[i];
