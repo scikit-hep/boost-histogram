@@ -78,3 +78,6 @@ class WeightedMean(store.weighted_mean, Storage, family=boost_histogram):
 
 class MultiWeight(store.multi_weight, Storage, family=boost_histogram):
     accumulator = float
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}({self.nelem})"

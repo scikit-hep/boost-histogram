@@ -99,7 +99,10 @@ register_storage(py::module& m, const char* name, const char* desc) {
              })
         .def(make_pickle<A>())
         .def("__copy__", [](const A& self) { return A(self); })
-        .def("__deepcopy__", [](const A& self, py::object) { return A(self); });
+        .def("__deepcopy__", [](const A& self, py::object) { return A(self); })
+        .def_property_readonly("nelem", [](const A& self) { return self.nelem(); })
+
+        ;
 
     return storage;
 }

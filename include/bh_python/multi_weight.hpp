@@ -175,6 +175,8 @@ class multi_weight {
 
     std::size_t size() const { return size_; }
 
+    std::size_t nelem() const { return nelem_; }
+
     void reset(std::size_t n) {
         size_ = n;
         buffer_.reset(new element_type[size_ * nelem_]);
@@ -242,7 +244,9 @@ class multi_weight {
         }
     }
 
-  public:
+    element_type* get_buffer() { return buffer_.get(); }
+
+  private:
     std::size_t size_  = 0; // Number of bins
     std::size_t nelem_ = 0; // Number of weights per bin
     std::unique_ptr<element_type[]> buffer_;

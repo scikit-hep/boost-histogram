@@ -103,7 +103,7 @@ py::buffer_info make_buffer(bh::histogram<A, bh::multi_weight<T>>& h, bool flow)
     const auto& axes = bh::unsafe_access::axes(h);
     auto& storage    = bh::unsafe_access::storage(h);
     return detail::make_buffer_impl(
-        axes, flow, static_cast<double*>(storage.buffer_.get()));
+        axes, flow, static_cast<double*>(storage.get_buffer()));
 }
 
 /// Compute the bin of an array from a runtime list
