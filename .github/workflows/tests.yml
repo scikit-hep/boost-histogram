@@ -62,9 +62,10 @@ jobs:
           - python-version: "3.9"
             cmake-extras: "-DCMAKE_CXX_STANDARD=17"
           - python-version: "3.11"
-          - python-version: "3.13"
           - python-version: "3.13t"
-          - python-version: "pypy3.10"
+          - python-version: "3.14"
+          - python-version: "3.14t"
+          - python-version: "pypy3.11"
 
     steps:
       - uses: actions/checkout@v4
