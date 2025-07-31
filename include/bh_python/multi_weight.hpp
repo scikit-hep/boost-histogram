@@ -17,7 +17,7 @@ struct multi_weight_base : public BASE {
     using BASE::BASE;
 
     template <class S>
-    bool operator==(const S values) const {
+    bool operator==(const S& values) const {
         if(values.size() != this->size())
             return false;
 
@@ -25,7 +25,7 @@ struct multi_weight_base : public BASE {
     }
 
     template <class S>
-    bool operator!=(const S values) const {
+    bool operator!=(const S& values) const {
         return !operator==(values);
     }
 };
@@ -64,7 +64,7 @@ struct multi_weight_reference : public multi_weight_base<T, boost::span<T>> {
     }
 
     template <class S>
-    multi_weight_reference& operator=(const S values) {
+    multi_weight_reference& operator=(const S& values) {
         if(values.size() != this->size())
             throw std::range_error("size does not match for = ref");
         auto it = this->begin();
@@ -117,7 +117,7 @@ struct multi_weight_value : public multi_weight_base<T, std::vector<T>> {
     }
 
     template <class S>
-    void operator=(const S values) {
+    multi_weight_value& operator=(const S values) {
         this->assign(values.begin(), values.end());
         return *this;
     }
@@ -147,6 +147,8 @@ class multi_weight {
         iterator_base(MWPtr par, std::size_t idx)
             : base_type{idx}
             , par_{par} {}
+
+        iterator_base& operator=(const iterator_base& other) = default;
 
         decltype(auto) operator*() const {
             return Reference{par_->buffer_.get() + this->base() * par_->nelem_,

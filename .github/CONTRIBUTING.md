@@ -205,11 +205,12 @@ cmake --build --preset tidy
 To autofix, use:
 
 ```bash
-cmake --preset --preset tidy -DCMAKE_CXX_CLANG_TIDY="clang-tidy;--fix"
-cmake --build --preset tidy -j1
+cmake --preset --preset tidy-fix
+cmake --build --preset tidy-fix
 ```
 
-Remember to build single-threaded if applying fixes!
+We also provide matching `--workflow`'s, but you'll need a newer CMake for that
+(you can use pip to get it, though).
 
 ## Include what you use
 

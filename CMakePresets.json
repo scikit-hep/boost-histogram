@@ -24,6 +24,14 @@
       "cacheVariables": {
         "CMAKE_CXX_CLANG_TIDY": "clang-tidy;--warnings-as-errors=*"
       }
+    },
+    {
+      "name": "tidy-fix",
+      "displayName": "Clang-tidy autofix",
+      "inherits": "tidy",
+      "cacheVariables": {
+        "CMAKE_CXX_CLANG_TIDY": "clang-tidy;--warnings-as-errors=*;--fix"
+      }
     }
   ],
   "buildPresets": [
@@ -37,6 +45,13 @@
       "name": "tidy",
       "displayName": "Clang-tidy build",
       "configurePreset": "tidy",
+      "nativeToolOptions": ["-k0"]
+    },
+    {
+      "name": "tidy-fix",
+      "displayName": "Clang-tidy autofix build",
+      "configurePreset": "tidy-fix",
+      "jobs": 1,
       "nativeToolOptions": ["-k0"]
     }
   ],
@@ -58,6 +73,22 @@
         { "type": "configure", "name": "default" },
         { "type": "build", "name": "default" },
         { "type": "test", "name": "default" }
+      ]
+    },
+    {
+      "name": "tidy",
+      "displayName": "Clang-tidy workflow",
+      "steps": [
+        { "type": "configure", "name": "tidy" },
+        { "type": "build", "name": "tidy" }
+      ]
+    },
+    {
+      "name": "tidy-fix",
+      "displayName": "Clang-tidy autofix workflow",
+      "steps": [
+        { "type": "configure", "name": "tidy-fix" },
+        { "type": "build", "name": "tidy-fix" }
       ]
     }
   ]

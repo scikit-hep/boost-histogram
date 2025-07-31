@@ -233,7 +233,7 @@ void fill_impl(bh::detail::accumulator_traits_holder<false, const boost::span<do
     const py::gil_scoped_release lock;
     const auto buf_shape0 = static_cast<std::size_t>(buf.shape[0]);
     const auto buf_shape1 = static_cast<std::size_t>(buf.shape[1]);
-    double* src           = static_cast<double*>(buf.ptr);
+    auto* src             = static_cast<double*>(buf.ptr);
     std::vector<boost::span<double>> vec_s;
     vec_s.reserve(buf_shape0);
     for(std::size_t i = 0; i < buf_shape0; i++) {
