@@ -64,12 +64,13 @@ struct multi_weight_reference : public multi_weight_base<T, boost::span<T>> {
     }
 
     template <class S>
-    void operator=(const S values) {
+    multi_weight_reference& operator=(const S values) {
         if(values.size() != this->size())
             throw std::range_error("size does not match for = ref");
         auto it = this->begin();
         for(const T& x : values)
             *it++ = x;
+        return *this;
     }
 };
 
@@ -77,7 +78,7 @@ template <class T>
 struct multi_weight_value : public multi_weight_base<T, std::vector<T>> {
     using multi_weight_base<T, std::vector<T>>::multi_weight_base;
 
-    multi_weight_value(const boost::span<T> values) {
+    explicit multi_weight_value(const boost::span<T> values) {
         this->assign(values.begin(), values.end());
     }
     multi_weight_value() = default;
@@ -118,6 +119,7 @@ struct multi_weight_value : public multi_weight_base<T, std::vector<T>> {
     template <class S>
     void operator=(const S values) {
         this->assign(values.begin(), values.end());
+        return *this;
     }
 };
 
@@ -160,7 +162,7 @@ class multi_weight {
 
     static constexpr bool has_threading_support() { return false; }
 
-    multi_weight(const std::size_t k = 0)
+    explicit multi_weight(const std::size_t k = 0)
         : nelem_{k} {}
 
     multi_weight(const multi_weight& other) { *this = other; }
