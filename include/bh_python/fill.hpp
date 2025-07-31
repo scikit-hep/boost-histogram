@@ -237,7 +237,7 @@ void fill_impl(bh::detail::accumulator_traits_holder<false, const boost::span<do
     std::vector<boost::span<double>> vec_s;
     vec_s.reserve(buf_shape0);
     for(std::size_t i = 0; i < buf_shape0; i++) {
-        vec_s.emplace_back(boost::span<double>{src + i * buf_shape1, buf_shape1});
+        vec_s.emplace_back(src + (i * buf_shape1), buf_shape1);
     }
     h.fill(vargs, bh::sample(vec_s));
 }
