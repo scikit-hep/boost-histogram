@@ -168,6 +168,10 @@ class multi_weight {
     multi_weight(const multi_weight& other) { *this = other; }
 
     multi_weight& operator=(const multi_weight& other) {
+        // Protect against self assignment
+        if(this == &other) {
+            return *this;
+        }
         nelem_ = other.nelem_;
         reset(other.size_);
         std::copy(
