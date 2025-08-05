@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-from typing import Any
+import copy
+from typing import Any, TypeVar
 
 # pylint: disable-next=import-error
 from .. import histogram, version
 from ._axis import _axis_from_dict, _axis_to_dict
 from ._storage import _data_from_dict, _storage_from_dict, _storage_to_dict
 
-__all__ = ["from_uhi", "to_uhi"]
+__all__ = ["from_uhi", "remove_writer_info", "to_uhi"]
 
 
 def __dir__() -> list[str]:
@@ -19,7 +20,7 @@ def to_uhi(h: histogram.Histogram, /) -> dict[str, Any]:
 
     # Convert the histogram to a dictionary
     data = {
-        "writer_info": {"boost-histogram": {"version": version.version}},
+        "writer_info": {"boost-histogram": {"version": version.version}, "uhi": 1},
         "axes": [_axis_to_dict(axis) for axis in h.axes],
         "storage": _storage_to_dict(h.storage_type(), h.view(flow=True)),
     }
@@ -39,3 +40,22 @@ def from_uhi(data: dict[str, Any], /) -> histogram.Histogram:
     )
     h[...] = _data_from_dict(data["storage"])
     return h
+
+
+T = TypeVar("T", bound="dict[str, Any]")
+
+
+def remove_writer_info(obj: T) -> T:
+    """Removes all boost-histogram writer_info from a histogram dict, axes dict, or storage dict. Makes copies where required, and the outer dictionary is always copied."""
+
+    obj = copy.copy(obj)
+    if "boost-histogram" in obj.get("writer_info", {}):
+        obj["writer_info"] = copy.copy(obj["writer_info"])
+        del obj["writer_info"]["boost-histogram"]
+
+    if "axes" in obj:
+        obj["axes"] = [remove_writer_info(ax) for ax in obj["axes"]]
+    if "storage" in obj:
+        obj["storage"] = remove_writer_info(obj["storage"])
+
+    return obj

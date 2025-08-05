@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 import boost_histogram as bh
-from boost_histogram.serialization import from_uhi, to_uhi
+from boost_histogram.serialization import from_uhi, remove_writer_info, to_uhi
 
 
 @pytest.mark.parametrize(
@@ -35,6 +35,7 @@ def test_simple_to_dict(storage_type: bh.storage.Storage, expected_type: str) ->
     assert not data["axes"][0]["circular"]
     assert data["storage"]["type"] == expected_type
     assert data["storage"]["values"] == pytest.approx(np.zeros(12))
+    assert data["writer_info"]["uhi"] == 1
 
 
 def test_weighed_to_dict() -> None:
@@ -194,3 +195,33 @@ def test_uhi_wrapper():
     assert to_uhi(h).keys() == h._to_uhi_().keys()
     data = h._to_uhi_()
     assert repr(from_uhi(data)) == repr(bh.Histogram._from_uhi_(data))
+
+
+def test_round_trip_native() -> None:
+    h = bh.Histogram(
+        bh.axis.Integer(0, 10),
+        storage=bh.storage.AtomicInt64(),
+    )
+    h.fill([-1, 0, 0, 1, 20, 20, 20])
+    data = to_uhi(h)
+    h2 = from_uhi(data)
+
+    assert h == h2
+
+    assert isinstance(h2.axes[0], bh.axis.Integer)
+    assert h2.storage_type is bh.storage.AtomicInt64
+
+
+def test_round_trip_clean() -> None:
+    h = bh.Histogram(
+        bh.axis.Integer(0, 10),
+        storage=bh.storage.AtomicInt64(),
+    )
+    h.fill([-1, 0, 0, 1, 20, 20, 20])
+
+    data = to_uhi(h)
+    data = remove_writer_info(data)
+    h2 = from_uhi(data)
+
+    assert isinstance(h2.axes[0], bh.axis.Regular)
+    assert h2.storage_type is bh.storage.Int64

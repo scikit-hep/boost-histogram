@@ -21,12 +21,20 @@ def _storage_to_dict(_storage: Any, /, data: Any) -> dict[str, Any]:  # noqa: AR
     raise TypeError(msg)
 
 
-@_storage_to_dict.register(storage.AtomicInt64)
-@_storage_to_dict.register(storage.Double)
 @_storage_to_dict.register(storage.Int64)
+def _(_storage: storage.Int64, /, data: Any) -> dict[str, Any]:
+    return {"type": "int", "values": data}
+
+
+@_storage_to_dict.register(storage.Double)
+def _(_storage: storage.Double, /, data: Any) -> dict[str, Any]:
+    return {"type": "double", "values": data}
+
+
+@_storage_to_dict.register(storage.AtomicInt64)
 @_storage_to_dict.register(storage.Unlimited)
 def _(
-    storage_: storage.AtomicInt64 | storage.Double | storage.Int64 | storage.Unlimited,
+    storage_: storage.AtomicInt64 | storage.Unlimited,
     /,
     data: Any,
 ) -> dict[str, Any]:
@@ -69,8 +77,16 @@ def _(_storage: storage.WeightedMean, /, data: Any) -> dict[str, Any]:
 
 def _storage_from_dict(data: dict[str, Any], /) -> storage.Storage:
     """Convert a dictionary to a storage object."""
-    storage_type = data["type"]
+    # If loading a boost-histogram, we can load the exact original type
+    orig_type = (
+        data.get("writer_info", {}).get("boost-histogram", {}).get("orig_type", "")
+    )
+    if orig_type == "AtomicInt64":
+        return storage.AtomicInt64()
+    if orig_type == "Unlimited":
+        return storage.Unlimited()
 
+    storage_type = data["type"]
     if storage_type == "int":
         return storage.Int64()
     if storage_type == "double":
