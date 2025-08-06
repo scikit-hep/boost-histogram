@@ -223,10 +223,13 @@ class Histogram:
         cls._family = family if family is not None else object()
 
     @typing.overload
-    def __init__(self, *args: Histogram) -> None: ...
+    def __init__(self, arg: Histogram, /, *, metadata: Any = ...) -> None: ...
 
     @typing.overload
-    def __init__(self, *args: CppHistogram, metadata: Any = ...) -> None: ...
+    def __init__(self, arg: dict[str, Any], /, *, metadata: Any = ...) -> None: ...
+
+    @typing.overload
+    def __init__(self, arg: CppHistogram, /, *, metadata: Any = ...) -> None: ...
 
     @typing.overload
     def __init__(
@@ -238,7 +241,7 @@ class Histogram:
 
     def __init__(
         self,
-        *axes: Axis | CppAxis | Histogram | CppHistogram,
+        *axes: Axis | CppAxis | Histogram | CppHistogram | dict[str, Any],
         storage: Storage = Double(),  # noqa: B008
         metadata: Any = None,
     ) -> None:
@@ -271,15 +274,19 @@ class Histogram:
         # If we construct with another Histogram as the only positional argument,
         # support that too
         if len(axes) == 1 and isinstance(axes[0], Histogram):
-            normal_hist: Histogram = axes[0]
-            self._from_histogram_object(normal_hist)
+            self._from_histogram_object(axes[0])
             if metadata is not None:
                 self.metadata = metadata
             return
 
         # Support objects that provide a to_boost method, like Uproot
         if len(axes) == 1 and hasattr(axes[0], "_to_boost_histogram_"):
-            self._from_histogram_object(axes[0]._to_boost_histogram_())
+            self.__init__(axes[0]._to_boost_histogram_(), metadata=metadata)  # type: ignore[misc]
+            return
+
+        # Support UHI
+        if len(axes) == 1 and isinstance(axes[0], dict) and "uhi_schema" in axes[0]:
+            self.__init__(serialization.from_uhi(axes[0]), metadata=metadata)  # type: ignore[misc]
             return
 
         if storage is None:
