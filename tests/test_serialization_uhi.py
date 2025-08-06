@@ -35,7 +35,7 @@ def test_simple_to_dict(storage_type: bh.storage.Storage, expected_type: str) ->
     assert not data["axes"][0]["circular"]
     assert data["storage"]["type"] == expected_type
     assert data["storage"]["values"] == pytest.approx(np.zeros(12))
-    assert data["writer_info"]["uhi"] == 1
+    assert data["uhi_schema"] == 1
 
 
 def test_weighed_to_dict() -> None:
