@@ -20,7 +20,8 @@ def to_uhi(h: histogram.Histogram, /) -> dict[str, Any]:
 
     # Convert the histogram to a dictionary
     data = {
-        "writer_info": {"boost-histogram": {"version": version.version}, "uhi": 1},
+        "uhi_schema": 1,
+        "writer_info": {"boost-histogram": {"version": version.version}},
         "axes": [_axis_to_dict(axis) for axis in h.axes],
         "storage": _storage_to_dict(h.storage_type(), h.view(flow=True)),
     }
