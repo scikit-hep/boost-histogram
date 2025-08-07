@@ -56,7 +56,7 @@ jobs:
             arch: auto64
             build: "*"
 
-          - os: macos-14
+          - os: macos-latest
             arch: auto64
             build: "*"
 

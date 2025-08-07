@@ -32,12 +32,14 @@ classifiers = [
     "Programming Language :: C++",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: Free Threading :: 3 - Stable",
+    "Programming Language :: Python :: Free Threading",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
     "Programming Language :: Python",
@@ -180,6 +182,7 @@ build-frontend = "build[uv]"
 test-groups = ["test"]
 test-command = "python -m pytest -n auto --benchmark-disable tests"
 test-sources = ["pyproject.toml", "tests"]
+test-environment.CI = "1"  # Hypothosis needs this on GraalPy
 test-skip = [
   "cp3{9,10}-win_arm64",
   "cp3{9,10}-musllinux_*",
@@ -206,7 +209,7 @@ test-groups = ["test-core"]  # Working around a bug with markers in pyodide
 [tool.cibuildwheel.ios]
 build-frontend = "build"
 xbuild-tools = ["cmake", "ninja"]
-test-command = "pytest --benchmark-disable tests"
+test-command = "python -m pytest --benchmark-disable tests"
 environment.PIP_EXTRA_INDEX_URL = "https://pypi.anaconda.org/beeware/simple/"
 
 # [tool.cibuildwheel.android]
