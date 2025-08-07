@@ -1128,37 +1128,33 @@ class Histogram:
         If an array is given that does not match, if it does match the
         with-overflow size, it fills that.
 
-        PLANNED (not yet supported):
-
             h[a:] = h2
 
         If another histogram is given, that must either match with or without
         overflow, where the overflow bins must be overflow bins (that is,
         you cannot set a histogram's flow bins from another histogram that
-        is 2 larger). Bin edges must be a close match, as well. If you don't
-        want this level of type safety, just use ``h[...] = h2.view()``.
+        is 2 larger). If you don't want this level of type safety, just use
+        ``h[...] = h2.view()``.
         """
         indexes = self._compute_commonindex(index)
 
-        if isinstance(value, Histogram):
-            raise TypeError("Not supported yet")
-
-        value = np.asarray(value)
+        in_array = np.asarray(value)
         view: Any = self.view(flow=True)
 
         value_shape: tuple[int, ...]
+
         # Support raw arrays for accumulators, the final dimension is the constructor values
         if (
-            value.ndim > 0
+            in_array.ndim > 0
             and len(view.dtype) > 0
-            and len(value.dtype) == 0
-            and len(view.dtype) == value.shape[-1]
+            and len(in_array.dtype) == 0
+            and len(view.dtype) == in_array.shape[-1]
         ):
-            value_shape = value.shape[:-1]
-            value_ndim = value.ndim - 1
+            value_shape = in_array.shape[:-1]
+            value_ndim = in_array.ndim - 1
         else:
-            value_shape = value.shape
-            value_ndim = value.ndim
+            value_shape = in_array.shape
+            value_ndim = in_array.ndim
 
         # NumPy does not broadcast partial slices, but we would need
         # to allow it (because we do allow broadcasting up dimensions)
@@ -1174,30 +1170,46 @@ class Histogram:
             has_overflow = self.axes[n].traits.overflow
 
             if isinstance(request, slice):
-                # Only consider underflow/overflow if the endpoints are not given
-                use_underflow = has_underflow and request.start is None
-                use_overflow = has_overflow and request.stop is None
+                # This ensures that callable start/stop are handled
+                start, stop = self.axes[n]._process_loc(request.start, request.stop)
 
-                # Make the limits explicit since we may need to shift them
-                start = 0 if request.start is None else request.start
-                stop = len(self.axes[n]) if request.stop is None else request.stop
-                request_len = stop - start
+                # Only consider underflow/overflow if the endpoints are not given
+                use_underflow = has_underflow and start < 0
+                use_overflow = has_overflow and stop > len(self.axes[n])
+
+                # If the input is a histogram, we need to exactly match underflow/overflow
+                if isinstance(value, Histogram):
+                    in_underflow = value.axes[n].traits.underflow
+                    in_overflow = value.axes[n].traits.overflow
+
+                    if use_underflow != in_underflow or use_overflow != in_overflow:
+                        msg = (
+                            f"Cannot set histogram with underflow={in_underflow} and overflow={in_overflow} "
+                            f"to a histogram slice with underflow={use_underflow} and overflow={use_overflow}"
+                        )
+                        raise ValueError(msg)
+
+                # Convert to non-flow coordinates
+                start_real = start + 1 if has_underflow else start
+                stop_real = stop + 1 if has_underflow else stop
+
+                # This is the total requested length without flow bins
+                request_len = min(stop, len(self.axes[n])) - max(start, 0)
 
                 # If set to a scalar, then treat it like broadcasting without flow bins
                 # Normal requests here too
-                if value_ndim == 0 or request_len == value_shape[value_n]:
-                    start += has_underflow
-                    stop += has_underflow
+                # Also single element broadcasting
+                if (
+                    value_ndim == 0
+                    or request_len == value_shape[value_n]
+                    or value_shape[value_n] == 1
+                ):
+                    start_real += 1 if start < 0 else 0
+                    stop_real -= 1 if stop > len(self.axes[n]) else 0
 
                 # Expanded setting
                 elif request_len + use_underflow + use_overflow == value_shape[value_n]:
-                    start += has_underflow and not use_underflow
-                    stop += has_underflow + (has_overflow and use_overflow)
-
-                # Single element broadcasting
-                elif value_shape[value_n] == 1:
-                    start += has_underflow
-                    stop += has_underflow
+                    pass
 
                 else:
                     msg = f"Mismatched shapes in dimension {n}"
@@ -1205,12 +1217,20 @@ class Histogram:
                     if use_underflow or use_overflow:
                         msg += f" or {request_len + use_underflow + use_overflow}"
                     raise ValueError(msg)
-                indexes[n] = slice(start, stop, request.step)
+                logger.debug(
+                    "__setitem__: axis %i, start: %i (actual %i), stop: %i (actual %i)",
+                    n,
+                    start,
+                    start_real,
+                    stop,
+                    stop_real,
+                )
+                indexes[n] = slice(start_real, stop_real, request.step)
                 value_n += 1
             else:
                 indexes[n] = request + has_underflow
 
-        view[tuple(indexes)] = value
+        view[tuple(indexes)] = in_array
 
     def project(self, *args: int) -> Self | float | Accumulator:
         """

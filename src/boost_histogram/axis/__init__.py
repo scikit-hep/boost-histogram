@@ -189,6 +189,16 @@ class Axis:
     ) -> Iterator[float] | Iterator[str] | Iterator[tuple[float, float]]:
         return self._ax.__iter__()  # type: ignore[no-any-return]
 
+    def _process_callable(self, value: AxCallOrInt | None, *, default: int) -> int:
+        """
+        This processes a callable in start or stop. None gets replaced by default.
+        """
+        if value is None:
+            return default
+        if callable(value):
+            return value(self)
+        return value
+
     def _process_loc(
         self, start: AxCallOrInt | None, stop: AxCallOrInt | None
     ) -> tuple[int, int]:
@@ -201,9 +211,6 @@ class Axis:
         is turned off if underflow is not None.
         """
 
-        def _process_internal(item: AxCallOrInt | None, default: int) -> int:
-            return default if item is None else item(self) if callable(item) else item
-
         underflow = -1 if self._ax.traits_underflow else 0
         overflow = 1 if self._ax.traits_overflow else 0
 
@@ -211,8 +218,8 @@ class Axis:
         if not self._ax.traits_ordered and not (start is None and stop is None):
             overflow = 0
 
-        begin = _process_internal(start, underflow)
-        end = _process_internal(stop, len(self) + overflow)
+        begin = self._process_callable(start, default=underflow)
+        end = self._process_callable(stop, default=len(self) + overflow)
 
         return begin, end
 
