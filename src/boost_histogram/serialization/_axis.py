@@ -56,7 +56,9 @@ def _(ax: axis.Regular | axis.Integer, /) -> dict[str, Any]:
     if isinstance(ax, axis.Integer):
         data["writer_info"] = {"boost-histogram": {"orig_type": "Integer"}}
     if ax.metadata is not None:
-        data["metadata"] = ax.metadata
+        data["metadata"] = {
+            k: v for k, v in ax.metadata.items() if not k.startswith("@")
+        }
 
     return data
 
@@ -72,7 +74,9 @@ def _(ax: axis.Variable, /) -> dict[str, Any]:
         "circular": ax.traits.circular,
     }
     if ax.metadata is not None:
-        data["metadata"] = ax.metadata
+        data["metadata"] = {
+            k: v for k, v in ax.metadata.items() if not k.startswith("@")
+        }
 
     return data
 
@@ -86,7 +90,9 @@ def _(ax: axis.IntCategory, /) -> dict[str, Any]:
         "flow": ax.traits.overflow,
     }
     if ax.metadata is not None:
-        data["metadata"] = ax.metadata
+        data["metadata"] = {
+            k: v for k, v in ax.metadata.items() if not k.startswith("@")
+        }
 
     return data
 
@@ -100,7 +106,9 @@ def _(ax: axis.StrCategory, /) -> dict[str, Any]:
         "flow": ax.traits.overflow,
     }
     if ax.metadata is not None:
-        data["metadata"] = ax.metadata
+        data["metadata"] = {
+            k: v for k, v in ax.metadata.items() if not k.startswith("@")
+        }
 
     return data
 
@@ -108,11 +116,13 @@ def _(ax: axis.StrCategory, /) -> dict[str, Any]:
 @_axis_to_dict.register
 def _(ax: axis.Boolean, /) -> dict[str, Any]:
     """Convert a Boolean axis to a dictionary."""
-    data = {
+    data: dict[str, Any] = {
         "type": "boolean",
     }
     if ax.metadata is not None:
-        data["metadata"] = ax.metadata
+        data["metadata"] = {
+            k: v for k, v in ax.metadata.items() if not k.startswith("@")
+        }
 
     return data
 

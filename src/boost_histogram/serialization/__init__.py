@@ -26,7 +26,9 @@ def to_uhi(h: histogram.Histogram, /) -> dict[str, Any]:
         "storage": _storage_to_dict(h.storage_type(), h.view(flow=True)),
     }
     if h.metadata is not None:
-        data["metadata"] = h.metadata
+        data["metadata"] = {
+            k: v for k, v in h.metadata.items() if not k.startswith("@")
+        }
 
     return data
 

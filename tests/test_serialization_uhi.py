@@ -235,3 +235,13 @@ def test_round_trip_clean() -> None:
 
     assert isinstance(h2.axes[0], bh.axis.Regular)
     assert h2.storage_type is bh.storage.Int64
+
+
+def test_unserializable_metadata() -> None:
+    h = bh.Histogram(
+        bh.axis.Integer(0, 10, metadata={"c": 3, "@d": 4}), metadata={"a": 1, "@b": 2}
+    )
+    data = to_uhi(h)
+
+    assert data["metadata"] == {"a": 1}
+    assert data["axes"][0]["metadata"] == {"c": 3}
