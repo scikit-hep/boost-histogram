@@ -145,7 +145,6 @@ minversion = "6.0"
 junit_family = "xunit2"
 addopts = [
   "-ra",
-  "--showlocals",
   "--strict-markers",
   "--strict-config",
   "--import-mode=importlib",
