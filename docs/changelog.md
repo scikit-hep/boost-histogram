@@ -5,7 +5,7 @@
 ### Version 1.6.0
 
 This release adds support for UHI serialization for use with the `uhi` library,
-supported in the next release of `uhi`.  A new diagnostic test has been added
+supported in the next release of `uhi`. A new diagnostic test has been added
 in the wheel, so you can quickly check your compile of boost-histogram without
 the full test suite. Quite a few fixes are present, as well, including a fix
 for `*=`, setting a range with a scalar, setting with a callable in a slice.
