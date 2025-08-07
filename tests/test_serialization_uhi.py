@@ -197,6 +197,16 @@ def test_uhi_wrapper():
     assert repr(from_uhi(data)) == repr(bh.Histogram._from_uhi_(data))
 
 
+def test_uhi_direct_conversion():
+    h = bh.Histogram(
+        bh.axis.IntCategory([1, 2, 3]),
+        storage=bh.storage.Int64(),
+    )
+    uhi_dict = h._to_uhi_()
+    h2 = bh.Histogram(uhi_dict)
+    assert h == h2
+
+
 def test_round_trip_native() -> None:
     h = bh.Histogram(
         bh.axis.Integer(0, 10),
