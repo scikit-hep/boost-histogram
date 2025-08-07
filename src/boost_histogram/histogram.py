@@ -242,7 +242,7 @@ class Histogram:
     def __init__(
         self,
         *axes: Axis | CppAxis | Histogram | CppHistogram | dict[str, Any],
-        storage: Storage = Double(),  # noqa: B008
+        storage: Storage | None = None,
         metadata: Any = None,
     ) -> None:
         """
@@ -262,35 +262,44 @@ class Histogram:
             Data that is passed along if a new histogram is created
         """
         self._variance_known = True
+        storage_err_msg = "storage= is not allowed with conversion constructor"
 
         # Allow construction from a raw histogram object (internal)
         if len(axes) == 1 and isinstance(axes[0], tuple(_histograms)):
+            if storage is not None:
+                raise TypeError(storage_err_msg)
             cpp_hist: CppHistogram = axes[0]  # type: ignore[assignment]
-            self._from_histogram_cpp(cpp_hist)
-            if metadata is not None:
-                self.metadata = metadata
+            self._from_histogram_cpp(cpp_hist, metadata=None)
             return
 
         # If we construct with another Histogram as the only positional argument,
         # support that too
         if len(axes) == 1 and isinstance(axes[0], Histogram):
-            self._from_histogram_object(axes[0])
-            if metadata is not None:
-                self.metadata = metadata
+            if storage is not None:
+                raise TypeError(storage_err_msg)
+            self._from_histogram_object(axes[0], metadata=metadata)
             return
 
         # Support objects that provide a to_boost method, like Uproot
         if len(axes) == 1 and hasattr(axes[0], "_to_boost_histogram_"):
-            self.__init__(axes[0]._to_boost_histogram_(), metadata=metadata)  # type: ignore[misc]
+            if storage is not None:
+                raise TypeError(storage_err_msg)
+            self._from_histogram_object(
+                axes[0]._to_boost_histogram_(), metadata=metadata
+            )
             return
 
         # Support UHI
         if len(axes) == 1 and isinstance(axes[0], dict) and "uhi_schema" in axes[0]:
-            self.__init__(serialization.from_uhi(axes[0]), metadata=metadata)  # type: ignore[misc]
+            if storage is not None:
+                raise TypeError(storage_err_msg)
+            self._from_histogram_object(
+                serialization.from_uhi(axes[0]), metadata=metadata
+            )
             return
 
         if storage is None:
-            storage = Double()  # type: ignore[unreachable]
+            storage = Double()
 
         self.metadata = metadata
 
@@ -363,16 +372,16 @@ class Histogram:
         """
         return self.__class__._clone(_hist, other=self, memo=memo)
 
-    def _from_histogram_cpp(self, other: CppHistogram) -> None:
+    def _from_histogram_cpp(self, other: CppHistogram, *, metadata: Any = None) -> None:
         """
         Import a Cpp histogram.
         """
         self._variance_known = True
         self._hist = other
-        self.metadata = None
+        self.metadata = metadata
         self.axes = self._generate_axes_()
 
-    def _from_histogram_object(self, other: Histogram) -> None:
+    def _from_histogram_object(self, other: Histogram, *, metadata: Any = None) -> None:
         """
         Convert self into a new histogram object based on another, possibly
         converting from a different subclass.
@@ -382,6 +391,7 @@ class Histogram:
         self.axes = self._generate_axes_()
         for ax in self.axes:
             ax.__dict__ = copy.copy(ax._ax.raw_metadata)
+        self.metadata = other.metadata if metadata is None else metadata
 
         # Allow custom behavior on either "from" or "to"
         other._export_bh_(self)
