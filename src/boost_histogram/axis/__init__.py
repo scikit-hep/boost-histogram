@@ -96,7 +96,7 @@ class Axis:
 
     def __getattr__(self, attr: str) -> Any:
         if attr == "metadata":
-            return
+            return None
         raise AttributeError(
             f"object {self.__class__.__name__} has no attribute {attr}"
         )
