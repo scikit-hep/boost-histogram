@@ -36,9 +36,9 @@ def from_uhi(data: dict[str, Any], /) -> histogram.Histogram:
     h = histogram.Histogram(
         *(_axis_from_dict(ax) for ax in data["axes"]),
         storage=_storage_from_dict(data["storage"]),
-        metadata=data.get("metadata"),
     )
     h[...] = _data_from_dict(data["storage"])
+    h.__dict__ = data.get("metadata", {})
     return h
 
 
