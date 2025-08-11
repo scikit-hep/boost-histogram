@@ -25,7 +25,6 @@ def test_simple_to_dict(storage_type: bh.storage.Storage, expected_type: str) ->
     )
     data = to_uhi(h)
 
-    assert "metadata" not in data
     assert data["axes"][0]["type"] == "regular"
     assert data["axes"][0]["lower"] == 0
     assert data["axes"][0]["upper"] == 1
@@ -61,8 +60,8 @@ def test_mean_to_dict() -> None:
     h = bh.Histogram(
         bh.axis.StrCategory(["one", "two", "three"]),
         storage=bh.storage.Mean(),
-        metadata={"name": "hi"},
     )
+    h.name = "hi"
     data = to_uhi(h)
 
     assert data["metadata"]["name"] == "hi"
@@ -239,9 +238,28 @@ def test_round_trip_clean() -> None:
 
 def test_unserializable_metadata() -> None:
     h = bh.Histogram(
-        bh.axis.Integer(0, 10, metadata={"c": 3, "@d": 4}), metadata={"a": 1, "@b": 2}
+        bh.axis.Integer(0, 10, metadata={"c": 3, "@d": 4}),
     )
+    h.__dict__["a"] = 1
+    h.__dict__["@b"] = 2
     data = to_uhi(h)
 
-    assert data["metadata"] == {"a": 1}
+    assert data["metadata"] == {"a": 1, "_variance_known": True, "metadata": None}
     assert data["axes"][0]["metadata"] == {"c": 3}
+
+
+def test_histogram_metadata() -> None:
+    h = bh.Histogram(bh.axis.Integer(0, 10))
+    h.name = "Hi"
+    h.label = "hi"
+    h.other = 3
+
+    data = to_uhi(h)
+
+    assert data["metadata"] == {
+        "name": "Hi",
+        "label": "hi",
+        "other": 3,
+        "_variance_known": True,
+        "metadata": None,
+    }
