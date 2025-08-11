@@ -244,7 +244,7 @@ def test_unserializable_metadata() -> None:
     h.__dict__["@b"] = 2
     data = to_uhi(h)
 
-    assert data["metadata"] == {"a": 1, "_variance_known": True, "metadata": None}
+    assert data["metadata"] == {"a": 1, "_variance_known": True}
     assert data["axes"][0]["metadata"] == {"c": 3}
 
 
@@ -261,5 +261,4 @@ def test_histogram_metadata() -> None:
         "label": "hi",
         "other": 3,
         "_variance_known": True,
-        "metadata": None,
     }
