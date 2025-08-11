@@ -7,6 +7,7 @@ from typing import Any, TypeVar
 from .. import histogram, version
 from ._axis import _axis_from_dict, _axis_to_dict
 from ._storage import _data_from_dict, _storage_from_dict, _storage_to_dict
+from ._common import serialize_metadata
 
 __all__ = ["from_uhi", "remove_writer_info", "to_uhi"]
 
@@ -25,7 +26,7 @@ def to_uhi(h: histogram.Histogram, /) -> dict[str, Any]:
         "axes": [_axis_to_dict(axis) for axis in h.axes],
         "storage": _storage_to_dict(h.storage_type(), h.view(flow=True)),
     }
-    data["metadata"] = {k: v for k, v in h.__dict__.items() if not k.startswith("@")}
+    data["metadata"] = serialize_metadata(h.__dict__)
 
     return data
 
