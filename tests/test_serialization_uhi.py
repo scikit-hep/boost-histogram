@@ -247,14 +247,19 @@ def test_unserializable_metadata() -> None:
     assert data["metadata"] == {"a": 1, "_variance_known": True, "metadata": None}
     assert data["axes"][0]["metadata"] == {"c": 3}
 
+
 def test_histogram_metadata() -> None:
-    h = bh.Histogram(
-        bh.axis.Integer(0, 10)
-    )
+    h = bh.Histogram(bh.axis.Integer(0, 10))
     h.name = "Hi"
     h.label = "hi"
     h.other = 3
 
     data = to_uhi(h)
 
-    assert data["metadata"] == {"name": "Hi", "label": "hi", "other": 3, "_variance_known": True, "metadata": None}
+    assert data["metadata"] == {
+        "name": "Hi",
+        "label": "hi",
+        "other": 3,
+        "_variance_known": True,
+        "metadata": None,
+    }
