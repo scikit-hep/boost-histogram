@@ -46,17 +46,26 @@ def from_uhi(data: dict[str, Any], /) -> histogram.Histogram:
 T = TypeVar("T", bound="dict[str, Any]")
 
 
-def remove_writer_info(obj: T) -> T:
-    """Removes all boost-histogram writer_info from a histogram dict, axes dict, or storage dict. Makes copies where required, and the outer dictionary is always copied."""
+def remove_writer_info(obj: T, /, *, library: str | None = "boost-histogram") -> T:
+    """
+    Removes all ``writer_info`` for a library from a histogram dict, axes dict,
+    or storage dict. Makes copies where required, and the outer dictionary is
+    always copied.
+
+    Specify a library name, or ``None`` to remove all.
+    """
 
     obj = copy.copy(obj)
-    if "boost-histogram" in obj.get("writer_info", {}):
+    if library is None:
+        obj.pop("writer_info")
+    elif library in obj.get("writer_info", {}):
         obj["writer_info"] = copy.copy(obj["writer_info"])
-        del obj["writer_info"]["boost-histogram"]
+        del obj["writer_info"][library]
 
     if "axes" in obj:
-        obj["axes"] = [remove_writer_info(ax) for ax in obj["axes"]]
+        obj["axes"] = [remove_writer_info(ax, library=library) for ax in obj["axes"]]
     if "storage" in obj:
-        obj["storage"] = remove_writer_info(obj["storage"])
+        obj["storage"] = remove_writer_info(obj["storage"], library=library)
 
     return obj
+
