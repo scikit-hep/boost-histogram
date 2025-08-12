@@ -6,8 +6,8 @@ from typing import Any, TypeVar
 # pylint: disable-next=import-error
 from .. import histogram, version
 from ._axis import _axis_from_dict, _axis_to_dict
-from ._storage import _data_from_dict, _storage_from_dict, _storage_to_dict
 from ._common import serialize_metadata
+from ._storage import _data_from_dict, _storage_from_dict, _storage_to_dict
 
 __all__ = ["from_uhi", "remove_writer_info", "to_uhi"]
 
