@@ -266,7 +266,10 @@ def test_histogram_metadata() -> None:
 
 
 def test_remove_writer_info() -> None:
-    d = {"uhi_schema": 1, "writer_info": {"boost-histogram": {"foo": "bar"}, "hist": {"FOO": "BAR"}}}
+    d = {
+        "uhi_schema": 1,
+        "writer_info": {"boost-histogram": {"foo": "bar"}, "hist": {"FOO": "BAR"}},
+    }
 
     assert remove_writer_info(d, library=None) == {"uhi_schema": 1}
     assert remove_writer_info(d) == {
@@ -282,4 +285,3 @@ def test_remove_writer_info() -> None:
         "writer_info": {"boost-histogram": {"foo": "bar"}},
     }
     assert remove_writer_info(d, library="c") == d
-

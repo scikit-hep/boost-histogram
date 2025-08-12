@@ -68,4 +68,3 @@ def remove_writer_info(obj: T, /, *, library: str | None = "boost-histogram") ->
         obj["storage"] = remove_writer_info(obj["storage"], library=library)
 
     return obj
-
