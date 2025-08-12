@@ -1250,7 +1250,7 @@ class Histogram:
                     pass
 
                 else:
-                    msg = f"Mismatched shapes in dimension {n}"
+                    msg = f"Mismatched shapes {value_shape} in dimension {n}"
                     msg += f", {value_shape[n]} != {request_len}"
                     if use_underflow or use_overflow:
                         msg += f" or {request_len + use_underflow + use_overflow}"

@@ -108,11 +108,9 @@ def _data_from_dict(data: dict[str, Any], /) -> np.typing.NDArray[Any]:
     if storage_type in {"int", "double"}:
         return data["values"]
     if storage_type == "weighted":
-        return np.stack([data["values"], data["variances"]]).T
+        return np.stack([data["values"], data["variances"]], axis=-1)
     if storage_type == "mean":
-        return np.stack(
-            [data["counts"], data["values"], data["variances"]],
-        ).T
+        return np.stack([data["counts"], data["values"], data["variances"]], axis=-1)
     if storage_type == "weighted_mean":
         return np.stack(
             [
@@ -121,6 +119,7 @@ def _data_from_dict(data: dict[str, Any], /) -> np.typing.NDArray[Any]:
                 data["values"],
                 data["variances"],
             ],
-        ).T
+            axis=-1,
+        )
 
     raise TypeError(f"Unsupported storage type: {storage_type}")
