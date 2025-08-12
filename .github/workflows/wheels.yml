@@ -162,6 +162,8 @@ jobs:
          env:
            CIBW_PLATFORM: android
 
+      - run: pipx install patchelf
+
       - uses: pypa/cibuildwheel@63bdd4f043a77f1bd23b2ba9376972b6dc7b4779
         env:
           CIBW_PLATFORM: android
