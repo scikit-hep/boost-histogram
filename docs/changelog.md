@@ -5,19 +5,19 @@
 ### Version 1.6.1
 
 This release fixes several issues with serialization as it's being prepared
-in Hist/uhi. 
+in Hist/uhi.
 
 ## Features
 
-* Support `__dict__` on histogram like axes [#1041][]
-* Allow library to be specified in `writer_info` removal [#1042][]
+- Support `__dict__` on histogram like axes [#1041][]
+- Allow library to be specified in `writer_info` removal [#1042][]
 
 #### Bug fixes
 
-* Histogram metadata not being serialized correctly [#1038][]
-* Unset classic metadata shouldn't show up in serialization [#1039][]
-* Set dict correctly when unserializing [#1040][]
-* Serialization was broken for N>1D complex storage histograms [#1043][]
+- Histogram metadata not being serialized correctly [#1038][]
+- Unset classic metadata shouldn't show up in serialization [#1039][]
+- Set dict correctly when unserializing [#1040][]
+- Serialization was broken for N>1D complex storage histograms [#1043][]
 
 [#1038]: https://github.com/scikit-hep/boost-histogram/pull/1038
 [#1039]: https://github.com/scikit-hep/boost-histogram/pull/1039
@@ -25,7 +25,6 @@ in Hist/uhi.
 [#1041]: https://github.com/scikit-hep/boost-histogram/pull/1041
 [#1042]: https://github.com/scikit-hep/boost-histogram/pull/1042
 [#1043]: https://github.com/scikit-hep/boost-histogram/pull/1043
-
 
 ### Version 1.6.0
 
@@ -68,6 +67,7 @@ This release drops support for Python 3.8, and adds Python 3.14(t), iOS, Windows
 [#999]: https://github.com/scikit-hep/boost-histogram/pull/999
 [#1000]: https://github.com/scikit-hep/boost-histogram/pull/1000
 [#1001]: https://github.com/scikit-hep/boost-histogram/pull/1001
+
 :[#1002]: https://github.com/scikit-hep/boost-histogram/pull/1002
 [#1009]: https://github.com/scikit-hep/boost-histogram/pull/1009
 [#1010]: https://github.com/scikit-hep/boost-histogram/pull/1010
