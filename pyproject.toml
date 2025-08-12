@@ -208,11 +208,11 @@ xbuild-tools = ["cmake", "ninja"]
 test-command = "python -m pytest --benchmark-disable tests"
 environment.PIP_EXTRA_INDEX_URL = "https://pypi.anaconda.org/beeware/simple/"
 
-# [tool.cibuildwheel.android]
-# build-frontend = "build"
-# xbuild-tools = ["cmake", "ninja"]
-# test-command = "pytest --benchmark-disable tests"
-# environment.PIP_EXTRA_INDEX_URL = "https://chaquo.com/pypi-13.1"
+[tool.cibuildwheel.android]
+build-frontend = "build"
+test-command = "python -m pytest --benchmark-disable tests"
+environment.ANDROID_API_LEVEL = "24"
+environment.PIP_EXTRA_INDEX_URL = "https://chaquo.com/pypi-13.1"
 
 [[tool.cibuildwheel.overrides]]
 select = "pp310-macosx_arm64"
