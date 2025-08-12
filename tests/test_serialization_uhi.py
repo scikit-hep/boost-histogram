@@ -151,9 +151,6 @@ def test_round_trip_weighted() -> None:
     data = to_uhi(h)
     h2 = from_uhi(data)
 
-    print(h.view())
-    print(h2.view())
-
     assert pytest.approx(np.array(h.axes[0])) == np.array(h2.axes[0])
     assert np.asarray(h) == pytest.approx(h2)
 
@@ -285,3 +282,29 @@ def test_remove_writer_info() -> None:
         "writer_info": {"boost-histogram": {"foo": "bar"}},
     }
     assert remove_writer_info(d, library="c") == d
+
+
+def test_convert_weight() -> None:
+    h = bh.Histogram(
+        bh.axis.Regular(3, 13, 10, __dict__={"name": "x"}),
+        bh.axis.StrCategory(["one", "two"]),
+        storage=bh.storage.Weight(),
+    )
+    data = h._to_uhi_()
+    h2 = bh.Histogram(data)
+
+    assert h == h2
+
+
+def test_convert_weightmean() -> None:
+    h = bh.Histogram(
+        bh.axis.Regular(12, 0, 1),
+        bh.axis.StrCategory(["a", "b", "c", "d", "e", "f", "g"]),
+        bh.axis.Boolean(),
+        bh.axis.Integer(1, 18),
+        storage=bh.storage.WeightedMean(),
+    )
+    data = h._to_uhi_()
+    h2 = bh.Histogram(data)
+
+    assert h.axes == h2.axes
