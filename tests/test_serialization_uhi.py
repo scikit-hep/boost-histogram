@@ -238,7 +238,7 @@ def test_round_trip_clean() -> None:
 
 def test_unserializable_metadata() -> None:
     h = bh.Histogram(
-        bh.axis.Integer(0, 10, metadata={"c": 3, "@d": 4}),
+        bh.axis.Integer(0, 10, __dict__={"c": 3, "@d": 4}),
     )
     h.__dict__["a"] = 1
     h.__dict__["@b"] = 2
