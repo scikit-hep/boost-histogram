@@ -221,7 +221,8 @@ def test_round_trip_native() -> None:
     assert h2.storage_type is bh.storage.AtomicInt64
 
 
-def test_round_trip_clean() -> None:
+@pytest.mark.parametrize("remove", ["boost-histogram", None])
+def test_round_trip_clean(remove: str | None) -> None:
     h = bh.Histogram(
         bh.axis.Integer(0, 10),
         storage=bh.storage.AtomicInt64(),
@@ -229,7 +230,7 @@ def test_round_trip_clean() -> None:
     h.fill([-1, 0, 0, 1, 20, 20, 20])
 
     data = to_uhi(h)
-    data = remove_writer_info(data)
+    data = remove_writer_info(data, library=remove)
     h2 = from_uhi(data)
 
     assert isinstance(h2.axes[0], bh.axis.Regular)
@@ -262,3 +263,25 @@ def test_histogram_metadata() -> None:
         "other": 3,
         "_variance_known": True,
     }
+
+
+def test_remove_writer_info() -> None:
+    d = {
+        "uhi_schema": 1,
+        "writer_info": {"boost-histogram": {"foo": "bar"}, "hist": {"FOO": "BAR"}},
+    }
+
+    assert remove_writer_info(d, library=None) == {"uhi_schema": 1}
+    assert remove_writer_info(d) == {
+        "uhi_schema": 1,
+        "writer_info": {"hist": {"FOO": "BAR"}},
+    }
+    assert remove_writer_info(d, library="boost-histogram") == {
+        "uhi_schema": 1,
+        "writer_info": {"hist": {"FOO": "BAR"}},
+    }
+    assert remove_writer_info(d, library="hist") == {
+        "uhi_schema": 1,
+        "writer_info": {"boost-histogram": {"foo": "bar"}},
+    }
+    assert remove_writer_info(d, library="c") == d
