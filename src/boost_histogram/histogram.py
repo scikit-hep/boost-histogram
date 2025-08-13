@@ -1067,7 +1067,7 @@ class Histogram:
                     new_j_base = 0
 
                     if old_axis.traits_underflow and axes[i].traits_underflow:
-                        groups.insert(0, 1)
+                        groups = [1, *groups]
                     elif axes[i].traits_underflow:
                         new_j_base = 1
 
