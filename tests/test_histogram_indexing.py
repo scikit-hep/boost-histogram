@@ -554,3 +554,19 @@ def test_setting_histogram_mismatch():
         h[:len, 0] = bh.Histogram(
             bh.axis.Regular(10, 0, 10, underflow=False, overflow=False)
         )
+
+
+def test_rebin_groups_no_inplace_modification():
+    """
+    Test that rebinning with a groups list does not mutate the input list in-place.
+    This ensures consecutive rebin operations with the same list do not fail.
+    """
+    h1 = bh.Histogram(bh.axis.Regular(60, 0, 600))
+    h2 = bh.Histogram(bh.axis.Regular(60, 0, 600))
+    rebinner = [5] * 12
+    h3 = h1[bh.rebin(groups=rebinner)]
+    # The original list should remain unchanged
+    assert rebinner == [5] * 12, "rebinner list was mutated in-place"
+    # Second rebin should not raise
+    h4 = h2[bh.rebin(groups=rebinner)]
+    assert h3 == h4
