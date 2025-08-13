@@ -14,6 +14,7 @@ in Hist/uhi.
 
 #### Bug fixes
 
+- Avoid mutating lists given in indexing [#1047][]
 - Histogram metadata not being serialized correctly [#1038][]
 - Unset classic metadata shouldn't show up in serialization [#1039][]
 - Set dict correctly when unserializing [#1040][]
@@ -25,6 +26,7 @@ in Hist/uhi.
 [#1041]: https://github.com/scikit-hep/boost-histogram/pull/1041
 [#1042]: https://github.com/scikit-hep/boost-histogram/pull/1042
 [#1043]: https://github.com/scikit-hep/boost-histogram/pull/1043
+[#1047]: https://github.com/scikit-hep/boost-histogram/pull/1047
 
 ### Version 1.6.0
 
