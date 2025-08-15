@@ -57,7 +57,9 @@ def _(ax: axis.Regular | axis.Integer, /) -> dict[str, Any]:
     if isinstance(ax, axis.Integer):
         data["writer_info"] = {"boost-histogram": {"orig_type": "Integer"}}
 
-    data["metadata"] = serialize_metadata(ax.__dict__)
+    metadata = serialize_metadata(ax.__dict__)
+    if metadata:
+        data["metadata"] = metadata
 
     return data
 
@@ -72,7 +74,10 @@ def _(ax: axis.Variable, /) -> dict[str, Any]:
         "overflow": ax.traits.overflow,
         "circular": ax.traits.circular,
     }
-    data["metadata"] = serialize_metadata(ax.__dict__)
+
+    metadata = serialize_metadata(ax.__dict__)
+    if metadata:
+        data["metadata"] = metadata
 
     return data
 
@@ -85,7 +90,10 @@ def _(ax: axis.IntCategory, /) -> dict[str, Any]:
         "categories": list(ax),
         "flow": ax.traits.overflow,
     }
-    data["metadata"] = serialize_metadata(ax.__dict__)
+
+    metadata = serialize_metadata(ax.__dict__)
+    if metadata:
+        data["metadata"] = metadata
 
     return data
 
@@ -98,7 +106,10 @@ def _(ax: axis.StrCategory, /) -> dict[str, Any]:
         "categories": list(ax),
         "flow": ax.traits.overflow,
     }
-    data["metadata"] = serialize_metadata(ax.__dict__)
+
+    metadata = serialize_metadata(ax.__dict__)
+    if metadata:
+        data["metadata"] = metadata
 
     return data
 
@@ -109,7 +120,10 @@ def _(ax: axis.Boolean, /) -> dict[str, Any]:
     data: dict[str, Any] = {
         "type": "boolean",
     }
-    data["metadata"] = serialize_metadata(ax.__dict__)
+
+    metadata = serialize_metadata(ax.__dict__)
+    if metadata:
+        data["metadata"] = metadata
 
     return data
 
