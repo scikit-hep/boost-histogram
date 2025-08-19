@@ -90,15 +90,12 @@ examples = [
     "xarray",
     "xhistogram",
 ]
-test-core = [
+test = [
     "cloudpickle",
     "pytest-benchmark",
     "pytest>=6.0",
     "pytest-benchmark",
     "numpy",
-]
-test = [
-    { include-group = "test-core" },
     "hypothesis>=6.0; sys_platform != 'ios'", # slow on iOS, can fail health check
     "pytest-xdist; sys_platform != 'ios'",  # No processes on iOS
 ]
@@ -204,7 +201,6 @@ environment.UV_PREFER_BINARY = "1"
 [tool.cibuildwheel.pyodide]
 build-frontend = {name = "build", args = ["--exports", "whole_archive"]}
 test-command = "pytest --benchmark-disable tests"
-test-groups = ["test-core"]  # Working around a bug with markers in pyodide
 
 [tool.cibuildwheel.ios]
 build-frontend = "build"
