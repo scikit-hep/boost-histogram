@@ -129,7 +129,7 @@ jobs:
           fetch-depth: 0
           submodules: true
 
-      - run: brew upgrade cmake
+      - run: brew uninstall cmake || brew install cmake
 
       - uses: pypa/cibuildwheel@v3.1
         env:
