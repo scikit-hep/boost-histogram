@@ -11,7 +11,7 @@ repos:
         additional_dependencies: [black==25.*]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: check-added-large-files
       - id: check-case-conflict
@@ -36,7 +36,7 @@ repos:
         types_or: [yaml, markdown, html, css, scss, javascript, json]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.12.8"
+    rev: "v0.12.11"
     hooks:
       - id: ruff-check
         args: ["--fix", "--show-fixes"]
@@ -65,7 +65,7 @@ repos:
         exclude: .pre-commit-config.yaml
 
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v20.1.8
+    rev: v21.1.0
     hooks:
       - id: clang-format
         types_or: [c++]
@@ -78,12 +78,12 @@ repos:
       - id: rst-inline-touching-normal
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.33.2
+    rev: 0.33.3
     hooks:
       - id: check-readthedocs
       - id: check-github-workflows
 
   - repo: https://github.com/henryiii/validate-pyproject-schema-store
-    rev: 2025.08.07
+    rev: 2025.08.29
     hooks:
       - id: validate-pyproject
