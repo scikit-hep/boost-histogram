@@ -189,6 +189,7 @@ test-skip = [
   "gp311_242-macosx_x86_64",
   "gp311_242-manylinux_aarch64",
   "gp311_242-win*",  # pytest crashes with module 'io' has no attribute '_WindowsConsoleIO'
+  "gp312_*",  # No numpy wheels yet
   "cp314*-ios_*",  # No numpy wheels yet
 ]
 enable = ["cpython-freethreading", "pypy", "graalpy"]
