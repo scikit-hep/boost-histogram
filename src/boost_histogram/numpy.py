@@ -72,7 +72,7 @@ def histogramdd(
             if r is None:
                 # Nextafter may affect bin edges slightly
                 r = (np.amin(a[n]), np.amax(a[n]))  # noqa: PLW2901
-                if r[0] == r[1]:  # type: ignore[operator]
+                if r[0] == r[1]:
                     r = (r[0] - 0.5, r[1] + 0.5)  # noqa: PLW2901
             new_ax = _axis.Regular(
                 typing.cast(int, b), r[0], r[1], underflow=False, overflow=False
