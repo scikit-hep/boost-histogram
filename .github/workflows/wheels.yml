@@ -40,7 +40,7 @@ jobs:
       - name: Check metadata
         run: pipx run twine check --strict dist/*.tar.gz
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           path: dist/*
           name: wheels-sdist
@@ -98,7 +98,7 @@ jobs:
           fetch-depth: 0
           submodules: true
 
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v7
 
       - uses: pypa/cibuildwheel@v3.2
         env:
@@ -110,7 +110,7 @@ jobs:
         shell: bash
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           path: wheelhouse/*.whl
           name: wheels-${{ strategy.job-index }}
@@ -140,7 +140,7 @@ jobs:
         shell: bash
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           path: wheelhouse/*.whl
           name: wheels-ios-${{ matrix.runs-on }}
@@ -167,7 +167,7 @@ jobs:
   #        shell: bash
   #
   #      - name: Upload wheels
-  #        uses: actions/upload-artifact@v4
+  #        uses: actions/upload-artifact@v5
   #        with:
   #          path: wheelhouse/*.whl
   #          name: wheels-android-${{ matrix.runs-on }}
@@ -186,7 +186,7 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v6
         with:
           pattern: wheels-*
           merge-multiple: true
@@ -211,7 +211,7 @@ jobs:
     needs: [build_wheels]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v6
         with:
           pattern: wheels-*
           merge-multiple: true
