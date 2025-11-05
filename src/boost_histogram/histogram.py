@@ -2,23 +2,23 @@ from __future__ import annotations
 
 import collections.abc
 import copy
-import enum
 import logging
 import sys
 import threading
 import typing
 import warnings
-from collections.abc import Callable, Iterable, Mapping
+from collections.abc import Iterable, Mapping
+from enum import Enum
 from os import cpu_count
-from types import EllipsisType
 from typing import (
     TYPE_CHECKING,
     Any,
+    Callable,
     ClassVar,
     NewType,
     SupportsIndex,
-    TypeAlias,
     TypeVar,
+    Union,
 )
 
 import numpy as np
@@ -35,7 +35,7 @@ from .typing import Accumulator, ArrayLike, CppHistogram, RebinProtocol
 from .view import MeanView, WeightedMeanView, WeightedSumView, _to_view
 
 if TYPE_CHECKING:
-    pass
+    from builtins import ellipsis
 
 
 try:
@@ -55,9 +55,12 @@ except ImportError as err:
     raise new_exception from err
 
 
-class Kind(enum.StrEnum):
+# This is a StrEnum as defined in Python 3.11
+class Kind(str, Enum):
     COUNT = "COUNT"
     MEAN = "MEAN"
+
+    __str__ = str.__str__
 
 
 __all__ = [
@@ -99,13 +102,11 @@ logger = logging.getLogger(__name__)
 
 CppAxis = NewType("CppAxis", object)
 
-SimpleIndexing: TypeAlias = SupportsIndex | slice | RebinProtocol
-InnerIndexing: TypeAlias = SimpleIndexing | Callable[[Axis], int]
-FullInnerIndexing: TypeAlias = InnerIndexing | list[InnerIndexing]
-IndexingWithMapping: TypeAlias = FullInnerIndexing | Mapping[int, FullInnerIndexing]
-IndexingExpr: TypeAlias = (
-    IndexingWithMapping | tuple[IndexingWithMapping, ...] | EllipsisType
-)
+SimpleIndexing = Union[SupportsIndex, slice, RebinProtocol]
+InnerIndexing = Union[SimpleIndexing, Callable[[Axis], int]]
+FullInnerIndexing = Union[InnerIndexing, list[InnerIndexing]]
+IndexingWithMapping = Union[FullInnerIndexing, Mapping[int, FullInnerIndexing]]
+IndexingExpr = Union[IndexingWithMapping, tuple[IndexingWithMapping, ...], "ellipsis"]
 
 T = TypeVar("T")
 
@@ -121,7 +122,7 @@ def _fill_cast(
         return value
 
     if not inner and isinstance(value, (tuple, list)):
-        return tuple(_fill_cast(a, inner=True) for a in value)  # type: ignore[misc]
+        return tuple(_fill_cast(a, inner=True) for a in value)
 
     if hasattr(value, "__iter__") or hasattr(value, "__array__"):
         return np.asarray(value)
@@ -184,9 +185,9 @@ def _combine_group_contents(
     pos = [slice(None)] * (i)
     if new_view.dtype.names:
         for field in new_view.dtype.names:
-            new_view[(*pos, jj, ...)][field] += reduced_view[(*pos, j, ...)][field]  # type: ignore[arg-type]
+            new_view[(*pos, jj, ...)][field] += reduced_view[(*pos, j, ...)][field]
     else:
-        new_view[(*pos, jj, ...)] += reduced_view[(*pos, j, ...)]  # type: ignore[arg-type]
+        new_view[(*pos, jj, ...)] += reduced_view[(*pos, j, ...)]
 
 
 H = TypeVar("H", bound="Histogram")
@@ -496,7 +497,7 @@ class Histogram:
         kwargs = {}
         if copy is not None:
             kwargs["copy"] = copy
-        return np.asarray(self.view(False), dtype=dtype, **kwargs)  # type: ignore[call-overload, no-any-return]
+        return np.asarray(self.view(False), dtype=dtype, **kwargs)  # type: ignore[call-overload]
 
     __hash__ = None  # type: ignore[assignment]
 
@@ -576,12 +577,10 @@ class Histogram:
                 msg = f"Number of dimensions {len(other.shape)} must match histogram {self.ndim}"
                 raise ValueError(msg)
 
-            if all(a in {b, 1} for a, b in zip(other.shape, self.shape, strict=False)):
+            if all(a in {b, 1} for a, b in zip(other.shape, self.shape)):
                 view = self.view(flow=False)
                 getattr(view, name)(other)
-            elif all(
-                a in {b, 1} for a, b in zip(other.shape, self.axes.extent, strict=False)
-            ):
+            elif all(a in {b, 1} for a, b in zip(other.shape, self.axes.extent)):
                 view = self.view(flow=True)
                 getattr(view, name)(other)
             else:
@@ -642,7 +641,7 @@ class Histogram:
             threads = cpu_count()
 
         if threads is None or threads == 1:
-            self._hist.fill(*args_ars, weight=weight_ars, sample=sample_ars)  # type: ignore[arg-type]
+            self._hist.fill(*args_ars, weight=weight_ars, sample=sample_ars)
             return self
 
         if self._hist._storage_type in {
@@ -652,7 +651,7 @@ class Histogram:
             raise RuntimeError("Mean histograms do not support threaded filling")
 
         data: list[list[np.typing.NDArray[Any]] | list[str]] = [
-            np.array_split(a, threads) if not isinstance(a, str) else [a] * threads  # type: ignore[arg-type, list-item]
+            np.array_split(a, threads) if not isinstance(a, str) else [a] * threads
             for a in args_ars
         ]
 
@@ -661,14 +660,14 @@ class Histogram:
             assert threads is not None
             weights = [weight_ars] * threads
         else:
-            weights = np.array_split(weight_ars, threads)  # type: ignore[arg-type]
+            weights = np.array_split(weight_ars, threads)
 
         samples: list[Any]
         if sample_ars is None or np.isscalar(sample_ars):
             assert threads is not None
             samples = [sample_ars] * threads
         else:
-            samples = np.array_split(sample_ars, threads)  # type: ignore[arg-type]
+            samples = np.array_split(sample_ars, threads)
 
         if self._hist._storage_type is _core.storage.atomic_int64:
 
@@ -695,7 +694,7 @@ class Histogram:
 
         thread_list = [
             threading.Thread(target=fun, args=arrays)
-            for arrays in zip(weights, samples, *data, strict=False)
+            for arrays in zip(weights, samples, *data)
         ]
 
         for thread in thread_list:
@@ -903,7 +902,7 @@ class Histogram:
         hist, *edges = self._hist.to_numpy(flow)
         hist = self.view(flow=flow) if view else self.values(flow=flow)
 
-        return (hist, edges) if dd else (hist, *edges)  # type: ignore[return-value]
+        return (hist, edges) if dd else (hist, *edges)
 
     def copy(self, *, deep: bool = True) -> Self:
         """
@@ -1186,7 +1185,7 @@ class Histogram:
         if (
             in_array.ndim > 0
             and len(view.dtype) > 0
-            and len(in_array.dtype) == 0  # type: ignore[arg-type]
+            and len(in_array.dtype) == 0
             and len(view.dtype) == in_array.shape[-1]
         ):
             value_shape = in_array.shape[:-1]
@@ -1319,8 +1318,8 @@ class Histogram:
         view: Any = self.view(flow)
         # TODO: Might be a NumPy typing bug
         if len(view.dtype) == 0:
-            return view  # type: ignore[no-any-return]
-        return view.value  # type: ignore[no-any-return]
+            return view
+        return view.value
 
     def variances(self, flow: bool = False) -> np.typing.NDArray[Any] | None:
         """
@@ -1352,7 +1351,7 @@ class Histogram:
 
         if hasattr(view, "sum_of_weights"):
             valid = view.sum_of_weights**2 > view.sum_of_weights_squared
-            return np.divide(  # type: ignore[no-any-return]
+            return np.divide(
                 view.variance,
                 view.sum_of_weights,
                 out=np.full(view.sum_of_weights.shape, np.nan),
@@ -1360,14 +1359,14 @@ class Histogram:
             )
 
         if hasattr(view, "count"):
-            return np.divide(  # type: ignore[no-any-return]
+            return np.divide(
                 view.variance,
                 view.count,
                 out=np.full(view.count.shape, np.nan),
                 where=view.count > 1,
             )
 
-        return view.variance  # type: ignore[no-any-return]
+        return view.variance
 
     def counts(self, flow: bool = False) -> np.typing.NDArray[Any]:
         """
@@ -1395,10 +1394,10 @@ class Histogram:
         view: Any = self.view(flow)
 
         if len(view.dtype) == 0:
-            return view  # type: ignore[no-any-return]
+            return view
 
         if hasattr(view, "sum_of_weights"):
-            return np.divide(  # type: ignore[no-any-return]
+            return np.divide(
                 view.sum_of_weights**2,
                 view.sum_of_weights_squared,
                 out=np.zeros_like(view.sum_of_weights, dtype=np.float64),
@@ -1406,9 +1405,9 @@ class Histogram:
             )
 
         if hasattr(view, "count"):
-            return view.count  # type: ignore[no-any-return]
+            return view.count
 
-        return view.value  # type: ignore[no-any-return]
+        return view.value
 
 
 if TYPE_CHECKING:
