@@ -106,7 +106,7 @@ def _data_from_dict(data: dict[str, Any], /) -> np.typing.NDArray[Any]:
     storage_type = data["type"]
 
     if storage_type in {"int", "double"}:
-        return data["values"]
+        return data["values"]  # type: ignore[no-any-return]
     if storage_type == "weighted":
         return np.stack([data["values"], data["variances"]], axis=-1)
     if storage_type == "mean":

@@ -179,11 +179,12 @@ python3 -m pip install boost-histogram
 ```
 
 All the normal best-practices for Python apply; Pip should not be very old (Pip
-9 is very old), you should be in a virtual environment, etc. Python 3.9+ is
+9 is very old), you should be in a virtual environment, etc. Python 3.10+ is
 required; for older versions of Python (3.5 and 2.7), `0.13` will be installed
 instead, which is API equivalent to 1.0, but will not be gaining new features.
 1.3.x was the last series to support Python 3.6. 1.4.x was the last series to
-support Python 3.7. 1.5.x was the last series to support Python 3.8.
+support Python 3.7. 1.5.x was the last series to support Python 3.8. 1.6.x was
+the last to support Python 3.9.
 
 #### Binaries available:
 
@@ -192,17 +193,18 @@ when you run the above command on a supported platform. Wheels are produced usin
 [cibuildwheel](https://cibuildwheel.readthedocs.io/en/stable/); all common
 platforms have wheels provided in boost-histogram:
 
-| System        | Arch   | Python versions                    | PyPy versions |
-| ------------- | ------ | ---------------------------------- | ------------- |
-| manylinux2014 | 64-bit | 3.9, 3.10, 3.11, 3.12, 3.13, 3.13t | 3.9, 3.10     |
-| manylinux2014 | ARM64  | 3.9, 3.10, 3.11, 3.12, 3.13, 3.13t | 3.9, 3.10     |
-| musllinux_1_1 | 64-bit | 3.9, 3.10, 3.11, 3.12, 3.13, 3.13t |               |
-| macOS         | 64-bit | 3.9, 3.10, 3.11, 3.12, 3.13, 3.13t | 3.9, 3.10     |
-| macOS         | Arm64  | 3.9, 3.10, 3.11, 3.12, 3.13, 3.13t | 3.9, 3.10     |
-| Windows       | 32-bit | 3.9, 3.10, 3.11, 3.12, 3.13, 3.13t |               |
-| Windows       | 64-bit | 3.9, 3.10, 3.11, 3.12, 3.13, 3.13t | 3.9, 3.10     |
+| System    | Arch   | Python versions                            | PyPy versions |
+| ----------| ------ | ------------------------------------------ | ------------- |
+| manylinux | 64-bit | 3.10, 3.11, 3.12, 3.13, 3.13t, 3.14, 3.14t | 3.11          |
+| manylinux | ARM64  | 3.10, 3.11, 3.12, 3.13, 3.13t, 3.14, 3.14t | 3.11          |
+| musllinux | 64-bit | 3.10, 3.11, 3.12, 3.13, 3.13t, 3.14, 3.14t |               |
+| macOS     | 64-bit | 3.10, 3.11, 3.12, 3.13, 3.13t, 3.14, 3.14t | 3.11          |
+| macOS     | Arm64  | 3.10, 3.11, 3.12, 3.13, 3.13t, 3.14, 3.14t | 3.11          |
+| Windows   | 32-bit | 3.10, 3.11, 3.12, 3.13, 3.13t, 3.14, 3.14t |               |
+| Windows   | 64-bit | 3.10, 3.11, 3.12, 3.13, 3.13t, 3.14, 3.14t | 3.11          |
+| Windows   | ARM64  |       3.11, 3.12, 3.13, 3.13t, 3.14, 3.14t |               |
 
-PowerPC or IBM-Z wheels are not provided but are available on request.
+PowerPC, IBM-Z, and RISC-V wheels are not provided but are available on request.
 
 If you are on a Linux system that is not part of the "many" in manylinux or musl in musllinux, such as ClearLinux, building from source is usually fine, since the compilers on those systems are often quite new. It will just take longer to install when it is using the sdist instead of a wheel. All dependencies are header-only and included.
 

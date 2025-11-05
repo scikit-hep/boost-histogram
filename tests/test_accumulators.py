@@ -28,7 +28,7 @@ def test_weighted_sum():
     vari = [4, 5, 6]
 
     a = bh.accumulators.WeightedSum()
-    for val, var in zip(vals, vari):
+    for val, var in zip(vals, vari, strict=False):
         a += bh.accumulators.WeightedSum(val, variance=var)
 
     assert a.value == 6
@@ -60,7 +60,7 @@ def test_weighted_mean():
     vals = [4, 1]
     weights = [1, 2]
     a = bh.accumulators.WeightedMean()
-    for v, w in zip(vals, weights):
+    for v, w in zip(vals, weights, strict=False):
         a(v, weight=w)
 
     assert a.sum_of_weights == 3.0

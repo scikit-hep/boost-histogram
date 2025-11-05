@@ -7,7 +7,7 @@ name = "boost-histogram"
 dynamic = ["version"]
 description = "The Boost::Histogram Python wrapper."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [
     { name = "Hans Dembinski", email = "hans.dembinski@gmail.com" },
     { name = "Henry Schreiner", email = "hschrein@cern.ch" },
@@ -37,7 +37,6 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: Free Threading :: 3 - Stable",
     "Programming Language :: Python :: Free Threading",
     "Programming Language :: Python :: Implementation :: CPython",
@@ -158,7 +157,7 @@ required_plugins = ["pytest-benchmark"]
 log_cli_level = "DEBUG"
 
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.10"
 files = ["src"]
 strict = true
 enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
@@ -181,8 +180,8 @@ test-command = "python -m pytest -n auto --benchmark-disable tests"
 test-sources = ["pyproject.toml", "tests"]
 test-environment.CI = "1"  # Hypothosis needs this on GraalPy
 test-skip = [
-  "cp3{9,10}-win_arm64",
-  "cp3{9,10}-musllinux_*",
+  "cp310-win_arm64",
+  "cp310-musllinux_*",
   "pp310-manylinux_aarch64",
   "pp310-macosx_arm64",
   "cp31*-musllinux_*", # Threading test crashes
@@ -228,7 +227,7 @@ environment.UV_INDEX_STRATEGY = "unsafe-best-match"
 test-command = "pytest --benchmark-disable tests"
 
 [tool.pylint]
-py-version = "3.9"
+py-version = "3.10"
 ignore-patterns = ['.*\.pyi']
 ignore = "version.py"
 extension-pkg-allow-list = ["boost_histogram._core"]
