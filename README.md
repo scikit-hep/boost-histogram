@@ -194,7 +194,7 @@ when you run the above command on a supported platform. Wheels are produced usin
 platforms have wheels provided in boost-histogram:
 
 | System    | Arch   | Python versions                            | PyPy versions |
-| ----------| ------ | ------------------------------------------ | ------------- |
+| --------- | ------ | ------------------------------------------ | ------------- |
 | manylinux | 64-bit | 3.10, 3.11, 3.12, 3.13, 3.13t, 3.14, 3.14t | 3.11          |
 | manylinux | ARM64  | 3.10, 3.11, 3.12, 3.13, 3.13t, 3.14, 3.14t | 3.11          |
 | musllinux | 64-bit | 3.10, 3.11, 3.12, 3.13, 3.13t, 3.14, 3.14t |               |
@@ -202,7 +202,7 @@ platforms have wheels provided in boost-histogram:
 | macOS     | Arm64  | 3.10, 3.11, 3.12, 3.13, 3.13t, 3.14, 3.14t | 3.11          |
 | Windows   | 32-bit | 3.10, 3.11, 3.12, 3.13, 3.13t, 3.14, 3.14t |               |
 | Windows   | 64-bit | 3.10, 3.11, 3.12, 3.13, 3.13t, 3.14, 3.14t | 3.11          |
-| Windows   | ARM64  |       3.11, 3.12, 3.13, 3.13t, 3.14, 3.14t |               |
+| Windows   | ARM64  | 3.11, 3.12, 3.13, 3.13t, 3.14, 3.14t       |               |
 
 PowerPC, IBM-Z, and RISC-V wheels are not provided but are available on request.
 

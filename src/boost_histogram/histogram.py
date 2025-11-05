@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import collections.abc
 import copy
+import enum
 import logging
 import sys
 import threading
 import typing
 import warnings
 from collections.abc import Callable, Iterable, Mapping
-import enum
 from os import cpu_count
 from types import EllipsisType
 from typing import (
@@ -58,6 +58,7 @@ except ImportError as err:
 class Kind(enum.StrEnum):
     COUNT = "COUNT"
     MEAN = "MEAN"
+
 
 __all__ = [
     "Histogram",
