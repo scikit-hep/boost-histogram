@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Protocol, TypeAlias
+from types import EllipsisType
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-    from types import EllipsisType
 
     from numpy import ufunc as Ufunc
     from numpy.typing import ArrayLike

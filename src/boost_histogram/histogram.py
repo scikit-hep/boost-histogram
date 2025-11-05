@@ -55,9 +55,12 @@ except ImportError as err:
     raise new_exception from err
 
 
-class Kind(enum.StrEnum):
+# This is a StrEnum as defined in Python 3.11
+class Kind(str, enum.Enum):
     COUNT = "COUNT"
     MEAN = "MEAN"
+
+    __str__ = str.__str__
 
 
 __all__ = [
