@@ -1,17 +1,15 @@
 from __future__ import annotations
 
 import copy
-from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass
 from functools import partial
 from typing import (
     Any,
-    Callable,
     ClassVar,
     Literal,
     TypedDict,
     TypeVar,
-    Union,
 )
 
 import numpy as np  # pylint: disable=unused-import
@@ -20,7 +18,7 @@ import boost_histogram
 
 from .._compat.typing import Self
 from .._core import axis as ca
-from .._utils import cast, register, zip_strict
+from .._utils import cast, register
 from . import transform
 from .transform import AxisTransform
 
@@ -59,7 +57,7 @@ def _opts(**kwargs: bool) -> set[str]:
     return {k for k, v in kwargs.items() if v}
 
 
-AxCallOrInt = Union[int, Callable[["Axis"], int]]
+AxCallOrInt = int | Callable[["Axis"], int]
 
 
 @dataclass(order=True, frozen=True)
@@ -287,21 +285,21 @@ class Axis:
 
     @property
     def edges(self) -> np.typing.NDArray[Any]:
-        return self._ax.edges
+        return self._ax.edges  # type: ignore[no-any-return]
 
     @property
     def centers(self) -> np.typing.NDArray[Any]:
         """
         An array of bin centers.
         """
-        return self._ax.centers
+        return self._ax.centers  # type: ignore[no-any-return]
 
     @property
     def widths(self) -> np.typing.NDArray[Any]:
         """
         An array of bin widths.
         """
-        return self._ax.widths
+        return self._ax.widths  # type: ignore[no-any-return]
 
 
 # Contains all common methods and properties for Regular axes
@@ -910,7 +908,7 @@ class AxesTuple(tuple):  # type: ignore[type-arg]
         try:
             super().__setattr__(attr, values)
         except AttributeError:
-            for s, v in zip_strict(self, values):
+            for s, v in zip(self, values, strict=True):
                 s.__setattr__(attr, v)
 
     value.__doc__ = Axis.value.__doc__

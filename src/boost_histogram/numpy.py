@@ -67,7 +67,7 @@ def histogramdd(
         range = (None,) * rank
 
     axs: list[_axis.Axis] = []
-    for n, (b, r) in enumerate(zip(bins, range)):
+    for n, (b, r) in enumerate(zip(bins, range, strict=False)):
         if np.issubdtype(type(b), np.integer):
             if r is None:
                 # Nextafter may affect bin edges slightly
@@ -160,7 +160,7 @@ def histogram(
     # I think it's safe and the union is in the wrong place
     result = histogramdd(
         (a,),
-        (bins,),
+        (bins,),  # type: ignore[arg-type]
         (range,),
         normed,
         weights,
@@ -181,6 +181,7 @@ def histogram(
 for f, np_f in zip(
     (histogram, histogram2d, histogramdd),
     (np.histogram, np.histogram2d, np.histogramdd),
+    strict=False,
 ):
     H = """\
     Return a boost-histogram object using the same arguments as numpy's {}.

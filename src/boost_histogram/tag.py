@@ -190,7 +190,7 @@ class rebin:
                 matched_ixes = [np.abs(axis.edges - edge).argmin() for edge in newedges]
                 missing_edges = [
                     edge
-                    for ix, edge in zip(matched_ixes, newedges)
+                    for ix, edge in zip(matched_ixes, newedges, strict=False)
                     if not np.isclose(axis.edges[ix], edge)
                 ]
                 if missing_edges:

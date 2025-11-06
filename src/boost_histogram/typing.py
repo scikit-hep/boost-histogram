@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Protocol, Union
+from types import EllipsisType
+from typing import TYPE_CHECKING, Any, Protocol, TypeAlias
 
 if TYPE_CHECKING:
-    from builtins import ellipsis
     from collections.abc import Sequence
 
     from numpy import ufunc as Ufunc
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from boost_histogram._core.accumulators import Mean, WeightedMean, WeightedSum
     from boost_histogram._core.hist import _BaseHistogram as CppHistogram
 
-    Accumulator = Union[WeightedSum, Mean, WeightedMean]
+    Accumulator = WeightedSum | Mean | WeightedMean
 else:
     ArrayLike = Any
     Ufunc = Any
@@ -38,10 +38,12 @@ class AxisLike(Protocol):
     def __len__(self) -> int: ...
 
 
-StdIndex = Union[int, slice, "ellipsis", tuple[Union[slice, int, "ellipsis"], ...]]
-StrIndex = Union[
-    int, slice, str, "ellipsis", tuple[Union[slice, int, str, "ellipsis"], ...]
-]
+StdIndex: TypeAlias = (
+    int | slice | EllipsisType | tuple[slice | int | EllipsisType, ...]
+)
+StrIndex: TypeAlias = (
+    int | slice | str | EllipsisType | tuple[slice | int | str | EllipsisType, ...]
+)
 
 
 class RebinProtocol(Protocol):
