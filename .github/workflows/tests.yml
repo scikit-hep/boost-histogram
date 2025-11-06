@@ -111,7 +111,7 @@ jobs:
           - os: ubuntu-24.04-arm
             only: cp313-manylinux_aarch64
           - os: windows-latest
-            only: cp39-win32
+            only: cp310-win32
           - os: windows-latest
             only: cp313-win_amd64
           - os: macos-13
