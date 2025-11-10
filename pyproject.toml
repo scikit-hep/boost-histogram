@@ -154,7 +154,7 @@ filterwarnings = [
 xfail_strict = true
 testpaths = ["tests"]
 required_plugins = ["pytest-benchmark"]
-log_cli_level = "DEBUG"
+log_level = "DEBUG"
 
 [tool.mypy]
 python_version = "3.10"
