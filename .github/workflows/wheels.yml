@@ -29,7 +29,7 @@ jobs:
     name: Build SDist
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           submodules: true
@@ -93,14 +93,14 @@ jobs:
             build: "*musllinux*"
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           submodules: true
 
       - uses: astral-sh/setup-uv@v7
 
-      - uses: pypa/cibuildwheel@v3.2
+      - uses: pypa/cibuildwheel@v3.3
         env:
           CIBW_BUILD: ${{ matrix.build }}
           CIBW_ARCHS: ${{ matrix.arch }}
@@ -124,14 +124,14 @@ jobs:
         runs-on: [macos-14, macos-13]
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           submodules: true
 
       - run: brew uninstall cmake; brew install cmake
 
-      - uses: pypa/cibuildwheel@v3.2
+      - uses: pypa/cibuildwheel@v3.3
         env:
           CIBW_PLATFORM: ios
 
@@ -153,7 +153,7 @@ jobs:
   #      matrix:
   #        runs-on: [ubuntu-latest, macos-latest]
   #    steps:
-  #      - uses: actions/checkout@v5
+  #      - uses: actions/checkout@v6
   #        with:
   #          fetch-depth: 0
   #          submodules: true

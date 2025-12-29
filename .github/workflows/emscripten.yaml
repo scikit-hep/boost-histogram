@@ -19,12 +19,12 @@ jobs:
     name: Pyodide cibuildwheel
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           submodules: true
           fetch-depth: 0
 
-      - uses: pypa/cibuildwheel@v3.2
+      - uses: pypa/cibuildwheel@v3.3
         env:
           CIBW_PLATFORM: pyodide
 
