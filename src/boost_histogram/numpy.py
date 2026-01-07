@@ -80,6 +80,8 @@ def histogramdd(
             axs.append(new_ax)
         else:
             barr: np.typing.NDArray[Any] = np.asarray(b, dtype=np.double)
+            # This does have a .max member, not sure why pylint doesn't like it
+            # pylint: disable-next=no-member
             barr[-1] = np.nextafter(barr[-1], np.finfo("d").max)
             axs.append(_axis.Variable(barr))
 
