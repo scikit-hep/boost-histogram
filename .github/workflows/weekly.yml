@@ -7,7 +7,7 @@ on:
 
 jobs:
   basic:
-    name: Head on Python 3.11
+    name: Head on Python 3.13
     runs-on: ubuntu-latest
 
     steps:
@@ -21,13 +21,11 @@ jobs:
 
       - uses: actions/setup-python@v6
         with:
-          python-version: "3.12"
+          python-version: "3.13"
 
       - name: Build and install wheel
         run: |
-          pip install dependency-groups
-          pip-install-dependency-groups test
-          pip install -v .
+          pip install -v . --group test
 
       - name: Test
         run: python -m pytest

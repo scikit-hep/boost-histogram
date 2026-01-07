@@ -114,7 +114,7 @@ jobs:
             only: cp310-win32
           - os: windows-latest
             only: cp313-win_amd64
-          - os: macos-13
+          - os: macos-15-intel
             only: cp314t-macosx_x86_64
           - os: macos-latest
             only: cp312-macosx_arm64
@@ -145,7 +145,7 @@ jobs:
   pass:
     if: always()
     needs: [clang-tidy, pylint, cmake, build_wheels]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
       - uses: re-actors/alls-green@release/v1
         with:
