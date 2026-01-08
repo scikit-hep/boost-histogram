@@ -40,7 +40,7 @@ jobs:
       - name: Check metadata
         run: pipx run twine check --strict dist/*.tar.gz
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           path: dist/*
           name: wheels-sdist
@@ -110,7 +110,7 @@ jobs:
         shell: bash
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           path: wheelhouse/*.whl
           name: wheels-${{ strategy.job-index }}
@@ -140,7 +140,7 @@ jobs:
         shell: bash
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           path: wheelhouse/*.whl
           name: wheels-ios-${{ matrix.runs-on }}
@@ -167,7 +167,7 @@ jobs:
   #        shell: bash
   #
   #      - name: Upload wheels
-  #        uses: actions/upload-artifact@v5
+  #        uses: actions/upload-artifact@v6
   #        with:
   #          path: wheelhouse/*.whl
   #          name: wheels-android-${{ matrix.runs-on }}
@@ -186,7 +186,7 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v7
         with:
           pattern: wheels-*
           merge-multiple: true
@@ -211,7 +211,7 @@ jobs:
     needs: [build_wheels]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v6
+      - uses: actions/download-artifact@v7
         with:
           pattern: wheels-*
           merge-multiple: true
@@ -221,7 +221,7 @@ jobs:
         run: ls -lh dist
 
       - name: Upload wheel to Anaconda Cloud as nightly
-        uses: scientific-python/upload-nightly-action@b36e8c0c10dbcfd2e05bf95f17ef8c14fd708dbf # 0.6.2
+        uses: scientific-python/upload-nightly-action@5748273c71e2d8d3a61f3a11a16421c8954f9ecf # 0.6.3
         with:
           artifacts_path: dist
           anaconda_nightly_upload_token: ${{ secrets.ANACONDA_ORG_UPLOAD_TOKEN }}
