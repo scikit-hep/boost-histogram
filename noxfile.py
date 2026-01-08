@@ -116,7 +116,7 @@ def pylint(session: nox.Session) -> None:
     Run pylint.
     """
 
-    session.install("pylint==3.3.*")
+    session.install("pylint==4.0.*")
     session.install(".")
     session.run("pylint", "boost_histogram", *session.posargs)
 
