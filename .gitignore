@@ -89,3 +89,4 @@ compile_commands.json
 .nox/*
 /*venv*
 /build
+.DS_Store

@@ -1,5 +1,93 @@
 # Changelog
 
+## Version 1.6
+
+### Version 1.6.1
+
+This release fixes several issues with serialization as it's being prepared
+in Hist/uhi.
+
+## Features
+
+- Support `__dict__` on histogram like axes [#1041][]
+- Allow library to be specified in `writer_info` removal [#1042][]
+
+#### Bug fixes
+
+- Avoid mutating lists given in indexing [#1047][]
+- Histogram metadata not being serialized correctly [#1038][]
+- Unset classic metadata shouldn't show up in serialization [#1039][]
+- Set dict correctly when unserializing [#1040][]
+- Serialization was broken for N>1D complex storage histograms [#1043][]
+
+[#1038]: https://github.com/scikit-hep/boost-histogram/pull/1038
+[#1039]: https://github.com/scikit-hep/boost-histogram/pull/1039
+[#1040]: https://github.com/scikit-hep/boost-histogram/pull/1040
+[#1041]: https://github.com/scikit-hep/boost-histogram/pull/1041
+[#1042]: https://github.com/scikit-hep/boost-histogram/pull/1042
+[#1043]: https://github.com/scikit-hep/boost-histogram/pull/1043
+[#1047]: https://github.com/scikit-hep/boost-histogram/pull/1047
+
+### Version 1.6.0
+
+This release adds support for UHI serialization for use with the `uhi` library,
+supported in the next release of `uhi`. A new diagnostic test has been added
+in the wheel, so you can quickly check your compile of boost-histogram without
+the full test suite. Quite a few fixes are present, as well, including a fix
+for `*=`, setting a range with a scalar, setting with a callable in a slice.
+Backend changes include many new clang-tidy checks that reduce the number of
+copies and refcount changes. We now build with pybind11 3.0.
+
+This release drops support for Python 3.8, and adds Python 3.14(t), iOS, Windows ARM, and GraalPy.
+
+#### Features
+
+- Initial support for uhi's serialization [#997][], [#1030][], [#1033][], [#1034][], [#1035][]
+- Drop Python 3.8 [#976][]
+- Support Windows ARM [#1001][]
+- Support Python 3.14 and 3.14t [#1018][]
+- Support iOS [#1020][], [#1027][]
+- Added diagnostics test [#1022][]
+- Recommend/use `np.s_` for slicing in dicts [#1002][]
+
+#### Bug fixes
+
+- Support setting ranges with histograms (fixes `*=` too) [#1036][]
+- Support a callable in range setting [#1036][]
+- Support setting a range with a scalar [#1000][]
+- Account for fuzzy edge values in rebinning with edges [#999][]
+- Rename C++ metadata to `raw_metadata` [#979][]
+- Address lots of clang-tidy suggestions, should be faster with less copies/refcount bumps [#1009][], [#1010][], [#1011][], [#1012][], [#1013][], [#1014][], [#1015][]
+
+#### CI and testing
+
+- Add CMake presets for testing and clang-tidy [#1009][]
+
+[#976]: https://github.com/scikit-hep/boost-histogram/pull/976
+[#979]: https://github.com/scikit-hep/boost-histogram/pull/979
+[#997]: https://github.com/scikit-hep/boost-histogram/pull/997
+[#999]: https://github.com/scikit-hep/boost-histogram/pull/999
+[#1000]: https://github.com/scikit-hep/boost-histogram/pull/1000
+[#1001]: https://github.com/scikit-hep/boost-histogram/pull/1001
+
+:[#1002]: https://github.com/scikit-hep/boost-histogram/pull/1002
+[#1009]: https://github.com/scikit-hep/boost-histogram/pull/1009
+[#1010]: https://github.com/scikit-hep/boost-histogram/pull/1010
+[#1011]: https://github.com/scikit-hep/boost-histogram/pull/1011
+[#1012]: https://github.com/scikit-hep/boost-histogram/pull/1012
+[#1013]: https://github.com/scikit-hep/boost-histogram/pull/1013
+[#1014]: https://github.com/scikit-hep/boost-histogram/pull/1014
+[#1015]: https://github.com/scikit-hep/boost-histogram/pull/1015
+[#1018]: https://github.com/scikit-hep/boost-histogram/pull/1018
+[#1020]: https://github.com/scikit-hep/boost-histogram/pull/1020
+[#1022]: https://github.com/scikit-hep/boost-histogram/pull/1022
+[#1027]: https://github.com/scikit-hep/boost-histogram/pull/1027
+[#1030]: https://github.com/scikit-hep/boost-histogram/pull/1030
+[#1033]: https://github.com/scikit-hep/boost-histogram/pull/1033
+[#1034]: https://github.com/scikit-hep/boost-histogram/pull/1034
+[#1035]: https://github.com/scikit-hep/boost-histogram/pull/1035
+[#1036]: https://github.com/scikit-hep/boost-histogram/pull/1036
+
 ## Version 1.5
 
 ### Version 1.5.2

@@ -295,6 +295,18 @@ def test_set_range_with_scalar():
     assert h[5] == 0
 
 
+def test_set_range_with_scalar_callable():
+    h = bh.Histogram(bh.axis.Integer(0, 10))
+    h[2:len] = 42
+
+    assert h[1] == 0
+    assert h[2] == 42
+    assert h[3] == 42
+    assert h[4] == 42
+    assert h[5] == 42
+    assert h[bh.overflow] == 0
+
+
 def test_set_all_with_scalar():
     h = bh.Histogram(bh.axis.Integer(0, 10))
     h[:] = 42
@@ -483,3 +495,78 @@ def test_large_index():
     )
     assert h.axes[0].value(6) == 99_999_001
     assert h.axes[0].index(99_999_001) == 6
+
+
+def test_scaling_slice():
+    h = bh.Histogram(bh.axis.Regular(3, 0, 3), bh.axis.StrCategory(["a", "b"]))
+    h.fill([1, 1, 2], "a")
+    h.fill([0], "b")
+
+    h[:, bh.loc("a")] *= 2
+
+    assert h[1, 0] == approx(4)
+    assert h[2, 0] == approx(2)
+    assert h[0, 1] == approx(1)
+
+
+def test_scaling_slice_weight():
+    h = bh.Histogram(
+        bh.axis.Regular(3, 0, 3),
+        bh.axis.StrCategory(["a", "b"]),
+        storage=bh.storage.Weight(),
+    )
+    h.fill([1, 1, 2], "a")
+    h.fill([0], "b")
+
+    h[:, bh.loc("a")] *= 2
+
+    assert h[1, 0].value == approx(4)
+    assert h[2, 0].value == approx(2)
+    assert h[0, 1].value == approx(1)
+
+
+def test_setting_histogram_mismatch():
+    h = bh.Histogram(bh.axis.Regular(10, 0, 10), bh.axis.Integer(0, 20))
+
+    h[:, 0] = bh.Histogram(bh.axis.Regular(10, 0, 10))
+    h[0:, 0] = bh.Histogram(bh.axis.Regular(10, 0, 10, underflow=False))
+    h[:len, 0] = bh.Histogram(bh.axis.Regular(10, 0, 10, overflow=False))
+    h[0:len, 0] = bh.Histogram(
+        bh.axis.Regular(10, 0, 10, underflow=False, overflow=False)
+    )
+    with pytest.raises(ValueError, match="Cannot set histogram with underflow"):
+        h[0:, 0] = bh.Histogram(bh.axis.Regular(10, 0, 10))
+    with pytest.raises(ValueError, match="Cannot set histogram with underflow"):
+        h[:len, 0] = bh.Histogram(bh.axis.Regular(10, 0, 10))
+    with pytest.raises(ValueError, match="Cannot set histogram with underflow"):
+        h[:, 0] = bh.Histogram(bh.axis.Regular(10, 0, 10, underflow=False))
+    with pytest.raises(ValueError, match="Cannot set histogram with underflow"):
+        h[:, 0] = bh.Histogram(bh.axis.Regular(10, 0, 10, overflow=False))
+    with pytest.raises(ValueError, match="Cannot set histogram with underflow"):
+        h[:, 0] = bh.Histogram(
+            bh.axis.Regular(10, 0, 10, underflow=False, overflow=False)
+        )
+    with pytest.raises(ValueError, match="Cannot set histogram with underflow"):
+        h[0:, 0] = bh.Histogram(
+            bh.axis.Regular(10, 0, 10, underflow=False, overflow=False)
+        )
+    with pytest.raises(ValueError, match="Cannot set histogram with underflow"):
+        h[:len, 0] = bh.Histogram(
+            bh.axis.Regular(10, 0, 10, underflow=False, overflow=False)
+        )
+
+
+def test_rebin_groups_no_inplace_modification():
+    """
+    Test that rebinning with a groups list does not mutate the input list in-place.
+    This ensures consecutive rebin operations with the same list do not fail.
+    """
+    h1 = bh.Histogram(bh.axis.Regular(60, 0, 600))
+    h2 = bh.Histogram(bh.axis.Regular(60, 0, 600))
+    rebinner = [5] * 12
+    h3 = h1[bh.rebin(groups=rebinner)]
+    # The original list should remain unchanged
+    assert rebinner == [5] * 12, "rebinner list was mutated in-place"
+    # Second rebin should not raise
+    h4 = h2[bh.rebin(groups=rebinner)]
+    assert h3 == h4

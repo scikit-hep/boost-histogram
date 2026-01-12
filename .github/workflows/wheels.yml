@@ -29,7 +29,7 @@ jobs:
     name: Build SDist
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           submodules: true
@@ -40,7 +40,7 @@ jobs:
       - name: Check metadata
         run: pipx run twine check --strict dist/*.tar.gz
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           path: dist/*
           name: wheels-sdist
@@ -52,11 +52,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-13
+          - os: macos-15-intel
             arch: auto64
             build: "*"
 
-          - os: macos-14
+          - os: macos-latest
             arch: auto64
             build: "*"
 
@@ -93,14 +93,14 @@ jobs:
             build: "*musllinux*"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           submodules: true
 
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v7
 
-      - uses: pypa/cibuildwheel@v3.1
+      - uses: pypa/cibuildwheel@v3.3
         env:
           CIBW_BUILD: ${{ matrix.build }}
           CIBW_ARCHS: ${{ matrix.arch }}
@@ -110,7 +110,7 @@ jobs:
         shell: bash
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           path: wheelhouse/*.whl
           name: wheels-${{ strategy.job-index }}
@@ -121,17 +121,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runs-on: [macos-latest, macos-13]
+        runs-on: [macos-latest, macos-15-intel]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           submodules: true
 
-      - run: brew upgrade cmake
+      - run: brew uninstall cmake; brew install cmake
 
-      - uses: pypa/cibuildwheel@v3.1
+      - uses: pypa/cibuildwheel@v3.3
         env:
           CIBW_PLATFORM: ios
 
@@ -140,7 +140,7 @@ jobs:
         shell: bash
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           path: wheelhouse/*.whl
           name: wheels-ios-${{ matrix.runs-on }}
@@ -153,7 +153,7 @@ jobs:
   #      matrix:
   #        runs-on: [ubuntu-latest, macos-latest]
   #    steps:
-  #      - uses: actions/checkout@v4
+  #      - uses: actions/checkout@v6
   #        with:
   #          fetch-depth: 0
   #          submodules: true
@@ -167,7 +167,7 @@ jobs:
   #        shell: bash
   #
   #      - name: Upload wheels
-  #        uses: actions/upload-artifact@v4
+  #        uses: actions/upload-artifact@v6
   #        with:
   #          path: wheelhouse/*.whl
   #          name: wheels-android-${{ matrix.runs-on }}
@@ -186,7 +186,7 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           pattern: wheels-*
           merge-multiple: true
@@ -196,7 +196,7 @@ jobs:
         run: ls -lh dist
 
       - name: Generate artifact attestation for sdist and wheels
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v3
         with:
           subject-path: "dist/boost_histogram-*"
 
@@ -211,7 +211,7 @@ jobs:
     needs: [build_wheels]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           pattern: wheels-*
           merge-multiple: true
@@ -221,7 +221,7 @@ jobs:
         run: ls -lh dist
 
       - name: Upload wheel to Anaconda Cloud as nightly
-        uses: scientific-python/upload-nightly-action@b36e8c0c10dbcfd2e05bf95f17ef8c14fd708dbf # 0.6.2
+        uses: scientific-python/upload-nightly-action@5748273c71e2d8d3a61f3a11a16421c8954f9ecf # 0.6.3
         with:
           artifacts_path: dist
           anaconda_nightly_upload_token: ${{ secrets.ANACONDA_ORG_UPLOAD_TOKEN }}

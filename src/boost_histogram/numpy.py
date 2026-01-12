@@ -67,12 +67,12 @@ def histogramdd(
         range = (None,) * rank
 
     axs: list[_axis.Axis] = []
-    for n, (b, r) in enumerate(zip(bins, range)):
+    for n, (b, r) in enumerate(zip(bins, range, strict=False)):
         if np.issubdtype(type(b), np.integer):
             if r is None:
                 # Nextafter may affect bin edges slightly
                 r = (np.amin(a[n]), np.amax(a[n]))  # noqa: PLW2901
-                if r[0] == r[1]:  # type: ignore[operator]
+                if r[0] == r[1]:
                     r = (r[0] - 0.5, r[1] + 0.5)  # noqa: PLW2901
             new_ax = _axis.Regular(
                 typing.cast(int, b), r[0], r[1], underflow=False, overflow=False
@@ -80,6 +80,8 @@ def histogramdd(
             axs.append(new_ax)
         else:
             barr: np.typing.NDArray[Any] = np.asarray(b, dtype=np.double)
+            # This does have a .max member, not sure why pylint doesn't like it
+            # pylint: disable-next=no-member
             barr[-1] = np.nextafter(barr[-1], np.finfo("d").max)
             axs.append(_axis.Variable(barr))
 
@@ -160,7 +162,7 @@ def histogram(
     # I think it's safe and the union is in the wrong place
     result = histogramdd(
         (a,),
-        (bins,),
+        (bins,),  # type: ignore[arg-type]
         (range,),
         normed,
         weights,
@@ -181,6 +183,7 @@ def histogram(
 for f, np_f in zip(
     (histogram, histogram2d, histogramdd),
     (np.histogram, np.histogram2d, np.histogramdd),
+    strict=False,
 ):
     H = """\
     Return a boost-histogram object using the same arguments as numpy's {}.

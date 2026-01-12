@@ -19,17 +19,17 @@ jobs:
     name: Pyodide cibuildwheel
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
           fetch-depth: 0
 
-      - uses: pypa/cibuildwheel@v3.1
+      - uses: pypa/cibuildwheel@v3.3
         env:
           CIBW_PLATFORM: pyodide
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: pyodide-wheel
           path: wheelhouse/*.whl

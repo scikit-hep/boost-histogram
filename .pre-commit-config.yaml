@@ -5,13 +5,13 @@ ci:
 
 repos:
   - repo: https://github.com/adamchainz/blacken-docs
-    rev: "1.19.1"
+    rev: "1.20.0"
     hooks:
       - id: blacken-docs
         additional_dependencies: [black==25.*]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: check-added-large-files
       - id: check-case-conflict
@@ -30,24 +30,24 @@ repos:
         additional_dependencies: [pyyaml]
 
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: "v3.6.2"
+    rev: "v3.7.4"
     hooks:
       - id: prettier
         types_or: [yaml, markdown, html, css, scss, javascript, json]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.12.2"
+    rev: "v0.14.10"
     hooks:
       - id: ruff-check
         args: ["--fix", "--show-fixes"]
       - id: ruff-format
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.16.1
+    rev: v1.19.1
     hooks:
       - id: mypy
         files: ^src
-        additional_dependencies: [numpy~=2.3.0, pytest, uhi]
+        additional_dependencies: [numpy~=2.2.0, pytest, uhi]
 
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
@@ -65,7 +65,7 @@ repos:
         exclude: .pre-commit-config.yaml
 
   - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v20.1.7
+    rev: v21.1.8
     hooks:
       - id: clang-format
         types_or: [c++]
@@ -78,12 +78,12 @@ repos:
       - id: rst-inline-touching-normal
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.33.2
+    rev: 0.36.0
     hooks:
       - id: check-readthedocs
       - id: check-github-workflows
 
   - repo: https://github.com/henryiii/validate-pyproject-schema-store
-    rev: 2025.07.07
+    rev: 2026.01.02
     hooks:
       - id: validate-pyproject

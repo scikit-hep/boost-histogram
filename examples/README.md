@@ -1,6 +1,6 @@
 # Boost Histogram examples
 
-The examples require Python 3.9. It is left as an exercise for the reader to
+The examples require Python 3.10. It is left as an exercise for the reader to
 convert back to older versions if they so desire.
 
 ### Setup

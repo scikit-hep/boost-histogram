@@ -20,7 +20,7 @@ __all__ = ("Locator", "Slicer", "at", "loc", "overflow", "rebin", "sum", "underf
 
 def Slicer() -> np.lib._index_tricks_impl.IndexExpression:
     """
-    It is encouraged to use "np.s_" directly instead of this function:
+    It is encouraged to use ``np.s_`` directly instead of this function:
 
         h[{0: np.s_[::bh.rebin(2)]}]   # rebin axis 0 by two
 
@@ -190,7 +190,7 @@ class rebin:
                 matched_ixes = [np.abs(axis.edges - edge).argmin() for edge in newedges]
                 missing_edges = [
                     edge
-                    for ix, edge in zip(matched_ixes, newedges)
+                    for ix, edge in zip(matched_ixes, newedges, strict=False)
                     if not np.isclose(axis.edges[ix], edge)
                 ]
                 if missing_edges:

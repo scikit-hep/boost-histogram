@@ -4,6 +4,7 @@ import functools
 from typing import Any
 
 from .. import axis
+from ._common import serialize_metadata
 
 __all__ = ["_axis_from_dict", "_axis_to_dict"]
 
@@ -23,29 +24,42 @@ def _axis_to_dict(ax: Any, /) -> dict[str, Any]:
 def _(ax: axis.Regular | axis.Integer, /) -> dict[str, Any]:
     """Convert a Regular axis to a dictionary."""
 
+    shared = {
+        "underflow": ax.traits.underflow,
+        "overflow": ax.traits.overflow,
+        "circular": ax.traits.circular,
+    }
+
     # Special handling if the axis has a transform
     if isinstance(ax, axis.Regular) and ax.transform is not None:
         data = {
             "type": "variable",
             "edges": ax.edges,
-            "underflow": ax.traits.underflow,
-            "overflow": ax.traits.overflow,
-            "circular": ax.traits.circular,
+            **shared,
+        }
+    elif isinstance(ax, axis.Integer):
+        data = {
+            "type": "regular",
+            "lower": int(ax.edges[0]),
+            "upper": int(ax.edges[-1]),
+            "bins": ax.size,
+            **shared,
         }
     else:
         data = {
             "type": "regular",
-            "lower": ax.edges[0],
-            "upper": ax.edges[-1],
+            "lower": float(ax.edges[0]),
+            "upper": float(ax.edges[-1]),
             "bins": ax.size,
-            "underflow": ax.traits.underflow,
-            "overflow": ax.traits.overflow,
-            "circular": ax.traits.circular,
+            **shared,
         }
+
     if isinstance(ax, axis.Integer):
         data["writer_info"] = {"boost-histogram": {"orig_type": "Integer"}}
-    if ax.metadata is not None:
-        data["metadata"] = ax.metadata
+
+    metadata = serialize_metadata(ax.__dict__)
+    if metadata:
+        data["metadata"] = metadata
 
     return data
 
@@ -60,8 +74,10 @@ def _(ax: axis.Variable, /) -> dict[str, Any]:
         "overflow": ax.traits.overflow,
         "circular": ax.traits.circular,
     }
-    if ax.metadata is not None:
-        data["metadata"] = ax.metadata
+
+    metadata = serialize_metadata(ax.__dict__)
+    if metadata:
+        data["metadata"] = metadata
 
     return data
 
@@ -74,8 +90,10 @@ def _(ax: axis.IntCategory, /) -> dict[str, Any]:
         "categories": list(ax),
         "flow": ax.traits.overflow,
     }
-    if ax.metadata is not None:
-        data["metadata"] = ax.metadata
+
+    metadata = serialize_metadata(ax.__dict__)
+    if metadata:
+        data["metadata"] = metadata
 
     return data
 
@@ -88,8 +106,10 @@ def _(ax: axis.StrCategory, /) -> dict[str, Any]:
         "categories": list(ax),
         "flow": ax.traits.overflow,
     }
-    if ax.metadata is not None:
-        data["metadata"] = ax.metadata
+
+    metadata = serialize_metadata(ax.__dict__)
+    if metadata:
+        data["metadata"] = metadata
 
     return data
 
@@ -97,16 +117,32 @@ def _(ax: axis.StrCategory, /) -> dict[str, Any]:
 @_axis_to_dict.register
 def _(ax: axis.Boolean, /) -> dict[str, Any]:
     """Convert a Boolean axis to a dictionary."""
-    data = {
+    data: dict[str, Any] = {
         "type": "boolean",
     }
-    if ax.metadata is not None:
-        data["metadata"] = ax.metadata
+
+    metadata = serialize_metadata(ax.__dict__)
+    if metadata:
+        data["metadata"] = metadata
 
     return data
 
 
 def _axis_from_dict(data: dict[str, Any], /) -> axis.Axis:
+    orig_type = (
+        data.get("writer_info", {}).get("boost-histogram", {}).get("orig_type", "")
+    )
+    if orig_type == "Integer":
+        assert data["upper"] - data["lower"] == data["bins"]
+        return axis.Integer(
+            data["lower"],
+            data["upper"],
+            underflow=data["underflow"],
+            overflow=data["overflow"],
+            circular=data["circular"],
+            __dict__=data.get("metadata"),
+        )
+
     hist_type = data["type"]
     if hist_type == "regular":
         return axis.Regular(
@@ -116,7 +152,7 @@ def _axis_from_dict(data: dict[str, Any], /) -> axis.Axis:
             underflow=data["underflow"],
             overflow=data["overflow"],
             circular=data["circular"],
-            metadata=data.get("metadata"),
+            __dict__=data.get("metadata"),
         )
     if hist_type == "variable":
         return axis.Variable(
@@ -124,21 +160,21 @@ def _axis_from_dict(data: dict[str, Any], /) -> axis.Axis:
             underflow=data["underflow"],
             overflow=data["overflow"],
             circular=data["circular"],
-            metadata=data.get("metadata"),
+            __dict__=data.get("metadata"),
         )
     if hist_type == "category_int":
         return axis.IntCategory(
             data["categories"],
             overflow=data["flow"],
-            metadata=data.get("metadata"),
+            __dict__=data.get("metadata"),
         )
     if hist_type == "category_str":
         return axis.StrCategory(
             data["categories"],
             overflow=data["flow"],
-            metadata=data.get("metadata"),
+            __dict__=data.get("metadata"),
         )
     if hist_type == "boolean":
-        return axis.Boolean(metadata=data.get("metadata"))
+        return axis.Boolean(__dict__=data.get("metadata"))
 
     raise TypeError(f"Unsupported axis type: {hist_type}")

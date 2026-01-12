@@ -45,7 +45,7 @@ class NamedAxesTuple(bh.axis.AxesTuple):
 
     @name.setter
     def name(self, values):
-        for ax, val in zip(self, values):
+        for ax, val in zip(self, values, strict=False):
             ax._ax.raw_metadata["name"] = f"test: {val}"
 
 

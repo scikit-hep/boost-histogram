@@ -1,17 +1,15 @@
 from __future__ import annotations
 
 import copy
-from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass
 from functools import partial
 from typing import (
     Any,
-    Callable,
     ClassVar,
     Literal,
     TypedDict,
     TypeVar,
-    Union,
 )
 
 import numpy as np  # pylint: disable=unused-import
@@ -20,7 +18,7 @@ import boost_histogram
 
 from .._compat.typing import Self
 from .._core import axis as ca
-from .._utils import cast, register, zip_strict
+from .._utils import cast, register
 from . import transform
 from .transform import AxisTransform
 
@@ -59,7 +57,7 @@ def _opts(**kwargs: bool) -> set[str]:
     return {k for k, v in kwargs.items() if v}
 
 
-AxCallOrInt = Union[int, Callable[["Axis"], int]]
+AxCallOrInt = int | Callable[["Axis"], int]
 
 
 @dataclass(order=True, frozen=True)
@@ -96,7 +94,7 @@ class Axis:
 
     def __getattr__(self, attr: str) -> Any:
         if attr == "metadata":
-            return
+            return None
         raise AttributeError(
             f"object {self.__class__.__name__} has no attribute {attr}"
         )
@@ -189,6 +187,16 @@ class Axis:
     ) -> Iterator[float] | Iterator[str] | Iterator[tuple[float, float]]:
         return self._ax.__iter__()  # type: ignore[no-any-return]
 
+    def _process_callable(self, value: AxCallOrInt | None, *, default: int) -> int:
+        """
+        This processes a callable in start or stop. None gets replaced by default.
+        """
+        if value is None:
+            return default
+        if callable(value):
+            return value(self)
+        return value
+
     def _process_loc(
         self, start: AxCallOrInt | None, stop: AxCallOrInt | None
     ) -> tuple[int, int]:
@@ -201,9 +209,6 @@ class Axis:
         is turned off if underflow is not None.
         """
 
-        def _process_internal(item: AxCallOrInt | None, default: int) -> int:
-            return default if item is None else item(self) if callable(item) else item
-
         underflow = -1 if self._ax.traits_underflow else 0
         overflow = 1 if self._ax.traits_overflow else 0
 
@@ -211,8 +216,8 @@ class Axis:
         if not self._ax.traits_ordered and not (start is None and stop is None):
             overflow = 0
 
-        begin = _process_internal(start, underflow)
-        end = _process_internal(stop, len(self) + overflow)
+        begin = self._process_callable(start, default=underflow)
+        end = self._process_callable(stop, default=len(self) + overflow)
 
         return begin, end
 
@@ -280,21 +285,21 @@ class Axis:
 
     @property
     def edges(self) -> np.typing.NDArray[Any]:
-        return self._ax.edges
+        return self._ax.edges  # type: ignore[no-any-return]
 
     @property
     def centers(self) -> np.typing.NDArray[Any]:
         """
         An array of bin centers.
         """
-        return self._ax.centers
+        return self._ax.centers  # type: ignore[no-any-return]
 
     @property
     def widths(self) -> np.typing.NDArray[Any]:
         """
         An array of bin widths.
         """
-        return self._ax.widths
+        return self._ax.widths  # type: ignore[no-any-return]
 
 
 # Contains all common methods and properties for Regular axes
@@ -903,7 +908,7 @@ class AxesTuple(tuple):  # type: ignore[type-arg]
         try:
             super().__setattr__(attr, values)
         except AttributeError:
-            for s, v in zip_strict(self, values):
+            for s, v in zip(self, values, strict=True):
                 s.__setattr__(attr, v)
 
     value.__doc__ = Axis.value.__doc__
