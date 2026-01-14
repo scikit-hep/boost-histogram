@@ -191,6 +191,11 @@ class multi_weight {
         default_fill();
     }
 
+    void reset_nelem(std::size_t n) {
+        nelem_ = n;
+        reset(size_);
+    }
+
     template <class T                                               = element_type,
               std::enable_if_t<!std::is_arithmetic<T>::value, bool> = true>
     void default_fill() {}

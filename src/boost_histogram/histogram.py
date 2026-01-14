@@ -1105,12 +1105,24 @@ class Histogram:
             tuple_slice = tuple(
                 pick_each.get(i, slice(None)) for i in range(reduced.rank())
             )
+            
+            if isinstance(self._hist, _core.hist.any_multi_weight):
+                # View of multi weight histograms has as first (index 0) dimension the weight index
+                # Add a full slice to the beginning of the slicing expression to adept for this weight index
+                # e.g. a slice like [0, :, 3] is converted to [:, 0, :, 3]
+                tuple_slice = (slice(None, None, None), *tuple_slice)
+
             logger.debug("Slices for pick each: %s", tuple_slice)
             axes = [
                 reduced.axis(i) for i in range(reduced.rank()) if i not in pick_each
             ]
             logger.debug("Axes: %s", axes)
             new_reduced = reduced.__class__(axes)
+            if isinstance(reduced, _core.hist.any_multi_weight):
+                # The constructor in reduced.__class__(axes) does not take care of the number of weights.
+                # If reduced is a multi weight histogram, we have to set the number of weights per bin manually for new_reduced
+                new_reduced: _core.hist.any_multi_weight
+                new_reduced.reset_nelem(reduced.nelem())
             new_reduced.view(flow=True)[...] = reduced.view(flow=True)[tuple_slice]
             reduced = new_reduced
             integrations = {i - sum(j <= i for j in pick_each) for i in integrations}
