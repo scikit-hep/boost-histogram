@@ -1105,7 +1105,7 @@ class Histogram:
             tuple_slice = tuple(
                 pick_each.get(i, slice(None)) for i in range(reduced.rank())
             )
-            
+
             if isinstance(self._hist, _core.hist.any_multi_weight):
                 # View of multi weight histograms has as first (index 0) dimension the weight index
                 # Add a full slice to the beginning of the slicing expression to adept for this weight index

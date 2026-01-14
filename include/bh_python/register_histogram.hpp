@@ -227,16 +227,19 @@ auto inline register_histogram<bh::multi_weight<double>>(py::module& m,
 
         .def("rank", &histogram_t::rank)
         .def("size", &histogram_t::size)
-        .def("nelem", [](const histogram_t& self) { 
-            return bh::unsafe_access::storage(self).nelem();
-        })
+        .def("nelem",
+             [](const histogram_t& self) {
+                 return bh::unsafe_access::storage(self).nelem();
+             })
         .def("reset", &histogram_t::reset)
 
-        // Reset number of weights per bin after recreation of histogram because number of weights can (?) not be passed to the creation of the new histogram.
-        // Set it manually afterwards. 
-        .def("reset_nelem", [](histogram_t& self, const std::size_t nelem) { 
-            bh::unsafe_access::storage(self).reset_nelem(nelem);
-        })
+        // Reset number of weights per bin after recreation of histogram because number
+        // of weights can (?) not be passed to the creation of the new histogram. Set it
+        // manually afterwards.
+        .def("reset_nelem",
+             [](histogram_t& self, const std::size_t nelem) {
+                 bh::unsafe_access::storage(self).reset_nelem(nelem);
+             })
         .def("__copy__", [](const histogram_t& self) { return histogram_t(self); })
         .def("__deepcopy__",
              [](const histogram_t& self, const py::object& memo) {
