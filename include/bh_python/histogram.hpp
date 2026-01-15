@@ -98,6 +98,13 @@ py::buffer_info make_buffer(bh::histogram<A, bh::unlimited_storage<Allocator>>& 
     return detail::make_buffer_impl(axes, flow, static_cast<double*>(buffer.ptr));
 }
 
+/// From C++17
+template<class T>
+constexpr std::add_const_t<T>& as_const(T& t) noexcept
+{
+    return t;
+}
+
 /// Specialization for multi_weight buffer
 template <class A, class T>
 py::buffer_info make_buffer(bh::histogram<A, bh::multi_weight<T>>& h, bool flow) {
@@ -114,7 +121,7 @@ py::buffer_info make_buffer(bh::histogram<A, bh::multi_weight<T>>& h, bool flow)
     new_axes.emplace_back(axis::integer_none{0, static_cast<int>(storage.nelem())});
     new_axes.insert(std::end(new_axes), std::begin(axes), std::end(axes));
     return detail::make_buffer_impl(
-        std::as_const(new_axes), flow, static_cast<double*>(storage.get_buffer()));
+        as_const(new_axes), flow, static_cast<double*>(storage.get_buffer()));
 }
 
 /// Compute the bin of an array from a runtime list

@@ -1066,6 +1066,7 @@ class Histogram:
 
                     logger.debug("Axes: %s", axes)
 
+                    new_reduced: _core.hist._BaseHistogram | _core.hist.any_multi_weight
                     new_reduced = reduced.__class__(axes)
                     new_view = new_reduced.view(flow=True)
                     j = 0
@@ -1118,10 +1119,11 @@ class Histogram:
             ]
             logger.debug("Axes: %s", axes)
             new_reduced = reduced.__class__(axes)
-            if isinstance(reduced, _core.hist.any_multi_weight):
+            if isinstance(reduced, _core.hist.any_multi_weight) and isinstance(
+                new_reduced, _core.hist.any_multi_weight
+            ):
                 # The constructor in reduced.__class__(axes) does not take care of the number of weights.
                 # If reduced is a multi weight histogram, we have to set the number of weights per bin manually for new_reduced
-                new_reduced: _core.hist.any_multi_weight
                 new_reduced.reset_nelem(reduced.nelem())
             new_reduced.view(flow=True)[...] = reduced.view(flow=True)[tuple_slice]
             reduced = new_reduced
