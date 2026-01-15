@@ -1077,21 +1077,21 @@ class Histogram:
         new_axis = None
         if ind != slice(None):
             merge = 1
-            if ind.step is not None:
-                if getattr(ind.step, "factor", None) is not None:
-                    merge = ind.step.factor
-                elif (
-                    hasattr(ind.step, "axis_mapping")
-                    and (tmp_both := ind.step.axis_mapping(self.axes[i])) is not None
-                ):
+            match ind.step:
+                case None:
+                    pass
+                case object(factor=x) if x is not None:
+                    merge = x
+                case object(axis_mapping=x) if (
+                    tmp_both := x(self.axes[i])
+                ) is not None:
                     groups, new_axis = tmp_both
-                elif (
-                    hasattr(ind.step, "group_mapping")
-                    and (tmp_groups := ind.step.group_mapping(self.axes[i])) is not None
-                ):
+                case object(group_mapping=x) if (
+                    tmp_groups := x(self.axes[i])
+                ) is not None:
                     groups = tmp_groups
-                elif callable(ind.step):
-                    if ind.step is sum:
+                case x if callable(x):
+                    if x is sum:
                         integrations.add(i)
                     else:
                         raise NotImplementedError
@@ -1104,7 +1104,7 @@ class Histogram:
                         )
                     if len(groups) == 0:
                         return reduced, slices, integrations
-                else:
+                case _:
                     raise IndexError(
                         "The third argument to a slice must be rebin or projection"
                     )
