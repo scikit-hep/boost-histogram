@@ -947,7 +947,6 @@ class Histogram:
         """
         return self.axes.size
 
-    # TODO: Marked as too complex by flake8. Should be factored out a bit.
     def __getitem__(self, index: IndexingExpr) -> Self | float | Accumulator:
         indexes = self._compute_commonindex(index)
 
@@ -957,10 +956,10 @@ class Histogram:
         ):
             return self._hist.at(*indexes)  # type: ignore[no-any-return, arg-type]
 
-        integrations: set[int] = set()
-        slices: list[_core.algorithm.reduce_command] = []
-        pick_each: dict[int, int] = {}
-        pick_set: dict[int, list[int]] = {}
+        integrations = set[int]()
+        slices = list[_core.algorithm.reduce_command]()
+        pick_each = dict[int, int]()
+        pick_set = dict[int, list[int]]()
         reduced: CppHistogram | None = None
 
         for i, ind in enumerate(indexes):
@@ -1105,9 +1104,8 @@ class Histogram:
                     if len(groups) == 0:
                         return reduced, slices, integrations
                 case _:
-                    raise IndexError(
-                        "The third argument to a slice must be rebin or projection"
-                    )
+                    msg = "The third argument to a slice must be rebin or projection"
+                    raise IndexError(msg)
 
             assert isinstance(start, int)
             assert isinstance(stop, int)
