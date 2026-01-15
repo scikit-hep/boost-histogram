@@ -99,9 +99,8 @@ py::buffer_info make_buffer(bh::histogram<A, bh::unlimited_storage<Allocator>>& 
 }
 
 /// From C++17
-template<class T>
-constexpr std::add_const_t<T>& as_const(T& t) noexcept
-{
+template <class T>
+constexpr std::add_const_t<T>& as_const(T& t) noexcept {
     return t;
 }
 
