@@ -1121,60 +1121,66 @@ class Histogram:
                 _core.algorithm.slice_and_rebin(i, start_int, stop_int, merge)
             )
         # rebinning with groups
-        elif len(groups) != 0:
-            if not reduced:
-                reduced = self._hist
-            axes = [reduced.axis(x) for x in range(reduced.rank())]
-            reduced_view = reduced.view(flow=True)
-            new_axes_indices = [axes[i].edges[0]]
-
-            j = 0
-            for group in groups:
-                new_axes_indices += [axes[i].edges[j + group]]
-                j += group
-
-            if new_axis is None:
-                new_axis = Variable(
-                    new_axes_indices,
-                    __dict__=axes[i].raw_metadata,
-                    underflow=axes[i].traits_underflow,
-                    overflow=axes[i].traits_overflow,
-                )
-            old_axis = axes[i]
-            axes[i] = new_axis._ax
-
-            logger.debug("Axes: %s", axes)
-
-            new_reduced: _core.hist._BaseHistogram | _core.hist.any_multi_cell
-            new_reduced = reduced.__class__(axes)
-            new_view = new_reduced.view(flow=True)
-            j = 0
-            new_j_base = 0
-
-            if old_axis.traits_underflow and axes[i].traits_underflow:
-                groups = [1, *groups]
-            elif axes[i].traits_underflow:
-                new_j_base = 1
-
-            if old_axis.traits_overflow and axes[i].traits_overflow:
-                groups.append(1)
-
-            for new_j, group in enumerate(groups):
-                for _ in range(group):
-                    _combine_group_contents(
-                        new_view, reduced_view, i, j, new_j + new_j_base
-                    )
-                    j += 1
-
-                if (
-                    old_axis.traits_underflow
-                    and not axes[i].traits_ordered
-                    and axes[i].traits_overflow
-                ):
-                    _combine_group_contents(new_view, reduced_view, i, 0, -1)
-
-            reduced = new_reduced
+        else:
+            reduced = self._rebin_with_groups(
+                reduced or self._hist, i, groups, new_axis
+            )
         return reduced, slices, integrations
+
+    def _rebin_with_groups(
+        self, reduced: CppHistogram, i: int, groups: list[int], new_axis: Any
+    ) -> CppHistogram:
+        """Handle rebinning with groups."""
+        axes = [reduced.axis(x) for x in range(reduced.rank())]
+        reduced_view = reduced.view(flow=True)
+        new_axes_indices = [axes[i].edges[0]]
+
+        j = 0
+        for group in groups:
+            new_axes_indices += [axes[i].edges[j + group]]
+            j += group
+
+        if new_axis is None:
+            new_axis = Variable(
+                new_axes_indices,
+                __dict__=axes[i].raw_metadata,
+                underflow=axes[i].traits_underflow,
+                overflow=axes[i].traits_overflow,
+            )
+        old_axis = axes[i]
+        axes[i] = new_axis._ax
+
+        logger.debug("Axes: %s", axes)
+
+        new_reduced: _core.hist._BaseHistogram | _core.hist.any_multi_cell
+        new_reduced = reduced.__class__(axes)
+        new_view = new_reduced.view(flow=True)
+        j = 0
+        new_j_base = 0
+
+        if old_axis.traits_underflow and axes[i].traits_underflow:
+            groups = [1, *groups]
+        elif axes[i].traits_underflow:
+            new_j_base = 1
+
+        if old_axis.traits_overflow and axes[i].traits_overflow:
+            groups.append(1)
+
+        for new_j, group in enumerate(groups):
+            for _ in range(group):
+                _combine_group_contents(
+                    new_view, reduced_view, i, j, new_j + new_j_base
+                )
+                j += 1
+
+            if (
+                old_axis.traits_underflow
+                and not axes[i].traits_ordered
+                and axes[i].traits_overflow
+            ):
+                _combine_group_contents(new_view, reduced_view, i, 0, -1)
+
+        return new_reduced
 
     def __setitem__(self, index: IndexingExpr, value: ArrayLike | Accumulator) -> None:
         """
