@@ -61,10 +61,10 @@ struct type_caster<std::vector<std::string>>
             const auto n = strlen(p, step);
             std::string s;
             s.reserve(n);
-            for(std::size_t i = 0; i < n; ++i) {
-                if(p[i] >= 128)
+            for(std::size_t j = 0; j < n; ++j) {
+                if(p[j] >= 128)
                     return false;
-                s.push_back(static_cast<char>(p[i]));
+                s.push_back(static_cast<char>(p[j]));
             }
             value.emplace_back(s);
         }
