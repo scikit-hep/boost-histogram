@@ -970,9 +970,9 @@ class Histogram:
                     )
                 case collections.abc.Sequence():
                     pick_set[i] = list(ind)
-                case slice():
+                case slice(start=start, stop=stop, step=step):
                     reduced, new_slices, new_integrations = self._handle_slice(
-                        i, ind, reduced
+                        i, start, stop, step, reduced
                     )
                     slices.extend(new_slices)
                     integrations.update(new_integrations)
@@ -1002,7 +1002,9 @@ class Histogram:
                 reduced.axis(i) for i in range(reduced.rank()) if i not in pick_each
             ]
             logger.debug("Axes: %s", axes)
-            new_reduced = reduced.__class__(axes)
+            new_reduced: _core.hist._BaseHistogram | _core.hist.any_multi_cell = (
+                reduced.__class__(axes)
+            )
             if isinstance(reduced, _core.hist.any_multi_cell) and isinstance(
                 new_reduced, _core.hist.any_multi_cell
             ):
@@ -1059,10 +1061,16 @@ class Histogram:
     def _handle_slice(
         self,
         i: int,
-        ind: slice,
+        start: int | None,
+        stop: int | None,
+        step: int
+        | slice
+        | Mapping[int, SupportsIndex | slice]
+        | Callable[[Any], int]
+        | None,
         reduced: CppHistogram | None,
     ) -> tuple[CppHistogram | None, list[_core.algorithm.reduce_command], set[int]]:
-        if any(isinstance(v, slice) for v in (ind.start, ind.stop, ind.step)):
+        if any(isinstance(v, slice) for v in (start, stop, step)):
             msg = (
                 "You have put a slice in a slice. Did you forget curly braces [{...}]?"
             )
@@ -1071,102 +1079,101 @@ class Histogram:
         slices = list[_core.algorithm.reduce_command]()
         integrations = set[int]()
 
-        start, stop = self.axes[i]._process_loc(ind.start, ind.stop)
+        start_int, stop_int = self.axes[i]._process_loc(start, stop)
         groups = []
         new_axis = None
-        if ind != slice(None):
-            merge = 1
-            match ind.step:
-                case None:
-                    pass
-                case object(factor=x) if x is not None:
-                    merge = x
-                case object(axis_mapping=x) if (
-                    tmp_both := x(self.axes[i])
-                ) is not None:
-                    groups, new_axis = tmp_both
-                case object(group_mapping=x) if (
-                    tmp_groups := x(self.axes[i])
-                ) is not None:
-                    groups = tmp_groups
-                case x if callable(x):
-                    if x is sum:
-                        integrations.add(i)
-                    else:
-                        raise NotImplementedError
+        if start is None and stop is None and step is None:
+            return reduced, slices, integrations
 
-                    if ind.start is not None or ind.stop is not None:
-                        slices.append(
-                            _core.algorithm.slice(
-                                i, start, stop, _core.algorithm.slice_mode.crop
-                            )
+        merge = 1
+        match step:
+            case None:
+                pass
+            case object(factor=x) if x is not None:
+                merge = x
+            case object(axis_mapping=x) if (tmp_both := x(self.axes[i])) is not None:
+                groups, new_axis = tmp_both
+            case object(group_mapping=x) if (tmp_groups := x(self.axes[i])) is not None:
+                groups = tmp_groups
+            case x if callable(x):
+                if x is sum:
+                    integrations.add(i)
+                else:
+                    raise NotImplementedError
+
+                if start is not None or stop is not None:
+                    slices.append(
+                        _core.algorithm.slice(
+                            i, start_int, stop_int, _core.algorithm.slice_mode.crop
                         )
-                    if len(groups) == 0:
-                        return reduced, slices, integrations
-                case _:
-                    msg = "The third argument to a slice must be rebin or projection"
-                    raise IndexError(msg)
-
-            assert isinstance(start, int)
-            assert isinstance(stop, int)
-            # rebinning with factor
-            if len(groups) == 0:
-                slices.append(_core.algorithm.slice_and_rebin(i, start, stop, merge))
-            # rebinning with groups
-            elif len(groups) != 0:
-                if not reduced:
-                    reduced = self._hist
-                axes = [reduced.axis(x) for x in range(reduced.rank())]
-                reduced_view = reduced.view(flow=True)
-                new_axes_indices = [axes[i].edges[0]]
-
-                j = 0
-                for group in groups:
-                    new_axes_indices += [axes[i].edges[j + group]]
-                    j += group
-
-                if new_axis is None:
-                    new_axis = Variable(
-                        new_axes_indices,
-                        __dict__=axes[i].raw_metadata,
-                        underflow=axes[i].traits_underflow,
-                        overflow=axes[i].traits_overflow,
                     )
-                old_axis = axes[i]
-                axes[i] = new_axis._ax
+                if len(groups) == 0:
+                    return reduced, slices, integrations
+            case _:
+                msg = "The third argument to a slice must be rebin or projection"
+                raise IndexError(msg)
 
-                logger.debug("Axes: %s", axes)
+        assert isinstance(start_int, int)
+        assert isinstance(stop_int, int)
+        # rebinning with factor
+        if len(groups) == 0:
+            slices.append(
+                _core.algorithm.slice_and_rebin(i, start_int, stop_int, merge)
+            )
+        # rebinning with groups
+        elif len(groups) != 0:
+            if not reduced:
+                reduced = self._hist
+            axes = [reduced.axis(x) for x in range(reduced.rank())]
+            reduced_view = reduced.view(flow=True)
+            new_axes_indices = [axes[i].edges[0]]
 
-                new_reduced: _core.hist._BaseHistogram | _core.hist.any_multi_cell
-                new_reduced = reduced.__class__(axes)
-                new_view = new_reduced.view(flow=True)
-                j = 0
-                new_j_base = 0
+            j = 0
+            for group in groups:
+                new_axes_indices += [axes[i].edges[j + group]]
+                j += group
 
-                if old_axis.traits_underflow and axes[i].traits_underflow:
-                    groups = [1, *groups]
-                elif axes[i].traits_underflow:
-                    new_j_base = 1
+            if new_axis is None:
+                new_axis = Variable(
+                    new_axes_indices,
+                    __dict__=axes[i].raw_metadata,
+                    underflow=axes[i].traits_underflow,
+                    overflow=axes[i].traits_overflow,
+                )
+            old_axis = axes[i]
+            axes[i] = new_axis._ax
 
-                if old_axis.traits_overflow and axes[i].traits_overflow:
-                    groups.append(1)
+            logger.debug("Axes: %s", axes)
 
-                for new_j, group in enumerate(groups):
-                    for _ in range(group):
-                        _combine_group_contents(
-                            new_view, reduced_view, i, j, new_j + new_j_base
-                        )
-                        j += 1
+            new_reduced: _core.hist._BaseHistogram | _core.hist.any_multi_cell
+            new_reduced = reduced.__class__(axes)
+            new_view = new_reduced.view(flow=True)
+            j = 0
+            new_j_base = 0
 
-                    if (
-                        old_axis.traits_underflow
-                        and not axes[i].traits_ordered
-                        and axes[i].traits_overflow
-                    ):
-                        _combine_group_contents(new_view, reduced_view, i, 0, -1)
+            if old_axis.traits_underflow and axes[i].traits_underflow:
+                groups = [1, *groups]
+            elif axes[i].traits_underflow:
+                new_j_base = 1
 
-                reduced = new_reduced
+            if old_axis.traits_overflow and axes[i].traits_overflow:
+                groups.append(1)
 
+            for new_j, group in enumerate(groups):
+                for _ in range(group):
+                    _combine_group_contents(
+                        new_view, reduced_view, i, j, new_j + new_j_base
+                    )
+                    j += 1
+
+                if (
+                    old_axis.traits_underflow
+                    and not axes[i].traits_ordered
+                    and axes[i].traits_overflow
+                ):
+                    _combine_group_contents(new_view, reduced_view, i, 0, -1)
+
+            reduced = new_reduced
         return reduced, slices, integrations
 
     def __setitem__(self, index: IndexingExpr, value: ArrayLike | Accumulator) -> None:
