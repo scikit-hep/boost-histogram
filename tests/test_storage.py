@@ -397,10 +397,7 @@ def test_non_uniform_rebin_with_weights():
 def test_multi_weight():
     x = np.array([1, 2])
     y = np.array([0, 1])
-    weights = np.array([
-        [1, 2, 3], 
-        [4, 5, 6]
-    ])
+    weights = np.array([[1, 2, 3], [4, 5, 6]])
     h = bh.Histogram(bh.axis.Regular(5, 0, 5), storage=bh.storage.MultiWeight(3))
 
     # Filling 1-Dim
@@ -408,7 +405,11 @@ def test_multi_weight():
     assert_array_equal(h[1], [1, 2, 3])
     assert_array_equal(h[2], [4, 5, 6])
 
-    h = bh.Histogram(bh.axis.Regular(5, 0, 5), bh.axis.Regular(3, 0, 3), storage=bh.storage.MultiWeight(3))
+    h = bh.Histogram(
+        bh.axis.Regular(5, 0, 5),
+        bh.axis.Regular(3, 0, 3),
+        storage=bh.storage.MultiWeight(3),
+    )
 
     # Filling 2-Dim
     h.fill(x, y, sample=weights)
@@ -419,50 +420,51 @@ def test_multi_weight():
 
     x = np.array([1, 2, 3, 4])
     y = np.array([2, 2, 0, 1])
-    weights = np.array([
-        [ 1,  2,  3], 
-        [ 4,  5,  6],
-        [ 7,  8,  9],
-        [10, 11, 12]
-    ])
+    weights = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]])
     h.fill(x, y, sample=weights)
 
-    expected_view_with_flow = np.array([
-        # weight index 0
-       [[ 0.,  0.,  0.,  0.,  0.],
-        [ 0.,  0.,  0.,  0.,  0.],
-        [ 0.,  1.,  0.,  1.,  0.],
-        [ 0.,  0.,  4.,  4.,  0.],
-        [ 0.,  7.,  0.,  0.,  0.],
-        [ 0.,  0., 10.,  0.,  0.],
-        [ 0.,  0.,  0.,  0.,  0.]],
-
-        # weight index 1
-       [[ 0.,  0.,  0.,  0.,  0.],
-        [ 0.,  0.,  0.,  0.,  0.],
-        [ 0.,  2.,  0.,  2.,  0.],
-        [ 0.,  0.,  5.,  5.,  0.],
-        [ 0.,  8.,  0.,  0.,  0.],
-        [ 0.,  0., 11.,  0.,  0.],
-        [ 0.,  0.,  0.,  0.,  0.]],
-
-        # weight index 2
-       [[ 0.,  0.,  0.,  0.,  0.],
-        [ 0.,  0.,  0.,  0.,  0.],
-        [ 0.,  3.,  0.,  3.,  0.],
-        [ 0.,  0.,  6.,  6.,  0.],
-        [ 0.,  9.,  0.,  0.,  0.],
-        [ 0.,  0., 12.,  0.,  0.],
-        [ 0.,  0.,  0.,  0.,  0.]]
-    ])
+    expected_view_with_flow = np.array(
+        [
+            # weight index 0
+            [
+                [0.0, 0.0, 0.0, 0.0, 0.0],
+                [0.0, 0.0, 0.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0, 1.0, 0.0],
+                [0.0, 0.0, 4.0, 4.0, 0.0],
+                [0.0, 7.0, 0.0, 0.0, 0.0],
+                [0.0, 0.0, 10.0, 0.0, 0.0],
+                [0.0, 0.0, 0.0, 0.0, 0.0],
+            ],
+            # weight index 1
+            [
+                [0.0, 0.0, 0.0, 0.0, 0.0],
+                [0.0, 0.0, 0.0, 0.0, 0.0],
+                [0.0, 2.0, 0.0, 2.0, 0.0],
+                [0.0, 0.0, 5.0, 5.0, 0.0],
+                [0.0, 8.0, 0.0, 0.0, 0.0],
+                [0.0, 0.0, 11.0, 0.0, 0.0],
+                [0.0, 0.0, 0.0, 0.0, 0.0],
+            ],
+            # weight index 2
+            [
+                [0.0, 0.0, 0.0, 0.0, 0.0],
+                [0.0, 0.0, 0.0, 0.0, 0.0],
+                [0.0, 3.0, 0.0, 3.0, 0.0],
+                [0.0, 0.0, 6.0, 6.0, 0.0],
+                [0.0, 9.0, 0.0, 0.0, 0.0],
+                [0.0, 0.0, 12.0, 0.0, 0.0],
+                [0.0, 0.0, 0.0, 0.0, 0.0],
+            ],
+        ]
+    )
 
     expected_view = expected_view_with_flow[:, 1:-1, 1:-1]
 
     assert_array_equal(h.view(), expected_view)
-    assert_array_equal(h.view(flow = True), expected_view_with_flow)
+    assert_array_equal(h.view(flow=True), expected_view_with_flow)
 
     assert_array_equal(h.values(), expected_view)
-    assert_array_equal(h.values(flow = True), expected_view_with_flow)
+    assert_array_equal(h.values(flow=True), expected_view_with_flow)
 
     # Modify view
     expected_view[0, 1, 0] = 10
@@ -470,10 +472,10 @@ def test_multi_weight():
     h.view()[0, 1, 0] = 10
 
     assert_array_equal(h.view(), expected_view)
-    assert_array_equal(h.view(flow = True), expected_view_with_flow)
+    assert_array_equal(h.view(flow=True), expected_view_with_flow)
 
     assert_array_equal(h.values(), expected_view)
-    assert_array_equal(h.values(flow = True), expected_view_with_flow)
+    assert_array_equal(h.values(flow=True), expected_view_with_flow)
 
     # Slice histogram
     ## via reduce() (only use real slices)
@@ -483,10 +485,13 @@ def test_multi_weight():
     assert_array_equal(h[2, 1:3].view(), expected_view[:, 2, 1:3])
 
     # Project histogram
-    assert_array_equal(h.project(1).view(), np.sum(expected_view_with_flow, axis = 1)[:, 1:-1])
-    assert_array_equal(h.project(0).view(), np.sum(expected_view_with_flow, axis = 2)[:, 1:-1])
+    assert_array_equal(
+        h.project(1).view(), np.sum(expected_view_with_flow, axis=1)[:, 1:-1]
+    )
+    assert_array_equal(
+        h.project(0).view(), np.sum(expected_view_with_flow, axis=2)[:, 1:-1]
+    )
 
     # Sum histogram
-    assert_array_equal(h.sum(), np.sum(expected_view, axis = (1, 2)))
-    assert_array_equal(h.sum(flow = True), np.sum(expected_view_with_flow, axis = (1, 2)))
-
+    assert_array_equal(h.sum(), np.sum(expected_view, axis=(1, 2)))
+    assert_array_equal(h.sum(flow=True), np.sum(expected_view_with_flow, axis=(1, 2)))
