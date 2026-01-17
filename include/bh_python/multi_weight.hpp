@@ -311,13 +311,11 @@ std::ostream& operator<<(std::ostream& os, const multi_weight<T>& v) {
  * Otherwise, the number of weights would not be set and subsequent operations with the
  * new storage would fail as it would be default initialized with 0 weights per bin.
  */
-namespace detail {
 template <class T>
 multi_weight<T> make_default_impl(const multi_weight<T>& old_storage, float) {
     using S = multi_weight<T>;
     return S{old_storage.nelem()};
 }
-} // namespace detail
 
 } // namespace histogram
 } // namespace boost
