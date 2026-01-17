@@ -78,6 +78,30 @@ Weight
 This storage keeps a sum of weights as well (in CERN ROOT, this is like calling
 ``.Sumw2()`` before filling a histogram). It uses the ``WeightedSum`` accumulator.
 
+MultiWeight
+^^^^^^^^^^^
+
+This storage is like the `Weight` storage but supports storing multiple weights per bin independently. This is useful if one has to deal with many independent weights per event that all correspond to the same parameter (they will a be binned into the same bin) and have to be summed independently (e.g. to track the effect of systematic variations). It is suppossed to be filled much faster compared to filling many histograms with a ``Weight`` storage type in a loop if one deals with a large number of different weights.
+
+The number of weights per bin has to be fixed and is provided to the storage at its construction through 
+
+.. code-block:: python3
+
+    bh.Histogram(…, storage=MultiWeight(nelem))
+
+where ``nelem`` is the number of weights per bin.
+The weights have to provided as a 2-dimensional array ``(n, nelem)`` with the first dimension being the events to histogram and the second axis being the weights per event.
+To fill a histogram ``h`` one has to provide the weights via the ``sample`` keyword: 
+
+.. code-block:: python3
+
+    h.fill(..., sample=weights)
+
+this is an important difference to the ``Weight`` storage type and is necessary due to the internal implementation of the ``MultiWeight`` storage on the C++ side.
+Any slicing or projection operation works for ``MultiWeight`` histograms identical to any other histogram with different storage type, the weights are here not considered an additional axis for the histogram.
+Calling ``h.view()`` returns an array where the weights are indexed as the first axis (e.g. ``h.view()[0]`` is the histogram content for the first weight per bin).
+Contrary to the ``Weight`` storage the ``MultiWeight`` storage does not track variances (it does not track the sum of weights squared) because this might not be necessary for every weight index. Instead, the user is supposed to track the variances themselves if required. This could be achieved by providing the variances as a separate weight to the ``MultiWeight`` histogram by increasing the number of weights that are stored per bin (e.g. one could provide the square of ``weights[:, 0]`` as ``weights[:, 1]`` to track the sum of weight squared of the first weight index in the second weight index). 
+
 
 Mean
 ^^^^
