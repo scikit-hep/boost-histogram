@@ -1204,7 +1204,7 @@ class Histogram:
             value_ndim = in_array.ndim
         value_n_slice = sum(isinstance(i, slice) for i in indexes)
         if isinstance(self._hist, _core.hist.any_multi_weight):
-            # MultiWeight histograms have to provide the weight index as first dimension, but the weight index is not included in the histogram indexing. 
+            # MultiWeight histograms have to provide the weight index as first dimension, but the weight index is not included in the histogram indexing.
             # Slicing over the weight index is not possible for __setitem__ and is always represented as a full slice (as slice(None, None, None)).
             # Therefore, the number of slices is always one large than the indexed number of slices in the MulitWeight case.
             value_n_slice += 1
@@ -1288,12 +1288,12 @@ class Histogram:
                 value_n += 1
             else:
                 indexes[n] = request + has_underflow
-        
+
         if isinstance(self._hist, _core.hist.any_multi_weight):
-                # View of multi weight histograms has as first (index 0) dimension the weight index
-                # Add a full slice to the beginning of the slicing expression to adept for this weight index
-                # e.g. a slice like [0, :, 3] is converted to [:, 0, :, 3]
-                indexes.insert(0, slice(None, None, None))
+            # View of multi weight histograms has as first (index 0) dimension the weight index
+            # Add a full slice to the beginning of the slicing expression to adept for this weight index
+            # e.g. a slice like [0, :, 3] is converted to [:, 0, :, 3]
+            indexes.insert(0, slice(None, None, None))
         view[tuple(indexes)] = in_array
 
     def project(self, *args: int) -> Self | float | Accumulator:

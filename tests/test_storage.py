@@ -497,40 +497,18 @@ def test_multi_weight():
     assert_array_equal(h.sum(flow=True), np.sum(expected_view_with_flow, axis=(1, 2)))
 
     # __setitem__ for histogram
-    sub_array_to_set = np.array([
-        [
-            20, 30
-        ],
-
-        [
-            21, 31
-        ],
-
-        [
-            22, 32
-        ]
-    ])
+    sub_array_to_set = np.array([[20, 30], [21, 31], [22, 32]])
     expected_view[:, 2:4, 1] = sub_array_to_set
     h[2:4, 1] = sub_array_to_set
     assert_array_equal(h.view(), expected_view)
 
-    sub_array_to_set = np.array([
+    sub_array_to_set = np.array(
         [
-            [40, 41, 42],
-            [43, 44, 45]
-        ],
-
-        [
-            [50, 51, 52],
-            [53, 54, 55]
-        ],
-
-        [
-            [60, 61, 62],
-            [63, 64, 65]
+            [[40, 41, 42], [43, 44, 45]],
+            [[50, 51, 52], [53, 54, 55]],
+            [[60, 61, 62], [63, 64, 65]],
         ]
-    ])
+    )
     expected_view[:, 2:4, 0:3] = sub_array_to_set
     h[2:4, 0:3] = sub_array_to_set
     assert_array_equal(h.view(), expected_view)
-
