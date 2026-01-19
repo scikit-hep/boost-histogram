@@ -66,7 +66,7 @@ struct multi_weight_value : public multi_weight_base<T, std::vector<T>> {
     multi_weight_value() = default;
 
     void operator()(const boost::span<T>& values) { operator+=(values); }
-    
+
     void operator+=(const boost::span<T>& values) {
         if(values.size() != this->size()) {
             if(this->size() > 0) {
