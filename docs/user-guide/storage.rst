@@ -90,7 +90,7 @@ The number of entries per bin has to be fixed and is provided to the storage at 
     bh.Histogram(…, storage=MultiCell(nelem))
 
 where ``nelem`` is the number of entries per bin.
-The entries have to provided as a 2-dimensional array ``(n, nelem)`` with the first dimension being the events to histogram and the second axis being the entrie per event.
+The entries have to provided as a 2-dimensional array ``(n, nelem)`` with the first dimension being the events to histogram and the second axis being the entries per event.
 To fill a histogram ``h`` one has to provide the entries via the ``sample`` keyword:
 
 .. code-block:: python3
