@@ -11,7 +11,7 @@
 #include <bh_python/accumulators/weighted_mean.hpp>
 #include <bh_python/accumulators/weighted_sum.hpp>
 #include <bh_python/axis.hpp>
-#include <bh_python/multi_weight.hpp>
+#include <bh_python/multi_cell.hpp>
 
 #include <boost/histogram/detail/axes.hpp>
 #include <boost/histogram/histogram.hpp>
@@ -104,17 +104,17 @@ constexpr std::add_const_t<T>& std_as_const(T& t) noexcept {
     return t;
 }
 
-/// Specialization for multi_weight buffer
+/// Specialization for multi_cell buffer
 template <class A, class T>
-py::buffer_info make_buffer(bh::histogram<A, bh::multi_weight<T>>& h, bool flow) {
+py::buffer_info make_buffer(bh::histogram<A, bh::multi_cell<T>>& h, bool flow) {
     const auto& axes = bh::unsafe_access::axes(h);
     auto& storage    = bh::unsafe_access::storage(h);
     using AxesVec    = std::decay_t<decltype(axes)>;
     AxesVec new_axes;
-    // Add the weights as a first pseudo-axis to treat them correctly for the buffer
+    // Add the cells as a first pseudo-axis to treat them correctly for the buffer
     // creation. This will create a buffer in the shape (nelem, axis_1, axis_2, ...)
-    // where nelem is the number of weights per bin This also coincides with how the
-    // weights are stored on the multi weight storage side Having the weights as the
+    // where nelem is the number of cells per bin This also coincides with how the
+    // cells are stored on the multi cell storage side Having the cells as the
     // last dimension might feel more natural, but does not work with the current
     // storage implementation
     new_axes.emplace_back(axis::integer_none{0, static_cast<int>(storage.nelem())});

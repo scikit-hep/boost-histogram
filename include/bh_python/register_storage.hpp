@@ -72,12 +72,12 @@ py::class_<storage::unlimited> inline register_storage(py::module& m,
     return storage;
 }
 
-/// Add helpers to the multi_weight storage type
+/// Add helpers to the multi_cell storage type
 template <>
-py::class_<storage::multi_weight> inline register_storage(py::module& m,
+py::class_<storage::multi_cell> inline register_storage(py::module& m,
                                                           const char* name,
                                                           const char* desc) {
-    using A = storage::multi_weight; // match code above
+    using A = storage::multi_cell; // match code above
 
     py::class_<A> storage(m, name, desc);
 

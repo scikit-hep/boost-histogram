@@ -211,10 +211,10 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
 }
 
 template <>
-auto inline register_histogram<bh::multi_weight<double>>(py::module& m,
+auto inline register_histogram<bh::multi_cell<double>>(py::module& m,
                                                          const char* name,
                                                          const char* desc) {
-    using S           = bh::multi_weight<double>;
+    using S           = bh::multi_cell<double>;
     using histogram_t = bh::histogram<vector_axis_variant, S>;
     using value_type  = std::vector<double>;
 
@@ -233,8 +233,8 @@ auto inline register_histogram<bh::multi_weight<double>>(py::module& m,
              })
         .def("reset", &histogram_t::reset)
 
-        // Reset number of weights per bin after recreation of histogram because number
-        // of weights can (?) not be passed to the creation of the new histogram. Set it
+        // Reset number of cells per bin after recreation of histogram because number
+        // of cells can (?) not be passed to the creation of the new histogram. Set it
         // manually afterwards.
         .def("reset_nelem",
              [](histogram_t& self, const std::size_t nelem) {

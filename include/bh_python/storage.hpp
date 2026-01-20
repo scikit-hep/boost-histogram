@@ -10,7 +10,7 @@
 #include <bh_python/accumulators/mean.hpp>
 #include <bh_python/accumulators/weighted_mean.hpp>
 #include <bh_python/accumulators/weighted_sum.hpp>
-#include <bh_python/multi_weight.hpp>
+#include <bh_python/multi_cell.hpp>
 
 #include <boost/histogram/accumulators/count.hpp>
 #include <boost/histogram/storage_adaptor.hpp>
@@ -28,7 +28,7 @@ using atomic_int64  = bh::dense_storage<bh::accumulators::count<int64_t, true>>;
 using double_       = bh::dense_storage<double>;
 using unlimited     = bh::unlimited_storage<>;
 using weight        = bh::dense_storage<accumulators::weighted_sum<double>>;
-using multi_weight  = bh::multi_weight<double>;
+using multi_cell    = bh::multi_cell<double>;
 using mean          = bh::dense_storage<accumulators::mean<double>>;
 using weighted_mean = bh::dense_storage<accumulators::weighted_mean<double>>;
 
@@ -64,8 +64,8 @@ inline const char* name<weight>() {
 }
 
 template <>
-inline const char* name<multi_weight>() {
-    return "multi_weight";
+inline const char* name<multi_cell>() {
+    return "multi_cell";
 }
 
 template <>

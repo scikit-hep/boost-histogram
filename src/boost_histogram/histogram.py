@@ -85,7 +85,7 @@ _histograms: set[type[CppHistogram]] = {
     _core.hist.any_weight,
     _core.hist.any_mean,
     _core.hist.any_weighted_mean,
-    _core.hist.any_multi_weight,
+    _core.hist.any_multi_cell,
 }
 
 logger = logging.getLogger(__name__)
@@ -1056,7 +1056,7 @@ class Histogram:
 
                     logger.debug("Axes: %s", axes)
 
-                    new_reduced: _core.hist._BaseHistogram | _core.hist.any_multi_weight
+                    new_reduced: _core.hist._BaseHistogram | _core.hist.any_multi_cell
                     new_reduced = reduced.__class__(axes)
                     new_view = new_reduced.view(flow=True)
                     j = 0
@@ -1097,9 +1097,9 @@ class Histogram:
                 pick_each.get(i, slice(None)) for i in range(reduced.rank())
             )
 
-            if isinstance(self._hist, _core.hist.any_multi_weight):
-                # View of multi weight histograms has as first (index 0) dimension the weight index
-                # Add a full slice to the beginning of the slicing expression to adept for this weight index
+            if isinstance(self._hist, _core.hist.any_multi_cell):
+                # View of multi cell histograms has as first (index 0) dimension the cell index
+                # Add a full slice to the beginning of the slicing expression to adept for this cell index
                 # e.g. a slice like [0, :, 3] is converted to [:, 0, :, 3]
                 tuple_slice = (slice(None, None, None), *tuple_slice)
 
@@ -1109,11 +1109,11 @@ class Histogram:
             ]
             logger.debug("Axes: %s", axes)
             new_reduced = reduced.__class__(axes)
-            if isinstance(reduced, _core.hist.any_multi_weight) and isinstance(
-                new_reduced, _core.hist.any_multi_weight
+            if isinstance(reduced, _core.hist.any_multi_cell) and isinstance(
+                new_reduced, _core.hist.any_multi_cell
             ):
-                # The constructor in reduced.__class__(axes) does not take care of the number of weights.
-                # If reduced is a multi weight histogram, we have to set the number of weights per bin manually for new_reduced
+                # The constructor in reduced.__class__(axes) does not take care of the number of cells.
+                # If reduced is a multi cell histogram, we have to set the number of cells per bin manually for new_reduced
                 new_reduced.reset_nelem(reduced.nelem())
             new_reduced.view(flow=True)[...] = reduced.view(flow=True)[tuple_slice]
             reduced = new_reduced
@@ -1203,26 +1203,26 @@ class Histogram:
             value_shape = in_array.shape
             value_ndim = in_array.ndim
         value_n_slice = sum(isinstance(i, slice) for i in indexes)
-        if isinstance(self._hist, _core.hist.any_multi_weight):
-            # MultiWeight histograms have to provide the weight index as first dimension, but the weight index is not included in the histogram indexing.
-            # Slicing over the weight index is not possible for __setitem__ and is always represented as a full slice (as slice(None, None, None)).
-            # Therefore, the number of slices is always one large than the indexed number of slices in the MulitWeight case.
+        if isinstance(self._hist, _core.hist.any_multi_cell):
+            # MultiCell histograms have to provide the cell index as first dimension, but the cell index is not included in the histogram indexing.
+            # Slicing over the cell index is not possible for __setitem__ and is always represented as a full slice (as slice(None, None, None)).
+            # Therefore, the number of slices is always one large than the indexed number of slices in the MultiCell case.
             value_n_slice += 1
 
         # NumPy does not broadcast partial slices, but we would need
         # to allow it (because we do allow broadcasting up dimensions)
         # Instead, we simply require matching dimensions.
         if value_ndim > 0 and value_ndim != value_n_slice:
-            if isinstance(self._hist, _core.hist.any_multi_weight):
-                msg = f"Setting a {len(indexes)}D MultiWeight histogram with a {value_ndim}D array must have a one higher dimension of array than histogram"
+            if isinstance(self._hist, _core.hist.any_multi_cell):
+                msg = f"Setting a {len(indexes)}D MultiCell histogram with a {value_ndim}D array must have a one higher dimension of array than histogram"
             else:
                 msg = f"Setting a {len(indexes)}D histogram with a {value_ndim}D array must have a matching number of dimensions"
             raise ValueError(msg)
 
         # Here, value_n does not increment with n if this is not a slice
         value_n = 0
-        if isinstance(self._hist, _core.hist.any_multi_weight):
-            # Ignore first dimension for MultiWeight arrays, the first dimension is for the weights, the normal histogram axis indexing starts with dimension 2 in this case
+        if isinstance(self._hist, _core.hist.any_multi_cell):
+            # Ignore first dimension for MultiCell arrays, the first dimension is for the cells, the normal histogram axis indexing starts with dimension 2 in this case
             value_n = 1
         for n, request in enumerate(indexes):
             has_underflow = self.axes[n].traits.underflow
@@ -1289,9 +1289,9 @@ class Histogram:
             else:
                 indexes[n] = request + has_underflow
 
-        if isinstance(self._hist, _core.hist.any_multi_weight):
-            # View of multi weight histograms has as first (index 0) dimension the weight index
-            # Add a full slice to the beginning of the slicing expression to adept for this weight index
+        if isinstance(self._hist, _core.hist.any_multi_cell):
+            # View of multi cell histograms has as first (index 0) dimension the cell index
+            # Add a full slice to the beginning of the slicing expression to adept for this cell index
             # e.g. a slice like [0, :, 3] is converted to [:, 0, :, 3]
             indexes.insert(0, slice(None, None, None))
         view[tuple(indexes)] = in_array

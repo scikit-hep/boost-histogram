@@ -1,5 +1,5 @@
-#ifndef BOOST_HISTOGRAM_MULTI_WEIGHT_HPP
-#define BOOST_HISTOGRAM_MULTI_WEIGHT_HPP
+#ifndef BOOST_HISTOGRAM_MULTI_CELL_HPP
+#define BOOST_HISTOGRAM_MULTI_CELL_HPP
 
 #include <algorithm>
 #include <boost/core/nvp.hpp>
@@ -13,7 +13,7 @@ namespace boost {
 namespace histogram {
 
 template <class T, class BASE>
-struct multi_weight_base : public BASE {
+struct multi_cell_base : public BASE {
     using BASE::BASE;
 
     template <class S>
@@ -31,9 +31,9 @@ struct multi_weight_base : public BASE {
 };
 
 template <class T>
-struct multi_weight_reference : public multi_weight_base<T, boost::span<T>> {
+struct multi_cell_reference : public multi_cell_base<T, boost::span<T>> {
     // using boost::span<T>::span;
-    using multi_weight_base<T, boost::span<T>>::multi_weight_base;
+    using multi_cell_base<T, boost::span<T>>::multi_cell_base;
 
     void operator()(const boost::span<T> values) { operator+=(values); }
 
@@ -46,7 +46,7 @@ struct multi_weight_reference : public multi_weight_base<T, boost::span<T>> {
     }
 
     template <class S>
-    multi_weight_reference& operator=(const S& values) {
+    multi_cell_reference& operator=(const S& values) {
         if(values.size() != this->size())
             throw std::range_error("size does not match for = ref");
         auto it = this->begin();
@@ -57,13 +57,13 @@ struct multi_weight_reference : public multi_weight_base<T, boost::span<T>> {
 };
 
 template <class T>
-struct multi_weight_value : public multi_weight_base<T, std::vector<T>> {
-    using multi_weight_base<T, std::vector<T>>::multi_weight_base;
+struct multi_cell_value : public multi_cell_base<T, std::vector<T>> {
+    using multi_cell_base<T, std::vector<T>>::multi_cell_base;
 
-    explicit multi_weight_value(const boost::span<T> values) {
+    explicit multi_cell_value(const boost::span<T> values) {
         this->assign(values.begin(), values.end());
     }
-    multi_weight_value() = default;
+    multi_cell_value() = default;
 
     void operator()(const boost::span<T>& values) { operator+=(values); }
 
@@ -81,18 +81,18 @@ struct multi_weight_value : public multi_weight_base<T, std::vector<T>> {
     }
 
     template <class S>
-    multi_weight_value& operator=(const S values) {
+    multi_cell_value& operator=(const S values) {
         this->assign(values.begin(), values.end());
         return *this;
     }
 };
 
 template <class ElementType = double>
-class multi_weight {
+class multi_cell {
   public:
     using element_type    = ElementType;
-    using value_type      = multi_weight_value<element_type>;
-    using reference       = multi_weight_reference<element_type>;
+    using value_type      = multi_cell_value<element_type>;
+    using reference       = multi_cell_reference<element_type>;
     using const_reference = const reference;
 
     template <class Value, class Reference, class MWPtr>
@@ -122,18 +122,18 @@ class multi_weight {
         MWPtr par_ = nullptr;
     };
 
-    using iterator = iterator_base<value_type, reference, multi_weight*>;
+    using iterator = iterator_base<value_type, reference, multi_cell*>;
     using const_iterator
-        = iterator_base<const value_type, const_reference, const multi_weight*>;
+        = iterator_base<const value_type, const_reference, const multi_cell*>;
 
     static constexpr bool has_threading_support() { return false; }
 
-    explicit multi_weight(const std::size_t k = 0)
+    explicit multi_cell(const std::size_t k = 0)
         : nelem_{k} {}
 
-    multi_weight(const multi_weight& other) { *this = other; }
+    multi_cell(const multi_cell& other) { *this = other; }
 
-    multi_weight& operator=(const multi_weight& other) {
+    multi_cell& operator=(const multi_cell& other) {
         // Protect against self assignment
         if(this == &other) {
             return *this;
@@ -184,7 +184,7 @@ class multi_weight {
     }
 
     template <class T>
-    bool operator==(const multi_weight<T>& other) const {
+    bool operator==(const multi_cell<T>& other) const {
         if(size_ * nelem_ != other.size_ * other.nelem_)
             return false;
         return std::equal(
@@ -192,12 +192,12 @@ class multi_weight {
     }
 
     template <class T>
-    bool operator!=(const multi_weight<T>& other) const {
+    bool operator!=(const multi_cell<T>& other) const {
         return !operator==(other);
     }
 
     template <class T>
-    void operator+=(const multi_weight<T>& other) {
+    void operator+=(const multi_cell<T>& other) {
         if(size_ * nelem_ != other.size_ * other.nelem_) {
             throw std::range_error("size does not match");
         }
@@ -225,13 +225,13 @@ class multi_weight {
 
   private:
     std::size_t size_  = 0; // Number of bins
-    std::size_t nelem_ = 0; // Number of weights per bin
+    std::size_t nelem_ = 0; // Number of cells per bin
     std::unique_ptr<element_type[]> buffer_;
 };
 
 template <class T>
-std::ostream& operator<<(std::ostream& os, const multi_weight_value<T>& v) {
-    os << "multi_weight_value(";
+std::ostream& operator<<(std::ostream& os, const multi_cell_value<T>& v) {
+    os << "multi_cell_value(";
     bool first = true;
     for(const T& x : v)
         if(first) {
@@ -244,8 +244,8 @@ std::ostream& operator<<(std::ostream& os, const multi_weight_value<T>& v) {
 }
 
 template <class T>
-std::ostream& operator<<(std::ostream& os, const multi_weight_reference<T>& v) {
-    os << "multi_weight_reference(";
+std::ostream& operator<<(std::ostream& os, const multi_cell_reference<T>& v) {
+    os << "multi_cell_reference(";
     bool first = true;
     for(const T& x : v)
         if(first) {
@@ -258,10 +258,10 @@ std::ostream& operator<<(std::ostream& os, const multi_weight_reference<T>& v) {
 }
 
 template <class T>
-std::ostream& operator<<(std::ostream& os, const multi_weight<T>& v) {
-    os << "multi_weight(\n";
+std::ostream& operator<<(std::ostream& os, const multi_cell<T>& v) {
+    os << "multi_cell(\n";
     int index = 0;
-    for(const multi_weight_reference<T>& x : v) {
+    for(const multi_cell_reference<T>& x : v) {
         os << "Index " << index << ": " << x << "\n";
         index++;
     }
@@ -270,14 +270,14 @@ std::ostream& operator<<(std::ostream& os, const multi_weight<T>& v) {
 }
 
 /**
- * Overload the make_default_impl function to default initialize multi weight storage
- * with the number of weights per bin from the old storage that is used as a reference.
- * Otherwise, the number of weights would not be set and subsequent operations with the
- * new storage would fail as it would be default initialized with 0 weights per bin.
+ * Overload the make_default_impl function to default initialize multi cell storage
+ * with the number of cells per bin from the old storage that is used as a reference.
+ * Otherwise, the number of cells would not be set and subsequent operations with the
+ * new storage would fail as it would be default initialized with 0 cells per bin.
  */
 template <class T>
-multi_weight<T> make_default_impl(const multi_weight<T>& old_storage, float) {
-    using S = multi_weight<T>;
+multi_cell<T> make_default_impl(const multi_cell<T>& old_storage, float) {
+    using S = multi_cell<T>;
     return S{old_storage.nelem()};
 }
 
