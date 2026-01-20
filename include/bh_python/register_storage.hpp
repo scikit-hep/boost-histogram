@@ -75,8 +75,8 @@ py::class_<storage::unlimited> inline register_storage(py::module& m,
 /// Add helpers to the multi_cell storage type
 template <>
 py::class_<storage::multi_cell> inline register_storage(py::module& m,
-                                                          const char* name,
-                                                          const char* desc) {
+                                                        const char* name,
+                                                        const char* desc) {
     using A = storage::multi_cell; // match code above
 
     py::class_<A> storage(m, name, desc);

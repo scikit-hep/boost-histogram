@@ -212,8 +212,8 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
 
 template <>
 auto inline register_histogram<bh::multi_cell<double>>(py::module& m,
-                                                         const char* name,
-                                                         const char* desc) {
+                                                       const char* name,
+                                                       const char* desc) {
     using S           = bh::multi_cell<double>;
     using histogram_t = bh::histogram<vector_axis_variant, S>;
     using value_type  = std::vector<double>;
