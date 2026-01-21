@@ -164,7 +164,7 @@ def test_storage(benchmark, copy_fn, storage, extra):
     elif extra == {"sample"}:
         hist.fill(x, sample=np.arange(2 * n + 4) + 1)
     elif extra == {"MultiCell"}:
-        hist.fill(x, sample=np.reshape(np.arange(3 * (2 * n + 4)) + 1, (2 * n + 4, 3)))
+        hist.fill(x, weight=np.reshape(np.arange(3 * (2 * n + 4)) + 1, (2 * n + 4, 3)))
     else:
         hist.fill(x, weight=np.arange(2 * n + 4) + 1, sample=np.arange(2 * n + 4) + 1)
 

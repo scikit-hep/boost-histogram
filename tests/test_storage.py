@@ -401,7 +401,7 @@ def test_multi_cell():
     h = bh.Histogram(bh.axis.Regular(5, 0, 5), storage=bh.storage.MultiCell(3))
 
     # Filling 1-Dim
-    h.fill(x, sample=weights)
+    h.fill(x, weight=weights)
     assert_array_equal(h[1], [1, 2, 3])
     assert_array_equal(h[2], [4, 5, 6])
 
@@ -412,7 +412,7 @@ def test_multi_cell():
     )
 
     # Filling 2-Dim
-    h.fill(x, y, sample=weights)
+    h.fill(x, y, weight=weights)
     assert_array_equal(h[1, 0], [1, 2, 3])
     assert_array_equal(h[2, 1], [4, 5, 6])
 
@@ -421,7 +421,7 @@ def test_multi_cell():
     x = np.array([1, 2, 3, 4])
     y = np.array([2, 2, 0, 1])
     weights = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]])
-    h.fill(x, y, sample=weights)
+    h.fill(x, y, weight=weights)
 
     expected_view_with_flow = np.array(
         [
