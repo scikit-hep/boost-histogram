@@ -147,11 +147,15 @@ def test_metadata_any(axis, args, opts, copy_fn):
         (bh.storage.Weight, {"weight"}),
         (bh.storage.Mean, {"sample"}),
         (bh.storage.WeightedMean, {"weight", "sample"}),
+        (bh.storage.MultiCell, {"MultiCell"}),
     ],
 )
 def test_storage(benchmark, copy_fn, storage, extra):
     n = 1000
-    hist = bh.Histogram(bh.axis.Integer(0, n), storage=storage())
+    init_list = []
+    if extra == {"MultiCell"}:
+        init_list.append(3)
+    hist = bh.Histogram(bh.axis.Integer(0, n), storage=storage(*init_list))
     x = np.arange(2 * (n + 2)) % (n + 2) - 1
     if extra == {}:
         hist.fill(x)
@@ -159,6 +163,8 @@ def test_storage(benchmark, copy_fn, storage, extra):
         hist.fill(x, weight=np.arange(2 * n + 4) + 1)
     elif extra == {"sample"}:
         hist.fill(x, sample=np.arange(2 * n + 4) + 1)
+    elif extra == {"MultiCell"}:
+        hist.fill(x, weight=np.reshape(np.arange(3 * (2 * n + 4)) + 1, (2 * n + 4, 3)))
     else:
         hist.fill(x, weight=np.arange(2 * n + 4) + 1, sample=np.arange(2 * n + 4) + 1)
 

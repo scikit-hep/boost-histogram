@@ -12,6 +12,7 @@
 #include <bh_python/overload.hpp>
 #include <bh_python/vector_string_caster.hpp>
 
+#include <boost/core/ignore_unused.hpp>
 #include <boost/histogram/detail/accumulator_traits.hpp>
 #include <boost/histogram/detail/axes.hpp>
 #include <boost/histogram/sample.hpp>
@@ -181,7 +182,7 @@ void fill_impl(bh::detail::accumulator_traits_holder<true>,
     finalize_args(kwargs);
 
     // releasing gil here is safe, we don't manipulate refcounts
-    py::gil_scoped_release const lock;
+    const py::gil_scoped_release lock;
     variant::visit(
         overload([&h, &vargs](const variant::monostate&) { h.fill(vargs); },
                  [&h, &vargs](const auto& w) { h.fill(vargs, bh::weight(w)); }),
@@ -203,7 +204,7 @@ void fill_impl(bh::detail::accumulator_traits_holder<true, const double&>,
         throw std::invalid_argument("Sample array must be 1D");
 
     // releasing gil here is safe, we don't manipulate refcounts
-    py::gil_scoped_release const lock;
+    const py::gil_scoped_release lock;
     variant::visit(
         overload([&h, &vargs, &sarray](
                      const variant::monostate&) { h.fill(vargs, bh::sample(sarray)); },
@@ -211,6 +212,34 @@ void fill_impl(bh::detail::accumulator_traits_holder<true, const double&>,
                      h.fill(vargs, bh::sample(sarray), bh::weight(w));
                  }),
         weight);
+}
+
+// for multi_cell
+template <class Histogram, class VArgs>
+void fill_impl(bh::detail::accumulator_traits_holder<false, const boost::span<double>&>,
+               Histogram& h,
+               const VArgs& vargs,
+               const weight_t& weight,
+               py::kwargs& kwargs) {
+    boost::ignore_unused(weight);
+    auto s = required_arg(kwargs, "sample");
+    finalize_args(kwargs);
+    auto sarray = py::cast<c_array_t<double>>(s);
+    if(sarray.ndim() != 2)
+        throw std::invalid_argument("Sample or weight array for MultiCell must be 2D");
+
+    auto buf = sarray.request();
+    // releasing gil here is safe, we don't manipulate refcounts
+    const py::gil_scoped_release lock;
+    const auto buf_shape0 = static_cast<std::size_t>(buf.shape[0]);
+    const auto buf_shape1 = static_cast<std::size_t>(buf.shape[1]);
+    auto* src             = static_cast<double*>(buf.ptr);
+    std::vector<boost::span<double>> vec_s;
+    vec_s.reserve(buf_shape0);
+    for(std::size_t i = 0; i < buf_shape0; i++) {
+        vec_s.emplace_back(src + (i * buf_shape1), buf_shape1);
+    }
+    h.fill(vargs, bh::sample(vec_s));
 }
 
 } // namespace detail

@@ -50,4 +50,10 @@ void register_histograms(py::module& hist) {
         hist,
         "any_weighted_mean",
         "N-dimensional histogram for weighted and sampled data with any axis types.");
+
+    register_histogram<storage::multi_cell>(
+        hist,
+        "any_multi_cell",
+        "N-dimensional histogram for storing multiple cells at once with any axis "
+        "types.");
 }

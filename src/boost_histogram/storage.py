@@ -12,6 +12,7 @@ __all__ = [
     "Double",
     "Int64",
     "Mean",
+    "MultiCell",
     "Storage",
     "Unlimited",
     "Weight",
@@ -73,3 +74,10 @@ class Mean(store.mean, Storage, family=boost_histogram):
 
 class WeightedMean(store.weighted_mean, Storage, family=boost_histogram):
     accumulator = accumulators.WeightedMean
+
+
+class MultiCell(store.multi_cell, Storage, family=boost_histogram):
+    accumulator = float
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}({self.nelem})"

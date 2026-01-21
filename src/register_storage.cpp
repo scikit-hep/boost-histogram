@@ -35,4 +35,9 @@ void register_storages(py::module& storage) {
         storage,
         "weighted_mean",
         "Dense storage which tracks means of weighted samples in each cell");
+
+    register_storage<storage::multi_cell>(
+        storage,
+        "multi_cell",
+        "Dense storage which tracks sums of cell entries for multiple cells per entry");
 }

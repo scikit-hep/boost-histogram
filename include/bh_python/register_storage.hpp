@@ -71,3 +71,39 @@ py::class_<storage::unlimited> inline register_storage(py::module& m,
 
     return storage;
 }
+
+/// Add helpers to the multi_cell storage type
+template <>
+py::class_<storage::multi_cell> inline register_storage(py::module& m,
+                                                        const char* name,
+                                                        const char* desc) {
+    using A = storage::multi_cell; // match code above
+
+    py::class_<A> storage(m, name, desc);
+
+    storage.def(py::init<int>(), py::arg("k") = 0)
+        .def("__eq__",
+             [](const A& self, const py::object& other) {
+                 try {
+                     return self == py::cast<A>(other);
+                 } catch(const py::cast_error&) {
+                     return false;
+                 }
+             })
+        .def("__ne__",
+             [](const A& self, const py::object& other) {
+                 try {
+                     return !(self == py::cast<A>(other));
+                 } catch(const py::cast_error&) {
+                     return true;
+                 }
+             })
+        .def(make_pickle<A>())
+        .def("__copy__", [](const A& self) { return A(self); })
+        .def("__deepcopy__", [](const A& self, const py::object&) { return A(self); })
+        .def_property_readonly("nelem", [](const A& self) { return self.nelem(); })
+
+        ;
+
+    return storage;
+}
