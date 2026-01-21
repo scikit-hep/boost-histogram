@@ -91,16 +91,16 @@ The number of entries per bin has to be fixed and is provided to the storage at 
 
 where ``nelem`` is the number of entries per bin.
 The entries have to provided as a 2-dimensional array ``(n, nelem)`` with the first dimension being the events to histogram and the second axis being the entries per event.
-To fill a histogram ``h`` one has to provide the entries via the ``sample`` keyword:
+To fill a histogram ``h`` one has to provide the entries via the ``weight`` keyword:
 
 .. code-block:: python3
 
-    h.fill(..., sample=weights)
+    h.fill(..., weight=weights)
 
-this is an important difference to the ``Weight`` storage type and is necessary due to the internal implementation of the ``MultiCell`` storage on the C++ side.
 Any slicing or projection operation works for ``MultiCell`` histograms identical to any other histogram with different storage type, the entries are here not considered an additional axis for the histogram.
 Calling ``h.view()`` returns an array where the entries are indexed as the first axis (e.g. ``h.view()[0]`` is the histogram content for the first entry per bin).
 Contrary to the ``Weight`` storage the ``MultiCell`` storage does not track variances (it does not track the sum of weights squared) because this might not be necessary for every entry index. Instead, the user is supposed to track the variances themselves if required. This could be achieved by providing the variances as a separate entry to the ``MultiCell`` histogram by increasing the number of entries that are stored per bin (e.g. one could provide the square of ``weights[:, 0]`` as ``weights[:, 1]`` to track the sum of weight squared of the first entry index in the second entry index).
+Note: If you should ever need to use the lowlevel ``h._hist.fill()`` function with a ``MultiCell`` storage you will have to use the ``sample`` keyword to pass the weights instead of the ``weight`` keyword because that is used on the C++ side, but the highlevel python boost_histogram API hides this from the user. 
 
 
 Mean

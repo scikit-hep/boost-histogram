@@ -627,6 +627,11 @@ class Histogram:
         ):
             self._variance_known = False
 
+        if self._hist._storage_type is _core.storage.multi_cell:
+            # Use weight keyword for MultiCell filling even though it uses sample on the C++ backend
+            sample = weight
+            weight = None
+
         # Convert to NumPy arrays
         args_ars = _fill_cast(args)
         weight_ars = _fill_cast(weight)

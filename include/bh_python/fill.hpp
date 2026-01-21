@@ -226,7 +226,7 @@ void fill_impl(bh::detail::accumulator_traits_holder<false, const boost::span<do
     finalize_args(kwargs);
     auto sarray = py::cast<c_array_t<double>>(s);
     if(sarray.ndim() != 2)
-        throw std::invalid_argument("Sample array for MultiCell must be 2D");
+        throw std::invalid_argument("Sample or weight array for MultiCell must be 2D");
 
     auto buf = sarray.request();
     // releasing gil here is safe, we don't manipulate refcounts
