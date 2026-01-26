@@ -4,20 +4,20 @@
 
 ### Features
 
-* `MultiCell` storage, supporting a variable number of values, by @Superharz in [#1008][]
-* Drop Python 3.9 by @henryiii in [#1057][]
+- `MultiCell` storage, supporting a variable number of values, by @Superharz in [#1008][]
+- Drop Python 3.9 by @henryiii in [#1057][]
 
 ### Bug fixes
 
-* Don't add empty metadata dicts by @henryiii in [#1048][]
-* Avoid compiler warning: declaration of 'i' hides previous local declaration by @Superharz in [#1068][]
+- Don't add empty metadata dicts by @henryiii in [#1048][]
+- Avoid compiler warning: declaration of 'i' hides previous local declaration by @Superharz in [#1068][]
 
 ### Internal
 
-* Refactor `__getitem__` using pattern matching by @henryiii in [#1067][]
-* pytest `log_level` is better than `log_cli_level` by @henryiii in [#1059][]
-* Setting `__file__` no longer required (pybind11 3.0) by @henryiii in [#1066][]
-* This should work on iOS now in cibuildwheel by @henryiii in [#1049][]
+- Refactor `__getitem__` using pattern matching by @henryiii in [#1067][]
+- pytest `log_level` is better than `log_cli_level` by @henryiii in [#1059][]
+- Setting `__file__` no longer required (pybind11 3.0) by @henryiii in [#1066][]
+- This should work on iOS now in cibuildwheel by @henryiii in [#1049][]
 
 [#1008]: https://github.com/scikit-hep/boost-histogram/pull/1008
 [#1048]: https://github.com/scikit-hep/boost-histogram/pull/1048
