@@ -131,6 +131,16 @@ One use for an IntCategory axis is for an IntEnum:
    You can put strings in a category axis as well. The fill method supports lists or arrays of strings
    to allow this to be filled.
 
+
+Boolean axis
+^^^^^^^^^^^^
+
+.. py:function:: bh.axis.Boolean(metadata="")
+   :noindex:
+
+   This is an axis that holds either ``True`` and ``False`` only.
+
+
 Manipulating Axes
 -----------------
 
