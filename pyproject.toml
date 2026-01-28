@@ -51,7 +51,7 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
-    "numpy",
+    "numpy>=1.21.3",
 ]
 
 [project.urls]
@@ -76,7 +76,7 @@ docs = [
     "ipython",
     "myst_parser>=0.13",
     "nbsphinx",
-    "numpy",
+    "numpy>=1.21.3",
     "sphinx-book-theme>=0.0.33",
     "sphinx>=4.0",
     "sphinx_copybutton",
@@ -94,7 +94,7 @@ test = [
     "pytest-benchmark",
     "pytest>=6.0",
     "pytest-benchmark",
-    "numpy",
+    "numpy>=1.21.3",
     "hypothesis>=6.0; sys_platform != 'ios'", # slow on iOS, can fail health check
     "pytest-xdist; sys_platform != 'ios'",  # No processes on iOS
 ]
