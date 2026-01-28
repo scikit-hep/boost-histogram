@@ -223,13 +223,35 @@ def test_round_trip_native() -> None:
     ("axis_type", "axis_args", "fill_values"),
     [
         pytest.param(bh.axis.Integer, (0, 10), [-1, 0, 0, 1, 20, 20, 20], id="integer"),
-        pytest.param(bh.axis.Regular, (10, 0.0, 10.0), [-1.0, 0.0, 0.0, 1.0, 20.0, 20.0, 20.0], id="regular"),
-        pytest.param(bh.axis.Variable, ([0.0, 2.0, 5.0, 10.0],), [-1.0, 0.0, 1.0, 6.0, 20.0, 20.0], id="variable"),
-        pytest.param(bh.axis.IntCategory, ([1, 2, 3],), [0, 1, 1, 2, 10, 10, 10], id="intcategory"),
-        pytest.param(bh.axis.StrCategory, (["A", "B", "C"],), ["Z", "A", "A", "B", "X", "X", "X"], id="strcategory"),
+        pytest.param(
+            bh.axis.Regular,
+            (10, 0.0, 10.0),
+            [-1.0, 0.0, 0.0, 1.0, 20.0, 20.0, 20.0],
+            id="regular",
+        ),
+        pytest.param(
+            bh.axis.Variable,
+            ([0.0, 2.0, 5.0, 10.0],),
+            [-1.0, 0.0, 1.0, 6.0, 20.0, 20.0],
+            id="variable",
+        ),
+        pytest.param(
+            bh.axis.IntCategory,
+            ([1, 2, 3],),
+            [0, 1, 1, 2, 10, 10, 10],
+            id="intcategory",
+        ),
+        pytest.param(
+            bh.axis.StrCategory,
+            (["A", "B", "C"],),
+            ["Z", "A", "A", "B", "X", "X", "X"],
+            id="strcategory",
+        ),
     ],
 )
-def test_round_trip_growth(axis_type: type, axis_args: tuple, fill_values: list) -> None:
+def test_round_trip_growth(
+    axis_type: type, axis_args: tuple, fill_values: list
+) -> None:
     h = bh.Histogram(
         axis_type(*axis_args, growth=True),
     )
