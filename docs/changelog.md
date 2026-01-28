@@ -5,6 +5,7 @@
 ### Features
 
 - `MultiCell` storage, supporting a variable number of values, by @Superharz in [#1008][]
+- Record `growth=True` in writer-info (serialization), and respect it if present by @henryiii in [#1074][]
 - Drop Python 3.9 by @henryiii in [#1057][]
 
 ### Bug fixes
@@ -27,6 +28,7 @@
 [#1066]: https://github.com/scikit-hep/boost-histogram/pull/1066
 [#1067]: https://github.com/scikit-hep/boost-histogram/pull/1067
 [#1068]: https://github.com/scikit-hep/boost-histogram/pull/1068
+[#1074]: https://github.com/scikit-hep/boost-histogram/pull/1074
 
 ## Version 1.6
 
