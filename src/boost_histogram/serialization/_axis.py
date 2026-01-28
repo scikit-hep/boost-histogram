@@ -54,8 +54,13 @@ def _(ax: axis.Regular | axis.Integer, /) -> dict[str, Any]:
             **shared,
         }
 
+    writer_info = dict[str, str | bool]()
     if isinstance(ax, axis.Integer):
-        data["writer_info"] = {"boost-histogram": {"orig_type": "Integer"}}
+        writer_info["orig_type"] = "Integer"
+    if ax.traits.growth:
+        writer_info["growth"] = True
+    if writer_info:
+        data["writer_info"] = {"boost-histogram": writer_info}
 
     metadata = serialize_metadata(ax.__dict__)
     if metadata:
@@ -75,6 +80,9 @@ def _(ax: axis.Variable, /) -> dict[str, Any]:
         "circular": ax.traits.circular,
     }
 
+    if ax.traits.growth:
+        data["writer_info"] = {"boost-histogram": {"growth": True}}
+
     metadata = serialize_metadata(ax.__dict__)
     if metadata:
         data["metadata"] = metadata
@@ -91,6 +99,9 @@ def _(ax: axis.IntCategory, /) -> dict[str, Any]:
         "flow": ax.traits.overflow,
     }
 
+    if ax.traits.growth:
+        data["writer_info"] = {"boost-histogram": {"growth": True}}
+
     metadata = serialize_metadata(ax.__dict__)
     if metadata:
         data["metadata"] = metadata
@@ -106,6 +117,9 @@ def _(ax: axis.StrCategory, /) -> dict[str, Any]:
         "categories": list(ax),
         "flow": ax.traits.overflow,
     }
+
+    if ax.traits.growth:
+        data["writer_info"] = {"boost-histogram": {"growth": True}}
 
     metadata = serialize_metadata(ax.__dict__)
     if metadata:
@@ -129,9 +143,8 @@ def _(ax: axis.Boolean, /) -> dict[str, Any]:
 
 
 def _axis_from_dict(data: dict[str, Any], /) -> axis.Axis:
-    orig_type = (
-        data.get("writer_info", {}).get("boost-histogram", {}).get("orig_type", "")
-    )
+    writer_info = data.get("writer_info", {}).get("boost-histogram", {})
+    orig_type = writer_info.get("orig_type", "")
     if orig_type == "Integer":
         assert data["upper"] - data["lower"] == data["bins"]
         return axis.Integer(
@@ -140,6 +153,7 @@ def _axis_from_dict(data: dict[str, Any], /) -> axis.Axis:
             underflow=data["underflow"],
             overflow=data["overflow"],
             circular=data["circular"],
+            growth=writer_info.get("growth", False),
             __dict__=data.get("metadata"),
         )
 
@@ -152,6 +166,7 @@ def _axis_from_dict(data: dict[str, Any], /) -> axis.Axis:
             underflow=data["underflow"],
             overflow=data["overflow"],
             circular=data["circular"],
+            growth=writer_info.get("growth", False),
             __dict__=data.get("metadata"),
         )
     if hist_type == "variable":
@@ -160,18 +175,21 @@ def _axis_from_dict(data: dict[str, Any], /) -> axis.Axis:
             underflow=data["underflow"],
             overflow=data["overflow"],
             circular=data["circular"],
+            growth=writer_info.get("growth", False),
             __dict__=data.get("metadata"),
         )
     if hist_type == "category_int":
         return axis.IntCategory(
             data["categories"],
             overflow=data["flow"],
+            growth=writer_info.get("growth", False),
             __dict__=data.get("metadata"),
         )
     if hist_type == "category_str":
         return axis.StrCategory(
             data["categories"],
             overflow=data["flow"],
+            growth=writer_info.get("growth", False),
             __dict__=data.get("metadata"),
         )
     if hist_type == "boolean":
