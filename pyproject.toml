@@ -191,7 +191,7 @@ test-skip = [
   "gp312_*",  # No numpy wheels yet
   "cp314*-ios_*",  # No numpy wheels yet
 ]
-enable = ["cpython-freethreading", "pypy", "graalpy"]
+enable = ["pypy", "graalpy"]
 environment-pass = ["SETUPTOOLS_SCM_PRETEND_VERSION"]
 environment.PIP_ONLY_BINARY = "numpy"
 environment.PIP_PREFER_BINARY = "1"

@@ -9,6 +9,7 @@
 - `MultiCell` storage, supporting a variable number of values, by @Superharz in [#1008][]
 - Record `growth=True` in writer-info (serialization), and respect it if present by @henryiii in [#1074][]
 - Drop Python 3.9 by @henryiii in [#1057][]
+- Drop Python 3.13t (use 3.14t instead) by @henryiii in [#1079][]
 
 #### Bug fixes
 
