@@ -120,7 +120,7 @@ jobs:
           - os: windows-11-arm
             only: cp311-win_arm64
           - os: ubuntu-latest
-            only: gp311-manylinux_x86_64
+            only: gp311_242-manylinux_x86_64
 
     steps:
       - uses: actions/checkout@v6
