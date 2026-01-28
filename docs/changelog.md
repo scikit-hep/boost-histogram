@@ -2,18 +2,20 @@
 
 ## Version 1.7
 
-### Features
+### Version 1.7.0
+
+#### Features
 
 - `MultiCell` storage, supporting a variable number of values, by @Superharz in [#1008][]
 - Record `growth=True` in writer-info (serialization), and respect it if present by @henryiii in [#1074][]
 - Drop Python 3.9 by @henryiii in [#1057][]
 
-### Bug fixes
+#### Bug fixes
 
 - Don't add empty metadata dicts by @henryiii in [#1048][]
 - Avoid compiler warning: declaration of 'i' hides previous local declaration by @Superharz in [#1068][]
 
-### Internal
+#### Internal
 
 - Refactor `__getitem__` using pattern matching by @henryiii in [#1067][]
 - pytest `log_level` is better than `log_cli_level` by @henryiii in [#1059][]
@@ -37,7 +39,7 @@
 This release fixes several issues with serialization as it's being prepared
 in Hist/uhi.
 
-## Features
+#### Features
 
 - Support `__dict__` on histogram like axes [#1041][]
 - Allow library to be specified in `writer_info` removal [#1042][]
