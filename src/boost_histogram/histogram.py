@@ -1087,6 +1087,15 @@ class Histogram:
 
         merge = 1
         match step:
+            case x if x is sum:  # https://github.com/oracle/graalpython/issues/620
+                integrations.add(i)
+                if start is not None or stop is not None:
+                    slices.append(
+                        _core.algorithm.slice(
+                            i, start_int, stop_int, _core.algorithm.slice_mode.crop
+                        )
+                    )
+                return reduced, slices, integrations
             case None:
                 pass
             case object(factor=x) if x is not None:
@@ -1096,19 +1105,7 @@ class Histogram:
             case object(group_mapping=x) if (tmp_groups := x(self.axes[i])) is not None:
                 groups = tmp_groups
             case x if callable(x):
-                if x is sum:
-                    integrations.add(i)
-                else:
-                    raise NotImplementedError
-
-                if start is not None or stop is not None:
-                    slices.append(
-                        _core.algorithm.slice(
-                            i, start_int, stop_int, _core.algorithm.slice_mode.crop
-                        )
-                    )
-                if len(groups) == 0:
-                    return reduced, slices, integrations
+                raise NotImplementedError
             case _:
                 msg = "The third argument to a slice must be rebin or projection"
                 raise IndexError(msg)
