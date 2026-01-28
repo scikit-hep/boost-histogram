@@ -216,6 +216,21 @@ def test_round_trip_native() -> None:
 
     assert isinstance(h2.axes[0], bh.axis.Integer)
     assert h2.storage_type is bh.storage.AtomicInt64
+    assert h2.axes[0].traits.growth == h.axes[0].traits.growth
+
+
+def test_round_trip_growth() -> None:
+    h = bh.Histogram(
+        bh.axis.Integer(0, 10, growth=True),
+    )
+    h.fill([-1, 0, 0, 1, 20, 20, 20])
+    data = to_uhi(h)
+    h2 = from_uhi(data)
+
+    assert h == h2
+
+    assert isinstance(h2.axes[0], bh.axis.Integer)
+    assert h2.axes[0].traits.growth == h.axes[0].traits.growth
 
 
 @pytest.mark.parametrize("remove", ["boost-histogram", None])
