@@ -90,3 +90,7 @@ compile_commands.json
 /*venv*
 /build
 .DS_Store
+
+# Locking
+uv.lock
+*pylock
