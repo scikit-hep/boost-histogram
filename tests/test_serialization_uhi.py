@@ -219,17 +219,49 @@ def test_round_trip_native() -> None:
     assert h2.axes[0].traits.growth == h.axes[0].traits.growth
 
 
-def test_round_trip_growth() -> None:
+@pytest.mark.parametrize(
+    ("axis_type", "axis_args", "fill_values"),
+    [
+        pytest.param(bh.axis.Integer, (0, 10), [-1, 0, 0, 1, 20, 20, 20], id="integer"),
+        pytest.param(
+            bh.axis.Regular,
+            (10, 0.0, 10.0),
+            [-1.0, 0.0, 0.0, 1.0, 20.0, 20.0, 20.0],
+            id="regular",
+        ),
+        pytest.param(
+            bh.axis.Variable,
+            ([0.0, 2.0, 5.0, 10.0],),
+            [-1.0, 0.0, 1.0, 6.0, 20.0, 20.0],
+            id="variable",
+        ),
+        pytest.param(
+            bh.axis.IntCategory,
+            ([1, 2, 3],),
+            [0, 1, 1, 2, 10, 10, 10],
+            id="intcategory",
+        ),
+        pytest.param(
+            bh.axis.StrCategory,
+            (["A", "B", "C"],),
+            ["Z", "A", "A", "B", "X", "X", "X"],
+            id="strcategory",
+        ),
+    ],
+)
+def test_round_trip_growth(
+    axis_type: type, axis_args: tuple, fill_values: list
+) -> None:
     h = bh.Histogram(
-        bh.axis.Integer(0, 10, growth=True),
+        axis_type(*axis_args, growth=True),
     )
-    h.fill([-1, 0, 0, 1, 20, 20, 20])
+    h.fill(fill_values)
     data = to_uhi(h)
     h2 = from_uhi(data)
 
     assert h == h2
 
-    assert isinstance(h2.axes[0], bh.axis.Integer)
+    assert isinstance(h2.axes[0], axis_type)
     assert h2.axes[0].traits.growth == h.axes[0].traits.growth
 
 
