@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import argparse
+import shutil
 from pathlib import Path
 
 import nox
@@ -35,16 +36,15 @@ def hist(session: nox.Session) -> None:
     """
     Run Hist's test suite
     """
-    args = session.posargs or ["-n", "auto"]
-    pyproject = nox.project.load_toml("pyproject.toml")
     session.install(".")
     tmpdir = session.create_tmp()
     session.chdir(tmpdir)
+    shutil.rmtree("hist")
     session.run("git", "clone", "https://github.com/scikit-hep/hist", external=True)
     session.chdir("hist")
-    session.install(".", *nox.project.dependency_groups(pyproject, "test", "plot"))
-    session.run("pip", "list")
-    session.run("pytest", *args)
+    session.install(".", "--group=test", "--group=plot", "mypy", "pandas-stubs")
+    session.run("pytest", *session.posargs)
+    session.run("mypy")
 
 
 @nox.session(reuse_venv=True, default=False)
