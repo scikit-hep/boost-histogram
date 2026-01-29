@@ -25,7 +25,7 @@ import numpy as np
 import boost_histogram
 from boost_histogram import _core
 
-from . import serialization
+from . import serialization, storage
 from ._compat.typing import Self, TypeVar
 from ._utils import cast, register
 from .axis import AxesTuple, Axis, Variable
@@ -471,6 +471,29 @@ class Histogram(typing.Generic[S]):
         Number of axes (dimensions) of the histogram.
         """
         return self._hist.rank()
+
+    @typing.overload
+    def view(
+        self: Histogram[storage.Double] | Histogram[storage.Int64], flow: bool = False
+    ) -> np.typing.NDArray[Any]: ...
+
+    @typing.overload
+    def view(
+        self: Histogram[storage.Weight], flow: bool = False
+    ) -> WeightedSumView: ...
+
+    @typing.overload
+    def view(self: Histogram[storage.Mean], flow: bool = False) -> MeanView: ...
+
+    @typing.overload
+    def view(
+        self: Histogram[storage.WeightedMean], flow: bool = False
+    ) -> WeightedMeanView: ...
+
+    @typing.overload
+    def view(
+        self: Histogram[Any], flow: bool = False
+    ) -> np.typing.NDArray[Any] | WeightedSumView | WeightedMeanView | MeanView: ...
 
     def view(
         self, flow: bool = False
