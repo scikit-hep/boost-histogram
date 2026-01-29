@@ -10,7 +10,17 @@ elif typing.TYPE_CHECKING:
 else:
     Self = object
 
-__all__ = ["Self"]
+if sys.version_info >= (3, 12):
+    from typing import TypeVar
+elif typing.TYPE_CHECKING:
+    from typing_extensions import TypeVar
+else:
+
+    def TypeVar(*args, default=None, **kwargs):  # noqa: ARG001
+        return typing.TypeVar(*args, **kwargs)
+
+
+__all__ = ["Self", "TypeVar"]
 
 
 def __dir__() -> list[str]:

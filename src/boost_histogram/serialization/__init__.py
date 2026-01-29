@@ -16,7 +16,7 @@ def __dir__() -> list[str]:
     return __all__
 
 
-def to_uhi(h: histogram.Histogram, /) -> dict[str, Any]:
+def to_uhi(h: histogram.Histogram[Any], /) -> dict[str, Any]:
     """Convert an Histogram to a dictionary."""
 
     # Convert the histogram to a dictionary
@@ -31,7 +31,7 @@ def to_uhi(h: histogram.Histogram, /) -> dict[str, Any]:
     return data
 
 
-def from_uhi(data: dict[str, Any], /) -> histogram.Histogram:
+def from_uhi(data: dict[str, Any], /) -> histogram.Histogram[Any]:
     """Convert a dictionary to an Histogram."""
 
     h = histogram.Histogram(

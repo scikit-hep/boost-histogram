@@ -18,7 +18,6 @@ from typing import (
     NewType,
     SupportsIndex,
     TypeAlias,
-    TypeVar,
 )
 
 import numpy as np
@@ -27,7 +26,7 @@ import boost_histogram
 from boost_histogram import _core
 
 from . import serialization
-from ._compat.typing import Self
+from ._compat.typing import Self, TypeVar
 from ._utils import cast, register
 from .axis import AxesTuple, Axis, Variable
 from .storage import Double, Storage
@@ -184,6 +183,7 @@ def _combine_group_contents(
 
 
 H = TypeVar("H", bound="Histogram")
+S = TypeVar("S", bound="Storage", default="Double")
 
 NO_METADATA = object()
 
@@ -191,7 +191,7 @@ NO_METADATA = object()
 # We currently do not cast *to* a histogram, but this is consistent
 # and could be used later.
 @register(_histograms)  # type: ignore[arg-type]
-class Histogram:
+class Histogram(typing.Generic[S]):
     # Note this is a __slots__ __dict__ class!
     __slots__ = (
         "__dict__",
@@ -237,7 +237,7 @@ class Histogram:
     def __init__(
         self,
         *axes: Axis | CppAxis,
-        storage: Storage = ...,
+        storage: S = ...,
         metadata: Any = ...,
         __dict__: Any = ...,
     ) -> None: ...
@@ -245,7 +245,7 @@ class Histogram:
     def __init__(
         self,
         *axes: Axis | CppAxis | Histogram | CppHistogram | dict[str, Any],
-        storage: Storage | None = None,
+        storage: S | None = None,
         metadata: Any = NO_METADATA,
         __dict__: Any = None,
     ) -> None:
@@ -315,18 +315,19 @@ class Histogram:
             )
             return
 
-        if storage is None:
-            storage = Double()
+        resolved_storage = Double() if storage is None else storage
 
         self.__dict__.update(__dict__)
 
         # Check for missed parenthesis or incorrect types
-        if not isinstance(storage, Storage):
+        if not isinstance(resolved_storage, Storage):
             msg_storage = (  # type: ignore[unreachable]
                 "Passing in an initialized storage has been removed. Please add ()."
             )
             msg_unknown = "Only storages allowed in storage argument"
-            raise KeyError(msg_storage if issubclass(storage, Storage) else msg_unknown)
+            raise KeyError(
+                msg_storage if issubclass(resolved_storage, Storage) else msg_unknown
+            )
 
         # Allow a tuple to represent a regular axis
         axes = tuple(_arg_shortcut(arg) for arg in axes)  # type: ignore[arg-type]
@@ -337,8 +338,8 @@ class Histogram:
 
         # Check all available histograms, and if the storage matches, return that one
         for h in _histograms:
-            if isinstance(storage, h._storage_type):
-                self._hist = h(axes, storage)  # type: ignore[arg-type]
+            if isinstance(resolved_storage, h._storage_type):
+                self._hist = h(axes, resolved_storage)  # type: ignore[arg-type]
                 self.axes = self._generate_axes_()
                 return
 
@@ -347,9 +348,9 @@ class Histogram:
     @classmethod
     def _clone(
         cls,
-        _hist: Histogram | CppHistogram,
+        _hist: Histogram[Any] | CppHistogram,
         *,
-        other: Histogram | None = None,
+        other: Histogram[Any] | None = None,
         memo: Any = NOTHING,
     ) -> Self:
         """
@@ -428,7 +429,7 @@ class Histogram:
         """
 
     @classmethod
-    def _export_bh_(cls, self: Histogram) -> None:
+    def _export_bh_(cls, self: Histogram[Any]) -> None:
         """
         If any preparation is needed to pass a histogram between libraries, a subclass can
         implement it here. cls is the current class being converted from, and self is the

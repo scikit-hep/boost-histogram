@@ -85,7 +85,7 @@ def histogramdd(
             barr[-1] = np.nextafter(barr[-1], np.finfo("d").max)
             axs.append(_axis.Variable(barr))
 
-    hist = cls(*axs, storage=storage).fill(*a, weight=weights, threads=threads)
+    hist = cls(*axs, storage=storage).fill(*a, weight=weights, threads=threads)  # type: ignore[call-overload]
 
     if density:
         areas = reduce(mul, hist.axes.widths)
