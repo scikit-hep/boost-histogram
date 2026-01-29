@@ -15,6 +15,7 @@ from typing import (
     TYPE_CHECKING,
     Any,
     ClassVar,
+    Literal,
     NewType,
     SupportsIndex,
     TypeAlias,
@@ -913,6 +914,24 @@ class Histogram(typing.Generic[S]):
                 indexes[i] = self._compute_uhi_index(indexes[i], i)
 
         return indexes
+
+    @typing.overload
+    def to_numpy(
+        self, flow: bool = ..., *, dd: Literal[False] = ..., view: bool = ...
+    ) -> tuple[np.typing.NDArray[Any], ...]: ...
+
+    @typing.overload
+    def to_numpy(
+        self, flow: bool = ..., *, dd: Literal[True], view: bool = ...
+    ) -> tuple[np.typing.NDArray[Any], tuple[np.typing.NDArray[Any], ...]]: ...
+
+    @typing.overload
+    def to_numpy(
+        self, flow: bool = ..., *, dd: bool, view: bool = ...
+    ) -> (
+        tuple[np.typing.NDArray[Any], ...]
+        | tuple[np.typing.NDArray[Any], tuple[np.typing.NDArray[Any], ...]]
+    ): ...
 
     def to_numpy(
         self, flow: bool = False, *, dd: bool = False, view: bool = False

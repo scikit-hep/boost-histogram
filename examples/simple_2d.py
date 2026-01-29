@@ -21,7 +21,7 @@ y_data = 0.5 * np.random.randn(1_000)
 h.fill(x_data, y_data)
 
 # Get numpy.histogram compatible representation of the histogram
-w, (x, y) = h.to_numpy()
+w, x, y = h.to_numpy()
 
 # Draw the count matrix
 
