@@ -32,6 +32,7 @@
 [#1067]: https://github.com/scikit-hep/boost-histogram/pull/1067
 [#1068]: https://github.com/scikit-hep/boost-histogram/pull/1068
 [#1074]: https://github.com/scikit-hep/boost-histogram/pull/1074
+[#1079]: https://github.com/scikit-hep/boost-histogram/pull/1079
 
 ## Version 1.6
 

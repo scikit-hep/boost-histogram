@@ -79,7 +79,7 @@ This storage keeps a sum of weights as well (in CERN ROOT, this is like calling
 ``.Sumw2()`` before filling a histogram). It uses the ``WeightedSum`` accumulator.
 
 MultiCell
-^^^^^^^^^^^
+^^^^^^^^^
 
 This storage is like the ``Double`` storage but supports storing multiple entries per bin independently. This is useful if one has to deal with many independent weights per event that all correspond to the same parameter (they will a be binned into the same bin) and have to be summed independently (e.g. to track the effect of systematic variations). It is supposed to be filled much faster compared to filling many histograms with a ``Weight`` storage type in a loop if one deals with a large number of different weights.
 
