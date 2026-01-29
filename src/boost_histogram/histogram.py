@@ -30,12 +30,16 @@ from ._compat.typing import Self, TypeVar
 from ._utils import cast, register
 from .axis import AxesTuple, Axis, Variable
 from .storage import Double, Storage
-from .typing import Accumulator, ArrayLike, CppHistogram, RebinProtocol
 from .view import MeanView, WeightedMeanView, WeightedSumView, _to_view
 
 if TYPE_CHECKING:
-    pass
-
+    from .typing import (
+        Accumulator,
+        ArrayLike,
+        CppHistogram,
+        RebinProtocol,
+        WeightedSum,
+    )
 
 try:
     from . import _core
@@ -184,6 +188,7 @@ def _combine_group_contents(
 
 H = TypeVar("H", bound="Histogram")
 S = TypeVar("S", bound="Storage", default="Double")
+SS = TypeVar("SS", bound="Storage", default="Double")
 
 NO_METADATA = object()
 
@@ -474,7 +479,12 @@ class Histogram(typing.Generic[S]):
 
     @typing.overload
     def view(
-        self: Histogram[storage.Double] | Histogram[storage.Int64], flow: bool = False
+        self: Histogram[storage.Double]
+        | Histogram[storage.Int64]
+        | Histogram[storage.AtomicInt64]
+        | Histogram[storage.Unlimited]
+        | Histogram[storage.MultiCell],
+        flow: bool = False,
     ) -> np.typing.NDArray[Any]: ...
 
     @typing.overload
@@ -970,6 +980,41 @@ class Histogram(typing.Generic[S]):
         Tuple of axis sizes (not including underflow/overflow).
         """
         return self.axes.size
+
+    @typing.overload
+    def __getitem__(
+        self: Histogram[storage.Double], index: IndexingExpr
+    ) -> Histogram[storage.Double] | float: ...
+
+    @typing.overload
+    def __getitem__(
+        self: Histogram[storage.Int64], index: IndexingExpr
+    ) -> Histogram[storage.Int64] | float: ...
+
+    @typing.overload
+    def __getitem__(
+        self: Histogram[storage.AtomicInt64], index: IndexingExpr
+    ) -> Histogram[storage.AtomicInt64] | float: ...
+
+    @typing.overload
+    def __getitem__(
+        self: Histogram[storage.Unlimited], index: IndexingExpr
+    ) -> Histogram[storage.Unlimited] | float: ...
+
+    @typing.overload
+    def __getitem__(
+        self: Histogram[storage.MultiCell], index: IndexingExpr
+    ) -> Histogram[storage.MultiCell] | float: ...
+
+    @typing.overload
+    def __getitem__(
+        self: Histogram[storage.Weight], index: IndexingExpr
+    ) -> Histogram[storage.Weight] | WeightedSum: ...
+
+    @typing.overload
+    def __getitem__(
+        self: Histogram[SS], index: IndexingExpr
+    ) -> Histogram[SS] | float | Accumulator: ...
 
     def __getitem__(self, index: IndexingExpr) -> Self | float | Accumulator:
         indexes = self._compute_commonindex(index)

@@ -15,6 +15,9 @@ if TYPE_CHECKING:
 
     Accumulator = WeightedSum | Mean | WeightedMean
 else:
+    WeightedSum = Any
+    Mean = Any
+    WeightedMean = Any
     ArrayLike = Any
     Ufunc = Any
     CppHistogram = Any
@@ -25,10 +28,13 @@ __all__ = (
     "ArrayLike",
     "AxisLike",
     "CppHistogram",
+    "Mean",
     "RebinProtocol",
     "StdIndex",
     "StrIndex",
     "Ufunc",
+    "WeightedMean",
+    "WeightedSum",
 )
 
 
