@@ -37,7 +37,9 @@ if TYPE_CHECKING:
         Accumulator,
         ArrayLike,
         CppHistogram,
+        Mean,
         RebinProtocol,
+        WeightedMean,
         WeightedSum,
     )
 
@@ -961,6 +963,35 @@ class Histogram(typing.Generic[S]):
         """
         return self._hist.empty(flow)
 
+    @typing.overload
+    def sum(self: Histogram[storage.Double], flow: bool = False) -> float: ...
+
+    @typing.overload
+    def sum(self: Histogram[storage.Int64], flow: bool = False) -> float: ...
+
+    @typing.overload
+    def sum(self: Histogram[storage.AtomicInt64], flow: bool = False) -> float: ...
+
+    @typing.overload
+    def sum(self: Histogram[storage.Unlimited], flow: bool = False) -> float: ...
+
+    @typing.overload
+    def sum(self: Histogram[storage.MultiCell], flow: bool = False) -> float: ...
+
+    @typing.overload
+    def sum(self: Histogram[storage.Weight], flow: bool = False) -> WeightedSum: ...
+
+    @typing.overload
+    def sum(self: Histogram[storage.Mean], flow: bool = False) -> Mean: ...
+
+    @typing.overload
+    def sum(
+        self: Histogram[storage.WeightedMean], flow: bool = False
+    ) -> WeightedMean: ...
+
+    @typing.overload
+    def sum(self: Histogram[SS], flow: bool = False) -> float | Accumulator: ...
+
     def sum(self, flow: bool = False) -> float | Accumulator:
         """
         Compute the sum over the histogram bins (optionally including the flow bins).
@@ -1010,6 +1041,16 @@ class Histogram(typing.Generic[S]):
     def __getitem__(
         self: Histogram[storage.Weight], index: IndexingExpr
     ) -> Histogram[storage.Weight] | WeightedSum: ...
+
+    @typing.overload
+    def __getitem__(
+        self: Histogram[storage.Mean], index: IndexingExpr
+    ) -> Histogram[storage.Mean] | Mean: ...
+
+    @typing.overload
+    def __getitem__(
+        self: Histogram[storage.WeightedMean], index: IndexingExpr
+    ) -> Histogram[storage.WeightedMean] | WeightedMean: ...
 
     @typing.overload
     def __getitem__(
@@ -1381,6 +1422,51 @@ class Histogram(typing.Generic[S]):
             # e.g. a slice like [0, :, 3] is converted to [:, 0, :, 3]
             indexes.insert(0, slice(None, None, None))
         view[tuple(indexes)] = in_array
+
+    @typing.overload
+    def project(
+        self: Histogram[storage.Double], *args: int
+    ) -> Histogram[storage.Double] | float: ...
+
+    @typing.overload
+    def project(
+        self: Histogram[storage.Int64], *args: int
+    ) -> Histogram[storage.Int64] | float: ...
+
+    @typing.overload
+    def project(
+        self: Histogram[storage.AtomicInt64], *args: int
+    ) -> Histogram[storage.AtomicInt64] | float: ...
+
+    @typing.overload
+    def project(
+        self: Histogram[storage.Unlimited], *args: int
+    ) -> Histogram[storage.Unlimited] | float: ...
+
+    @typing.overload
+    def project(
+        self: Histogram[storage.MultiCell], *args: int
+    ) -> Histogram[storage.MultiCell] | float: ...
+
+    @typing.overload
+    def project(
+        self: Histogram[storage.Weight], *args: int
+    ) -> Histogram[storage.Weight] | WeightedSum: ...
+
+    @typing.overload
+    def project(
+        self: Histogram[storage.Mean], *args: int
+    ) -> Histogram[storage.Mean] | Mean: ...
+
+    @typing.overload
+    def project(
+        self: Histogram[storage.WeightedMean], *args: int
+    ) -> Histogram[storage.WeightedMean] | WeightedMean: ...
+
+    @typing.overload
+    def project(
+        self: Histogram[SS], *args: int
+    ) -> Histogram[SS] | float | Accumulator: ...
 
     def project(self, *args: int) -> Self | float | Accumulator:
         """
