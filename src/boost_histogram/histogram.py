@@ -18,6 +18,7 @@ from typing import (
     NewType,
     SupportsIndex,
     TypeAlias,
+    TypeVar,
 )
 
 import numpy as np
@@ -26,7 +27,7 @@ import boost_histogram
 from boost_histogram import _core
 
 from . import serialization, storage
-from ._compat.typing import Self, TypeVar
+from ._compat.typing import Self
 from ._utils import cast, register
 from .axis import AxesTuple, Axis, Variable
 from .storage import Double, Storage
@@ -188,9 +189,9 @@ def _combine_group_contents(
         new_view[(*pos, jj, ...)] += reduced_view[(*pos, j, ...)]  # type: ignore[arg-type]
 
 
-H = TypeVar("H", bound="Histogram")
-S = TypeVar("S", bound="Storage", default="Double")
-SS = TypeVar("SS", bound="Storage", default="Double")
+H = TypeVar("H", bound="Histogram[Any]")
+S = TypeVar("S", bound="Storage")
+SS = TypeVar("SS", bound="Storage")
 
 NO_METADATA = object()
 
@@ -227,7 +228,7 @@ class Histogram(typing.Generic[S]):
 
     @typing.overload
     def __init__(
-        self, arg: Histogram, /, *, metadata: Any = ..., __dict__: Any = ...
+        self, arg: Histogram[S], /, *, metadata: Any = ..., __dict__: Any = ...
     ) -> None: ...
 
     @typing.overload
@@ -244,14 +245,23 @@ class Histogram(typing.Generic[S]):
     def __init__(
         self,
         *axes: Axis | CppAxis,
-        storage: S = ...,
+        storage: S,
+        metadata: Any = ...,
+        __dict__: Any = ...,
+    ) -> None: ...
+
+    @typing.overload
+    def __init__(
+        self: Histogram[Double],
+        *axes: Axis | CppAxis,
+        storage: None = ...,
         metadata: Any = ...,
         __dict__: Any = ...,
     ) -> None: ...
 
     def __init__(
         self,
-        *axes: Axis | CppAxis | Histogram | CppHistogram | dict[str, Any],
+        *axes: Axis | CppAxis | Histogram[Any] | CppHistogram | dict[str, Any],
         storage: S | None = None,
         metadata: Any = NO_METADATA,
         __dict__: Any = None,
@@ -410,7 +420,7 @@ class Histogram(typing.Generic[S]):
         self.axes = self._generate_axes_()
 
     def _from_histogram_object(
-        self, other: Histogram, *, __dict__: dict[str, Any]
+        self, other: Histogram[S], *, __dict__: dict[str, Any]
     ) -> None:
         """
         Convert self into a new histogram object based on another, possibly
@@ -536,11 +546,11 @@ class Histogram(typing.Generic[S]):
     def __ne__(self, other: object) -> bool:
         return (not hasattr(other, "_hist")) or self._hist != other._hist
 
-    def __add__(self, other: Histogram | np.typing.NDArray[Any] | float) -> Self:
+    def __add__(self, other: Histogram[S] | np.typing.NDArray[Any] | float) -> Self:
         result = self.copy(deep=False)
         return result.__iadd__(other)
 
-    def __iadd__(self, other: Histogram | np.typing.NDArray[Any] | float) -> Self:
+    def __iadd__(self, other: Histogram[S] | np.typing.NDArray[Any] | float) -> Self:
         if isinstance(other, (int, float)) and other == 0:
             return self
         self._compute_inplace_op("__iadd__", other)
@@ -553,11 +563,11 @@ class Histogram(typing.Generic[S]):
     def __radd__(self, other: np.typing.NDArray[Any] | float) -> Self:
         return self + other
 
-    def __sub__(self, other: Histogram | np.typing.NDArray[Any] | float) -> Self:
+    def __sub__(self, other: Histogram[S] | np.typing.NDArray[Any] | float) -> Self:
         result = self.copy(deep=False)
         return result.__isub__(other)
 
-    def __isub__(self, other: Histogram | np.typing.NDArray[Any] | float) -> Self:
+    def __isub__(self, other: Histogram[S] | np.typing.NDArray[Any] | float) -> Self:
         if isinstance(other, (int, float)) and other == 0:
             return self
         self._compute_inplace_op("__isub__", other)
@@ -567,32 +577,34 @@ class Histogram(typing.Generic[S]):
         return self
 
     # If these fail, the underlying object throws the correct error
-    def __mul__(self, other: Histogram | np.typing.NDArray[Any] | float) -> Self:
+    def __mul__(self, other: Histogram[S] | np.typing.NDArray[Any] | float) -> Self:
         result = self.copy(deep=False)
         return result._compute_inplace_op("__imul__", other)
 
     def __rmul__(self, other: np.typing.NDArray[Any] | float) -> Self:
         return self * other
 
-    def __truediv__(self, other: Histogram | np.typing.NDArray[Any] | float) -> Self:
+    def __truediv__(self, other: Histogram[S] | np.typing.NDArray[Any] | float) -> Self:
         result = self.copy(deep=False)
         return result._compute_inplace_op("__itruediv__", other)
 
-    def __div__(self, other: Histogram | np.typing.NDArray[Any] | float) -> Self:
+    def __div__(self, other: Histogram[S] | np.typing.NDArray[Any] | float) -> Self:
         result = self.copy(deep=False)
         return result._compute_inplace_op("__idiv__", other)
 
-    def __idiv__(self, other: Histogram | np.typing.NDArray[Any] | float) -> Self:
+    def __idiv__(self, other: Histogram[S] | np.typing.NDArray[Any] | float) -> Self:
         return self._compute_inplace_op("__idiv__", other)
 
-    def __itruediv__(self, other: Histogram | np.typing.NDArray[Any] | float) -> Self:
+    def __itruediv__(
+        self, other: Histogram[S] | np.typing.NDArray[Any] | float
+    ) -> Self:
         return self._compute_inplace_op("__itruediv__", other)
 
-    def __imul__(self, other: Histogram | np.typing.NDArray[Any] | float) -> Self:
+    def __imul__(self, other: Histogram[S] | np.typing.NDArray[Any] | float) -> Self:
         return self._compute_inplace_op("__imul__", other)
 
     def _compute_inplace_op(
-        self, name: str, other: Histogram | np.typing.NDArray[Any] | float
+        self, name: str, other: Histogram[S] | np.typing.NDArray[Any] | float
     ) -> Self:
         # Also takes CppHistogram, but that confuses mypy because it's hard to pick out
         if isinstance(other, Histogram):
@@ -1611,4 +1623,4 @@ class Histogram(typing.Generic[S]):
 if TYPE_CHECKING:
     from uhi.typing.plottable import PlottableHistogram
 
-    _: PlottableHistogram = typing.cast(Histogram, None)
+    _: PlottableHistogram = typing.cast(Histogram[Any], None)
