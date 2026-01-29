@@ -10,7 +10,6 @@ elif typing.TYPE_CHECKING:
 else:
     Self = object
 
-
 __all__ = ["Self"]
 
 

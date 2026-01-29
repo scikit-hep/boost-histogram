@@ -26,7 +26,8 @@ import numpy as np
 import boost_histogram
 from boost_histogram import _core
 
-from . import serialization, storage
+from . import serialization
+from . import storage as bhs
 from ._compat.typing import Self
 from ._utils import cast, register
 from .axis import AxesTuple, Axis, Variable
@@ -99,12 +100,12 @@ logger = logging.getLogger(__name__)
 
 CppAxis = NewType("CppAxis", object)
 
-SimpleIndexing: TypeAlias = SupportsIndex | slice | RebinProtocol
-InnerIndexing: TypeAlias = SimpleIndexing | Callable[[Axis], int]
-FullInnerIndexing: TypeAlias = InnerIndexing | list[InnerIndexing]
-IndexingWithMapping: TypeAlias = FullInnerIndexing | Mapping[int, FullInnerIndexing]
+SimpleIndexing: TypeAlias = "SupportsIndex | slice | RebinProtocol"
+InnerIndexing: TypeAlias = "SimpleIndexing | Callable[[Axis], int]"
+FullInnerIndexing: TypeAlias = "InnerIndexing | list[InnerIndexing]"
+IndexingWithMapping: TypeAlias = "FullInnerIndexing | Mapping[int, FullInnerIndexing]"
 IndexingExpr: TypeAlias = (
-    IndexingWithMapping | tuple[IndexingWithMapping, ...] | EllipsisType
+    "IndexingWithMapping | tuple[IndexingWithMapping, ...] | EllipsisType"
 )
 
 T = TypeVar("T")
@@ -491,25 +492,23 @@ class Histogram(typing.Generic[S]):
 
     @typing.overload
     def view(
-        self: Histogram[storage.Double]
-        | Histogram[storage.Int64]
-        | Histogram[storage.AtomicInt64]
-        | Histogram[storage.Unlimited]
-        | Histogram[storage.MultiCell],
+        self: Histogram[bhs.Double]
+        | Histogram[bhs.Int64]
+        | Histogram[bhs.AtomicInt64]
+        | Histogram[bhs.Unlimited]
+        | Histogram[bhs.MultiCell],
         flow: bool = False,
     ) -> np.typing.NDArray[Any]: ...
 
     @typing.overload
-    def view(
-        self: Histogram[storage.Weight], flow: bool = False
-    ) -> WeightedSumView: ...
+    def view(self: Histogram[bhs.Weight], flow: bool = False) -> WeightedSumView: ...
 
     @typing.overload
-    def view(self: Histogram[storage.Mean], flow: bool = False) -> MeanView: ...
+    def view(self: Histogram[bhs.Mean], flow: bool = False) -> MeanView: ...
 
     @typing.overload
     def view(
-        self: Histogram[storage.WeightedMean], flow: bool = False
+        self: Histogram[bhs.WeightedMean], flow: bool = False
     ) -> WeightedMeanView: ...
 
     @typing.overload
@@ -976,30 +975,28 @@ class Histogram(typing.Generic[S]):
         return self._hist.empty(flow)
 
     @typing.overload
-    def sum(self: Histogram[storage.Double], flow: bool = False) -> float: ...
+    def sum(self: Histogram[bhs.Double], flow: bool = False) -> float: ...
 
     @typing.overload
-    def sum(self: Histogram[storage.Int64], flow: bool = False) -> float: ...
+    def sum(self: Histogram[bhs.Int64], flow: bool = False) -> float: ...
 
     @typing.overload
-    def sum(self: Histogram[storage.AtomicInt64], flow: bool = False) -> float: ...
+    def sum(self: Histogram[bhs.AtomicInt64], flow: bool = False) -> float: ...
 
     @typing.overload
-    def sum(self: Histogram[storage.Unlimited], flow: bool = False) -> float: ...
+    def sum(self: Histogram[bhs.Unlimited], flow: bool = False) -> float: ...
 
     @typing.overload
-    def sum(self: Histogram[storage.MultiCell], flow: bool = False) -> float: ...
+    def sum(self: Histogram[bhs.MultiCell], flow: bool = False) -> float: ...
 
     @typing.overload
-    def sum(self: Histogram[storage.Weight], flow: bool = False) -> WeightedSum: ...
+    def sum(self: Histogram[bhs.Weight], flow: bool = False) -> WeightedSum: ...
 
     @typing.overload
-    def sum(self: Histogram[storage.Mean], flow: bool = False) -> Mean: ...
+    def sum(self: Histogram[bhs.Mean], flow: bool = False) -> Mean: ...
 
     @typing.overload
-    def sum(
-        self: Histogram[storage.WeightedMean], flow: bool = False
-    ) -> WeightedMean: ...
+    def sum(self: Histogram[bhs.WeightedMean], flow: bool = False) -> WeightedMean: ...
 
     @typing.overload
     def sum(self: Histogram[SS], flow: bool = False) -> float | Accumulator: ...
@@ -1026,43 +1023,43 @@ class Histogram(typing.Generic[S]):
 
     @typing.overload
     def __getitem__(
-        self: Histogram[storage.Double], index: IndexingExpr
-    ) -> Histogram[storage.Double] | float: ...
+        self: Histogram[bhs.Double], index: IndexingExpr
+    ) -> Histogram[bhs.Double] | float: ...
 
     @typing.overload
     def __getitem__(
-        self: Histogram[storage.Int64], index: IndexingExpr
-    ) -> Histogram[storage.Int64] | float: ...
+        self: Histogram[bhs.Int64], index: IndexingExpr
+    ) -> Histogram[bhs.Int64] | float: ...
 
     @typing.overload
     def __getitem__(
-        self: Histogram[storage.AtomicInt64], index: IndexingExpr
-    ) -> Histogram[storage.AtomicInt64] | float: ...
+        self: Histogram[bhs.AtomicInt64], index: IndexingExpr
+    ) -> Histogram[bhs.AtomicInt64] | float: ...
 
     @typing.overload
     def __getitem__(
-        self: Histogram[storage.Unlimited], index: IndexingExpr
-    ) -> Histogram[storage.Unlimited] | float: ...
+        self: Histogram[bhs.Unlimited], index: IndexingExpr
+    ) -> Histogram[bhs.Unlimited] | float: ...
 
     @typing.overload
     def __getitem__(
-        self: Histogram[storage.MultiCell], index: IndexingExpr
-    ) -> Histogram[storage.MultiCell] | float: ...
+        self: Histogram[bhs.MultiCell], index: IndexingExpr
+    ) -> Histogram[bhs.MultiCell] | float: ...
 
     @typing.overload
     def __getitem__(
-        self: Histogram[storage.Weight], index: IndexingExpr
-    ) -> Histogram[storage.Weight] | WeightedSum: ...
+        self: Histogram[bhs.Weight], index: IndexingExpr
+    ) -> Histogram[bhs.Weight] | WeightedSum: ...
 
     @typing.overload
     def __getitem__(
-        self: Histogram[storage.Mean], index: IndexingExpr
-    ) -> Histogram[storage.Mean] | Mean: ...
+        self: Histogram[bhs.Mean], index: IndexingExpr
+    ) -> Histogram[bhs.Mean] | Mean: ...
 
     @typing.overload
     def __getitem__(
-        self: Histogram[storage.WeightedMean], index: IndexingExpr
-    ) -> Histogram[storage.WeightedMean] | WeightedMean: ...
+        self: Histogram[bhs.WeightedMean], index: IndexingExpr
+    ) -> Histogram[bhs.WeightedMean] | WeightedMean: ...
 
     @typing.overload
     def __getitem__(
@@ -1437,43 +1434,43 @@ class Histogram(typing.Generic[S]):
 
     @typing.overload
     def project(
-        self: Histogram[storage.Double], *args: int
-    ) -> Histogram[storage.Double] | float: ...
+        self: Histogram[bhs.Double], *args: int
+    ) -> Histogram[bhs.Double] | float: ...
 
     @typing.overload
     def project(
-        self: Histogram[storage.Int64], *args: int
-    ) -> Histogram[storage.Int64] | float: ...
+        self: Histogram[bhs.Int64], *args: int
+    ) -> Histogram[bhs.Int64] | float: ...
 
     @typing.overload
     def project(
-        self: Histogram[storage.AtomicInt64], *args: int
-    ) -> Histogram[storage.AtomicInt64] | float: ...
+        self: Histogram[bhs.AtomicInt64], *args: int
+    ) -> Histogram[bhs.AtomicInt64] | float: ...
 
     @typing.overload
     def project(
-        self: Histogram[storage.Unlimited], *args: int
-    ) -> Histogram[storage.Unlimited] | float: ...
+        self: Histogram[bhs.Unlimited], *args: int
+    ) -> Histogram[bhs.Unlimited] | float: ...
 
     @typing.overload
     def project(
-        self: Histogram[storage.MultiCell], *args: int
-    ) -> Histogram[storage.MultiCell] | float: ...
+        self: Histogram[bhs.MultiCell], *args: int
+    ) -> Histogram[bhs.MultiCell] | float: ...
 
     @typing.overload
     def project(
-        self: Histogram[storage.Weight], *args: int
-    ) -> Histogram[storage.Weight] | WeightedSum: ...
+        self: Histogram[bhs.Weight], *args: int
+    ) -> Histogram[bhs.Weight] | WeightedSum: ...
 
     @typing.overload
     def project(
-        self: Histogram[storage.Mean], *args: int
-    ) -> Histogram[storage.Mean] | Mean: ...
+        self: Histogram[bhs.Mean], *args: int
+    ) -> Histogram[bhs.Mean] | Mean: ...
 
     @typing.overload
     def project(
-        self: Histogram[storage.WeightedMean], *args: int
-    ) -> Histogram[storage.WeightedMean] | WeightedMean: ...
+        self: Histogram[bhs.WeightedMean], *args: int
+    ) -> Histogram[bhs.WeightedMean] | WeightedMean: ...
 
     @typing.overload
     def project(
