@@ -10,7 +10,6 @@ import typing
 import warnings
 from collections.abc import Callable, Iterable, Mapping
 from os import cpu_count
-from types import EllipsisType
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -36,6 +35,8 @@ from .storage import Double, Storage
 from .view import MeanView, WeightedMeanView, WeightedSumView, _to_view
 
 if TYPE_CHECKING:
+    from types import EllipsisType
+
     from .typing import (
         Accumulator,
         ArrayLike,
@@ -1006,7 +1007,7 @@ class Histogram(typing.Generic[S]):
     def sum(self: Histogram[bhs.Unlimited], flow: bool = False) -> float: ...
 
     @typing.overload
-    def sum(self: Histogram[bhs.MultiCell], flow: bool = False) -> float: ...
+    def sum(self: Histogram[bhs.MultiCell], flow: bool = False) -> list[float]: ...
 
     @typing.overload
     def sum(self: Histogram[bhs.Weight], flow: bool = False) -> WeightedSum: ...
@@ -1018,9 +1019,11 @@ class Histogram(typing.Generic[S]):
     def sum(self: Histogram[bhs.WeightedMean], flow: bool = False) -> WeightedMean: ...
 
     @typing.overload
-    def sum(self: Histogram[SS], flow: bool = False) -> float | Accumulator: ...
+    def sum(
+        self: Histogram[SS], flow: bool = False
+    ) -> float | Accumulator | list[float]: ...
 
-    def sum(self, flow: bool = False) -> float | Accumulator:
+    def sum(self, flow: bool = False) -> float | Accumulator | list[float]:
         """
         Compute the sum over the histogram bins (optionally including the flow bins).
         """
@@ -1048,22 +1051,22 @@ class Histogram(typing.Generic[S]):
     @typing.overload
     def __getitem__(
         self: Histogram[bhs.Int64], index: IndexingExpr
-    ) -> Histogram[bhs.Int64] | float: ...
+    ) -> Histogram[bhs.Int64] | int: ...
 
     @typing.overload
     def __getitem__(
         self: Histogram[bhs.AtomicInt64], index: IndexingExpr
-    ) -> Histogram[bhs.AtomicInt64] | float: ...
+    ) -> Histogram[bhs.AtomicInt64] | int: ...
 
     @typing.overload
     def __getitem__(
         self: Histogram[bhs.Unlimited], index: IndexingExpr
-    ) -> Histogram[bhs.Unlimited] | float: ...
+    ) -> Histogram[bhs.Unlimited] | int | float: ...
 
     @typing.overload
     def __getitem__(
         self: Histogram[bhs.MultiCell], index: IndexingExpr
-    ) -> Histogram[bhs.MultiCell] | float: ...
+    ) -> Histogram[bhs.MultiCell] | list[float]: ...
 
     @typing.overload
     def __getitem__(
@@ -1083,9 +1086,11 @@ class Histogram(typing.Generic[S]):
     @typing.overload
     def __getitem__(
         self: Histogram[SS], index: IndexingExpr
-    ) -> Histogram[SS] | float | Accumulator: ...
+    ) -> Histogram[SS] | float | list[float] | int | Accumulator: ...
 
-    def __getitem__(self, index: IndexingExpr) -> Self | float | Accumulator:
+    def __getitem__(
+        self, index: IndexingExpr
+    ) -> Self | float | Accumulator | list[float] | int:
         indexes = self._compute_commonindex(index)
 
         # Early return for all-integer case
@@ -1451,52 +1456,7 @@ class Histogram(typing.Generic[S]):
             indexes.insert(0, slice(None, None, None))
         view[tuple(indexes)] = in_array
 
-    @typing.overload
-    def project(
-        self: Histogram[bhs.Double], *args: int
-    ) -> Histogram[bhs.Double] | float: ...
-
-    @typing.overload
-    def project(
-        self: Histogram[bhs.Int64], *args: int
-    ) -> Histogram[bhs.Int64] | float: ...
-
-    @typing.overload
-    def project(
-        self: Histogram[bhs.AtomicInt64], *args: int
-    ) -> Histogram[bhs.AtomicInt64] | float: ...
-
-    @typing.overload
-    def project(
-        self: Histogram[bhs.Unlimited], *args: int
-    ) -> Histogram[bhs.Unlimited] | float: ...
-
-    @typing.overload
-    def project(
-        self: Histogram[bhs.MultiCell], *args: int
-    ) -> Histogram[bhs.MultiCell] | float: ...
-
-    @typing.overload
-    def project(
-        self: Histogram[bhs.Weight], *args: int
-    ) -> Histogram[bhs.Weight] | WeightedSum: ...
-
-    @typing.overload
-    def project(
-        self: Histogram[bhs.Mean], *args: int
-    ) -> Histogram[bhs.Mean] | Mean: ...
-
-    @typing.overload
-    def project(
-        self: Histogram[bhs.WeightedMean], *args: int
-    ) -> Histogram[bhs.WeightedMean] | WeightedMean: ...
-
-    @typing.overload
-    def project(
-        self: Histogram[SS], *args: int
-    ) -> Histogram[SS] | float | Accumulator: ...
-
-    def project(self, *args: int) -> Self | float | Accumulator:
+    def project(self, *args: int) -> Self:
         """
         Project to a single axis or several axes on a multidimensional histogram.
         Provided a list of axis numbers, this will produce the histogram over
