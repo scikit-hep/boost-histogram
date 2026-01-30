@@ -36,11 +36,11 @@ def histogramdd(
     weights: ArrayLike | None = None,
     density: bool = False,
     *,
-    histogram: None | (type[Histogram]) = None,
+    histogram: None | (type[Histogram[Any]]) = None,
     storage: _storage.Storage = _storage.Double(),  # noqa: B008
     threads: int | None = None,
 ) -> Any:
-    cls: type[Histogram] = Histogram if histogram is None else histogram
+    cls: type[Histogram[Any]] = Histogram if histogram is None else histogram
 
     if normed is not None:
         raise KeyError(
@@ -107,7 +107,7 @@ def histogram2d(
     weights: ArrayLike | None = None,
     density: bool = False,
     *,
-    histogram: None | (type[Histogram]) = None,
+    histogram: None | (type[Histogram[Any]]) = None,
     storage: _storage.Storage = _storage.Double(),  # noqa: B008
     threads: int | None = None,
 ) -> Any:
@@ -138,7 +138,7 @@ def histogram(
     weights: ArrayLike | None = None,
     density: bool = False,
     *,
-    histogram: None | (type[Histogram]) = None,
+    histogram: None | (type[Histogram[Any]]) = None,
     storage: _storage.Storage | None = None,
     threads: int | None = None,
 ) -> Any:

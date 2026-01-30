@@ -10,11 +10,11 @@ import typing
 import warnings
 from collections.abc import Callable, Iterable, Mapping
 from os import cpu_count
-from types import EllipsisType
 from typing import (
     TYPE_CHECKING,
     Any,
     ClassVar,
+    Literal,
     NewType,
     SupportsIndex,
     TypeAlias,
@@ -27,16 +27,25 @@ import boost_histogram
 from boost_histogram import _core
 
 from . import serialization
+from . import storage as bhs
 from ._compat.typing import Self
 from ._utils import cast, register
 from .axis import AxesTuple, Axis, Variable
 from .storage import Double, Storage
-from .typing import Accumulator, ArrayLike, CppHistogram, RebinProtocol
 from .view import MeanView, WeightedMeanView, WeightedSumView, _to_view
 
 if TYPE_CHECKING:
-    pass
+    from types import EllipsisType
 
+    from .typing import (
+        Accumulator,
+        ArrayLike,
+        CppHistogram,
+        Mean,
+        RebinProtocol,
+        WeightedMean,
+        WeightedSum,
+    )
 
 try:
     from . import _core
@@ -93,12 +102,12 @@ logger = logging.getLogger(__name__)
 
 CppAxis = NewType("CppAxis", object)
 
-SimpleIndexing: TypeAlias = SupportsIndex | slice | RebinProtocol
-InnerIndexing: TypeAlias = SimpleIndexing | Callable[[Axis], int]
-FullInnerIndexing: TypeAlias = InnerIndexing | list[InnerIndexing]
-IndexingWithMapping: TypeAlias = FullInnerIndexing | Mapping[int, FullInnerIndexing]
+SimpleIndexing: TypeAlias = "SupportsIndex | slice | RebinProtocol"
+InnerIndexing: TypeAlias = "SimpleIndexing | Callable[[Axis], int]"
+FullInnerIndexing: TypeAlias = "InnerIndexing | list[InnerIndexing]"
+IndexingWithMapping: TypeAlias = "FullInnerIndexing | Mapping[int, FullInnerIndexing]"
 IndexingExpr: TypeAlias = (
-    IndexingWithMapping | tuple[IndexingWithMapping, ...] | EllipsisType
+    "IndexingWithMapping | tuple[IndexingWithMapping, ...] | EllipsisType"
 )
 
 T = TypeVar("T")
@@ -183,7 +192,9 @@ def _combine_group_contents(
         new_view[(*pos, jj, ...)] += reduced_view[(*pos, j, ...)]  # type: ignore[arg-type]
 
 
-H = TypeVar("H", bound="Histogram")
+H = TypeVar("H", bound="Histogram[Any]")
+S = TypeVar("S", bound="Storage")
+SS = TypeVar("SS", bound="Storage")
 
 NO_METADATA = object()
 
@@ -191,7 +202,7 @@ NO_METADATA = object()
 # We currently do not cast *to* a histogram, but this is consistent
 # and could be used later.
 @register(_histograms)  # type: ignore[arg-type]
-class Histogram:
+class Histogram(typing.Generic[S]):
     # Note this is a __slots__ __dict__ class!
     __slots__ = (
         "__dict__",
@@ -220,7 +231,7 @@ class Histogram:
 
     @typing.overload
     def __init__(
-        self, arg: Histogram, /, *, metadata: Any = ..., __dict__: Any = ...
+        self, arg: Histogram[S], /, *, metadata: Any = ..., __dict__: Any = ...
     ) -> None: ...
 
     @typing.overload
@@ -237,15 +248,24 @@ class Histogram:
     def __init__(
         self,
         *axes: Axis | CppAxis,
-        storage: Storage = ...,
+        storage: S,
+        metadata: Any = ...,
+        __dict__: Any = ...,
+    ) -> None: ...
+
+    @typing.overload
+    def __init__(
+        self: Histogram[Double],
+        *axes: Axis | CppAxis,
+        storage: None = ...,
         metadata: Any = ...,
         __dict__: Any = ...,
     ) -> None: ...
 
     def __init__(
         self,
-        *axes: Axis | CppAxis | Histogram | CppHistogram | dict[str, Any],
-        storage: Storage | None = None,
+        *axes: Axis | CppAxis | Histogram[Any] | CppHistogram | dict[str, Any],
+        storage: S | None = None,
         metadata: Any = NO_METADATA,
         __dict__: Any = None,
     ) -> None:
@@ -315,18 +335,19 @@ class Histogram:
             )
             return
 
-        if storage is None:
-            storage = Double()
+        resolved_storage = Double() if storage is None else storage
 
         self.__dict__.update(__dict__)
 
         # Check for missed parenthesis or incorrect types
-        if not isinstance(storage, Storage):
+        if not isinstance(resolved_storage, Storage):
             msg_storage = (  # type: ignore[unreachable]
                 "Passing in an initialized storage has been removed. Please add ()."
             )
             msg_unknown = "Only storages allowed in storage argument"
-            raise KeyError(msg_storage if issubclass(storage, Storage) else msg_unknown)
+            raise KeyError(
+                msg_storage if issubclass(resolved_storage, Storage) else msg_unknown
+            )
 
         # Allow a tuple to represent a regular axis
         axes = tuple(_arg_shortcut(arg) for arg in axes)  # type: ignore[arg-type]
@@ -337,8 +358,8 @@ class Histogram:
 
         # Check all available histograms, and if the storage matches, return that one
         for h in _histograms:
-            if isinstance(storage, h._storage_type):
-                self._hist = h(axes, storage)  # type: ignore[arg-type]
+            if isinstance(resolved_storage, h._storage_type):
+                self._hist = h(axes, resolved_storage)  # type: ignore[arg-type]
                 self.axes = self._generate_axes_()
                 return
 
@@ -347,9 +368,9 @@ class Histogram:
     @classmethod
     def _clone(
         cls,
-        _hist: Histogram | CppHistogram,
+        _hist: Histogram[Any] | CppHistogram,
         *,
-        other: Histogram | None = None,
+        other: Histogram[Any] | None = None,
         memo: Any = NOTHING,
     ) -> Self:
         """
@@ -402,7 +423,7 @@ class Histogram:
         self.axes = self._generate_axes_()
 
     def _from_histogram_object(
-        self, other: Histogram, *, __dict__: dict[str, Any]
+        self, other: Histogram[S], *, __dict__: dict[str, Any]
     ) -> None:
         """
         Convert self into a new histogram object based on another, possibly
@@ -428,7 +449,7 @@ class Histogram:
         """
 
     @classmethod
-    def _export_bh_(cls, self: Histogram) -> None:
+    def _export_bh_(cls, self: Histogram[Any]) -> None:
         """
         If any preparation is needed to pass a histogram between libraries, a subclass can
         implement it here. cls is the current class being converted from, and self is the
@@ -471,9 +492,51 @@ class Histogram:
         """
         return self._hist.rank()
 
+    @typing.overload
+    def view(
+        self: Histogram[bhs.Double]
+        | Histogram[bhs.MultiCell]
+        | Histogram[bhs.Unlimited],
+        flow: bool = False,
+    ) -> np.typing.NDArray[np.float64]: ...
+
+    @typing.overload
+    def view(
+        self: Histogram[bhs.Int64] | Histogram[bhs.AtomicInt64],
+        flow: bool = False,
+    ) -> np.typing.NDArray[np.int64]: ...
+
+    @typing.overload
+    def view(self: Histogram[bhs.Weight], flow: bool = False) -> WeightedSumView: ...
+
+    @typing.overload
+    def view(self: Histogram[bhs.Mean], flow: bool = False) -> MeanView: ...
+
+    @typing.overload
+    def view(
+        self: Histogram[bhs.WeightedMean], flow: bool = False
+    ) -> WeightedMeanView: ...
+
+    @typing.overload
+    def view(
+        self: Histogram[Any], flow: bool = False
+    ) -> (
+        np.typing.NDArray[np.float64]
+        | np.typing.NDArray[np.int64]
+        | WeightedSumView
+        | WeightedMeanView
+        | MeanView
+    ): ...
+
     def view(
         self, flow: bool = False
-    ) -> np.typing.NDArray[Any] | WeightedSumView | WeightedMeanView | MeanView:
+    ) -> (
+        np.typing.NDArray[np.float64]
+        | np.typing.NDArray[np.int64]
+        | WeightedSumView
+        | WeightedMeanView
+        | MeanView
+    ):
         """
         Return a view into the data, optionally with overflow turned on.
         """
@@ -500,11 +563,11 @@ class Histogram:
     def __ne__(self, other: object) -> bool:
         return (not hasattr(other, "_hist")) or self._hist != other._hist
 
-    def __add__(self, other: Histogram | np.typing.NDArray[Any] | float) -> Self:
+    def __add__(self, other: Histogram[S] | np.typing.NDArray[Any] | float) -> Self:
         result = self.copy(deep=False)
         return result.__iadd__(other)
 
-    def __iadd__(self, other: Histogram | np.typing.NDArray[Any] | float) -> Self:
+    def __iadd__(self, other: Histogram[S] | np.typing.NDArray[Any] | float) -> Self:
         if isinstance(other, (int, float)) and other == 0:
             return self
         self._compute_inplace_op("__iadd__", other)
@@ -517,11 +580,11 @@ class Histogram:
     def __radd__(self, other: np.typing.NDArray[Any] | float) -> Self:
         return self + other
 
-    def __sub__(self, other: Histogram | np.typing.NDArray[Any] | float) -> Self:
+    def __sub__(self, other: Histogram[S] | np.typing.NDArray[Any] | float) -> Self:
         result = self.copy(deep=False)
         return result.__isub__(other)
 
-    def __isub__(self, other: Histogram | np.typing.NDArray[Any] | float) -> Self:
+    def __isub__(self, other: Histogram[S] | np.typing.NDArray[Any] | float) -> Self:
         if isinstance(other, (int, float)) and other == 0:
             return self
         self._compute_inplace_op("__isub__", other)
@@ -531,32 +594,34 @@ class Histogram:
         return self
 
     # If these fail, the underlying object throws the correct error
-    def __mul__(self, other: Histogram | np.typing.NDArray[Any] | float) -> Self:
+    def __mul__(self, other: Histogram[S] | np.typing.NDArray[Any] | float) -> Self:
         result = self.copy(deep=False)
         return result._compute_inplace_op("__imul__", other)
 
     def __rmul__(self, other: np.typing.NDArray[Any] | float) -> Self:
         return self * other
 
-    def __truediv__(self, other: Histogram | np.typing.NDArray[Any] | float) -> Self:
+    def __truediv__(self, other: Histogram[S] | np.typing.NDArray[Any] | float) -> Self:
         result = self.copy(deep=False)
         return result._compute_inplace_op("__itruediv__", other)
 
-    def __div__(self, other: Histogram | np.typing.NDArray[Any] | float) -> Self:
+    def __div__(self, other: Histogram[S] | np.typing.NDArray[Any] | float) -> Self:
         result = self.copy(deep=False)
         return result._compute_inplace_op("__idiv__", other)
 
-    def __idiv__(self, other: Histogram | np.typing.NDArray[Any] | float) -> Self:
+    def __idiv__(self, other: Histogram[S] | np.typing.NDArray[Any] | float) -> Self:
         return self._compute_inplace_op("__idiv__", other)
 
-    def __itruediv__(self, other: Histogram | np.typing.NDArray[Any] | float) -> Self:
+    def __itruediv__(
+        self, other: Histogram[S] | np.typing.NDArray[Any] | float
+    ) -> Self:
         return self._compute_inplace_op("__itruediv__", other)
 
-    def __imul__(self, other: Histogram | np.typing.NDArray[Any] | float) -> Self:
+    def __imul__(self, other: Histogram[S] | np.typing.NDArray[Any] | float) -> Self:
         return self._compute_inplace_op("__imul__", other)
 
     def _compute_inplace_op(
-        self, name: str, other: Histogram | np.typing.NDArray[Any] | float
+        self, name: str, other: Histogram[S] | np.typing.NDArray[Any] | float
     ) -> Self:
         # Also takes CppHistogram, but that confuses mypy because it's hard to pick out
         if isinstance(other, Histogram):
@@ -867,11 +932,29 @@ class Histogram:
 
         return indexes
 
+    @typing.overload
+    def to_numpy(
+        self, flow: bool = ..., *, dd: Literal[False] = ..., view: bool = ...
+    ) -> tuple[np.typing.NDArray[Any], ...]: ...
+
+    @typing.overload
+    def to_numpy(
+        self, flow: bool = ..., *, dd: Literal[True], view: bool = ...
+    ) -> tuple[np.typing.NDArray[Any], tuple[np.typing.NDArray[np.float64], ...]]: ...
+
+    @typing.overload
+    def to_numpy(
+        self, flow: bool = ..., *, dd: bool, view: bool = ...
+    ) -> (
+        tuple[np.typing.NDArray[Any], ...]
+        | tuple[np.typing.NDArray[Any], tuple[np.typing.NDArray[np.float64], ...]]
+    ): ...
+
     def to_numpy(
         self, flow: bool = False, *, dd: bool = False, view: bool = False
     ) -> (
         tuple[np.typing.NDArray[Any], ...]
-        | tuple[np.typing.NDArray[Any], tuple[np.typing.NDArray[Any], ...]]
+        | tuple[np.typing.NDArray[Any], tuple[np.typing.NDArray[np.float64], ...]]
     ):
         """
         Convert to a NumPy style tuple of return arrays. Edges are converted to
@@ -927,7 +1010,36 @@ class Histogram:
         """
         return self._hist.empty(flow)
 
-    def sum(self, flow: bool = False) -> float | Accumulator:
+    @typing.overload
+    def sum(self: Histogram[bhs.Double], flow: bool = False) -> float: ...
+
+    @typing.overload
+    def sum(self: Histogram[bhs.Int64], flow: bool = False) -> float: ...
+
+    @typing.overload
+    def sum(self: Histogram[bhs.AtomicInt64], flow: bool = False) -> float: ...
+
+    @typing.overload
+    def sum(self: Histogram[bhs.Unlimited], flow: bool = False) -> float: ...
+
+    @typing.overload
+    def sum(self: Histogram[bhs.MultiCell], flow: bool = False) -> list[float]: ...
+
+    @typing.overload
+    def sum(self: Histogram[bhs.Weight], flow: bool = False) -> WeightedSum: ...
+
+    @typing.overload
+    def sum(self: Histogram[bhs.Mean], flow: bool = False) -> Mean: ...
+
+    @typing.overload
+    def sum(self: Histogram[bhs.WeightedMean], flow: bool = False) -> WeightedMean: ...
+
+    @typing.overload
+    def sum(
+        self: Histogram[Any], flow: bool = False
+    ) -> float | Accumulator | list[float]: ...
+
+    def sum(self, flow: bool = False) -> float | Accumulator | list[float]:
         """
         Compute the sum over the histogram bins (optionally including the flow bins).
         """
@@ -947,7 +1059,54 @@ class Histogram:
         """
         return self.axes.size
 
-    def __getitem__(self, index: IndexingExpr) -> Self | float | Accumulator:
+    @typing.overload
+    def __getitem__(
+        self: Histogram[bhs.Double], index: IndexingExpr
+    ) -> Histogram[bhs.Double] | float: ...
+
+    @typing.overload
+    def __getitem__(
+        self: Histogram[bhs.Int64], index: IndexingExpr
+    ) -> Histogram[bhs.Int64] | int: ...
+
+    @typing.overload
+    def __getitem__(
+        self: Histogram[bhs.AtomicInt64], index: IndexingExpr
+    ) -> Histogram[bhs.AtomicInt64] | int: ...
+
+    @typing.overload
+    def __getitem__(
+        self: Histogram[bhs.Unlimited], index: IndexingExpr
+    ) -> Histogram[bhs.Unlimited] | int | float: ...
+
+    @typing.overload
+    def __getitem__(
+        self: Histogram[bhs.MultiCell], index: IndexingExpr
+    ) -> Histogram[bhs.MultiCell] | list[float]: ...
+
+    @typing.overload
+    def __getitem__(
+        self: Histogram[bhs.Weight], index: IndexingExpr
+    ) -> Histogram[bhs.Weight] | WeightedSum: ...
+
+    @typing.overload
+    def __getitem__(
+        self: Histogram[bhs.Mean], index: IndexingExpr
+    ) -> Histogram[bhs.Mean] | Mean: ...
+
+    @typing.overload
+    def __getitem__(
+        self: Histogram[bhs.WeightedMean], index: IndexingExpr
+    ) -> Histogram[bhs.WeightedMean] | WeightedMean: ...
+
+    @typing.overload
+    def __getitem__(
+        self: Histogram[SS], index: IndexingExpr
+    ) -> Histogram[SS] | float | list[float] | int | Accumulator: ...
+
+    def __getitem__(
+        self, index: IndexingExpr
+    ) -> Self | float | Accumulator | list[float] | int:
         indexes = self._compute_commonindex(index)
 
         # Early return for all-integer case
@@ -1313,7 +1472,7 @@ class Histogram:
             indexes.insert(0, slice(None, None, None))
         view[tuple(indexes)] = in_array
 
-    def project(self, *args: int) -> Self | float | Accumulator:
+    def project(self, *args: int) -> Self:
         """
         Project to a single axis or several axes on a multidimensional histogram.
         Provided a list of axis numbers, this will produce the histogram over
@@ -1344,7 +1503,30 @@ class Histogram:
 
         return Kind.MEAN if mean else Kind.COUNT
 
-    def values(self, flow: bool = False) -> np.typing.NDArray[Any]:
+    @typing.overload
+    def values(
+        self: Histogram[bhs.Int64] | Histogram[bhs.AtomicInt64], flow: bool = ...
+    ) -> np.typing.NDArray[np.int64]: ...
+
+    @typing.overload
+    def values(
+        self: Histogram[bhs.Double]
+        | Histogram[bhs.Unlimited]
+        | Histogram[bhs.Weight]
+        | Histogram[bhs.Mean]
+        | Histogram[bhs.WeightedMean]
+        | Histogram[bhs.MultiCell],
+        flow: bool = ...,
+    ) -> np.typing.NDArray[np.float64]: ...
+
+    @typing.overload
+    def values(
+        self: Histogram[Any], flow: bool = ...
+    ) -> np.typing.NDArray[np.float64] | np.typing.NDArray[np.int64]: ...
+
+    def values(
+        self, flow: bool = False
+    ) -> np.typing.NDArray[np.float64] | np.typing.NDArray[np.int64]:
         """
         Returns the accumulated values. The counts for simple histograms, the
         sum of weights for weighted histograms, the mean for profiles, etc.
@@ -1364,7 +1546,28 @@ class Histogram:
             return view  # type: ignore[no-any-return]
         return view.value  # type: ignore[no-any-return]
 
-    def variances(self, flow: bool = False) -> np.typing.NDArray[Any] | None:
+    @typing.overload
+    def variances(
+        self: Histogram[bhs.AtomicInt64] | Histogram[bhs.Int64], flow: bool = ...
+    ) -> np.typing.NDArray[np.int64] | None: ...
+
+    @typing.overload
+    def variances(
+        self: Histogram[bhs.Double]
+        | Histogram[bhs.Unlimited]
+        | Histogram[bhs.MultiCell],
+        flow: bool = ...,
+    ) -> np.typing.NDArray[np.float64] | None: ...
+
+    @typing.overload
+    def variances(
+        self: Histogram[bhs.Weight] | Histogram[bhs.Mean] | Histogram[bhs.WeightedMean],
+        flow: bool = ...,
+    ) -> np.typing.NDArray[np.float64]: ...
+
+    def variances(
+        self, flow: bool = False
+    ) -> np.typing.NDArray[np.int64] | np.typing.NDArray[np.float64] | None:
         """
         Returns the estimated variance of the accumulated values. The sum of squared
         weights for weighted histograms, the variance of samples for profiles, etc.
@@ -1411,7 +1614,30 @@ class Histogram:
 
         return view.variance  # type: ignore[no-any-return]
 
-    def counts(self, flow: bool = False) -> np.typing.NDArray[Any]:
+    @typing.overload
+    def counts(
+        self: Histogram[bhs.Int64] | Histogram[bhs.AtomicInt64], flow: bool = ...
+    ) -> np.typing.NDArray[np.int64]: ...
+
+    @typing.overload
+    def counts(
+        self: Histogram[bhs.Double]
+        | Histogram[bhs.Unlimited]
+        | Histogram[bhs.Weight]
+        | Histogram[bhs.Mean]
+        | Histogram[bhs.WeightedMean]
+        | Histogram[bhs.MultiCell],
+        flow: bool = ...,
+    ) -> np.typing.NDArray[np.float64]: ...
+
+    @typing.overload
+    def counts(
+        self: Histogram[Any], flow: bool = ...
+    ) -> np.typing.NDArray[np.float64] | np.typing.NDArray[np.int64]: ...
+
+    def counts(
+        self, flow: bool = False
+    ) -> np.typing.NDArray[np.float64] | np.typing.NDArray[np.int64]:
         """
         Returns the number of entries in each bin for an unweighted
         histogram or profile and an effective number of entries (defined below)
@@ -1456,4 +1682,4 @@ class Histogram:
 if TYPE_CHECKING:
     from uhi.typing.plottable import PlottableHistogram
 
-    _: PlottableHistogram = typing.cast(Histogram, None)
+    _: PlottableHistogram = typing.cast(Histogram[Any], None)
