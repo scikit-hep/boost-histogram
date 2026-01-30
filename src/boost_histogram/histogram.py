@@ -940,21 +940,21 @@ class Histogram(typing.Generic[S]):
     @typing.overload
     def to_numpy(
         self, flow: bool = ..., *, dd: Literal[True], view: bool = ...
-    ) -> tuple[np.typing.NDArray[Any], tuple[np.typing.NDArray[Any], ...]]: ...
+    ) -> tuple[np.typing.NDArray[Any], tuple[np.typing.NDArray[np.float64], ...]]: ...
 
     @typing.overload
     def to_numpy(
         self, flow: bool = ..., *, dd: bool, view: bool = ...
     ) -> (
         tuple[np.typing.NDArray[Any], ...]
-        | tuple[np.typing.NDArray[Any], tuple[np.typing.NDArray[Any], ...]]
+        | tuple[np.typing.NDArray[Any], tuple[np.typing.NDArray[np.float64], ...]]
     ): ...
 
     def to_numpy(
         self, flow: bool = False, *, dd: bool = False, view: bool = False
     ) -> (
         tuple[np.typing.NDArray[Any], ...]
-        | tuple[np.typing.NDArray[Any], tuple[np.typing.NDArray[Any], ...]]
+        | tuple[np.typing.NDArray[Any], tuple[np.typing.NDArray[np.float64], ...]]
     ):
         """
         Convert to a NumPy style tuple of return arrays. Edges are converted to
@@ -1036,7 +1036,7 @@ class Histogram(typing.Generic[S]):
 
     @typing.overload
     def sum(
-        self: Histogram[SS], flow: bool = False
+        self: Histogram[Any], flow: bool = False
     ) -> float | Accumulator | list[float]: ...
 
     def sum(self, flow: bool = False) -> float | Accumulator | list[float]:
