@@ -1565,6 +1565,11 @@ class Histogram(typing.Generic[S]):
         flow: bool = ...,
     ) -> np.typing.NDArray[np.float64]: ...
 
+    @typing.overload
+    def variances(
+        self: Histogram[Any], flow: bool = False
+    ) -> np.typing.NDArray[np.int64] | np.typing.NDArray[np.float64] | None: ...
+
     def variances(
         self, flow: bool = False
     ) -> np.typing.NDArray[np.int64] | np.typing.NDArray[np.float64] | None:
