@@ -495,12 +495,16 @@ class Histogram(typing.Generic[S]):
     @typing.overload
     def view(
         self: Histogram[bhs.Double]
-        | Histogram[bhs.Int64]
-        | Histogram[bhs.AtomicInt64]
-        | Histogram[bhs.Unlimited]
-        | Histogram[bhs.MultiCell],
+        | Histogram[bhs.MultiCell]
+        | Histogram[bhs.Unlimited],
         flow: bool = False,
-    ) -> np.typing.NDArray[Any]: ...
+    ) -> np.typing.NDArray[np.float64]: ...
+
+    @typing.overload
+    def view(
+        self: Histogram[bhs.Int64] | Histogram[bhs.AtomicInt64],
+        flow: bool = False,
+    ) -> np.typing.NDArray[np.int64]: ...
 
     @typing.overload
     def view(self: Histogram[bhs.Weight], flow: bool = False) -> WeightedSumView: ...
@@ -516,11 +520,23 @@ class Histogram(typing.Generic[S]):
     @typing.overload
     def view(
         self: Histogram[Any], flow: bool = False
-    ) -> np.typing.NDArray[Any] | WeightedSumView | WeightedMeanView | MeanView: ...
+    ) -> (
+        np.typing.NDArray[np.float64]
+        | np.typing.NDArray[np.int64]
+        | WeightedSumView
+        | WeightedMeanView
+        | MeanView
+    ): ...
 
     def view(
         self, flow: bool = False
-    ) -> np.typing.NDArray[Any] | WeightedSumView | WeightedMeanView | MeanView:
+    ) -> (
+        np.typing.NDArray[np.float64]
+        | np.typing.NDArray[np.int64]
+        | WeightedSumView
+        | WeightedMeanView
+        | MeanView
+    ):
         """
         Return a view into the data, optionally with overflow turned on.
         """
@@ -1487,7 +1503,30 @@ class Histogram(typing.Generic[S]):
 
         return Kind.MEAN if mean else Kind.COUNT
 
-    def values(self, flow: bool = False) -> np.typing.NDArray[Any]:
+    @typing.overload
+    def values(
+        self: Histogram[bhs.Int64] | Histogram[bhs.AtomicInt64], flow: bool = ...
+    ) -> np.typing.NDArray[np.int64]: ...
+
+    @typing.overload
+    def values(
+        self: Histogram[bhs.Double]
+        | Histogram[bhs.Unlimited]
+        | Histogram[bhs.Weight]
+        | Histogram[bhs.Mean]
+        | Histogram[bhs.WeightedMean]
+        | Histogram[bhs.MultiCell],
+        flow: bool = ...,
+    ) -> np.typing.NDArray[np.float64]: ...
+
+    @typing.overload
+    def values(
+        self: Histogram[Any], flow: bool = ...
+    ) -> np.typing.NDArray[np.float64] | np.typing.NDArray[np.int64]: ...
+
+    def values(
+        self, flow: bool = False
+    ) -> np.typing.NDArray[np.float64] | np.typing.NDArray[np.int64]:
         """
         Returns the accumulated values. The counts for simple histograms, the
         sum of weights for weighted histograms, the mean for profiles, etc.
@@ -1507,7 +1546,28 @@ class Histogram(typing.Generic[S]):
             return view  # type: ignore[no-any-return]
         return view.value  # type: ignore[no-any-return]
 
-    def variances(self, flow: bool = False) -> np.typing.NDArray[Any] | None:
+    @typing.overload
+    def variances(
+        self: Histogram[bhs.AtomicInt64] | Histogram[bhs.Int64], flow: bool = ...
+    ) -> np.typing.NDArray[np.int64] | None: ...
+
+    @typing.overload
+    def variances(
+        self: Histogram[bhs.Double]
+        | Histogram[bhs.Unlimited]
+        | Histogram[bhs.MultiCell],
+        flow: bool = ...,
+    ) -> np.typing.NDArray[np.float64] | None: ...
+
+    @typing.overload
+    def variances(
+        self: Histogram[bhs.Weight] | Histogram[bhs.Mean] | Histogram[bhs.WeightedMean],
+        flow: bool = ...,
+    ) -> np.typing.NDArray[np.float64]: ...
+
+    def variances(
+        self, flow: bool = False
+    ) -> np.typing.NDArray[np.int64] | np.typing.NDArray[np.float64] | None:
         """
         Returns the estimated variance of the accumulated values. The sum of squared
         weights for weighted histograms, the variance of samples for profiles, etc.
@@ -1554,7 +1614,30 @@ class Histogram(typing.Generic[S]):
 
         return view.variance  # type: ignore[no-any-return]
 
-    def counts(self, flow: bool = False) -> np.typing.NDArray[Any]:
+    @typing.overload
+    def counts(
+        self: Histogram[bhs.Int64] | Histogram[bhs.AtomicInt64], flow: bool = ...
+    ) -> np.typing.NDArray[np.int64]: ...
+
+    @typing.overload
+    def counts(
+        self: Histogram[bhs.Double]
+        | Histogram[bhs.Unlimited]
+        | Histogram[bhs.Weight]
+        | Histogram[bhs.Mean]
+        | Histogram[bhs.WeightedMean]
+        | Histogram[bhs.MultiCell],
+        flow: bool = ...,
+    ) -> np.typing.NDArray[np.float64]: ...
+
+    @typing.overload
+    def counts(
+        self: Histogram[Any], flow: bool = ...
+    ) -> np.typing.NDArray[np.float64] | np.typing.NDArray[np.int64]: ...
+
+    def counts(
+        self, flow: bool = False
+    ) -> np.typing.NDArray[np.float64] | np.typing.NDArray[np.int64]:
         """
         Returns the number of entries in each bin for an unweighted
         histogram or profile and an effective number of entries (defined below)
