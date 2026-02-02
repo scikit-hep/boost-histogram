@@ -1034,9 +1034,7 @@ class Histogram(typing.Generic[S]):
     def sum(self: Histogram[bhs.WeightedMean], flow: bool = False) -> WeightedMean: ...
 
     @typing.overload
-    def sum(
-        self, flow: bool = False
-    ) -> float | Accumulator | list[float]: ...
+    def sum(self, flow: bool = False) -> float | Accumulator | list[float]: ...
 
     def sum(self, flow: bool = False) -> float | Accumulator | list[float]:
         """
