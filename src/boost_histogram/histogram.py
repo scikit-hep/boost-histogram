@@ -194,7 +194,6 @@ def _combine_group_contents(
 
 H = TypeVar("H", bound="Histogram[Any]")
 S = TypeVar("S", bound="Storage")
-SS = TypeVar("SS", bound="Storage")
 
 NO_METADATA = object()
 
@@ -1036,7 +1035,7 @@ class Histogram(typing.Generic[S]):
 
     @typing.overload
     def sum(
-        self: Histogram[Any], flow: bool = False
+        self, flow: bool = False
     ) -> float | Accumulator | list[float]: ...
 
     def sum(self, flow: bool = False) -> float | Accumulator | list[float]:
@@ -1101,8 +1100,8 @@ class Histogram(typing.Generic[S]):
 
     @typing.overload
     def __getitem__(
-        self: Histogram[SS], index: IndexingExpr
-    ) -> Histogram[SS] | float | list[float] | int | Accumulator: ...
+        self, index: IndexingExpr
+    ) -> Self | float | list[float] | int | Accumulator: ...
 
     def __getitem__(
         self, index: IndexingExpr
@@ -1521,7 +1520,7 @@ class Histogram(typing.Generic[S]):
 
     @typing.overload
     def values(
-        self: Histogram[Any], flow: bool = ...
+        self, flow: bool = ...
     ) -> np.typing.NDArray[np.float64] | np.typing.NDArray[np.int64]: ...
 
     def values(
@@ -1567,7 +1566,7 @@ class Histogram(typing.Generic[S]):
 
     @typing.overload
     def variances(
-        self: Histogram[Any], flow: bool = False
+        self, flow: bool = False
     ) -> np.typing.NDArray[np.int64] | np.typing.NDArray[np.float64] | None: ...
 
     def variances(
@@ -1637,7 +1636,7 @@ class Histogram(typing.Generic[S]):
 
     @typing.overload
     def counts(
-        self: Histogram[Any], flow: bool = ...
+        self, flow: bool = ...
     ) -> np.typing.NDArray[np.float64] | np.typing.NDArray[np.int64]: ...
 
     def counts(
