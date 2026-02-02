@@ -2,6 +2,18 @@
 
 ## Version 1.7
 
+### Version 1.7.1
+
+#### Typing
+
+- Make the `Histogram` type generic, by @henryiii in [#1081][], [#1082][], [#1083][]
+- The `MultiCell` storage takes an argument (missed in typing), by @henryiii in [#1080][]
+
+[#1080]: https://github.com/scikit-hep/boost-histogram/pull/1080
+[#1081]: https://github.com/scikit-hep/boost-histogram/pull/1081
+[#1082]: https://github.com/scikit-hep/boost-histogram/pull/1082
+[#1083]: https://github.com/scikit-hep/boost-histogram/pull/1083
+
 ### Version 1.7.0
 
 #### Features
