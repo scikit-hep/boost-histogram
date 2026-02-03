@@ -113,6 +113,18 @@ IndexingExpr: TypeAlias = (
 T = TypeVar("T")
 
 
+IntHists = TypeVar(
+    "IntHists", bound="Histogram[bhs.AtomicInt64] | Histogram[bhs.Int64]"
+)
+FloatHists = TypeVar(
+    "FloatHists", bound="Histogram[bhs.Double] | Histogram[bhs.Unlimited]"
+)
+ListHists = TypeVar("ListHists", bound="Histogram[bhs.MultiCell]")
+WeightHists = TypeVar("WeightHists", bound="Histogram[bhs.Weight]")
+MeanHists = TypeVar("MeanHists", bound="Histogram[bhs.Mean]")
+WeightedMeanHists = TypeVar("WeightedMeanHists", bound="Histogram[bhs.WeightedMean]")
+
+
 def _fill_cast(
     value: T, *, inner: bool = False
 ) -> T | np.typing.NDArray[Any] | tuple[T, ...]:
@@ -1010,16 +1022,13 @@ class Histogram(typing.Generic[S]):
         return self._hist.empty(flow)
 
     @typing.overload
-    def sum(self: Histogram[bhs.Double], flow: bool = False) -> float: ...
-
-    @typing.overload
-    def sum(self: Histogram[bhs.Int64], flow: bool = False) -> float: ...
-
-    @typing.overload
-    def sum(self: Histogram[bhs.AtomicInt64], flow: bool = False) -> float: ...
-
-    @typing.overload
-    def sum(self: Histogram[bhs.Unlimited], flow: bool = False) -> float: ...
+    def sum(
+        self: Histogram[bhs.Double]
+        | Histogram[bhs.Int64]
+        | Histogram[bhs.AtomicInt64]
+        | Histogram[bhs.Unlimited],
+        flow: bool = False,
+    ) -> float: ...
 
     @typing.overload
     def sum(self: Histogram[bhs.MultiCell], flow: bool = False) -> list[float]: ...
@@ -1057,44 +1066,28 @@ class Histogram(typing.Generic[S]):
         return self.axes.size
 
     @typing.overload
-    def __getitem__(
-        self: Histogram[bhs.Double], index: IndexingExpr
-    ) -> Histogram[bhs.Double] | float: ...
+    def __getitem__(self: FloatHists, index: IndexingExpr) -> FloatHists | float: ...
+
+    @typing.overload
+    def __getitem__(self: IntHists, index: IndexingExpr) -> IntHists | int: ...
 
     @typing.overload
     def __getitem__(
-        self: Histogram[bhs.Int64], index: IndexingExpr
-    ) -> Histogram[bhs.Int64] | int: ...
+        self: ListHists, index: IndexingExpr
+    ) -> ListHists | list[float]: ...
 
     @typing.overload
     def __getitem__(
-        self: Histogram[bhs.AtomicInt64], index: IndexingExpr
-    ) -> Histogram[bhs.AtomicInt64] | int: ...
+        self: WeightHists, index: IndexingExpr
+    ) -> WeightHists | WeightedSum: ...
+
+    @typing.overload
+    def __getitem__(self: MeanHists, index: IndexingExpr) -> MeanHists | Mean: ...
 
     @typing.overload
     def __getitem__(
-        self: Histogram[bhs.Unlimited], index: IndexingExpr
-    ) -> Histogram[bhs.Unlimited] | int | float: ...
-
-    @typing.overload
-    def __getitem__(
-        self: Histogram[bhs.MultiCell], index: IndexingExpr
-    ) -> Histogram[bhs.MultiCell] | list[float]: ...
-
-    @typing.overload
-    def __getitem__(
-        self: Histogram[bhs.Weight], index: IndexingExpr
-    ) -> Histogram[bhs.Weight] | WeightedSum: ...
-
-    @typing.overload
-    def __getitem__(
-        self: Histogram[bhs.Mean], index: IndexingExpr
-    ) -> Histogram[bhs.Mean] | Mean: ...
-
-    @typing.overload
-    def __getitem__(
-        self: Histogram[bhs.WeightedMean], index: IndexingExpr
-    ) -> Histogram[bhs.WeightedMean] | WeightedMean: ...
+        self: WeightedMeanHists, index: IndexingExpr
+    ) -> WeightedMeanHists | WeightedMean: ...
 
     @typing.overload
     def __getitem__(
