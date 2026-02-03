@@ -814,7 +814,8 @@ class Histogram(typing.Generic[S]):
         )
         return cast(self, self._hist._storage_type, Storage)  # type: ignore[return-value]
 
-    def get_storage(self) -> S:
+    @property
+    def storage(self) -> S:
         """
         New storage matching the one the histogram was constructed with.
         """
@@ -877,7 +878,7 @@ class Histogram(typing.Generic[S]):
         sep = "," if len(self.axes) > 0 else ""
         ret = f"{self.__class__.__name__}({first_newline}"
         ret += f",{newline}".join(repr(ax) for ax in self.axes)
-        ret += f"{sep}{storage_newline}storage={self.get_storage()}"
+        ret += f"{sep}{storage_newline}storage={self.storage}"
         ret += ")"
         outer = self.sum(flow=True)
         if outer:
