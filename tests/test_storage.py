@@ -400,6 +400,14 @@ def test_multi_cell():
     weights = np.array([[1, 2, 3], [4, 5, 6]])
     h = bh.Histogram(bh.axis.Regular(5, 0, 5), storage=bh.storage.MultiCell(3))
 
+
+    # Repr must contain MultiCell(3)
+    repr_h = repr(h)
+    assert "MultiCell(3)" in repr_h
+
+    # Can access number of elements
+    assert h.get_storage().nelem == 3
+
     # Filling 1-Dim
     h.fill(x, weight=weights)
     assert_array_equal(h[1], [1, 2, 3])
