@@ -802,17 +802,26 @@ class Histogram(typing.Generic[S]):
         return cast(self, self._hist.axis(i), Axis)
 
     @property
-    def storage_type(self) -> type[Storage]:
+    def storage_type(self) -> type[S]:
         return cast(self, self._hist._storage_type, Storage)  # type: ignore[return-value]
 
     @property
-    def _storage_type(self) -> type[Storage]:
+    def _storage_type(self) -> type[S]:
         warnings.warn(
             "Accessing storage type has changed from _storage_type to storage_type, and will be removed in future.",
             FutureWarning,
             stacklevel=2,
         )
         return cast(self, self._hist._storage_type, Storage)  # type: ignore[return-value]
+
+    @property
+    def storage(self) -> S:
+        """
+        New storage matching the one the histogram was constructed with.
+        """
+        if issubclass(self.storage_type, bhs.MultiCell):
+            return self.storage_type(self._hist.nelem())  # type: ignore[attr-defined]
+        return self.storage_type()
 
     def _reduce(self, *args: Any) -> Self:
         return self._new_hist(self._hist.reduce(*args))
@@ -869,7 +878,7 @@ class Histogram(typing.Generic[S]):
         sep = "," if len(self.axes) > 0 else ""
         ret = f"{self.__class__.__name__}({first_newline}"
         ret += f",{newline}".join(repr(ax) for ax in self.axes)
-        ret += f"{sep}{storage_newline}storage={self.storage_type()}"  # pylint: disable=not-callable
+        ret += f"{sep}{storage_newline}storage={self.storage}"
         ret += ")"
         outer = self.sum(flow=True)
         if outer:
