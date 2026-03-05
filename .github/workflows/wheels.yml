@@ -40,7 +40,7 @@ jobs:
       - name: Check metadata
         run: pipx run twine check --strict dist/*.tar.gz
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           path: dist/*
           name: wheels-sdist
@@ -110,7 +110,7 @@ jobs:
         shell: bash
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           path: wheelhouse/*.whl
           name: wheels-${{ strategy.job-index }}
@@ -140,7 +140,7 @@ jobs:
         shell: bash
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           path: wheelhouse/*.whl
           name: wheels-ios-${{ matrix.runs-on }}
@@ -167,7 +167,7 @@ jobs:
   #        shell: bash
   #
   #      - name: Upload wheels
-  #        uses: actions/upload-artifact@v6
+  #        uses: actions/upload-artifact@v7
   #        with:
   #          path: wheelhouse/*.whl
   #          name: wheels-android-${{ matrix.runs-on }}
@@ -186,7 +186,7 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           pattern: wheels-*
           merge-multiple: true
@@ -196,7 +196,7 @@ jobs:
         run: ls -lh dist
 
       - name: Generate artifact attestation for sdist and wheels
-        uses: actions/attest-build-provenance@v3
+        uses: actions/attest-build-provenance@v4
         with:
           subject-path: "dist/boost_histogram-*"
 
@@ -211,7 +211,7 @@ jobs:
     needs: [build_wheels]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           pattern: wheels-*
           merge-multiple: true
