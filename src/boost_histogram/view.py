@@ -118,127 +118,122 @@ class WeightedSumView(View):
         # Avoid infinite recursion
         raw_inputs = [np.asarray(x) for x in inputs]
 
-        # Support unary + and -
-        if (
-            method == "__call__"
-            and len(raw_inputs) == 1
-            and ufunc in {np.negative, np.positive}
-        ):
-            (result,) = (
-                kwargs.pop("out")
-                if "out" in kwargs
-                else [np.empty(self.shape, self.dtype)]
-            )
+        match method, ufunc, raw_inputs:
+            # Support unary + and -
+            case "__call__", np.negative | np.positive, [raw_input]:
+                (result,) = (
+                    kwargs.pop("out")
+                    if "out" in kwargs
+                    else [np.empty(self.shape, self.dtype)]
+                )
 
-            ufunc(raw_inputs[0]["value"], out=result["value"], **kwargs)
-            result["variance"] = raw_inputs[0]["variance"]
-            return result.view(self.__class__)  # type: ignore[no-any-return]
-
-        if method == "__call__" and len(raw_inputs) == 2:
-            (result,) = (
-                kwargs.pop("out")
-                if "out" in kwargs
-                else [np.empty(self.shape, self.dtype)]
-            )
-
-            # Addition of two views
-            if raw_inputs[0].dtype == raw_inputs[1].dtype:
-                if ufunc in {np.add, np.subtract}:
+                ufunc(raw_input["value"], out=result["value"], **kwargs)
+                result["variance"] = raw_input["variance"]
+                return result.view(self.__class__)  # type: ignore[no-any-return]
+            case "__call__", np.add | np.subtract, [raw_input1, raw_input2]:
+                (result,) = (
+                    kwargs.pop("out")
+                    if "out" in kwargs
+                    else [np.empty(self.shape, self.dtype)]
+                )
+                if raw_input1.dtype == raw_input2.dtype:
                     ufunc(
-                        raw_inputs[0]["value"],
-                        raw_inputs[1]["value"],
+                        raw_input1["value"],
+                        raw_input2["value"],
                         out=result["value"],
                         **kwargs,
                     )
                     np.add(
-                        raw_inputs[0]["variance"],
-                        raw_inputs[1]["variance"],
+                        raw_input1["variance"],
+                        raw_input2["variance"],
                         out=result["variance"],
                         **kwargs,
                     )
                     return result.view(self.__class__)  # type: ignore[no-any-return]
 
-                # If unsupported, just pass through (will return not implemented)
-                # pylint: disable-next=no-member
-                return super().__array_ufunc__(ufunc, method, *raw_inputs, **kwargs)  # type: ignore[no-any-return]
-
-            # View with normal value or array
-            if ufunc in {np.add, np.subtract}:
-                if self.dtype == raw_inputs[0].dtype:
+                if self.dtype == raw_input1.dtype:
                     ufunc(
-                        raw_inputs[0]["value"],
-                        raw_inputs[1],
+                        raw_input1["value"],
+                        raw_input2,
                         out=result["value"],
                         **kwargs,
                     )
                     np.add(
-                        raw_inputs[0]["variance"],
-                        raw_inputs[1] ** 2,
+                        raw_input1["variance"],
+                        raw_input2**2,
                         out=result["variance"],
                         **kwargs,
                     )
                 else:
                     ufunc(
-                        raw_inputs[0],
-                        raw_inputs[1]["value"],
+                        raw_input1,
+                        raw_input2["value"],
                         out=result["value"],
                         **kwargs,
                     )
                     np.add(
-                        raw_inputs[0] ** 2,
-                        raw_inputs[1]["variance"],
+                        raw_input1**2,
+                        raw_input2["variance"],
                         out=result["variance"],
                         **kwargs,
                     )
                 return result.view(self.__class__)  # type: ignore[no-any-return]
 
-            if ufunc in {np.multiply, np.divide, np.true_divide, np.floor_divide}:
-                if self.dtype == raw_inputs[0].dtype:
+            case (
+                "__call__",
+                np.multiply | np.divide | np.true_divide | np.floor_divide,
+                [raw_input1, raw_input2],
+            ):
+                (result,) = (
+                    kwargs.pop("out")
+                    if "out" in kwargs
+                    else [np.empty(self.shape, self.dtype)]
+                )
+                if self.dtype == raw_input1.dtype:
                     ufunc(
-                        raw_inputs[0]["value"],
-                        raw_inputs[1],
+                        raw_input1["value"],
+                        raw_input2,
                         out=result["value"],
                         **kwargs,
                     )
                     ufunc(
-                        raw_inputs[0]["variance"],
-                        raw_inputs[1] ** 2,
+                        raw_input1["variance"],
+                        raw_input2**2,
                         out=result["variance"],
                         **kwargs,
                     )
                 else:
                     ufunc(
-                        raw_inputs[0],
-                        raw_inputs[1]["value"],
+                        raw_input1,
+                        raw_input2["value"],
                         out=result["value"],
                         **kwargs,
                     )
                     ufunc(
-                        raw_inputs[0] ** 2,
-                        raw_inputs[1]["variance"],
+                        raw_input1**2,
+                        raw_input2["variance"],
                         out=result["variance"],
                         **kwargs,
                     )
 
                 return result.view(self.__class__)  # type: ignore[no-any-return]
 
-        # ufuncs that are allowed to reduce
-        if ufunc is np.add and method == "reduce" and len(raw_inputs) == 1:
-            results = (ufunc.reduce(self[field], **kwargs) for field in self._FIELDS)
-            return self._PARENT._make(*results)  # type: ignore[return-value]
+            case "reduce", np.add, [raw_input]:
+                results = (
+                    ufunc.reduce(raw_input[field], **kwargs) for field in self._FIELDS
+                )
+                return self._PARENT._make(*results)  # type: ignore[return-value]
+            case "accumulate", np.add, [raw_input]:
+                (result,) = (
+                    kwargs.pop("out")
+                    if "out" in kwargs
+                    else [np.empty(self.shape, self.dtype)]
+                )
+                for field in self._FIELDS:
+                    ufunc.accumulate(self[field], out=result[field], **kwargs)
+                return result.view(self.__class__)  # type: ignore[no-any-return]
 
-        # ufuncs that are allowed to accumulate
-        if ufunc is np.add and method == "accumulate" and len(raw_inputs) == 1:
-            (result,) = (
-                kwargs.pop("out")
-                if "out" in kwargs
-                else [np.empty(self.shape, self.dtype)]
-            )
-            for field in self._FIELDS:
-                ufunc.accumulate(self[field], out=result[field], **kwargs)
-            return result.view(self.__class__)  # type: ignore[no-any-return]
-
-        # If unsupported, just pass through (will return NotImplemented or things like == will work but not return subclasses)
+        # If unsupported, just pass through (will return not implemented)
         # pylint: disable-next=no-member
         return super().__array_ufunc__(ufunc, method, *raw_inputs, **kwargs)  # type: ignore[no-any-return]
 
