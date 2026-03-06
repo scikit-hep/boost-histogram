@@ -223,12 +223,12 @@ class WeightedSumView(View):
                 return result.view(self.__class__)  # type: ignore[no-any-return]
 
         # ufuncs that are allowed to reduce
-        if ufunc in {np.add} and method == "reduce" and len(raw_inputs) == 1:
+        if ufunc is np.add and method == "reduce" and len(raw_inputs) == 1:
             results = (ufunc.reduce(self[field], **kwargs) for field in self._FIELDS)
             return self._PARENT._make(*results)  # type: ignore[return-value]
 
         # ufuncs that are allowed to accumulate
-        if ufunc in {np.add} and method == "accumulate" and len(raw_inputs) == 1:
+        if ufunc is np.add and method == "accumulate" and len(raw_inputs) == 1:
             (result,) = (
                 kwargs.pop("out")
                 if "out" in kwargs
