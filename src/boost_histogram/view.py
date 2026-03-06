@@ -118,24 +118,26 @@ class WeightedSumView(View):
         # Avoid infinite recursion
         raw_inputs = [np.asarray(x) for x in inputs]
 
+        # First match the ones without a pre-computed out= parameter
+        match method, ufunc, raw_inputs:
+            case "reduce", np.add, [raw_input]:
+                results = (
+                    ufunc.reduce(raw_input[field], **kwargs) for field in self._FIELDS
+                )
+                return self._PARENT._make(*results)  # type: ignore[return-value]
+
+        # These use a pre-computed out parameter
+        (result,) = (
+            kwargs.pop("out") if "out" in kwargs else [np.empty(self.shape, self.dtype)]
+        )
         match method, ufunc, raw_inputs:
             # Support unary + and -
             case "__call__", np.negative | np.positive, [raw_input]:
-                (result,) = (
-                    kwargs.pop("out")
-                    if "out" in kwargs
-                    else [np.empty(self.shape, self.dtype)]
-                )
-
                 ufunc(raw_input["value"], out=result["value"], **kwargs)
                 result["variance"] = raw_input["variance"]
                 return result.view(self.__class__)  # type: ignore[no-any-return]
+            # Support + and -
             case "__call__", np.add | np.subtract, [raw_input1, raw_input2]:
-                (result,) = (
-                    kwargs.pop("out")
-                    if "out" in kwargs
-                    else [np.empty(self.shape, self.dtype)]
-                )
                 if raw_input1.dtype == raw_input2.dtype:
                     ufunc(
                         raw_input1["value"],
@@ -149,9 +151,7 @@ class WeightedSumView(View):
                         out=result["variance"],
                         **kwargs,
                     )
-                    return result.view(self.__class__)  # type: ignore[no-any-return]
-
-                if self.dtype == raw_input1.dtype:
+                elif self.dtype == raw_input1.dtype:
                     ufunc(
                         raw_input1["value"],
                         raw_input2,
@@ -184,11 +184,6 @@ class WeightedSumView(View):
                 np.multiply | np.divide | np.true_divide | np.floor_divide,
                 [raw_input1, raw_input2],
             ):
-                (result,) = (
-                    kwargs.pop("out")
-                    if "out" in kwargs
-                    else [np.empty(self.shape, self.dtype)]
-                )
                 if self.dtype == raw_input1.dtype:
                     ufunc(
                         raw_input1["value"],
@@ -218,17 +213,7 @@ class WeightedSumView(View):
 
                 return result.view(self.__class__)  # type: ignore[no-any-return]
 
-            case "reduce", np.add, [raw_input]:
-                results = (
-                    ufunc.reduce(raw_input[field], **kwargs) for field in self._FIELDS
-                )
-                return self._PARENT._make(*results)  # type: ignore[return-value]
             case "accumulate", np.add, [raw_input]:
-                (result,) = (
-                    kwargs.pop("out")
-                    if "out" in kwargs
-                    else [np.empty(self.shape, self.dtype)]
-                )
                 for field in self._FIELDS:
                     ufunc.accumulate(self[field], out=result[field], **kwargs)
                 return result.view(self.__class__)  # type: ignore[no-any-return]
