@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 import numpy as np
 import pytest
 
@@ -355,3 +357,60 @@ def test_convert_weightmean() -> None:
     h2 = bh.Histogram(data)
 
     assert h.axes == h2.axes
+
+
+def _json_round_trip(data: dict) -> dict:
+    """Simulate a JSON round-trip, which can collapse empty array dimensions."""
+    return json.loads(
+        json.dumps(
+            data,
+            default=lambda x: x.tolist() if isinstance(x, np.ndarray) else x,
+        )
+    )
+
+
+@pytest.mark.parametrize(
+    "storage_type",
+    [
+        pytest.param(bh.storage.Double(), id="double"),
+        pytest.param(bh.storage.Int64(), id="int64"),
+        pytest.param(bh.storage.Weight(), id="weight"),
+        pytest.param(bh.storage.Mean(), id="mean"),
+        pytest.param(bh.storage.WeightedMean(), id="weighted_mean"),
+    ],
+)
+def test_round_trip_3d_histogram_json(storage_type: bh.storage.Storage) -> None:
+    """Regression test: 3D histograms with empty StrCategory axes round-trip
+    correctly through JSON serialization.
+
+    JSON serialization collapses empty array dimensions (e.g. shape (5, 0, 0)
+    becomes (5, 0)), which must be handled correctly during deserialization.
+    """
+    h = bh.Histogram(
+        bh.axis.Variable([0, 1, 2, 3]),
+        bh.axis.StrCategory([], growth=True),
+        bh.axis.StrCategory([], growth=True),
+        storage=storage_type,
+    )
+    data = to_uhi(h)
+    data = _json_round_trip(data)
+    h2 = from_uhi(data)
+
+    assert h.ndim == h2.ndim
+    assert h == h2
+
+
+def test_round_trip_3d_histogram_json_constructor() -> None:
+    """Regression test: bh.Histogram(uhi_dict) works for 3D histograms after
+    JSON round-trip (reproduces the exact example from the bug report)."""
+    h = bh.Histogram(
+        bh.axis.Variable([0, 1, 2, 3]),
+        bh.axis.StrCategory([], growth=True),
+        bh.axis.StrCategory([], growth=True),
+        storage=bh.storage.Weight(),
+    )
+    data = _json_round_trip(to_uhi(h))
+    h2 = bh.Histogram(data)
+
+    assert h.ndim == h2.ndim
+    assert h == h2

@@ -3,6 +3,8 @@ from __future__ import annotations
 import copy
 from typing import Any, TypeVar
 
+import numpy as np
+
 # pylint: disable-next=import-error
 from .. import histogram, version
 from ._axis import _axis_from_dict, _axis_to_dict
@@ -38,7 +40,18 @@ def from_uhi(data: dict[str, Any], /) -> histogram.Histogram[Any]:
         *(_axis_from_dict(ax) for ax in data["axes"]),
         storage=_storage_from_dict(data["storage"]),
     )
-    h[...] = _data_from_dict(data["storage"])
+    raw_data = _data_from_dict(data["storage"])
+    view_shape = h.view(flow=True).shape
+    # Reshape raw_data to the expected shape. This is necessary because JSON
+    # serialization can collapse empty dimensions (e.g. (5, 0, 0) -> (5, 0)),
+    # so we must restore the correct number of dimensions.
+    storage_type = data["storage"]["type"]
+    if storage_type in {"weighted", "mean", "weighted_mean"}:
+        raw_data = np.asarray(raw_data)
+        raw_data = raw_data.reshape(view_shape + raw_data.shape[-1:])
+    else:
+        raw_data = np.reshape(raw_data, view_shape)
+    h[...] = raw_data
     h.__dict__ = data.get("metadata", {})
     return h
 
