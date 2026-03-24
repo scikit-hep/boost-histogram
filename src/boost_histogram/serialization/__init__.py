@@ -18,7 +18,9 @@ def __dir__() -> list[str]:
     return __all__
 
 
-def to_uhi(h: histogram.Histogram[Any], /) -> dict[str, Any]:
+def to_uhi(
+    h: histogram.Histogram[Any], /, *, keep_storage: bool = True
+) -> dict[str, Any]:
     """Convert an Histogram to a dictionary."""
 
     # Convert the histogram to a dictionary
@@ -26,8 +28,9 @@ def to_uhi(h: histogram.Histogram[Any], /) -> dict[str, Any]:
         "uhi_schema": 1,
         "writer_info": {"boost-histogram": {"version": version.version}},
         "axes": [_axis_to_dict(axis) for axis in h.axes],
-        "storage": _storage_to_dict(h.storage_type(), h.view(flow=True)),
     }
+    if keep_storage:
+        data["storage"] = _storage_to_dict(h.storage_type(), h.view(flow=True))
     data["metadata"] = serialize_metadata(h.__dict__)
 
     return data
@@ -35,11 +38,17 @@ def to_uhi(h: histogram.Histogram[Any], /) -> dict[str, Any]:
 
 def from_uhi(data: dict[str, Any], /) -> histogram.Histogram[Any]:
     """Convert a dictionary to an Histogram."""
+    # One time use
+    axis = (_axis_from_dict(ax) for ax in data["axes"])
 
-    h = histogram.Histogram(
-        *(_axis_from_dict(ax) for ax in data["axes"]),
-        storage=_storage_from_dict(data["storage"]),
-    )
+    if "storage" not in data:
+        h = histogram.Histogram[Any](*axis)
+        h.__dict__ = data.get("metadata", {})
+        return h
+
+    storage = _storage_from_dict(data["storage"])
+    h = histogram.Histogram[Any](*axis, storage=storage)
+
     raw_data = _data_from_dict(data["storage"])
     view_shape = h.view(flow=True).shape
     # Reshape raw_data to the expected shape. This is necessary because JSON

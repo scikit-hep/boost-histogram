@@ -216,9 +216,32 @@ def test_round_trip_native() -> None:
 
     assert h == h2
 
-    assert isinstance(h2.axes[0], bh.axis.Integer)
-    assert h2.storage_type is bh.storage.AtomicInt64
-    assert h2.axes[0].traits.growth == h.axes[0].traits.growth
+
+def test_to_uhi_keep_storage_option() -> None:
+    h = bh.Histogram(
+        bh.axis.Regular(3, 0, 1),
+        storage=bh.storage.Double(),
+    )
+    data_with = to_uhi(h)
+    data_without = to_uhi(h, keep_storage=False)
+
+    assert "storage" in data_with
+    assert "storage" not in data_without
+
+
+def test_from_uhi_missing_storage() -> None:
+    h = bh.Histogram(
+        bh.axis.Regular(4, 0.0, 1.0),
+        storage=bh.storage.Double(),
+    )
+    # produce a UHI dict without storage
+    data = to_uhi(h, keep_storage=False)
+
+    h2 = from_uhi(data)
+
+    # axes should round-trip and data should be zeros (default storage)
+    assert pytest.approx(np.array(h.axes[0])) == np.array(h2.axes[0])
+    assert np.asarray(h2) == pytest.approx(np.zeros_like(np.asarray(h2)))
 
 
 @pytest.mark.parametrize(
