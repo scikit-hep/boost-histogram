@@ -556,6 +556,45 @@ def test_setting_histogram_mismatch():
         )
 
 
+def test_setting_histogram_slice_not_at_start():
+    """Regression test: __setitem__ with slices that are not at the start of the index.
+
+    Previously, h[2,:,:,2] = other_hist would use the wrong axis indices when
+    checking underflow/overflow traits of the value histogram, causing either
+    a ValueError (wrong axis compared) or IndexError (index out of range).
+    """
+    axis_wUnderflow0 = bh.axis.Regular(10, 0, 1, underflow=True, overflow=True)
+    axis_wUnderflow1 = bh.axis.Regular(5, 0, 5, underflow=True, overflow=True)
+    axis_wUnderflow2 = bh.axis.Regular(7, 0, 3, underflow=True, overflow=True)
+    axis_noUnderflow = bh.axis.Regular(8, -2, 2, underflow=False, overflow=True)
+
+    h_2D = bh.Histogram(axis_noUnderflow, axis_wUnderflow0)
+    h_2D.fill([-1.1, -0.2, 0.3, 1.4], [0.2, 0.5, 0.3, 0.8])
+
+    # Slices in the middle of the index
+    h_middle = bh.Histogram(
+        axis_wUnderflow1, axis_noUnderflow, axis_wUnderflow0, axis_wUnderflow2
+    )
+    h_middle[2, :, :, 2] = h_2D  # previously raised ValueError
+
+    # Slices at the end of the index
+    h_last = bh.Histogram(
+        axis_wUnderflow1, axis_wUnderflow2, axis_noUnderflow, axis_wUnderflow0
+    )
+    h_last[2, 2, :, :] = h_2D  # previously raised IndexError
+
+    # Slices at the start (sanity check - this always worked)
+    h_first = bh.Histogram(
+        axis_noUnderflow, axis_wUnderflow0, axis_wUnderflow1, axis_wUnderflow2
+    )
+    h_first[:, :, 2, 2] = h_2D
+
+    # Verify that the data was correctly set (use a non-flow slice comparison)
+    np.testing.assert_array_equal(h_first.view()[:, :, 2, 2], h_2D.view())
+    np.testing.assert_array_equal(h_middle.view()[2, :, :, 2], h_2D.view())
+    np.testing.assert_array_equal(h_last.view()[2, 2, :, :], h_2D.view())
+
+
 def test_rebin_groups_no_inplace_modification():
     """
     Test that rebinning with a groups list does not mutate the input list in-place.

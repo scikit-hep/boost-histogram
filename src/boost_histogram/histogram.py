@@ -1399,6 +1399,9 @@ class Histogram(typing.Generic[S]):
         if isinstance(self._hist, _core.hist.any_multi_cell):
             # Ignore first dimension for MultiCell arrays, the first dimension is for the cells, the normal histogram axis indexing starts with dimension 2 in this case
             value_n = 1
+        # value_hist_axis tracks the axis index in the value histogram (always 0-based,
+        # independent of the MultiCell offset in value_n)
+        value_hist_axis = 0
         for n, request in enumerate(indexes):
             has_underflow = self.axes[n].traits.underflow
             has_overflow = self.axes[n].traits.overflow
@@ -1413,8 +1416,8 @@ class Histogram(typing.Generic[S]):
 
                 # If the input is a histogram, we need to exactly match underflow/overflow
                 if isinstance(value, Histogram):
-                    in_underflow = value.axes[n].traits.underflow
-                    in_overflow = value.axes[n].traits.overflow
+                    in_underflow = value.axes[value_hist_axis].traits.underflow
+                    in_overflow = value.axes[value_hist_axis].traits.overflow
 
                     if use_underflow != in_underflow or use_overflow != in_overflow:
                         msg = (
@@ -1461,6 +1464,7 @@ class Histogram(typing.Generic[S]):
                 )
                 indexes[n] = slice(start_real, stop_real, request.step)
                 value_n += 1
+                value_hist_axis += 1
             else:
                 indexes[n] = request + has_underflow
 
