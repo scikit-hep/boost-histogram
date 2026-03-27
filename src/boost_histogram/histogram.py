@@ -715,10 +715,10 @@ class Histogram(typing.Generic[S]):
 
         # Broadcast scalar positional args to match sample length when sample is an array.
         # This allows e.g. h.fill(0, sample=[1, 2, 3]) to work for Mean/WeightedMean storage.
-        if np.ndim(sample_ars) > 0:
+        if sample_ars is not None and np.ndim(sample_ars) > 0:  # type: ignore[arg-type]
             sample_len = len(sample_ars)  # type: ignore[arg-type]
-            args_ars = tuple(
-                np.full(sample_len, a) if np.ndim(a) == 0 else a
+            args_ars = tuple(  # type: ignore[assignment]
+                np.full(sample_len, a) if np.ndim(a) == 0 else a  # type: ignore[arg-type]
                 for a in args_ars
             )
 

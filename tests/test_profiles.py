@@ -30,9 +30,7 @@ def test_mean_hist():
 
 def test_mean_hist_scalar_axis_broadcast():
     """Test that a scalar axis value is broadcast to match a sample array (issue #727)."""
-    data = np.array(
-        [[1, 2, 3, 4, 5], [10, 20, 30, 40, 50], [100, 200, 300, 400, 500]]
-    )
+    data = np.array([[1, 2, 3, 4, 5], [10, 20, 30, 40, 50], [100, 200, 300, 400, 500]])
     h = bh.Histogram(bh.axis.Integer(0, 3), storage=bh.storage.Mean())
 
     h.fill(0, sample=data[0])
@@ -60,9 +58,7 @@ def test_mean_hist_scalar_axis_broadcast():
 
 def test_weighted_mean_hist_scalar_axis_broadcast():
     """Test scalar axis broadcast for WeightedMean storage (issue #727)."""
-    data = np.array(
-        [[1, 2, 3, 4, 5], [10, 20, 30, 40, 50], [100, 200, 300, 400, 500]]
-    )
+    data = np.array([[1, 2, 3, 4, 5], [10, 20, 30, 40, 50], [100, 200, 300, 400, 500]])
     h = bh.Histogram(bh.axis.Integer(0, 3), storage=bh.storage.WeightedMean())
 
     h.fill(0, sample=data[0])
