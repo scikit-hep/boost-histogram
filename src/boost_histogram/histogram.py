@@ -713,6 +713,15 @@ class Histogram(typing.Generic[S]):
         weight_ars = _fill_cast(weight)
         sample_ars = _fill_cast(sample)
 
+        # Broadcast scalar positional args to match sample length when sample is an array.
+        # This allows e.g. h.fill(0, sample=[1, 2, 3]) to work for Mean/WeightedMean storage.
+        if np.ndim(sample_ars) > 0:
+            sample_len = len(sample_ars)  # type: ignore[arg-type]
+            args_ars = tuple(
+                np.full(sample_len, a) if np.ndim(a) == 0 else a
+                for a in args_ars
+            )
+
         if threads == 0:
             threads = cpu_count()
 
