@@ -729,9 +729,11 @@ class Histogram(typing.Generic[S]):
             sample_arr = np.asarray(sample_ars)
             if sample_arr.ndim > 0:
                 sample_len = len(sample_arr)
-                args_ars = tuple(
-                    np.full(sample_len, a) if np.ndim(a) == 0 else a for a in args_ars
-                )
+                if sample_len > 1:
+                    args_ars = tuple(
+                        np.full(sample_len, a) if np.ndim(a) == 0 else a
+                        for a in args_ars
+                    )
 
         if threads == 0:
             threads = cpu_count()
