@@ -125,9 +125,19 @@ MeanHists = TypeVar("MeanHists", bound="Histogram[bhs.Mean]")
 WeightedMeanHists = TypeVar("WeightedMeanHists", bound="Histogram[bhs.WeightedMean]")
 
 
+@typing.overload
 def _fill_cast(
-    value: T, *, inner: bool = False
-) -> T | np.typing.NDArray[Any] | tuple[T, ...]:
+    value: tuple[T, ...] | list[T], *, inner: Literal[False] = False
+) -> tuple[T | np.typing.NDArray[Any], ...]: ...
+
+
+@typing.overload
+def _fill_cast(value: T, *, inner: bool = False) -> T | np.typing.NDArray[Any]: ...
+
+
+def _fill_cast(
+    value: Any, *, inner: bool = False
+) -> Any | np.typing.NDArray[Any] | tuple[Any | np.typing.NDArray[Any], ...]:
     """
     Convert to NumPy arrays. Some buffer objects do not get converted by forcecast.
     If not called by itself (inner=False), then will work through one level of tuple/list.
@@ -136,7 +146,7 @@ def _fill_cast(
         return value
 
     if not inner and isinstance(value, (tuple, list)):
-        return tuple(_fill_cast(a, inner=True) for a in value)  # type: ignore[misc]
+        return tuple(_fill_cast(a, inner=True) for a in value)
 
     if hasattr(value, "__iter__") or hasattr(value, "__array__"):
         return np.asarray(value)
@@ -715,18 +725,19 @@ class Histogram(typing.Generic[S]):
 
         # Broadcast scalar positional args to match sample length when sample is an array.
         # This allows e.g. h.fill(0, sample=[1, 2, 3]) to work for Mean/WeightedMean storage.
-        if sample_ars is not None and np.ndim(sample_ars) > 0:  # type: ignore[arg-type]
-            sample_len = len(sample_ars)  # type: ignore[arg-type]
-            args_ars = tuple(  # type: ignore[assignment]
-                np.full(sample_len, a) if np.ndim(a) == 0 else a  # type: ignore[arg-type]
-                for a in args_ars
-            )
+        if sample_ars is not None:
+            sample_arr = np.asarray(sample_ars)
+            if sample_arr.ndim > 0:
+                sample_len = len(sample_arr)
+                args_ars = tuple(
+                    np.full(sample_len, a) if np.ndim(a) == 0 else a for a in args_ars
+                )
 
         if threads == 0:
             threads = cpu_count()
 
         if threads is None or threads == 1:
-            self._hist.fill(*args_ars, weight=weight_ars, sample=sample_ars)  # type: ignore[arg-type]
+            self._hist.fill(*args_ars, weight=weight_ars, sample=sample_ars)
             return self
 
         if self._hist._storage_type in {
@@ -735,24 +746,26 @@ class Histogram(typing.Generic[S]):
         }:
             raise RuntimeError("Mean histograms do not support threaded filling")
 
-        data: list[list[np.typing.NDArray[Any]] | list[str]] = [
-            np.array_split(a, threads) if not isinstance(a, str) else [a] * threads  # type: ignore[arg-type, list-item]
-            for a in args_ars
-        ]
+        data: list[list[np.typing.NDArray[Any]] | list[str]] = []
+        for a in args_ars:
+            if isinstance(a, str):
+                data.append([a] * threads)
+            else:
+                data.append(np.array_split(np.asarray(a), threads))
 
         weights: list[Any]
         if weight is None or np.isscalar(weight):
             assert threads is not None
             weights = [weight_ars] * threads
         else:
-            weights = np.array_split(weight_ars, threads)  # type: ignore[arg-type]
+            weights = np.array_split(np.asarray(weight_ars), threads)
 
         samples: list[Any]
         if sample_ars is None or np.isscalar(sample_ars):
             assert threads is not None
             samples = [sample_ars] * threads
         else:
-            samples = np.array_split(sample_ars, threads)  # type: ignore[arg-type]
+            samples = np.array_split(np.asarray(sample_ars), threads)
 
         if self._hist._storage_type is _core.storage.atomic_int64:
 
