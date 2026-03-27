@@ -189,6 +189,48 @@ def test_view_assign_wmean():
     assert w[0].variance == 3
 
 
+# Issue #826 - accessing fields of a 0-d MeanView raised "iteration over a 0-d array"
+def test_0d_mean_view():
+    h = bh.Histogram(bh.axis.Integer(0, 4), storage=bh.storage.Mean())
+    h.fill([0, 1, 2, 3, 0, 1], sample=[1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
+    profile = h.project()
+    assert profile.shape == ()
+
+    # view() should return a 0-d MeanView without error
+    v = profile.view()
+    assert v.shape == ()
+
+    # Field access on a 0-d MeanView should work
+    assert v.count == approx(6)
+    assert v.value == approx((1 + 2 + 3 + 4 + 5 + 6) / 6)
+    assert v["value"] == approx((1 + 2 + 3 + 4 + 5 + 6) / 6)
+
+    # values(), variances(), and counts() on the histogram should work
+    assert profile.values() == approx((1 + 2 + 3 + 4 + 5 + 6) / 6)
+    assert profile.counts() == approx(6)
+    assert profile.variances() == approx(v.variance / 6)
+
+
+def test_0d_weighted_mean_view():
+    h = bh.Histogram(bh.axis.Integer(0, 4), storage=bh.storage.WeightedMean())
+    h.fill([0, 1, 2, 3], sample=[1.0, 2.0, 3.0, 4.0], weight=[1.0, 1.0, 1.0, 1.0])
+    profile = h.project()
+    assert profile.shape == ()
+
+    # view() should return a 0-d WeightedMeanView without error
+    v = profile.view()
+    assert v.shape == ()
+
+    # Field access on a 0-d WeightedMeanView should work
+    assert v.value == approx(2.5)
+    assert v.sum_of_weights == approx(4.0)
+    assert v["value"] == approx(2.5)
+
+    # values() and counts() on the histogram should work
+    assert profile.values() == approx(2.5)
+    assert profile.counts() == approx(4.0)
+
+
 # Issue #696
 def test_view_cumsum():
     h = bh.Histogram(
