@@ -19,13 +19,16 @@ class View(np.ndarray[Any, Any]):
     def __getitem__(self, ind: StrIndex) -> np.typing.NDArray[Any]:  # type: ignore[override]
         sliced = super().__getitem__(ind)  # type: ignore[index]
 
+        # If the dtype has changed, return a normal array (no longer a record).
+        # This must be checked before the shape check so that 0-d field access
+        # (e.g. ``view["value"]`` on a 0-d MeanView) returns a plain scalar
+        # array instead of trying to iterate over a 0-d array.
+        if sliced.dtype != self.dtype:
+            return np.asarray(sliced)
+
         # If the shape is empty, return the parent type
         if not sliced.shape:
             return self._PARENT._make(*sliced)  # type: ignore[return-value]
-
-        # If the dtype has changed, return a normal array (no longer a record)
-        if sliced.dtype != self.dtype:
-            return np.asarray(sliced)
 
         # Otherwise, no change, return the same View type
         return sliced
