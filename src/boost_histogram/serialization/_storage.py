@@ -49,19 +49,18 @@ def _storage_to_dict(_storage: storage.Storage, /, data: Any) -> dict[str, Any]:
 
 @_storage_to_dict.register(storage.Int64)
 @_storage_to_dict.register(storage.Double)
-def _(_storage: storage.Double, /, data: Any) -> dict[str, Any]:
+def _(_storage: storage.Int64 | storage.Double, /, data: Any) -> dict[str, Any]:
     return {"type": _storage_type_to_str(_storage), "values": data}
 
 
 @_storage_to_dict.register(storage.AtomicInt64)
 @_storage_to_dict.register(storage.Unlimited)
 def _(
-    storage_: storage.AtomicInt64 | storage.Unlimited,
+    _storage: storage.AtomicInt64 | storage.Unlimited,
     /,
     data: Any,
 ) -> dict[str, Any]:
     return {
-        "writer_info": {"boost-histogram": {"orig_type": type(storage_).__name__}},
         "type": "int" if np.issubdtype(data.dtype, np.integer) else "double",
         "values": data,
     }
@@ -97,12 +96,20 @@ def _(_storage: storage.WeightedMean, /, data: Any) -> dict[str, Any]:
     }
 
 
-def _storage_from_dict(data: dict[str, Any], /) -> storage.Storage:
+def _storage_from_dict(
+    data: dict[str, Any], writer_info: dict[str, Any] | None = None, /
+) -> storage.Storage:
     """Convert a dictionary to a storage object."""
     # If loading a boost-histogram, we can load the exact original type
-    orig_type = (
-        data.get("writer_info", {}).get("boost-histogram", {}).get("orig_type", "")
-    )
+    # Check both the main writer_info (new location) and storage writer_info (old location)
+    orig_type = ""
+    if writer_info:
+        orig_type = writer_info.get("boost-histogram", {}).get("storage_type", "")
+    if not orig_type:
+        orig_type = (
+            data.get("writer_info", {}).get("boost-histogram", {}).get("orig_type", "")
+        )
+
     if orig_type == "AtomicInt64":
         return storage.AtomicInt64()
     if orig_type == "Unlimited":

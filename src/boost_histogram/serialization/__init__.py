@@ -6,7 +6,7 @@ from typing import Any, TypeVar
 import numpy as np
 
 # pylint: disable-next=import-error
-from .. import histogram, version
+from .. import histogram, storage, version
 from ._axis import _axis_from_dict, _axis_to_dict
 from ._common import serialize_metadata
 from ._storage import (
@@ -29,15 +29,22 @@ def to_uhi(
     """Convert an Histogram to a dictionary."""
 
     # Convert the histogram to a dictionary
+    writer_info = {"boost-histogram": {"version": version.version}}
+
+    # Store storage type info for AtomicInt64 and Unlimited (they serialize as int/double)
+    storage_type_str = _storage_type_to_str(h.storage_type())
+    if isinstance(h.storage_type(), (storage.AtomicInt64, storage.Unlimited)):
+        writer_info["boost-histogram"]["storage_type"] = type(h.storage_type()).__name__
+
     data = {
         "uhi_schema": 1,
-        "writer_info": {"boost-histogram": {"version": version.version}},
+        "writer_info": writer_info,
         "axes": [_axis_to_dict(axis) for axis in h.axes],
     }
     if keep_storage:
         data["storage"] = _storage_to_dict(h.storage_type(), h.view(flow=True))
     else:
-        data["storage"] = {"type": _storage_type_to_str(h.storage_type())}
+        data["storage"] = {"type": storage_type_str}
     data["metadata"] = serialize_metadata(h.__dict__)
 
     return data
@@ -49,7 +56,7 @@ def from_uhi(data: dict[str, Any], /) -> histogram.Histogram[Any]:
     axis = (_axis_from_dict(ax) for ax in data["axes"])
 
     storage_data = data["storage"]
-    storage = _storage_from_dict(storage_data)
+    storage = _storage_from_dict(storage_data, data.get("writer_info", {}))
     h = histogram.Histogram[Any](*axis, storage=storage)
     h.__dict__ = data.get("metadata", {})
 
@@ -86,7 +93,7 @@ def remove_writer_info(obj: T, /, *, library: str | None = "boost-histogram") ->
 
     obj = copy.copy(obj)
     if library is None:
-        obj.pop("writer_info")
+        obj.pop("writer_info", None)
     elif library in obj.get("writer_info", {}):
         obj["writer_info"] = copy.copy(obj["writer_info"])
         del obj["writer_info"][library]
