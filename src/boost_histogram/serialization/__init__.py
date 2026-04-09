@@ -51,10 +51,10 @@ def from_uhi(data: dict[str, Any], /) -> histogram.Histogram[Any]:
     storage_data = data["storage"]
     storage = _storage_from_dict(storage_data)
     h = histogram.Histogram[Any](*axis, storage=storage)
+    h.__dict__ = data.get("metadata", {})
 
     # Check if storage has data (if not, it's a structure-only histogram)
     if "values" not in storage_data:
-        h.__dict__ = data.get("metadata", {})
         return h
 
     raw_data = _data_from_dict(storage_data)
@@ -69,7 +69,6 @@ def from_uhi(data: dict[str, Any], /) -> histogram.Histogram[Any]:
     else:
         raw_data = np.reshape(raw_data, view_shape)
     h[...] = raw_data
-    h.__dict__ = data.get("metadata", {})
     return h
 
 
