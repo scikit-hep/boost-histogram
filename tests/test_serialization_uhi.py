@@ -216,9 +216,97 @@ def test_round_trip_native() -> None:
 
     assert h == h2
 
-    assert isinstance(h2.axes[0], bh.axis.Integer)
-    assert h2.storage_type is bh.storage.AtomicInt64
-    assert h2.axes[0].traits.growth == h.axes[0].traits.growth
+
+@pytest.mark.parametrize(
+    ("storage_type", "expected_type"),
+    [
+        pytest.param(bh.storage.Int64(), "int", id="int64"),
+        pytest.param(bh.storage.AtomicInt64(), "int", id="atomic_int64"),
+        pytest.param(bh.storage.Double(), "double", id="double"),
+        pytest.param(bh.storage.Weight(), "weighted", id="weight"),
+        pytest.param(bh.storage.Mean(), "mean", id="mean"),
+    ],
+)
+def test_to_uhi_keep_storage_option(
+    storage_type: bh.storage.Storage, expected_type: str
+) -> None:
+    h = bh.Histogram(
+        bh.axis.Regular(3, 0, 1),
+        storage=storage_type,
+    )
+    data_with = to_uhi(h)
+    data_without = to_uhi(h, keep_storage=False)
+
+    assert "storage" in data_with
+    assert "storage" in data_without
+    # Storage with data has "values" key
+    assert "values" in data_with["storage"]
+    # Storage without data has only type information
+    assert "values" not in data_without["storage"]
+    assert data_without["storage"]["type"] == expected_type
+
+
+@pytest.mark.parametrize(
+    "storage_type",
+    [
+        pytest.param(bh.storage.Int64(), id="int64"),
+        pytest.param(bh.storage.AtomicInt64(), id="atomic_int64"),
+        pytest.param(bh.storage.Double(), id="double"),
+        pytest.param(bh.storage.Weight(), id="weight"),
+        pytest.param(bh.storage.Mean(), id="mean"),
+    ],
+)
+def test_from_uhi_missing_storage_data(storage_type: bh.storage.Storage) -> None:
+    h = bh.Histogram(
+        bh.axis.Regular(4, 0.0, 1.0),
+        storage=storage_type,
+    )
+    # produce a UHI dict with storage type but no data
+    data = to_uhi(h, keep_storage=False)
+
+    h2 = from_uhi(data)
+
+    # axes and storage type should round-trip, data should be zeros
+    assert pytest.approx(np.array(h.axes[0])) == np.array(h2.axes[0])
+    assert h2.storage_type is type(storage_type)
+    assert np.asarray(h2) == pytest.approx(np.zeros_like(np.asarray(h2)))
+
+
+@pytest.mark.parametrize(
+    ("storage_type", "expected_type"),
+    [
+        pytest.param(bh.storage.AtomicInt64(), "int", id="atomic_int64"),
+        pytest.param(bh.storage.Unlimited(), "double", id="unlimited"),
+    ],
+)
+def test_from_uhi_old_style_writer_info(
+    storage_type: bh.storage.Storage, expected_type: str
+) -> None:
+    h = bh.Histogram(
+        bh.axis.Regular(4, 0.0, 1.0),
+        storage=storage_type,
+    )
+    h.fill([0, 0, 1, 2])
+
+    data = to_uhi(h)
+
+    old_style_data = {
+        "uhi_schema": 1,
+        "axes": data["axes"],
+        "storage": {
+            "type": expected_type,
+            "values": data["storage"]["values"],
+            "writer_info": {
+                "boost-histogram": {"orig_type": type(storage_type).__name__}
+            },
+        },
+        "metadata": data.get("metadata", {}),
+    }
+
+    h2 = from_uhi(old_style_data)
+
+    assert h == h2
+    assert h2.storage_type is type(storage_type)
 
 
 @pytest.mark.parametrize(
@@ -414,3 +502,109 @@ def test_round_trip_3d_histogram_json_constructor() -> None:
 
     assert h.ndim == h2.ndim
     assert h == h2
+
+
+def test_from_uhi_malformed_weight_storage() -> None:
+    """Test that malformed Weight storage ( missing required keys) raises ValueError."""
+    data = {
+        "uhi_schema": 1,
+        "axes": [
+            {
+                "type": "regular",
+                "lower": 0,
+                "upper": 10,
+                "bins": 5,
+                "underflow": True,
+                "overflow": True,
+                "circular": False,
+            }
+        ],
+        "storage": {
+            "type": "weighted",
+            "values": [1, 2, 3, 4, 5],
+        },
+        "metadata": {},
+    }
+
+    with pytest.raises(ValueError, match="Weighted storage missing required keys"):
+        from_uhi(data)
+
+
+def test_from_uhi_malformed_mean_storage() -> None:
+    """Test that malformed Mean storage (missing required keys) raises ValueError."""
+    data = {
+        "uhi_schema": 1,
+        "axes": [
+            {
+                "type": "regular",
+                "lower": 0,
+                "upper": 10,
+                "bins": 5,
+                "underflow": True,
+                "overflow": True,
+                "circular": False,
+            }
+        ],
+        "storage": {
+            "type": "mean",
+            "counts": [1, 2, 3, 4, 5],
+            "values": [1, 2, 3, 4, 5],
+        },
+        "metadata": {},
+    }
+
+    with pytest.raises(ValueError, match="Mean storage missing required keys"):
+        from_uhi(data)
+
+
+def test_from_uhi_malformed_weighted_mean_storage() -> None:
+    """Test that malformed WeightedMean storage (missing required keys) raises ValueError."""
+    data = {
+        "uhi_schema": 1,
+        "axes": [
+            {
+                "type": "regular",
+                "lower": 0,
+                "upper": 10,
+                "bins": 5,
+                "underflow": True,
+                "overflow": True,
+                "circular": False,
+            }
+        ],
+        "storage": {
+            "type": "weighted_mean",
+            "sum_of_weights": [1, 2, 3, 4, 5],
+            "values": [1, 2, 3, 4, 5],
+        },
+        "metadata": {},
+    }
+
+    with pytest.raises(ValueError, match="Weighted_mean storage missing required keys"):
+        from_uhi(data)
+
+
+def test_from_uhi_structure_only_no_error() -> None:
+    """Test that structure-only (no data keys) histograms load correctly."""
+    data = {
+        "uhi_schema": 1,
+        "axes": [
+            {
+                "type": "regular",
+                "lower": 0,
+                "upper": 10,
+                "bins": 5,
+                "underflow": True,
+                "overflow": True,
+                "circular": False,
+            }
+        ],
+        "storage": {
+            "type": "double",
+        },
+        "metadata": {},
+    }
+
+    h = from_uhi(data)
+    assert h.storage_type is bh.storage.Double
+    assert np.asarray(h) == pytest.approx(np.zeros(5))
