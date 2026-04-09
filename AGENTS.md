@@ -10,6 +10,7 @@
 You can also prefix commands with `uv run` (recommended), this builds as needed.
 
 Git submodules required for C++ build:
+
 ```bash
 git clone --recursive https://github.com/scikit-hep/boost-histogram.git
 # or if already cloned:
@@ -18,13 +19,12 @@ git submodule update --init --depth 10
 
 ## Commands
 
-| Task | Command |
-|------|---------|
-| Lint, format, and typecheck | `prek -a` |
-| Tests only | `uv run pytest` |
-| Build docs + serve | `nox -s docs -- serve` |
-| CMake build + test | `cmake --workflow default` |
-
+| Task                        | Command                    |
+| --------------------------- | -------------------------- |
+| Lint, format, and typecheck | `prek -a`                  |
+| Tests only                  | `uv run pytest`            |
+| Build docs + serve          | `nox -s docs -- serve`     |
+| CMake build + test          | `cmake --workflow default` |
 
 ## Project Structure
 
@@ -36,6 +36,7 @@ tests/                  # pytest suite
 ```
 
 Key entry points:
+
 - `src/boost_histogram/__init__.py` - Main Python API
 - `src/module.cpp` - pybind11 module definition
 
