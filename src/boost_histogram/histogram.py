@@ -917,7 +917,7 @@ class Histogram(typing.Generic[S]):
         Converts an expression that contains UHI locators to one that does not.
         """
         # Support sum and rebin directly
-        if index is sum or hasattr(index, "factor"):  # type: ignore[comparison-overlap]
+        if index is sum or hasattr(index, "factor"):  # type: ignore[comparison-overlap,redundant-expr]
             return slice(None, None, index)
 
         # General locators

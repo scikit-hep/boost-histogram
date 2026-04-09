@@ -138,7 +138,7 @@ class WeightedSumView(View):
             case "__call__", np.negative | np.positive, [raw_input]:
                 ufunc(raw_input["value"], out=result["value"], **kwargs)
                 result["variance"] = raw_input["variance"]
-                return result.view(self.__class__)  # type: ignore[no-any-return]
+                return result.view(self.__class__)
             # Support + and -
             case "__call__", np.add | np.subtract, [raw_input1, raw_input2]:
                 if raw_input1.dtype == raw_input2.dtype:
@@ -180,7 +180,7 @@ class WeightedSumView(View):
                         out=result["variance"],
                         **kwargs,
                     )
-                return result.view(self.__class__)  # type: ignore[no-any-return]
+                return result.view(self.__class__)
 
             case (
                 "__call__",
@@ -214,12 +214,12 @@ class WeightedSumView(View):
                         **kwargs,
                     )
 
-                return result.view(self.__class__)  # type: ignore[no-any-return]
+                return result.view(self.__class__)
 
             case "accumulate", np.add, [raw_input]:
                 for field in self._FIELDS:
                     ufunc.accumulate(self[field], out=result[field], **kwargs)
-                return result.view(self.__class__)  # type: ignore[no-any-return]
+                return result.view(self.__class__)
 
         # If unsupported, just pass through (will return not implemented)
         # pylint: disable-next=no-member
