@@ -159,35 +159,28 @@ Note, while the histogram option (`--histogram`) is nice, it does require
 
 Code should be well formatted; CI will check it and one of the authors can help
 reformat your code. If you want to check it yourself, you should use
-[`pre-commit`](https://pre-commit.com).
+[`prek`](https://github.com/j178/prek).
 
-Just [install pre-commit](https://pre-commit.com/#install), probably using brew
+Just [install prek](https://github.com/j178/prek), probably using brew
 on macOS or pip on other platforms, then run:
 
 ```bash
-pre-commit install
+prek install
 ```
 
 Now all changed files will be checked every time you git commit. You can check
 it yourself (even without installing the hooks) using:
 
 ```bash
-pre-commit run --all-files
+prek run -a
 ```
 
-Developers should update the pre-commit dependencies once in a while, you can
+Developers should update the prek dependencies once in a while, you can
 do this automatically with:
 
 ```bash
-pre-commit autoupdate -j8
+prek auto-update
 ```
-
-> #### Note about skipping Docker
->
-> Pre-commit uses docker to ensure a consistent run of clang-format. If you do
-> not want to install/run Docker, you should use `SKIP=docker-clang-format`
-> when running pre-commit, and instead run `clang-format -style=file -i
-<files>` yourself.
 
 ## Clang-Tidy
 
