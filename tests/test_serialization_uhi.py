@@ -226,21 +226,27 @@ def test_to_uhi_keep_storage_option() -> None:
     data_without = to_uhi(h, keep_storage=False)
 
     assert "storage" in data_with
-    assert "storage" not in data_without
+    assert "storage" in data_without
+    # Storage with data has "values" key
+    assert "values" in data_with["storage"]
+    # Storage without data has only type information
+    assert "values" not in data_without["storage"]
+    assert data_without["storage"]["type"] == "double"
 
 
-def test_from_uhi_missing_storage() -> None:
+def test_from_uhi_missing_storage_data() -> None:
     h = bh.Histogram(
         bh.axis.Regular(4, 0.0, 1.0),
         storage=bh.storage.Double(),
     )
-    # produce a UHI dict without storage
+    # produce a UHI dict with storage type but no data
     data = to_uhi(h, keep_storage=False)
 
     h2 = from_uhi(data)
 
-    # axes should round-trip and data should be zeros (default storage)
+    # axes and storage type should round-trip, data should be zeros
     assert pytest.approx(np.array(h.axes[0])) == np.array(h2.axes[0])
+    assert h2.storage_type is bh.storage.Double
     assert np.asarray(h2) == pytest.approx(np.zeros_like(np.asarray(h2)))
 
 

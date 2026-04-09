@@ -7,28 +7,50 @@ import numpy as np
 
 from .. import storage
 
-__all__ = ["_data_from_dict", "_storage_from_dict", "_storage_to_dict"]
+__all__ = [
+    "_data_from_dict",
+    "_storage_from_dict",
+    "_storage_to_dict",
+    "_storage_type_to_str",
+]
 
 
 def __dir__() -> list[str]:
     return __all__
 
 
+def _storage_type_to_str(_storage: storage.Storage, /) -> str:
+    """Return the canonical storage type string for a storage object."""
+    match _storage:
+        case storage.Int64():
+            return "int"
+        case storage.Double():
+            return "double"
+        case storage.AtomicInt64():
+            return "int"
+        case storage.Unlimited():
+            return "double"
+        case storage.Weight():
+            return "weighted"
+        case storage.Mean():
+            return "mean"
+        case storage.WeightedMean():
+            return "weighted_mean"
+        case _:
+            raise TypeError(f"Unsupported storage type: {_storage}")
+
+
 @functools.singledispatch
-def _storage_to_dict(_storage: Any, /, data: Any) -> dict[str, Any]:  # noqa: ARG001
+def _storage_to_dict(_storage: storage.Storage, /, data: Any) -> dict[str, Any]:  # noqa: ARG001
     """Convert a storage to a dictionary."""
     msg = f"Unsupported storage type: {_storage}"
     raise TypeError(msg)
 
 
 @_storage_to_dict.register(storage.Int64)
-def _(_storage: storage.Int64, /, data: Any) -> dict[str, Any]:
-    return {"type": "int", "values": data}
-
-
 @_storage_to_dict.register(storage.Double)
 def _(_storage: storage.Double, /, data: Any) -> dict[str, Any]:
-    return {"type": "double", "values": data}
+    return {"type": _storage_type_to_str(_storage), "values": data}
 
 
 @_storage_to_dict.register(storage.AtomicInt64)
@@ -48,7 +70,7 @@ def _(
 @_storage_to_dict.register(storage.Weight)
 def _(_storage: storage.Weight, /, data: Any) -> dict[str, Any]:
     return {
-        "type": "weighted",
+        "type": _storage_type_to_str(_storage),
         "values": data.value,
         "variances": data.variance,
     }
@@ -57,7 +79,7 @@ def _(_storage: storage.Weight, /, data: Any) -> dict[str, Any]:
 @_storage_to_dict.register(storage.Mean)
 def _(_storage: storage.Mean, /, data: Any) -> dict[str, Any]:
     return {
-        "type": "mean",
+        "type": _storage_type_to_str(_storage),
         "counts": data.count,
         "values": data.value,
         "variances": data.variance,
@@ -67,7 +89,7 @@ def _(_storage: storage.Mean, /, data: Any) -> dict[str, Any]:
 @_storage_to_dict.register(storage.WeightedMean)
 def _(_storage: storage.WeightedMean, /, data: Any) -> dict[str, Any]:
     return {
-        "type": "weighted_mean",
+        "type": _storage_type_to_str(_storage),
         "sum_of_weights": data.sum_of_weights,
         "sum_of_weights_squared": data.sum_of_weights_squared,
         "values": data.value,

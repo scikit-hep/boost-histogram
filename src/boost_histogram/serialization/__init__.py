@@ -9,7 +9,12 @@ import numpy as np
 from .. import histogram, version
 from ._axis import _axis_from_dict, _axis_to_dict
 from ._common import serialize_metadata
-from ._storage import _data_from_dict, _storage_from_dict, _storage_to_dict
+from ._storage import (
+    _data_from_dict,
+    _storage_from_dict,
+    _storage_to_dict,
+    _storage_type_to_str,
+)
 
 __all__ = ["from_uhi", "remove_writer_info", "to_uhi"]
 
@@ -31,6 +36,8 @@ def to_uhi(
     }
     if keep_storage:
         data["storage"] = _storage_to_dict(h.storage_type(), h.view(flow=True))
+    else:
+        data["storage"] = {"type": _storage_type_to_str(h.storage_type())}
     data["metadata"] = serialize_metadata(h.__dict__)
 
     return data
@@ -41,20 +48,21 @@ def from_uhi(data: dict[str, Any], /) -> histogram.Histogram[Any]:
     # One time use
     axis = (_axis_from_dict(ax) for ax in data["axes"])
 
-    if "storage" not in data:
-        h = histogram.Histogram[Any](*axis)
+    storage_data = data["storage"]
+    storage = _storage_from_dict(storage_data)
+    h = histogram.Histogram[Any](*axis, storage=storage)
+
+    # Check if storage has data (if not, it's a structure-only histogram)
+    if "values" not in storage_data:
         h.__dict__ = data.get("metadata", {})
         return h
 
-    storage = _storage_from_dict(data["storage"])
-    h = histogram.Histogram[Any](*axis, storage=storage)
-
-    raw_data = _data_from_dict(data["storage"])
+    raw_data = _data_from_dict(storage_data)
     view_shape = h.view(flow=True).shape
     # Reshape raw_data to the expected shape. This is necessary because JSON
     # serialization can collapse empty dimensions (e.g. (5, 0, 0) -> (5, 0)),
     # so we must restore the correct number of dimensions.
-    storage_type = data["storage"]["type"]
+    storage_type = storage_data["type"]
     if storage_type in {"weighted", "mean", "weighted_mean"}:
         raw_data = np.asarray(raw_data)
         raw_data = raw_data.reshape(view_shape + raw_data.shape[-1:])
