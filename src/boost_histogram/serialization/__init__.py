@@ -23,6 +23,44 @@ def __dir__() -> list[str]:
     return __all__
 
 
+def _storage_has_data_keys(storage_data: dict[str, Any], storage_type: str) -> bool:
+    """
+    Check if storage data dict has the required keys for the given storage type.
+
+    Returns True if all required data keys are present, False if it's structure-only.
+    Raises ValueError if required keys are missing (malformed/partial data).
+    """
+    match storage_type:
+        case "int" | "double":
+            required_keys = {"values"}
+        case "weighted":
+            required_keys = {"values", "variances"}
+        case "mean":
+            required_keys = {"counts", "values", "variances"}
+        case "weighted_mean":
+            required_keys = {
+                "sum_of_weights",
+                "sum_of_weights_squared",
+                "values",
+                "variances",
+            }
+        case _:
+            msg = f"Unknown storage type: {storage_type}"
+            raise ValueError(msg)
+
+    present_keys = required_keys & set(storage_data.keys())
+
+    if not present_keys:
+        return False
+
+    if present_keys != required_keys:
+        missing = required_keys - present_keys
+        msg = f"{storage_type.capitalize()} storage missing required keys: {missing}"
+        raise ValueError(msg)
+
+    return True
+
+
 def to_uhi(
     h: histogram.Histogram[Any], /, *, keep_storage: bool = True
 ) -> dict[str, Any]:
@@ -56,12 +94,16 @@ def from_uhi(data: dict[str, Any], /) -> histogram.Histogram[Any]:
     axis = (_axis_from_dict(ax) for ax in data["axes"])
 
     storage_data = data["storage"]
-    storage = _storage_from_dict(storage_data, data.get("writer_info", {}))
-    h = histogram.Histogram[Any](*axis, storage=storage)
+    storage_ = _storage_from_dict(storage_data, data.get("writer_info", {}))
+    h = histogram.Histogram[Any](*axis, storage=storage_)
     h.__dict__ = data.get("metadata", {})
 
     # Check if storage has data (if not, it's a structure-only histogram)
-    if "values" not in storage_data:
+    # Validate required keys per storage type before deciding to skip data loading
+    storage_type = storage_data["type"]
+    has_data_keys = _storage_has_data_keys(storage_data, storage_type)
+
+    if not has_data_keys:
         return h
 
     raw_data = _data_from_dict(storage_data)

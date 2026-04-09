@@ -502,3 +502,109 @@ def test_round_trip_3d_histogram_json_constructor() -> None:
 
     assert h.ndim == h2.ndim
     assert h == h2
+
+
+def test_from_uhi_malformed_weight_storage() -> None:
+    """Test that malformed Weight storage ( missing required keys) raises ValueError."""
+    data = {
+        "uhi_schema": 1,
+        "axes": [
+            {
+                "type": "regular",
+                "lower": 0,
+                "upper": 10,
+                "bins": 5,
+                "underflow": True,
+                "overflow": True,
+                "circular": False,
+            }
+        ],
+        "storage": {
+            "type": "weighted",
+            "values": [1, 2, 3, 4, 5],
+        },
+        "metadata": {},
+    }
+
+    with pytest.raises(ValueError, match="Weighted storage missing required keys"):
+        from_uhi(data)
+
+
+def test_from_uhi_malformed_mean_storage() -> None:
+    """Test that malformed Mean storage (missing required keys) raises ValueError."""
+    data = {
+        "uhi_schema": 1,
+        "axes": [
+            {
+                "type": "regular",
+                "lower": 0,
+                "upper": 10,
+                "bins": 5,
+                "underflow": True,
+                "overflow": True,
+                "circular": False,
+            }
+        ],
+        "storage": {
+            "type": "mean",
+            "counts": [1, 2, 3, 4, 5],
+            "values": [1, 2, 3, 4, 5],
+        },
+        "metadata": {},
+    }
+
+    with pytest.raises(ValueError, match="Mean storage missing required keys"):
+        from_uhi(data)
+
+
+def test_from_uhi_malformed_weighted_mean_storage() -> None:
+    """Test that malformed WeightedMean storage (missing required keys) raises ValueError."""
+    data = {
+        "uhi_schema": 1,
+        "axes": [
+            {
+                "type": "regular",
+                "lower": 0,
+                "upper": 10,
+                "bins": 5,
+                "underflow": True,
+                "overflow": True,
+                "circular": False,
+            }
+        ],
+        "storage": {
+            "type": "weighted_mean",
+            "sum_of_weights": [1, 2, 3, 4, 5],
+            "values": [1, 2, 3, 4, 5],
+        },
+        "metadata": {},
+    }
+
+    with pytest.raises(ValueError, match="Weighted_mean storage missing required keys"):
+        from_uhi(data)
+
+
+def test_from_uhi_structure_only_no_error() -> None:
+    """Test that structure-only (no data keys) histograms load correctly."""
+    data = {
+        "uhi_schema": 1,
+        "axes": [
+            {
+                "type": "regular",
+                "lower": 0,
+                "upper": 10,
+                "bins": 5,
+                "underflow": True,
+                "overflow": True,
+                "circular": False,
+            }
+        ],
+        "storage": {
+            "type": "double",
+        },
+        "metadata": {},
+    }
+
+    h = from_uhi(data)
+    assert h.storage_type is bh.storage.Double
+    assert np.asarray(h) == pytest.approx(np.zeros(5))
