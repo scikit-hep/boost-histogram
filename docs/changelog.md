@@ -2,6 +2,41 @@
 
 ## Version 1.7
 
+### Version 1.7.2
+
+#### Features
+
+- No storage option/support for serialization, by @henryiii in [#1098][]
+
+#### Fixes
+
+- Correct repr for MultiCell by @henryiii in [#1087][]
+- Fix serialization round-trip for 3D histograms with empty axes by @Copilot in [#1094][]
+- Fix `__setitem__` axis index mismatch when slices are not leading indices by @Copilot in [#1097][]
+- Support 0D MeanView/WeightedMeanView by @Copilot in [#1100][]
+- Broadcast scalar axis args to match array sample length in Mean/WeightedMean fill by @Copilot in [#1101][]
+
+#### Typing
+
+- Slightly better getitem type by @henryiii in [#1086][]
+
+#### Internal
+
+- Use pattern matching in another place by @henryiii in [#1092][]
+- Move to using prek by @henryiii in [#1105][]
+- Add `AGENTS.md` by @henryiii in [#1106][]
+
+[#1098]: https://github.com/scikit-hep/boost-histogram/pull/1098
+[#1087]: https://github.com/scikit-hep/boost-histogram/pull/1087
+[#1094]: https://github.com/scikit-hep/boost-histogram/pull/1094
+[#1097]: https://github.com/scikit-hep/boost-histogram/pull/1097
+[#1100]: https://github.com/scikit-hep/boost-histogram/pull/1100
+[#1101]: https://github.com/scikit-hep/boost-histogram/pull/1101
+[#1086]: https://github.com/scikit-hep/boost-histogram/pull/1086
+[#1092]: https://github.com/scikit-hep/boost-histogram/pull/1092
+[#1105]: https://github.com/scikit-hep/boost-histogram/pull/1105
+[#1106]: https://github.com/scikit-hep/boost-histogram/pull/1106
+
 ### Version 1.7.1
 
 #### Typing
