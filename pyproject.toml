@@ -182,14 +182,12 @@ test-environment.CI = "1"  # Hypothosis needs this on GraalPy
 test-skip = [
   "cp310-win_arm64",
   "cp310-musllinux_*",
-  "pp310-manylinux_aarch64",
-  "pp310-macosx_arm64",
   "cp31*-musllinux_*", # Threading test crashes
   "gp311_242-macosx_x86_64",
   "gp311_242-manylinux_aarch64",
   "gp311_242-win*",  # pytest crashes with module 'io' has no attribute '_WindowsConsoleIO'
   "gp312_*",  # No numpy wheels yet
-  "cp314*-ios_*",  # No numpy wheels yet
+  "*-ios_*",  # Fails on CI with no device found
 ]
 enable = ["pypy", "graalpy"]
 environment-pass = ["SETUPTOOLS_SCM_PRETEND_VERSION"]
@@ -213,11 +211,6 @@ environment.PIP_EXTRA_INDEX_URL = "https://pypi.anaconda.org/beeware/simple/"
 # xbuild-tools = ["cmake", "ninja"]
 # test-command = "pytest --benchmark-disable tests"
 # environment.PIP_EXTRA_INDEX_URL = "https://chaquo.com/pypi-13.1"
-
-[[tool.cibuildwheel.overrides]]
-select = "pp310-macosx_arm64"
-inherit.environment = "append"
-environment.MACOSX_DEPLOYMENT_TARGET = "14.0"
 
 [[tool.cibuildwheel.overrides]]
 select = ["gp*"]
