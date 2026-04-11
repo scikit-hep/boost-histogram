@@ -1499,11 +1499,12 @@ class Histogram(typing.Generic[S]):
             indexes.insert(0, slice(None, None, None))
         view[tuple(indexes)] = in_array
 
-    def project(self, *args: int) -> Self:
+    def project(self, *args: int, flow: bool = True) -> Self:
         """
         Project to a single axis or several axes on a multidimensional histogram.
         Provided a list of axis numbers, this will produce the histogram over
-        those axes only. Flow bins are used if available.
+        those axes only. Flow bins are used if available. If flow is False,
+        flow bins on the integrated-out axes are excluded.
         """
         for arg in args:
             if arg < 0 or arg >= self.ndim:
@@ -1511,7 +1512,21 @@ class Histogram(typing.Generic[S]):
                     f"Projection axis must be a valid axis number 0 to {self.ndim - 1}, not {arg}"
                 )
 
-        return self._new_hist(self._hist.project(*args))
+        if flow:
+            return self._new_hist(self._hist.project(*args))
+
+        keep_axes = set(args)
+        drop_axes = [i for i in range(self.ndim) if i not in keep_axes]
+
+        slices = [
+            _core.algorithm.slice(
+                i, 0, self.axes[i].size, _core.algorithm.slice_mode.crop
+            )
+            for i in drop_axes
+        ]
+
+        reduced_hist = self._hist.reduce(*slices) if slices else self._hist
+        return self._new_hist(reduced_hist.project(*args))
 
     # Implementation of PlottableHistogram
 

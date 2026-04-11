@@ -619,6 +619,18 @@ def test_project():
     with pytest.raises(ValueError):
         h.project(-1)
 
+    h_noflow = h.project(0, flow=False)
+    assert [h_noflow[i] for i in range(2)] == [2, 1]
+
+    h.fill(-1, 0)
+    h.fill(0, 0)
+
+    h_flow_true = h.project(0, flow=True)
+    assert h_flow_true[0] == 3
+
+    h_flow_false = h.project(0, flow=False)
+    assert h_flow_false[0] == 2
+
 
 def test_shrink_1d():
     h = bh.Histogram(bh.axis.Regular(20, 1, 5))
