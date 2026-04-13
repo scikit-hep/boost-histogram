@@ -1,5 +1,11 @@
 # Changelog
 
+## WIP
+
+#### Features
+
+- Support `flow=False` in histogram projections by @Rishabh-git10 in [#1109][]
+
 ## Version 1.7
 
 ### Version 1.7.2
@@ -7,7 +13,6 @@
 #### Features
 
 - No storage option/support for serialization, by @henryiii in [#1098][]
-- Support `flow=False` in histogram projections by @Rishabh-git10 in [#1109][]
 
 #### Fixes
 
