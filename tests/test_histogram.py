@@ -1510,8 +1510,10 @@ def test_allclose_different_bins():
     h2 = bh.Histogram(bh.axis.Regular(5, 0, 1))
 
     rng = np.random.default_rng(42)
-    h1.fill(rng.random(100))
-    h2.fill(rng.random(100))
+    vals = rng.random(100)
+    h1.fill(vals)
+    h2.fill(vals)
+    h2.fill(.7)
 
     assert not h1.allclose(h2)
 
@@ -1520,11 +1522,7 @@ def test_allclose_edges_within_tol():
     h1 = bh.Histogram(bh.axis.Regular(5, 0, 1))
     h2 = bh.Histogram(bh.axis.Regular(5, 0, 1 + 1e-7))
 
-    rng = np.random.default_rng(42)
-    h1.fill(rng.random(100))
-    h2.fill(rng.random(100))
-
-    assert not h1.allclose(h2)
+    assert h1.allclose(h2)
 
 
 def test_allclose_edges_outside_tol():
