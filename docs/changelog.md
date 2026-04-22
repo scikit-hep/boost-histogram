@@ -1,5 +1,11 @@
 # Changelog
 
+## WIP
+
+#### Features
+
+- Support `flow=False` in histogram projections by @Rishabh-git10 in [#1109][]
+
 ## Version 1.7
 
 ### Version 1.7.2
@@ -36,6 +42,7 @@
 [#1092]: https://github.com/scikit-hep/boost-histogram/pull/1092
 [#1105]: https://github.com/scikit-hep/boost-histogram/pull/1105
 [#1106]: https://github.com/scikit-hep/boost-histogram/pull/1106
+[#1109]: https://github.com/scikit-hep/boost-histogram/pull/1109
 
 ### Version 1.7.1
 
