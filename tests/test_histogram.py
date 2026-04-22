@@ -1513,7 +1513,7 @@ def test_allclose_different_bins():
     vals = rng.random(100)
     h1.fill(vals)
     h2.fill(vals)
-    h2.fill(.7)
+    h2.fill(0.7)
 
     assert not h1.allclose(h2)
 
