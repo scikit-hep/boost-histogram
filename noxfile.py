@@ -145,7 +145,14 @@ def bump_boost(session: nox.Session) -> None:
     for path in extern.iterdir():
         session.chdir(path)
         session.run("git", "fetch", external=True)
-        session.run("git", "switch", "--detach", f"boost-{args.version}", external=True)
+        session.run(
+            "git",
+            "switch",
+            "--detach",
+            f"boost-{args.version}",
+            external=True,
+            success_codes=[0, 128],
+        )
 
 
 if __name__ == "__main__":
