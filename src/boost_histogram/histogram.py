@@ -578,6 +578,106 @@ class Histogram(typing.Generic[S]):
 
     __hash__ = None  # type: ignore[assignment]
 
+    def allclose(
+        self,
+        other: object,
+        *,
+        rtol: float = 1e-05,
+        atol: float = 1e-08,
+        equal_nan: bool = False,
+        flow: bool = True,
+        metadata: bool = False,
+    ) -> bool:
+        """
+        Check whether two histograms are close to each other.
+
+        Parameters
+        ----------
+        other : Histogram
+            The histogram to compare against.
+        rtol : float = 1e-05
+            Relative tolerance for comparing edges and bins.
+        atol : float = 1e-08
+            Absolute tolerance for comparing edges and bins.
+        equal_nan : bool = False
+            Whether to compare NaNs as equal.
+        flow : bool = True
+            Whether to include underflow and overflow bins in the comparison.
+        metadata : bool = False
+            Whether to compare histogram and axis metadata.
+
+        Returns
+        -------
+        bool
+            True if the histograms are close, False otherwise.
+        """
+        if not isinstance(other, Histogram):
+            return False
+
+        if self.ndim != other.ndim:
+            return False
+
+        if self.storage_type != other.storage_type:
+            return False
+
+        if metadata and self.__dict__ != other.__dict__:
+            return False
+
+        for i in range(self.ndim):
+            ax1 = self.axes[i]
+            ax2 = other.axes[i]
+
+            if ax1.size != ax2.size:
+                return False
+
+            if metadata and ax1.__dict__ != ax2.__dict__:
+                return False
+
+            if ax1.traits.continuous != ax2.traits.continuous:
+                return False
+
+            if ax1.traits.continuous:
+                if not np.allclose(
+                    ax1.edges,
+                    ax2.edges,
+                    rtol=rtol,
+                    atol=atol,
+                    equal_nan=equal_nan,
+                ):
+                    return False
+            else:
+                if ax1.traits.ordered != ax2.traits.ordered:
+                    return False
+                if list(ax1) != list(ax2):
+                    return False
+
+        v1 = self.view(flow=flow)
+        v2 = other.view(flow=flow)
+
+        if v1.shape != v2.shape:
+            return False
+
+        if v1.dtype.names:
+            for name in v1.dtype.names:
+                if not np.allclose(
+                    v1[name],  # type: ignore[index]
+                    v2[name],  # type: ignore[index]
+                    rtol=rtol,
+                    atol=atol,
+                    equal_nan=equal_nan,
+                ):
+                    return False
+        elif not np.allclose(
+            v1,
+            v2,
+            rtol=rtol,
+            atol=atol,
+            equal_nan=equal_nan,
+        ):
+            return False
+
+        return True
+
     def __eq__(self, other: object) -> bool:
         return hasattr(other, "_hist") and self._hist == other._hist
 

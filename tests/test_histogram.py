@@ -1492,3 +1492,173 @@ def test_underfill_growth():
     h.fill(2)
     h.fill(-1)
     assert h.sum() == 2
+
+
+# ---- allclose tests ---------------------------------------------------------
+
+
+def test_allclose_same_histogram():
+    h = bh.Histogram(bh.axis.Regular(5, 0, 1))
+    h.fill(np.random.default_rng(42).random(100))
+
+    assert h.allclose(h)
+    assert h.allclose(h.copy())
+
+
+def test_allclose_different_bins():
+    h1 = bh.Histogram(bh.axis.Regular(5, 0, 1))
+    h2 = bh.Histogram(bh.axis.Regular(5, 0, 1))
+
+    rng = np.random.default_rng(42)
+    h1.fill(rng.random(100))
+    h2.fill(rng.random(100))
+
+    assert not h1.allclose(h2)
+
+
+def test_allclose_edges_within_tol():
+    h1 = bh.Histogram(bh.axis.Regular(5, 0, 1))
+    h2 = bh.Histogram(bh.axis.Regular(5, 0, 1 + 1e-7))
+
+    rng = np.random.default_rng(42)
+    h1.fill(rng.random(100))
+    h2.fill(rng.random(100))
+
+    assert not h1.allclose(h2)
+
+
+def test_allclose_edges_outside_tol():
+    h1 = bh.Histogram(bh.axis.Regular(5, 0, 1))
+    h2 = bh.Histogram(bh.axis.Regular(5, 0, 1 + 0.1))
+
+    assert not h1.allclose(h2)
+
+
+def test_allclose_different_shape():
+    h1 = bh.Histogram(bh.axis.Regular(5, 0, 1))
+    h2 = bh.Histogram(bh.axis.Regular(6, 0, 1))
+
+    assert not h1.allclose(h2)
+
+
+def test_allclose_different_ndim():
+    h1 = bh.Histogram(bh.axis.Regular(5, 0, 1))
+    h2 = bh.Histogram(bh.axis.Regular(5, 0, 1), bh.axis.Regular(3, 0, 1))
+
+    assert not h1.allclose(h2)
+
+
+def test_allclose_different_storage():
+    h1 = bh.Histogram(bh.axis.Regular(5, 0, 1))
+    h2 = bh.Histogram(bh.axis.Regular(5, 0, 1), storage=bh.storage.Weight())
+
+    assert not h1.allclose(h2)
+
+
+def test_allclose_flow_option():
+    h1 = bh.Histogram(bh.axis.Regular(3, 0, 1))
+    h2 = bh.Histogram(bh.axis.Regular(3, 0, 1))
+
+    h1.fill([0.5])  # central bin only
+    h2.fill([0.5])  # central bin only
+    # h1 has flow bins empty, h2 also, so both should match with/without flow
+    assert h1.allclose(h2, flow=True)
+    assert h1.allclose(h2, flow=False)
+
+    # Now put different data in underflow
+    h3 = bh.Histogram(bh.axis.Regular(3, 0, 1))
+    h4 = bh.Histogram(bh.axis.Regular(3, 0, 1))
+    h3.fill([-0.5])
+    h4.fill([-0.5, -0.5])
+
+    assert not h3.allclose(h4, flow=True)
+    assert h3.allclose(h4, flow=False)
+
+
+def test_allclose_metadata():
+    h1 = bh.Histogram(bh.axis.Regular(3, 0, 1), metadata="foo")
+    h2 = bh.Histogram(bh.axis.Regular(3, 0, 1), metadata="foo")
+    h3 = bh.Histogram(bh.axis.Regular(3, 0, 1), metadata="bar")
+
+    assert h1.allclose(h2)
+    assert h1.allclose(h2, metadata=True)
+    assert not h1.allclose(h3, metadata=True)
+    assert h1.allclose(h3, metadata=False)
+
+
+def test_allclose_non_histogram():
+    h = bh.Histogram(bh.axis.Regular(3, 0, 1))
+    assert not h.allclose(42)
+    assert not h.allclose("histogram")
+
+
+def test_allclose_categorical_exact():
+    h1 = bh.Histogram(bh.axis.StrCategory(["a", "b"]))
+    h2 = bh.Histogram(bh.axis.StrCategory(["a", "b"]))
+    h3 = bh.Histogram(bh.axis.StrCategory(["a", "c"]))
+    h4 = bh.Histogram(bh.axis.StrCategory(["b", "a"]))
+
+    assert h1.allclose(h2)
+    assert not h1.allclose(h3)
+    assert not h1.allclose(h4)
+
+
+def test_allclose_intcategory():
+    h1 = bh.Histogram(bh.axis.IntCategory([1, 2, 3]))
+    h2 = bh.Histogram(bh.axis.IntCategory([1, 2, 3]))
+    h3 = bh.Histogram(bh.axis.IntCategory([1, 2, 4]))
+
+    assert h1.allclose(h2)
+    assert not h1.allclose(h3)
+
+
+def test_allclose_boolean():
+    h1 = bh.Histogram(bh.axis.Boolean())
+    h2 = bh.Histogram(bh.axis.Boolean())
+
+    assert h1.allclose(h2)
+
+
+def test_allclose_mean_storage():
+    h1 = bh.Histogram(bh.axis.Regular(3, 0, 1), storage=bh.storage.Mean())
+    h2 = bh.Histogram(bh.axis.Regular(3, 0, 1), storage=bh.storage.Mean())
+
+    rng = np.random.default_rng(42)
+    samples = rng.random(100)
+    h1.fill(samples, sample=samples)
+    h2.fill(samples, sample=samples)
+
+    assert h1.allclose(h2)
+
+
+def test_allclose_weight_storage():
+    h1 = bh.Histogram(bh.axis.Regular(3, 0, 1), storage=bh.storage.Weight())
+    h2 = bh.Histogram(bh.axis.Regular(3, 0, 1), storage=bh.storage.Weight())
+
+    rng = np.random.default_rng(42)
+    data = rng.random(100)
+    w = rng.random(100)
+    h1.fill(data, weight=w)
+    h2.fill(data, weight=w)
+
+    assert h1.allclose(h2)
+
+
+def test_allclose_weighted_mean_storage():
+    h1 = bh.Histogram(bh.axis.Regular(3, 0, 1), storage=bh.storage.WeightedMean())
+    h2 = bh.Histogram(bh.axis.Regular(3, 0, 1), storage=bh.storage.WeightedMean())
+
+    rng = np.random.default_rng(42)
+    data = rng.random(100)
+    w = rng.random(100)
+    h1.fill(data, sample=data, weight=w)
+    h2.fill(data, sample=data, weight=w)
+
+    assert h1.allclose(h2)
+
+
+def test_allclose_different_continuous_traits():
+    h1 = bh.Histogram(bh.axis.Regular(3, 0, 1))
+    h2 = bh.Histogram(bh.axis.Integer(0, 3))
+
+    assert not h1.allclose(h2)
