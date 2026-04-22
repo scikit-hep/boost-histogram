@@ -632,6 +632,27 @@ def test_project():
     assert h_flow_false[0] == 2
 
 
+def test_project_nd():
+    h = bh.Histogram(
+        bh.axis.Integer(0, 2), bh.axis.Integer(0, 2), bh.axis.Integer(0, 2)
+    )
+
+    h.fill(0, 0, 0)
+    h.fill(1, 1, 0)
+
+    h.fill(0, 0, -1)
+    h.fill(1, 1, 2)
+
+    h_flow_true = h.project(0, 1, flow=True)
+    h_flow_false = h.project(0, 1, flow=False)
+
+    assert h_flow_true[0, 0] == 2
+    assert h_flow_true[1, 1] == 2
+
+    assert h_flow_false[0, 0] == 1
+    assert h_flow_false[1, 1] == 1
+
+
 def test_shrink_1d():
     h = bh.Histogram(bh.axis.Regular(20, 1, 5))
     h.fill(1.1)
