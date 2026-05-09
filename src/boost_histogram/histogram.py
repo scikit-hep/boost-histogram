@@ -161,7 +161,7 @@ def mean_storage_sample_check(sample: ArrayLike | None) -> None:
     msg1 = f"Sample key-argument needs to be a sequence, {sample.__class__.__name__} given."
     if isinstance(sample, str) and not isinstance(sample, seqs):
         raise ValueError(msg1)
-    sample_dim = np.array(sample).ndim
+    sample_dim = np.ndim(sample)
     msg2 = f"Sample key-argument needs to be 1 dimensional, {sample_dim} given."
     if sample_dim != 1:
         raise ValueError(msg2)

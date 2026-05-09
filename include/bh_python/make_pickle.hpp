@@ -134,8 +134,8 @@ class tuple_oarchive {
     using is_saving  = std::true_type;
     using is_loading = std::false_type;
 
-    explicit tuple_oarchive(py::tuple& tup)
-        : tup_(tup) {}
+    explicit tuple_oarchive(py::list& lst)
+        : lst_(lst) {}
 
     template <class T>
     tuple_oarchive& operator&(boost::nvp<T> t) {
@@ -173,8 +173,7 @@ class tuple_oarchive {
     }
 
     tuple_oarchive& operator<<(const py::object& obj) {
-        // maybe use growth factor 1.6 and shrink tuple to final size in destructor?
-        tup_ = tup_ + py::make_tuple(obj);
+        lst_.attr("append")(obj);
         return *this;
     }
 
@@ -242,7 +241,7 @@ class tuple_oarchive {
     }
 
   private:
-    py::tuple& tup_;
+    py::list& lst_;
 };
 
 class tuple_iarchive {
@@ -370,10 +369,10 @@ template <class T>
 decltype(auto) make_pickle() {
     return py::pickle(
         [](const T& obj) {
-            py::tuple tup;
-            tuple_oarchive oa{tup};
+            py::list lst;
+            tuple_oarchive oa{lst};
             oa << obj;
-            return tup;
+            return py::tuple{lst};
         },
         [](const py::tuple& tup) {
             tuple_iarchive ia{tup};
