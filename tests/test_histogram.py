@@ -1307,10 +1307,11 @@ def test_axes_lifetime():
 
     ax = h.axes[0]
 
-    if platform.python_implementation == "CPython":
+    if platform.python_implementation() == "CPython":
         # 2 is the minimum refcount, so the *python* object should be deleted
         # after the del; hopefully the C++ object lives through the axis instance.
-        assert sys.getrefcount(h) == 2
+        # On Python 3.14, this can be 1
+        assert sys.getrefcount(h) <= 2
 
     del h
 
