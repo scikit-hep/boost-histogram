@@ -130,6 +130,16 @@ def test_setting_profile():
     )
 
 
+def test_mean_storage_rejects_string_sample():
+    h = bh.Histogram(bh.axis.Regular(10, 0, 10), storage=bh.storage.Mean())
+
+    with pytest.raises(
+        ValueError,
+        match=r"Sample key-argument needs to be a sequence, str given\.",
+    ):
+        h.fill([0.3], sample="abc")
+
+
 def test_setting_weighted_profile():
     h = bh.Histogram(bh.axis.Regular(10, 0, 10), storage=bh.storage.WeightedMean())
 

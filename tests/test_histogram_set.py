@@ -145,3 +145,12 @@ def test_set_special_dtype(storage, default):
 
     with pytest.raises(ValueError):
         h[1, 1] = 1
+
+
+def test_set_array_slice_mismatch_not_at_start():
+    h = bh.Histogram(
+        bh.axis.Regular(3, 0, 3), bh.axis.Regular(4, 0, 4), bh.axis.Regular(5, 0, 5)
+    )
+
+    with pytest.raises(ValueError, match=r"Mismatched shapes \(4, 6\) in dimension 2, 6 != 5"):
+        h[0, :, :] = np.ones((4, 6))

@@ -91,7 +91,6 @@ examples = [
 ]
 test = [
     "cloudpickle",
-    "pytest-benchmark",
     "pytest>=6.0",
     "pytest-benchmark",
     "numpy>=1.21.3",
