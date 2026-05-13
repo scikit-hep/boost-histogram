@@ -159,7 +159,7 @@ def mean_storage_sample_check(sample: ArrayLike | None) -> None:
         raise TypeError("Sample key-argument (sample=) needs to be provided.")
     seqs = (collections.abc.Sequence, np.ndarray)
     msg1 = f"Sample key-argument needs to be a sequence, {sample.__class__.__name__} given."
-    if isinstance(sample, str) and not isinstance(sample, seqs):
+    if isinstance(sample, str) or not isinstance(sample, seqs):
         raise ValueError(msg1)
     sample_dim = np.ndim(sample)
     msg2 = f"Sample key-argument needs to be 1 dimensional, {sample_dim} given."
@@ -1574,7 +1574,7 @@ class Histogram(typing.Generic[S]):
 
                 else:
                     msg = f"Mismatched shapes {value_shape} in dimension {n}"
-                    msg += f", {value_shape[n]} != {request_len}"
+                    msg += f", {value_shape[value_n]} != {request_len}"
                     if use_underflow or use_overflow:
                         msg += f" or {request_len + use_underflow + use_overflow}"
                     raise ValueError(msg)
