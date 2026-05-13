@@ -191,7 +191,6 @@ def test_growth():
     h.fill(0)
     for _ in range(1000 - 256):
         h.fill(0)
-    print(h.view(flow=True))
     assert h[bh.underflow] == 0
     assert h[0] == 1
     assert h[1] == 1000
@@ -1360,22 +1359,6 @@ def test_hist_division():
     h1 /= h.axes[0].widths * h.sum()
 
     assert_array_equal(h1.view(), dens)
-
-
-# issue #416 b
-# def test_hist_division():
-#     edges = [0, .25, .5, .75, 1, 2, 3, 4, 7, 10]
-#    edges = [-x for x in reversed(edges)] + edges[1:]
-#
-#    h = bh.Histogram(bh.axis.Variable(edges))
-#    h[...] = 1
-#
-#    dens = h.view().copy() / h.axes[0].widths * h.sum()
-#    h1 = h.copy()
-#
-#    h1[:] /=  h.axes[0].widths * h.sum()
-#
-#    assert_allclose(h1.view(), dens)
 
 
 def test_add_hists():

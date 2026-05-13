@@ -847,7 +847,7 @@ class TestCategory(Axis):
         assert_allclose(a.widths, [1, 1, 1])
 
 
-class TestBoolean:
+class TestBoolean(Axis):
     def test_init(self):
         bh.axis.Boolean()
         bh.axis.Boolean(metadata="foo")

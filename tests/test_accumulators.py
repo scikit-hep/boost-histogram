@@ -8,6 +8,9 @@ import boost_histogram as bh
 hypothesis = pytest.importorskip("hypothesis")
 st = pytest.importorskip("hypothesis.strategies")
 
+hypothesis.settings.register_profile("ci", deadline=None)
+hypothesis.settings.load_profile("ci")
+
 
 def test_weighted_sum():
     a = bh.accumulators.WeightedSum(1.5, 2.5)

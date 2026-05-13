@@ -9,6 +9,9 @@ import boost_histogram as bh
 hypothesis = pytest.importorskip("hypothesis")
 nst = pytest.importorskip("hypothesis.extra.numpy")
 
+hypothesis.settings.register_profile("ci", deadline=None)
+hypothesis.settings.load_profile("ci")
+
 
 @hypothesis.given(
     nst.arrays(

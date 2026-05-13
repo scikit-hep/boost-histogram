@@ -890,7 +890,7 @@ class AxesTuple(tuple):  # type: ignore[type-arg]
             )
         return tuple(self[i].bin(indexes[i]) for i in range(len(indexes)))
 
-    def index(self, *values: float) -> tuple[float, ...]:  # type: ignore[override, override]
+    def index(self, *values: float) -> tuple[int, ...]:  # type: ignore[override, override]
         if len(values) != len(self):
             raise IndexError(
                 "Must have the same number of arguments as the number of axes"
