@@ -219,6 +219,39 @@ def test_noflow_cats():
     assert h.sum() == 2
 
 
+def _has_issue_960_bug():
+    # Probe for the upstream Boost.Histogram bug where a broadcast scalar argument
+    # invalidates an entire bulk fill when an earlier non-inclusive axis dropped the
+    # first array entry. Returns True while the (vendored) bug is present.
+    h = bh.Histogram(bh.axis.IntCategory([1], overflow=False), bh.axis.IntCategory([1]))
+    h.fill([0, 1], 1)  # first entry (0) is out of range on the non-inclusive axis
+    return h.sum() == 0
+
+
+@pytest.mark.xfail(
+    _has_issue_960_bug(),
+    reason="upstream Boost.Histogram bug, fixed upstream; pending boost bump (#960)",
+    strict=True,
+)
+def test_noflow_cat_scalar_broadcast():
+    # https://github.com/scikit-hep/boost-histogram/issues/960
+    # A broadcast scalar on a later axis must not zero the whole fill when an earlier
+    # non-inclusive axis drops the first array entry.
+    h = bh.Histogram(
+        bh.axis.IntCategory([1, 2, 3], overflow=False),
+        bh.axis.StrCategory(["nominal"]),
+        storage=bh.storage.Weight(),
+    )
+    values = np.array([-1, 1, 2, 3, 1])  # first entry (-1) is out of range
+    h.fill(values, "nominal", weight=np.ones_like(values, dtype=float))
+
+    # only the out-of-range -1 is dropped; everything else is kept
+    assert h.sum().value == 4
+    assert h[bh.loc(1), bh.loc("nominal")].value == 2
+    assert h[bh.loc(2), bh.loc("nominal")].value == 1
+    assert h[bh.loc(3), bh.loc("nominal")].value == 1
+
+
 def test_metadata_add():
     h1 = bh.Histogram(
         bh.axis.IntCategory([1, 2, 3]), bh.axis.StrCategory(["1", "2", "3"])
