@@ -278,6 +278,11 @@ def test_trans_wrapped(copy_fn):
 
 
 # Testing #342
+# https://github.com/cloudpipe/cloudpickle/issues/592
+@pytest.mark.skipif(
+    sys.implementation.name == "pypy",
+    reason="cloudpickle does not work with the latest PyPy",
+)
 def test_cloudpickle():
     cloudpickle = pytest.importorskip("cloudpickle")
     h = bh.Histogram(bh.axis.Regular(50, 0, 20))
