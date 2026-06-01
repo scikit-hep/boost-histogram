@@ -8,9 +8,45 @@ from ._common import serialize_metadata
 
 __all__ = ["_axis_from_dict", "_axis_to_dict"]
 
+# Transformed Regular axes have no portable UHI representation, so they are
+# written as a ``variable`` axis (with the transformed edges) for interoperability
+# and additionally tagged with the original Regular parameters + transform identity
+# under boost-histogram's writer_info, letting us restore the exact axis on read.
+# Only transforms we can reconstruct from these names are recorded here.
+_KNOWN_FUNCTION_TRANSFORMS = frozenset({"log", "sqrt"})
+
 
 def __dir__() -> list[str]:
     return __all__
+
+
+def _transform_writer_info(ax: axis.Regular, /) -> dict[str, Any]:
+    """Capture enough to restore a transformed Regular axis, or {} if it can't
+    be round-tripped (e.g. a custom function-pointer transform)."""
+    tr = ax.transform
+    info: dict[str, Any]
+    if isinstance(tr, axis.transform.Pow):
+        info = {"transform": "pow", "power": tr.power}
+    elif repr(tr) in _KNOWN_FUNCTION_TRANSFORMS:
+        info = {"transform": repr(tr)}
+    else:
+        return {}
+    info["bins"] = ax.size
+    info["lower"] = float(ax.edges[0])
+    info["upper"] = float(ax.edges[-1])
+    return info
+
+
+def _transform_from_writer_info(writer_info: dict[str, Any], /) -> Any:
+    """Rebuild a transform from writer_info, or None if the name is unknown."""
+    name = writer_info["transform"]
+    if name == "pow":
+        return axis.transform.Pow(writer_info["power"])
+    if name == "log":
+        return axis.transform.log
+    if name == "sqrt":
+        return axis.transform.sqrt
+    return None
 
 
 @functools.singledispatch
@@ -30,6 +66,8 @@ def _(ax: axis.Regular | axis.Integer, /) -> dict[str, Any]:
         "circular": ax.traits.circular,
     }
 
+    transform_info: dict[str, Any] = {}
+
     # Special handling if the axis has a transform
     if isinstance(ax, axis.Regular) and ax.transform is not None:
         data = {
@@ -37,6 +75,7 @@ def _(ax: axis.Regular | axis.Integer, /) -> dict[str, Any]:
             "edges": ax.edges,
             **shared,
         }
+        transform_info = _transform_writer_info(ax)
     elif isinstance(ax, axis.Integer):
         data = {
             "type": "regular",
@@ -54,11 +93,12 @@ def _(ax: axis.Regular | axis.Integer, /) -> dict[str, Any]:
             **shared,
         }
 
-    writer_info = dict[str, str | bool]()
+    writer_info: dict[str, Any] = {}
     if isinstance(ax, axis.Integer):
         writer_info["orig_type"] = "Integer"
     if ax.traits.growth:
         writer_info["growth"] = True
+    writer_info.update(transform_info)
     if writer_info:
         data["writer_info"] = {"boost-histogram": writer_info}
 
@@ -156,6 +196,19 @@ def _axis_from_dict(data: dict[str, Any], /) -> axis.Axis:
             growth=writer_info.get("growth", False),
             __dict__=data.get("metadata"),
         )
+
+    # A transformed Regular axis is stored as a variable axis plus the original
+    # Regular parameters; restore it if we recognize the transform.
+    if writer_info.get("transform"):
+        transform_obj = _transform_from_writer_info(writer_info)
+        if transform_obj is not None:
+            return axis.Regular(
+                writer_info["bins"],
+                writer_info["lower"],
+                writer_info["upper"],
+                transform=transform_obj,
+                __dict__=data.get("metadata"),
+            )
 
     hist_type = data["type"]
     if hist_type == "regular":
