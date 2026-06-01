@@ -37,9 +37,11 @@ def histogramdd(
     density: bool = False,
     *,
     histogram: None | (type[Histogram[Any]]) = None,
-    storage: _storage.Storage = _storage.Double(),  # noqa: B008
+    storage: _storage.Storage | None = None,
     threads: int | None = None,
 ) -> Any:
+    if storage is None:
+        storage = _storage.Double()
     cls: type[Histogram[Any]] = Histogram if histogram is None else histogram
 
     if normed is not None:
@@ -108,9 +110,11 @@ def histogram2d(
     density: bool = False,
     *,
     histogram: None | (type[Histogram[Any]]) = None,
-    storage: _storage.Storage = _storage.Double(),  # noqa: B008
+    storage: _storage.Storage | None = None,
     threads: int | None = None,
 ) -> Any:
+    if storage is None:
+        storage = _storage.Double()
     result = histogramdd(
         (x, y),
         bins,

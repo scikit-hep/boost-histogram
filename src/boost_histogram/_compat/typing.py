@@ -8,7 +8,7 @@ if sys.version_info >= (3, 11):
 elif typing.TYPE_CHECKING:
     from typing_extensions import Self
 else:
-    Self = object
+    Self = typing.Any
 
 __all__ = ["Self"]
 

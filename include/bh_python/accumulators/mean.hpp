@@ -14,6 +14,8 @@
 #include <boost/core/nvp.hpp>
 #include <boost/histogram/weight.hpp>
 
+#include <limits>
+
 namespace accumulators {
 
 /** Calculates mean and variance of sample.
@@ -90,6 +92,8 @@ struct mean {
     bool operator!=(const mean& rhs) const noexcept { return !operator==(rhs); }
 
     value_type variance() const noexcept {
+        if(count <= 1)
+            return std::numeric_limits<value_type>::quiet_NaN();
         return _sum_of_deltas_squared / (count - 1);
     }
 

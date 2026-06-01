@@ -40,12 +40,6 @@ auto vectorize_index(T input) {
     return py::vectorize(input);
 }
 
-#ifdef __cpp_noexcept_function_type
-#define BHP_NOEXCEPT_17 noexcept
-#else
-#define BHP_NOEXCEPT_17
-#endif
-
 namespace detail {
 template <class T>
 decltype(auto) axis_cast(py::handle x) {

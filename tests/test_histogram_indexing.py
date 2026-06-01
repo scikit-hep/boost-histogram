@@ -173,8 +173,6 @@ def test_mix_value_with_slice():
     vals = np.arange(100).reshape(10, 10, 1)
     h[:, :, 1:2] = vals
 
-    print(h.view()[:3, :3, :])
-
     assert h[0, 1, True] == 1
     assert h[1, 0, True] == 10
     assert h[1, 1, True] == 11

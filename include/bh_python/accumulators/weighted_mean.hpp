@@ -15,6 +15,8 @@
 #include <boost/core/nvp.hpp>
 #include <boost/histogram/weight.hpp>
 
+#include <limits>
+
 namespace accumulators {
 
 /**
@@ -38,7 +40,8 @@ struct weighted_mean {
         , sum_of_weights_squared(wsum2)
         , value(mean)
         , _sum_of_weighted_deltas_squared(
-              variance * (sum_of_weights - sum_of_weights_squared / sum_of_weights)) {}
+              variance * (sum_of_weights - (sum_of_weights_squared / sum_of_weights))) {
+    }
 
     weighted_mean(const value_type& wsum,
                   const value_type& wsum2,
@@ -99,8 +102,11 @@ struct weighted_mean {
     bool operator!=(const weighted_mean rhs) const noexcept { return !operator==(rhs); }
 
     value_type variance() const {
-        return _sum_of_weighted_deltas_squared
-               / (sum_of_weights - sum_of_weights_squared / sum_of_weights);
+        const value_type denom
+            = sum_of_weights - (sum_of_weights_squared / sum_of_weights);
+        if(denom <= 0)
+            return std::numeric_limits<value_type>::quiet_NaN();
+        return _sum_of_weighted_deltas_squared / denom;
     }
 
     template <class Archive>
