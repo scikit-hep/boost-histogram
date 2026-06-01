@@ -71,3 +71,38 @@ def test_weighted_mean_hist_scalar_axis_broadcast():
     assert h[1].value == approx(30.0)
     assert h[2].sum_of_weights == approx(5.0)
     assert h[2].value == approx(300.0)
+
+
+def test_mean_hist_scalar_sample():
+    """A scalar sample is accepted like a scalar axis value (issue #646)."""
+    h = bh.Histogram(bh.axis.Regular(10, 0, 1), storage=bh.storage.Mean())
+    h.fill(0.3, sample=4)
+
+    ref = bh.Histogram(bh.axis.Regular(10, 0, 1), storage=bh.storage.Mean())
+    ref.fill(0.3, sample=[4])
+
+    assert h[3] == ref[3]
+
+
+def test_weighted_mean_hist_scalar_sample():
+    """A scalar sample is accepted like a scalar axis value (issue #646)."""
+    h = bh.Histogram(bh.axis.Regular(10, 0, 1), storage=bh.storage.WeightedMean())
+    h.fill(0.3, sample=4, weight=1.0)
+
+    ref = bh.Histogram(bh.axis.Regular(10, 0, 1), storage=bh.storage.WeightedMean())
+    ref.fill(0.3, sample=np.array([4]), weight=1.0)
+
+    assert h[3] == ref[3]
+
+
+def test_mean_hist_scalar_sample_broadcast():
+    """A scalar sample is broadcast across an array of axis values (issue #646)."""
+    h = bh.Histogram(bh.axis.Regular(10, 0, 1), storage=bh.storage.Mean())
+    h.fill([0.3, 0.31, 0.32], sample=4)
+
+    ref = bh.Histogram(bh.axis.Regular(10, 0, 1), storage=bh.storage.Mean())
+    ref.fill([0.3, 0.31, 0.32], sample=[4, 4, 4])
+
+    assert h[3] == ref[3]
+    assert h[3].count == 3
+    assert h[3].value == approx(4.0)
