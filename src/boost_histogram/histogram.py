@@ -157,13 +157,12 @@ def _fill_cast(
 def mean_storage_sample_check(sample: ArrayLike | None) -> None:
     if sample is None:
         raise TypeError("Sample key-argument (sample=) needs to be provided.")
-    seqs = (collections.abc.Sequence, np.ndarray)
-    msg1 = f"Sample key-argument needs to be a sequence, {sample.__class__.__name__} given."
-    if isinstance(sample, str) or not isinstance(sample, seqs):
+    msg1 = f"Sample key-argument needs to be a number or a sequence, {sample.__class__.__name__} given."
+    if isinstance(sample, str):
         raise ValueError(msg1)
     sample_dim = np.ndim(sample)
-    msg2 = f"Sample key-argument needs to be 1 dimensional, {sample_dim} given."
-    if sample_dim != 1:
+    msg2 = f"Sample key-argument needs to be a scalar or 1 dimensional, {sample_dim} given."
+    if sample_dim > 1:
         raise ValueError(msg2)
 
 

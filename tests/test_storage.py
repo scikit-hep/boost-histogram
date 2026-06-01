@@ -135,7 +135,7 @@ def test_mean_storage_rejects_string_sample():
 
     with pytest.raises(
         ValueError,
-        match=r"Sample key-argument needs to be a sequence, str given\.",
+        match=r"Sample key-argument needs to be a number or a sequence, str given\.",
     ):
         h.fill([0.3], sample="abc")
 

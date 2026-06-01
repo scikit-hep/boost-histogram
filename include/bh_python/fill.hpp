@@ -131,6 +131,9 @@ using arg_t = variant::variant<c_array_t<double>,
 
 using weight_t = variant::variant<variant::monostate, double, c_array_t<double>>;
 
+// a sample is either a scalar (broadcast) or a 1D array
+using sample_t = variant::variant<double, c_array_t<double>>;
+
 inline auto get_vargs(const vector_axis_variant& axes, const py::args& args) {
     if(args.size() != axes.size())
         throw std::invalid_argument("Wrong number of args");
@@ -171,6 +174,21 @@ inline auto get_weight(py::kwargs& kwargs) {
     return weight;
 }
 
+inline auto get_sample(const py::handle& s) {
+    sample_t sample;
+    // a scalar sample is broadcast to match the other arguments, like a scalar
+    // axis value or weight
+    if(is_value<double>(s)) {
+        sample = py::cast<double>(s);
+    } else {
+        auto sarray = py::cast<c_array_t<double>>(s);
+        if(sarray.ndim() != 1)
+            throw std::invalid_argument("Sample array must be 1D");
+        sample = std::move(sarray);
+    }
+    return sample;
+}
+
 // for accumulators that accept a weight
 template <class Histogram, class VArgs>
 void fill_impl(bh::detail::accumulator_traits_holder<true>,
@@ -198,20 +216,22 @@ void fill_impl(bh::detail::accumulator_traits_holder<true, const double&>,
                py::kwargs& kwargs) {
     auto s = required_arg(kwargs, "sample");
     finalize_args(kwargs);
-    auto sarray = py::cast<c_array_t<double>>(s);
-
-    if(sarray.ndim() != 1)
-        throw std::invalid_argument("Sample array must be 1D");
+    auto sample = get_sample(s);
 
     // releasing gil here is safe, we don't manipulate refcounts
     const py::gil_scoped_release lock;
     variant::visit(
-        overload([&h, &vargs, &sarray](
-                     const variant::monostate&) { h.fill(vargs, bh::sample(sarray)); },
-                 [&h, &vargs, &sarray](const auto& w) {
-                     h.fill(vargs, bh::sample(sarray), bh::weight(w));
-                 }),
-        weight);
+        [&h, &vargs, &weight](const auto& sval) {
+            variant::visit(overload(
+                               [&h, &vargs, &sval](const variant::monostate&) {
+                                   h.fill(vargs, bh::sample(sval));
+                               },
+                               [&h, &vargs, &sval](const auto& w) {
+                                   h.fill(vargs, bh::sample(sval), bh::weight(w));
+                               }),
+                           weight);
+        },
+        sample);
 }
 
 // for multi_cell
