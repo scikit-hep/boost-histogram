@@ -94,3 +94,7 @@ compile_commands.json
 # Locking
 uv.lock
 *pylock
+
+# CLAUDE.md should be a symlink to AGENTS.md
+CLAUDE.md
+.claude/
