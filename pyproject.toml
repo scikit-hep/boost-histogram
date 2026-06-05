@@ -217,6 +217,7 @@ inherit.environment = "append"
 environment.UV_INDEX = "https://www.graalvm.org/python/wheels/"
 environment.UV_INDEX_STRATEGY = "unsafe-best-match"
 test-command = "pytest --benchmark-disable tests"
+repair-commend = ""
 
 [tool.pylint]
 py-version = "3.10"
