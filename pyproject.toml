@@ -218,6 +218,10 @@ environment.UV_INDEX = "https://www.graalvm.org/python/wheels/"
 environment.UV_INDEX_STRATEGY = "unsafe-best-match"
 test-command = "pytest --benchmark-disable tests"
 
+[[tool.cibuildwheel.overrides]]
+select = ["gp311_242-win_amd64"]
+repair-wheel-command = ""
+
 [tool.pylint]
 py-version = "3.10"
 ignore-patterns = ['.*\.pyi']
