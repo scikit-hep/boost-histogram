@@ -404,6 +404,81 @@ def test_non_uniform_rebin_with_weights():
     )
 
 
+def _filled_multi_cell(nelem, start=1):
+    """A 1D MultiCell histogram filled so that bin i holds an arange-based vector."""
+    h = bh.Histogram(bh.axis.Regular(5, 0, 5), storage=bh.storage.MultiCell(nelem))
+    x = np.array([1, 2, 3])
+    weights = (np.arange(3 * nelem) + start).reshape(3, nelem)
+    h.fill(x, weight=weights)
+    return h
+
+
+@pytest.mark.parametrize("nelem", [1, 3])
+def test_multi_cell_arithmetic(nelem):
+    h = _filled_multi_cell(nelem)
+    base = h.view().copy()
+
+    # Histogram + Histogram (and the in-place form)
+    assert_array_equal((h + h).view(), base * 2)
+
+    h_iadd = _filled_multi_cell(nelem)
+    h_iadd += h
+    assert_array_equal(h_iadd.view(), base * 2)
+
+    # Scalar multiplication / division (both orders and in-place)
+    assert_array_equal((h * 2).view(), base * 2)
+    assert_array_equal((2 * h).view(), base * 2)
+    assert_array_equal((h / 2).view(), base / 2)
+
+    h_imul = _filled_multi_cell(nelem)
+    h_imul *= 2
+    assert_array_equal(h_imul.view(), base * 2)
+
+    h_idiv = _filled_multi_cell(nelem)
+    h_idiv /= 2
+    assert_array_equal(h_idiv.view(), base / 2)
+
+
+@pytest.mark.parametrize("nelem", [1, 3])
+def test_multi_cell_equality(nelem):
+    h1 = _filled_multi_cell(nelem)
+    h2 = _filled_multi_cell(nelem)
+    # Exercise both == and != directly (hence the explicit non-simplified forms)
+    assert h1 == h2
+    assert not (h1 != h2)  # noqa: SIM202
+
+    h2 += h1
+    assert h1 != h2
+    assert not (h1 == h2)  # noqa: SIM201
+
+
+def test_multi_cell_add_mismatched_nelem():
+    h3 = _filled_multi_cell(3)
+    h2 = _filled_multi_cell(2)
+    with pytest.raises(ValueError, match="size does not match"):
+        h3 + h2
+
+
+@pytest.mark.parametrize("nelem", [1, 3])
+def test_multi_cell_reset(nelem):
+    h = _filled_multi_cell(nelem)
+    assert h.view().sum() != 0
+    h.reset()
+    assert_array_equal(h.view(), np.zeros_like(h.view()))
+    assert_array_equal(h.view(flow=True), np.zeros_like(h.view(flow=True)))
+
+
+def test_multi_cell_empty_axis():
+    # An empty categorical axis means zero bins, so the per-cell sum is empty.
+    h = bh.Histogram(
+        bh.axis.Regular(10, 0, 10),
+        bh.axis.StrCategory([], growth=True),
+        storage=bh.storage.MultiCell(3),
+    )
+    assert h.sum() == []
+    assert h.sum(flow=True) == []
+
+
 def test_multi_cell():
     x = np.array([1, 2])
     y = np.array([0, 1])
