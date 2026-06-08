@@ -607,3 +607,89 @@ def test_rebin_groups_no_inplace_modification():
     # Second rebin should not raise
     h4 = h2[bh.rebin(groups=rebinner)]
     assert h3 == h4
+
+
+def test_vectorized_get_basic():
+    """NumPy integer-array indices gather scattered cells through the buffer."""
+    h = bh.Histogram(
+        bh.axis.IntCategory(list(range(5))),
+        bh.axis.IntCategory(list(range(6))),
+        bh.axis.Regular(7, 0, 7),
+    )
+    h.view()[...] = np.arange(5 * 6 * 7).reshape(5, 6, 7)
+
+    i0 = np.array([0, 2, 4])
+    i1 = np.array([1, 3, 5])
+    i2 = np.array([2, 4, 6])
+
+    # Full gather (no slice) -> 1D array of values, like view() fancy indexing
+    assert_array_equal(h[i0, i1, i2], h.view()[i0, i1, i2])
+
+    # Arrays plus a trailing slice keep the axis
+    assert_array_equal(h[i0, i1, :], h.view()[i0, i1, :])
+
+    # Arrays plus an ellipsis expand the remaining axes
+    assert_array_equal(h[i0, i1, ...], h.view()[i0, i1, :])
+
+
+def test_vectorized_get_mixed_scalar_and_loc():
+    h = bh.Histogram(
+        bh.axis.StrCategory([str(i) for i in range(4)]),
+        bh.axis.StrCategory([str(i) for i in range(4)]),
+        bh.axis.Regular(5, 0, 5),
+    )
+    h.view()[...] = np.arange(4 * 4 * 5).reshape(4, 4, 5)
+
+    i1 = np.array([0, 2])
+    # Scalar locator + array + slice mix
+    assert_array_equal(h[bh.loc("1"), i1, :], h.view()[1, i1, :])
+    assert_array_equal(h[2, i1, :], h.view()[2, i1, :])
+
+
+def test_vectorized_get_flow_offset():
+    """Array indices are non-flow, matching scalar __getitem__ semantics."""
+    h = bh.Histogram(bh.axis.Regular(5, 0, 5))
+    h.view(flow=True)[...] = np.arange(7.0)
+
+    idx = np.array([0, 4])
+    assert_array_equal(h[idx], np.array([h[0], h[4]]))
+
+
+def test_vectorized_get_accumulator_storage():
+    h = bh.Histogram(bh.axis.Regular(5, 0, 5), storage=bh.storage.Weight())
+    h.fill([0, 0, 1, 2, 3], weight=[1, 2, 3, 4, 5])
+
+    idx = np.array([0, 1, 3])
+    got = h[idx]
+    assert isinstance(got, bh.view.WeightedSumView)
+    assert_array_equal(got.value, h.view()[idx].value)
+    assert_array_equal(got.variance, h.view()[idx].variance)
+
+
+def test_vectorized_get_multicell_storage():
+    h = bh.Histogram(
+        bh.axis.Regular(4, 0, 4),
+        bh.axis.Regular(4, 0, 4),
+        storage=bh.storage.MultiCell(3),
+    )
+    h.view()[...] = np.arange(np.prod(h.view().shape)).reshape(h.view().shape)
+
+    i0 = np.array([1, 2])
+    i1 = np.array([0, 3])
+    # The cell index stays the leading dimension of the result
+    assert_array_equal(h[i0, i1], h.view()[:, i0, i1])
+
+
+def test_vectorized_get_rejects_unsupported():
+    h = bh.Histogram(bh.axis.IntCategory([1, 2, 3]), bh.axis.Regular(5, 0, 5))
+    arr = np.array([0, 1])
+
+    with pytest.raises(IndexError, match="rebin, sum, or locator slices"):
+        h[arr, :: bh.rebin(2)]
+
+    with pytest.raises(IndexError, match="rebin, sum, or locator slices"):
+        h[arr, ::sum]
+
+    # A categorical pick list cannot be combined with array indexing
+    with pytest.raises(IndexError, match="integer arrays"):
+        h[[0, 1], arr]

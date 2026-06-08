@@ -27,3 +27,39 @@ Example::
 
 
 This feature is considered experimental in boost-histogram 1.1.0. Removed bins are not added to the overflow bin currently.
+
+
+Vectorized indexing
+-------------------
+
+While *lists* select per-axis (as described above), *NumPy integer arrays* are
+treated as vectorized fancy indexing, following NumPy's broadcasting rules. This
+gathers (or scatters, when assigning) many individual cells in a single
+operation, instead of building a new histogram. It is much faster than looping
+over scalar indices, which matters for high-dimensional histograms with many
+categories.
+
+Example::
+
+    import numpy as np
+
+    h = bh.Histogram(
+        bh.axis.IntCategory(range(100)),
+        bh.axis.IntCategory(range(100)),
+        bh.axis.Regular(50, 0, 1),
+    )
+
+    datasets = np.array([3, 7, 42])
+    categories = np.array([1, 1, 9])
+
+    # Gather the Regular-axis contents for three (dataset, category) pairs at once
+    values = h[datasets, categories, :]  # shape (3, 50)
+
+    # Assignment works the same way
+    h[datasets, categories, :] = 0
+
+The array indices use the same (non-flow) numbering as scalar indexing, and you
+can mix them with integers, ``bh.loc(...)``, and plain integer slices. This path
+covers the common case directly; for anything more advanced (rebinning,
+``sum``-projection, or locator-based slices alongside arrays) index ``.view()``
+explicitly instead.
