@@ -210,7 +210,14 @@ jobs:
 
   upload_all:
     name: Upload if release
-    needs: [build_wheels, build_pyodide_wheels, build_ios_wheels, build_android_wheels, build_sdist]
+    needs:
+      [
+        build_wheels,
+        build_pyodide_wheels,
+        build_ios_wheels,
+        build_android_wheels,
+        build_sdist,
+      ]
     runs-on: ubuntu-latest
     if: github.event_name == 'release' && github.event.action == 'published'
     environment:
