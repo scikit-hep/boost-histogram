@@ -56,4 +56,10 @@ void register_histograms(py::module& hist) {
         "any_multi_cell",
         "N-dimensional histogram for storing multiple cells at once with any axis "
         "types.");
+
+    register_histogram<storage::collector>(
+        hist,
+        "any_collector",
+        "N-dimensional histogram that collects the original sample values in each bin "
+        "with any axis types.");
 }

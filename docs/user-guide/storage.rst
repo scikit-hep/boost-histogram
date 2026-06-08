@@ -103,6 +103,21 @@ Contrary to the ``Weight`` storage the ``MultiCell`` storage does not track vari
 Note: If you should ever need to use the lowlevel ``h._hist.fill()`` function with a ``MultiCell`` storage you will have to use the ``sample`` keyword to pass the weights instead of the ``weight`` keyword because that is used on the C++ side, but the highlevel python boost_histogram API hides this from the user.
 
 
+Collector
+^^^^^^^^^
+
+This storage keeps the *original* sample values that fall into each bin, instead of aggregating them. Every bin holds a variable-length list of values, so the storage is unbounded in memory. It is filled by providing the values to collect through the ``sample`` keyword:
+
+.. code-block:: python3
+
+    h = bh.Histogram(bh.axis.Regular(10, 0, 1), storage=bh.storage.Collector())
+    h.fill(x, sample=values)
+
+Each value in ``sample`` is appended to the bin selected by the corresponding coordinate in ``x``. Because the per-bin data is ragged, ``h.view()`` returns a NumPy object-dtype array with the same shape as the histogram axes, where each element is a 1-D ``float64`` array of that bin's collected values (a copy). Indexing a single bin (``h[i]``) returns that bin's values as a list.
+
+Adding two collector histograms, ``project``, and slicing/cropping ``reduce`` (including factor rebinning) all concatenate the collected values. Because the view returns copies rather than a live buffer, the operations that write back through the view are not supported for this storage and raise ``NotImplementedError``: item assignment (``h[...] = ...``), arithmetic with arrays or scalars (e.g. ``h * 2``), group-based rebinning, integer picking on a subset of axes, and list-based selection. Weighted and threaded filling are also unsupported.
+
+
 Mean
 ^^^^
 

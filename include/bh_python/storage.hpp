@@ -12,9 +12,12 @@
 #include <bh_python/accumulators/weighted_sum.hpp>
 #include <bh_python/multi_cell.hpp>
 
+#include <boost/histogram/accumulators/collector.hpp>
 #include <boost/histogram/accumulators/count.hpp>
 #include <boost/histogram/storage_adaptor.hpp>
 #include <boost/histogram/unlimited_storage.hpp>
+
+#include <vector>
 
 #include <algorithm>
 #include <cstdint>
@@ -32,6 +35,7 @@ using weight        = bh::dense_storage<accumulators::weighted_sum<double>>;
 using multi_cell    = bh::multi_cell<double>;
 using mean          = bh::dense_storage<accumulators::mean<double>>;
 using weighted_mean = bh::dense_storage<accumulators::weighted_mean<double>>;
+using collector = bh::dense_storage<bh::accumulators::collector<std::vector<double>>>;
 
 // Allow repr to show python name
 template <class S>
@@ -77,6 +81,11 @@ inline const char* name<mean>() {
 template <>
 inline const char* name<weighted_mean>() {
     return "weighted_mean";
+}
+
+template <>
+inline const char* name<collector>() {
+    return "collector";
 }
 
 } // namespace storage
@@ -194,6 +203,50 @@ void load(Archive& ar,
     s.resize(static_cast<std::size_t>(a.size() / 4));
     // sadly we cannot move the memory from the numpy array into the vector
     std::copy(a.data(), a.data() + a.size(), reinterpret_cast<double*>(s.data()));
+}
+
+// The collector storage holds a variable-length std::vector<double> per bin, so it
+// cannot be viewed as a flat numpy array like the other accumulators. We serialize it
+// as a numpy array of per-bin counts plus a single numpy array of all values
+// concatenated (the same offsets+content layout a future Awkward conversion would use).
+template <class Archive>
+void save(Archive& ar, const storage::collector& s, unsigned /* version */) {
+    const auto n = s.size();
+    py::array_t<std::int64_t> counts(static_cast<py::ssize_t>(n));
+    auto* count_ptr   = counts.mutable_data();
+    std::size_t total = 0;
+    for(std::size_t i = 0; i < n; ++i) {
+        const auto c = s[i].size();
+        count_ptr[i] = static_cast<std::int64_t>(c);
+        total += c;
+    }
+    py::array_t<double> values(static_cast<py::ssize_t>(total));
+    auto* value_ptr = values.mutable_data();
+    for(std::size_t i = 0; i < n; ++i) {
+        const auto& cell = s[i];
+        std::copy(cell.data(), cell.data() + cell.size(), value_ptr);
+        value_ptr += cell.size();
+    }
+    ar << counts;
+    ar << values;
+}
+
+template <class Archive>
+void load(Archive& ar, storage::collector& s, unsigned /* version */) {
+    py::array_t<std::int64_t> counts;
+    py::array_t<double> values;
+    ar >> counts;
+    ar >> values;
+    const auto n = static_cast<std::size_t>(counts.size());
+    s.resize(n);
+    const auto* count_ptr = counts.data();
+    const auto* value_ptr = values.data();
+    using collector_t     = bh::accumulators::collector<std::vector<double>>;
+    for(std::size_t i = 0; i < n; ++i) {
+        const auto c = static_cast<std::size_t>(count_ptr[i]);
+        s[i]         = collector_t(value_ptr, value_ptr + c);
+        value_ptr += c;
+    }
 }
 
 namespace pybind11 {

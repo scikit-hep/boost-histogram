@@ -9,6 +9,7 @@ from ._core import storage as store  # pylint: disable=no-name-in-module
 
 __all__ = [
     "AtomicInt64",
+    "Collector",
     "Double",
     "Int64",
     "Mean",
@@ -83,3 +84,7 @@ class MultiCell(store.multi_cell, Storage, family=boost_histogram):
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self.nelem})"
+
+
+class Collector(store.collector, Storage, family=boost_histogram):
+    accumulator = float
