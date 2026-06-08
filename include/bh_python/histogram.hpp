@@ -157,8 +157,8 @@ py::object make_object_view(const Histogram& self, bool flow) {
         cstride[dd]   = cstride[dd + 1] * static_cast<std::size_t>(shape[dd + 1]);
     }
 
-    py::object np = py::module::import("numpy");
-    py::array arr = np.attr("empty")(total, py::arg("dtype") = "object");
+    const py::object np = py::module::import("numpy");
+    const py::array arr = np.attr("empty")(total, py::arg("dtype") = "object");
 
     for(auto&& x : bh::indexed(self, flow ? bh::coverage::all : bh::coverage::inner)) {
         std::size_t k = 0;
@@ -166,12 +166,12 @@ py::object make_object_view(const Histogram& self, bool flow) {
             k += static_cast<std::size_t>(x.index(d) + static_cast<int>(offset[d]))
                  * cstride[d];
         const auto& cell = *x;
-        py::array_t<double> cell_arr(static_cast<py::ssize_t>(cell.size()),
-                                     cell.data());
+        const py::array_t<double> cell_arr(static_cast<py::ssize_t>(cell.size()),
+                                           cell.data());
         arr.attr("__setitem__")(py::int_(k), cell_arr);
     }
 
-    py::tuple shape_tuple(rank);
+    const py::tuple shape_tuple(rank);
     for(unsigned d = 0; d < rank; ++d)
         shape_tuple[d] = shape[d];
     return arr.attr("reshape")(shape_tuple);

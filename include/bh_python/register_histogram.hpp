@@ -325,7 +325,7 @@ auto inline register_histogram<storage::collector>(py::module& m,
             "sum",
             [](const histogram_t& self, bool flow) -> value_type {
                 const py::gil_scoped_release release;
-                cell_type result = bh::algorithm::sum(
+                const cell_type result = bh::algorithm::sum(
                     self, flow ? bh::coverage::all : bh::coverage::inner);
                 return {result.begin(), result.end()};
             },
