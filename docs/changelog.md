@@ -5,6 +5,7 @@
 #### Features
 
 - Support `flow=False` in histogram projections by @Rishabh-git10 in [#1109][]
+- Support subtraction for the `MultiCell` storage by @henryiii in [#1131][]
 
 #### Fixes
 
@@ -47,6 +48,7 @@
 [#1105]: https://github.com/scikit-hep/boost-histogram/pull/1105
 [#1106]: https://github.com/scikit-hep/boost-histogram/pull/1106
 [#1109]: https://github.com/scikit-hep/boost-histogram/pull/1109
+[#1131]: https://github.com/scikit-hep/boost-histogram/pull/1131
 [#1132]: https://github.com/scikit-hep/boost-histogram/pull/1132
 
 ### Version 1.7.1
