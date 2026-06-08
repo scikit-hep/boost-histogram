@@ -99,6 +99,17 @@ _histograms: set[type[CppHistogram]] = {
 
 logger = logging.getLogger(__name__)
 
+# User-facing operator symbols for the in-place dunders dispatched in
+# _compute_inplace_op, used to build clear errors when a storage's underlying
+# C++ histogram does not support an operation between two histograms.
+_INPLACE_OP_SYMBOLS: dict[str, str] = {
+    "__iadd__": "+",
+    "__isub__": "-",
+    "__imul__": "*",
+    "__idiv__": "/",
+    "__itruediv__": "/",
+}
+
 
 CppAxis = NewType("CppAxis", object)
 
@@ -740,14 +751,29 @@ class Histogram(typing.Generic[S]):
     def __imul__(self, other: Histogram[S] | np.typing.NDArray[Any] | float) -> Self:
         return self._compute_inplace_op("__imul__", other)
 
+    def _hist_inplace_op(self, name: str, other: CppHistogram) -> None:
+        # The underlying C++ histogram only exposes the in-place dunders its
+        # storage supports (e.g. weight/mean/multi_cell storages have no
+        # __isub__). Calling a missing one raises a confusing AttributeError
+        # leaking the dunder name, so surface a clear error instead.
+        op = getattr(self._hist, name, None)
+        if op is None:
+            symbol = _INPLACE_OP_SYMBOLS.get(name, name)
+            msg = (
+                f"The {self.storage_type.__name__} storage does not support the "
+                f"{symbol!r} operation between two histograms"
+            )
+            raise TypeError(msg)
+        op(other)
+
     def _compute_inplace_op(
         self, name: str, other: Histogram[S] | np.typing.NDArray[Any] | float
     ) -> Self:
         # Also takes CppHistogram, but that confuses mypy because it's hard to pick out
         if isinstance(other, Histogram):
-            getattr(self._hist, name)(other._hist)
+            self._hist_inplace_op(name, other._hist)
         elif isinstance(other, tuple(_histograms)):
-            getattr(self._hist, name)(other)
+            self._hist_inplace_op(name, other)  # type: ignore[arg-type]
         elif hasattr(other, "shape") and other.shape:
             assert not isinstance(other, float)
 

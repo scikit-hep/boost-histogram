@@ -459,6 +459,33 @@ def test_multi_cell_add_mismatched_nelem():
         h3 + h2
 
 
+# Issue #1128
+@pytest.mark.parametrize(
+    ("storage", "fill_kwargs"),
+    [
+        (bh.storage.MultiCell(3), {"weight": np.array([[1, 2, 3]])}),
+        (bh.storage.Weight(), {}),
+        (bh.storage.Mean(), {"sample": [1]}),
+        (bh.storage.WeightedMean(), {"sample": [1], "weight": [1]}),
+    ],
+    ids=["MultiCell", "Weight", "Mean", "WeightedMean"],
+)
+def test_unsupported_histogram_subtraction(storage, fill_kwargs):
+    # Storages whose C++ backend has no __isub__ must raise a clear TypeError
+    # rather than leaking the dunder name via AttributeError.
+    def mk():
+        h = bh.Histogram(bh.axis.Regular(5, 0, 5), storage=storage)
+        h.fill([1], **fill_kwargs)
+        return h
+
+    name = type(storage).__name__
+    with pytest.raises(
+        TypeError,
+        match=rf"{name} storage does not support the '-' operation",
+    ):
+        mk() - mk()
+
+
 @pytest.mark.parametrize("nelem", [1, 3])
 def test_multi_cell_reset(nelem):
     h = _filled_multi_cell(nelem)
