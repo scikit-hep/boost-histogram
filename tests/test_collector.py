@@ -152,13 +152,13 @@ def test_setitem_raises():
 def test_scalar_arithmetic_raises():
     h = _filled_1d()
     with pytest.raises(NotImplementedError):
-        h * 2  # noqa: B018
+        h * 2
 
 
 def test_histogram_subtraction_raises():
     h = _filled_1d()
     with pytest.raises(TypeError):
-        h - h  # noqa: B018
+        h - h
 
 
 def test_pick_each_raises():
