@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+import operator
 
 import numpy as np
 import pytest
@@ -425,6 +426,16 @@ def test_multi_cell_arithmetic(nelem):
     h_iadd += h
     assert_array_equal(h_iadd.view(), base * 2)
 
+    # Histogram - Histogram (element-wise on the cells), including the in-place
+    # form and a result with negative cells
+    assert_array_equal((h - h).view(), base * 0)
+    assert_array_equal((h + h - h).view(), base)
+    assert_array_equal((h - h - h).view(), -base)
+
+    h_isub = _filled_multi_cell(nelem)
+    h_isub -= h
+    assert_array_equal(h_isub.view(), base * 0)
+
     # Scalar multiplication / division (both orders and in-place)
     assert_array_equal((h * 2).view(), base * 2)
     assert_array_equal((2 * h).view(), base * 2)
@@ -452,27 +463,28 @@ def test_multi_cell_equality(nelem):
     assert not (h1 == h2)  # noqa: SIM201
 
 
-def test_multi_cell_add_mismatched_nelem():
+@pytest.mark.parametrize("op", [operator.add, operator.sub], ids=["add", "sub"])
+def test_multi_cell_mismatched_nelem(op):
     h3 = _filled_multi_cell(3)
     h2 = _filled_multi_cell(2)
     with pytest.raises(ValueError, match="size does not match"):
-        h3 + h2
+        op(h3, h2)
 
 
 # Issue #1128
 @pytest.mark.parametrize(
     ("storage", "fill_kwargs"),
     [
-        (bh.storage.MultiCell(3), {"weight": np.array([[1, 2, 3]])}),
         (bh.storage.Weight(), {}),
         (bh.storage.Mean(), {"sample": [1]}),
         (bh.storage.WeightedMean(), {"sample": [1], "weight": [1]}),
     ],
-    ids=["MultiCell", "Weight", "Mean", "WeightedMean"],
+    ids=["Weight", "Mean", "WeightedMean"],
 )
 def test_unsupported_histogram_subtraction(storage, fill_kwargs):
     # Storages whose C++ backend has no __isub__ must raise a clear TypeError
-    # rather than leaking the dunder name via AttributeError.
+    # rather than leaking the dunder name via AttributeError. (MultiCell does
+    # support subtraction; see test_multi_cell_arithmetic.)
     def mk():
         h = bh.Histogram(bh.axis.Regular(5, 0, 5), storage=storage)
         h.fill([1], **fill_kwargs)

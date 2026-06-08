@@ -45,6 +45,14 @@ struct multi_cell_reference : public multi_cell_base<T, boost::span<T>> {
             *it++ += x;
     }
 
+    void operator-=(const boost::span<T> values) {
+        if(values.size() != this->size())
+            throw std::range_error("size does not match for -= ref");
+        auto it = this->begin();
+        for(const T& x : values)
+            *it++ -= x;
+    }
+
     template <class S>
     multi_cell_reference& operator=(const S& values) {
         if(values.size() != this->size())
@@ -78,6 +86,23 @@ struct multi_cell_value : public multi_cell_base<T, std::vector<T>> {
         auto it = this->begin();
         for(const T& x : values)
             *it++ += x;
+    }
+
+    void operator-=(const boost::span<T>& values) {
+        if(values.size() != this->size()) {
+            if(this->size() > 0) {
+                throw std::range_error("size does not match for -= val");
+            }
+            // Subtracting into an uninitialized cell yields the negation.
+            this->resize(values.size());
+            auto it = this->begin();
+            for(const T& x : values)
+                *it++ = -x;
+            return;
+        }
+        auto it = this->begin();
+        for(const T& x : values)
+            *it++ -= x;
     }
 
     template <class S>
@@ -203,6 +228,16 @@ class multi_cell {
         }
         for(std::size_t i = 0; i < size_ * nelem_; i++) {
             buffer_[i] += other.buffer_[i];
+        }
+    }
+
+    template <class T>
+    void operator-=(const multi_cell<T>& other) {
+        if(size_ * nelem_ != other.size_ * other.nelem_) {
+            throw std::range_error("size does not match");
+        }
+        for(std::size_t i = 0; i < size_ * nelem_; i++) {
+            buffer_[i] -= other.buffer_[i];
         }
     }
 
