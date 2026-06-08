@@ -367,8 +367,16 @@ auto inline register_histogram<bh::multi_cell<double>>(py::module& m,
             "sum",
             [](const histogram_t& self, bool flow) -> value_type {
                 const py::gil_scoped_release release;
-                return bh::algorithm::sum(
+                value_type result = bh::algorithm::sum(
                     self, flow ? bh::coverage::all : bh::coverage::inner);
+                // A histogram with zero bins has no cells to accumulate, so the
+                // default-constructed accumulator stays empty. Return a
+                // zero-filled vector of length nelem so the result shape is
+                // consistent with the non-empty case.
+                if(result.empty()) {
+                    result.assign(bh::unsafe_access::storage(self).nelem(), 0.0);
+                }
+                return result;
             },
             "flow"_a = false)
 

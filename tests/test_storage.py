@@ -495,15 +495,18 @@ def test_multi_cell_reset(nelem):
     assert_array_equal(h.view(flow=True), np.zeros_like(h.view(flow=True)))
 
 
+# Issue #1129
 def test_multi_cell_empty_axis():
-    # An empty categorical axis means zero bins, so the per-cell sum is empty.
+    # An empty categorical axis means zero bins, but the sum is still reported
+    # as a zero-filled vector of length nelem for consistency with non-empty
+    # histograms (rather than an empty list).
     h = bh.Histogram(
         bh.axis.Regular(10, 0, 10),
         bh.axis.StrCategory([], growth=True),
         storage=bh.storage.MultiCell(3),
     )
-    assert h.sum() == []
-    assert h.sum(flow=True) == []
+    assert h.sum() == [0.0, 0.0, 0.0]
+    assert h.sum(flow=True) == [0.0, 0.0, 0.0]
 
 
 def test_multi_cell():
