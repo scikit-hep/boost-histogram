@@ -135,8 +135,9 @@ __version__ = version = "$version"
 [tool.setuptools_scm]
 
 
-[tool.uv.pip]
-only-binary = ["numpy"]
+[tool.uv]
+pip.only-binary = ["numpy"]
+cache-keys = [{file = "include/**"}, {file = "src/**/*.cpp"}]
 
 
 [tool.pytest.ini_options]
