@@ -101,3 +101,36 @@ cannot use version 0, the version that used to be default on Python 2. The most
 recent versions provide performance benefits.
 
 You can nest this in other Python structures, like dictionaries, and save those instead.
+
+UHI dictionary serialization
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can also convert a histogram to and from a plain dictionary following the
+`UHI serialization schema <https://uhi.readthedocs.io/en/latest/serialization.html>`_.
+This is useful for sharing histograms as JSON (or any other format that supports
+nested dictionaries and arrays):
+
+.. code-block:: python3
+
+    from boost_histogram.serialization import to_uhi, from_uhi
+
+    data = to_uhi(h)
+    h2 = from_uhi(data)
+
+    assert h == h2
+
+If you only want to share the *structure* of a histogram -- its axes, metadata,
+and storage type -- without the (potentially large) bin contents, pass
+``keep_storage=False``. The resulting storage entry contains only its ``type``:
+
+.. code-block:: python3
+
+    data = to_uhi(h, keep_storage=False)
+    assert data["storage"] == {"type": "double"}
+
+    # Loading restores an empty histogram with the same axes and storage type
+    h_empty = from_uhi(data)
+
+This is handy for transmitting just the "initialization" of a histogram (for
+example, to set up a matching histogram on a server) without serializing all of
+the zeros. ``from_uhi`` accepts both full and metadata-only dictionaries.
