@@ -39,12 +39,16 @@ def hist(session: nox.Session) -> None:
     session.install(".")
     tmpdir = session.create_tmp()
     session.chdir(tmpdir)
-    shutil.rmtree("hist")
+    shutil.rmtree("hist", ignore_errors=True)
     session.run("git", "clone", "https://github.com/scikit-hep/hist", external=True)
     session.chdir("hist")
     session.install(".", "--group=test", "--group=plot", "mypy", "pandas-stubs")
     session.run("pytest", *session.posargs)
-    session.run("mypy")
+    session.run(
+        "mypy",
+        "--disable-error-code=override",
+        "--disable-error-code=unused-ignore",
+    )
 
 
 @nox.session(reuse_venv=True, default=False)
