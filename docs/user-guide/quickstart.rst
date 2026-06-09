@@ -114,8 +114,8 @@ you can set either values or arrays at a time:
     hist2d[3:5, 2:4] = np.eye(2)  # set with array
 
 For non-simple storages, you can add an extra dimension that matches the
-constructor arguments of that accumulator. For example, if you want to fill
-a Weight histogram with three values, you can dimension:
+constructor arguments of that accumulator. For example, if you want to set
+three bins of a Weight histogram, you can pass the value/variance pairs:
 
 .. code-block:: python3
 
@@ -155,15 +155,13 @@ You can save histograms using pickle:
 
     assert h == h2
 
-Special care was taken to ensure that this is fast and efficient.  Please use
-the latest version of the Pickle protocol you feel comfortable using; you
-cannot use version 0, the version that was default on Python 2. The most recent
-versions provide performance benefits.
+Pickling is fast and efficient; see :ref:`usage-histogram` for details and tips
+on protocol selection.
 
 Computing with Histograms
 -------------------------
 
-As an complete example, let's say you wanted to compute and plot the density:
+As a complete example, let's say you wanted to compute and plot the density:
 
 .. literalinclude:: ../../examples/simple_density.py
    :language: python

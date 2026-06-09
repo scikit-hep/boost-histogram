@@ -2,8 +2,8 @@ Support
 ================
 
 If you are stuck with a problem using Boost-histogram, please do get in touch at our
-`Issues <https://github.com/scikit-hep/boost-histogram/issues>`_ or `Gitter Channel
-<https://gitter.im/HSF/PyHEP-histogramming>`_. The developers are willing to
+`Issues <https://github.com/scikit-hep/boost-histogram/issues>`_ or `GitHub Discussions
+<https://github.com/scikit-hep/boost-histogram/discussions>`_. The developers are willing to
 help.
 
 You can save time by following this procedure when reporting a problem:

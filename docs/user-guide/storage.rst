@@ -10,7 +10,7 @@ Simple storages
 ---------------
 
 These storages hold a single value that keeps track of a count, possibly a
-weighed count.
+weighted count.
 
 Double
 ^^^^^^
@@ -25,7 +25,7 @@ a copy.
 
     h = bh.Histogram(bh.axis.Regular(10, 0, 1))  # Double() is the default
     h.fill([0.2, 0.3], weight=[0.5, 2])  # Weights are optional
-    print(f"{h[bh.loc(.2)]=}\n{h[bh.loc(.3)]=}")  # Python 3.8 print
+    print(f"{h[bh.loc(.2)]=}\n{h[bh.loc(.3)]=}")
 
 .. code-block:: text
 
@@ -45,7 +45,7 @@ Int64
 
 A true integer storage is provided, as well; this storage has the ``np.uint64``
 datatype.  This eventually should provide type safety by not accepting
-non-integer fills for data that should represent raw, unweighed counts.
+non-integer fills for data that should represent raw, unweighted counts.
 
 .. code-block:: python3
 

@@ -29,7 +29,7 @@ sys.path.append(str(BASEDIR / "src"))
 # -- Project information -----------------------------------------------------
 
 project = "boost_histogram"
-copyright = "2020, Henry Schreiner, Hans Dembinski"
+copyright = "2020-2026, Henry Schreiner, Hans Dembinski"
 author = "Henry Schreiner, Hans Dembinski"
 
 with contextlib.suppress(ModuleNotFoundError):

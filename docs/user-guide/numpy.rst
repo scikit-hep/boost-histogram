@@ -25,7 +25,7 @@ NumPy adaptors
 --------------
 
 You can use boost-histogram as a drop in replacement for NumPy histograms.  All
-three histogram functions (``bh.numpy.histogram``, ``bh.numpy.histgoram2d``, and
+three histogram functions (``bh.numpy.histogram``, ``bh.numpy.histogram2d``, and
 ``bh.numpy.histogramdd``) are provided. The syntax is identical, though
 boost-histogram adds three new keyword-only arguments; ``storage=`` to select the
 storage, ``histogram=bh.Histogram`` to produce a boost-histogram instead of a
@@ -121,10 +121,8 @@ with regular spaced bins in more than 1D:
    101 ms ± 117 µs per loop (mean ± std. dev. of 7 runs, 10 loops each)
 
 For more than one dimension, boost-histogram is more than an order of
-magnitude faster than NumPy for regular spaced binning. Although
-optimizations may be added to boost-histogram for common axes
-combinations later, in 0.6.1, all axes combinations share a common code
-base, so you can expect *at least* this level of performance regardless
-of the axes types or number of axes! Threaded filling can give you an
-even larger performance boost if you have multiple cores and a large
-fill to perform.
+magnitude faster than NumPy for regular spaced binning. All axes
+combinations share a common code base, so you can expect *at least* this
+level of performance regardless of the axes types or number of axes!
+Threaded filling can give you an even larger performance boost if you
+have multiple cores and a large fill to perform.

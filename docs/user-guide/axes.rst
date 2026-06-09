@@ -59,7 +59,7 @@ precompiled transforms:
 
    Transformed by log.
 
-.. py:function:: bh.axis.Regular(..., transform=bh.axis.transform.Power(v))
+.. py:function:: bh.axis.Regular(..., transform=bh.axis.transform.Pow(v))
    :noindex:
 
    Transformed by a power (the argument is the power).
@@ -105,7 +105,7 @@ Category axis
    :alt: Regular axis illustration
    :align: center
 
-.. py:function:: bh.axis.IntCategory([value1, ...], metadata="", growth=False)
+.. py:function:: bh.axis.IntCategory([value1, ...], *, metadata="", growth=False, overflow=True)
    :noindex:
 
    You should put integers in a category axis; but unlike an integer axis, the integers do not need to be adjacent.
@@ -122,7 +122,7 @@ One use for an IntCategory axis is for an IntEnum:
         b = 5
 
 
-    my_enum_axis = bh.axis.IntEnum(list(MyEnum), underflow=False, overflow=False)
+    my_enum_axis = bh.axis.IntCategory(list(MyEnum))
 
 
 .. py:function:: bh.axis.StrCategory([str1, ...], metadata="", growth=False)

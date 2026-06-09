@@ -26,8 +26,8 @@ is internally used by the Double and Unlimited storages to perform sums when
 needed. It uses a highly accurate Neumaier sum to compute the floating point
 sum with a correction term. Since this accumulator is never returned by a
 histogram, it is not available in a view form, but only as a single accumulator
-for comparison and access to the algorithm. Usage example in Python 3.8,
-showing how non-accurate sums fail to produce the obvious answer, 2.0::
+for comparison and access to the algorithm. Usage example showing how
+non-accurate sums fail to produce the obvious answer, 2.0::
 
     import math
     import numpy as np
@@ -130,7 +130,7 @@ WeightedMean
 ^^^^^^^^^^^^
 
 This accumulator is contained in the WeightedMean storage, and supports Views.
-It provides four values; ``.sum_of_weights``, ``sum_of_weights_squared``,
+It provides four values; ``.sum_of_weights``, ``.sum_of_weights_squared``,
 ``.value``, and ``.variance``. Internally, the variance is stored as
 ``_sum_of_weighted_deltas_squared``, which is used to compute ``variance``.
 
@@ -164,6 +164,12 @@ with a stacked array, and each item in the stack will be used for the (computed)
 normal constructor would take. For example, WeighedMean can take an array with a final
 dimension four long, with ``sum_of_weights``, ``sum_of_weights_squared``, ``value``, and ``variance``
 elements, even though several of these values are computed from the internal representation.
+
+The ``WeightedSumView``, ``MeanView``, and ``WeightedMeanView`` support arithmetic that respects
+the accumulator semantics. ``WeightedSumView`` adds and subtracts values while always adding the
+variances. ``MeanView`` and ``WeightedMeanView`` combine two views by merging the underlying samples
+(the same parallel merge used by the C++ ``operator+=``), and support scaling by a scalar; subtraction
+and scalar addition are undefined for means.
 
 .. note::
 
