@@ -618,9 +618,10 @@ class Histogram(typing.Generic[S]):
         Return a view into the data, optionally with overflow turned on.
 
         Sparse storage (:class:`~boost_histogram.storage.DoubleSparse`) does not
-        support this, since there is no dense buffer to view into; use
-        :meth:`to_coo` to read the filled cells, or :meth:`values` (and the other
-        copying accessors) if a dense array is acceptable.
+        support this, since there is no dense buffer to view into (``np.asarray``
+        raises for the same reason); use :meth:`to_coo` to read the filled cells,
+        or :meth:`values` (and the other copying accessors) if an explicitly
+        densified array is acceptable.
         """
         return _to_view(self._hist.view(flow))
 
@@ -685,7 +686,9 @@ class Histogram(typing.Generic[S]):
         kwargs = {}
         if copy is not None:
             kwargs["copy"] = copy
-        return np.asarray(self._view_or_dense(False), dtype=dtype, **kwargs)  # type: ignore[call-overload, no-any-return]
+        # Implicit array conversion goes through view(), so it raises for sparse
+        # storage rather than silently densifying. Use .values() or .to_coo().
+        return np.asarray(self.view(False), dtype=dtype, **kwargs)  # type: ignore[call-overload, no-any-return]
 
     __hash__ = None  # type: ignore[assignment]
 

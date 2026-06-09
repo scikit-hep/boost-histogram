@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import json
 from pickle import dumps, loads
 
 import numpy as np
@@ -75,7 +76,6 @@ def test_to_coo_flow():
     h.fill([-5, 5.5, 100])  # underflow, normal bin 5, overflow
 
     # Without flow, the flow cells are dropped, indices run 0..size-1.
-    indices, values = h.to_coo(flow=False)
     assert coo_dict(h) == {(5,): 1.0}
 
     # With flow, underflow sits at index 0, overflow at extent-1 (== 11 here).
@@ -84,16 +84,17 @@ def test_to_coo_flow():
     assert flow_map == {0: 1.0, 6: 1.0, 11: 1.0}
 
 
-def test_view_raises_but_copies_densify():
+def test_view_and_asarray_raise_but_copies_densify():
     h = bh.Histogram(bh.axis.Regular(5, 0, 5), storage=bh.storage.DoubleSparse())
     h.fill([1.5])
 
-    # Only the zero-copy buffer view is unsupported.
+    # The zero-copy buffer view (and implicit array conversion) are unsupported.
     with pytest.raises(TypeError, match="to_coo"):
         h.view()
+    with pytest.raises(TypeError):
+        np.asarray(h)
 
-    # The copying accessors densify and keep working.
-    assert_array_equal(np.asarray(h), [0, 1, 0, 0, 0])
+    # The explicit copying accessors densify and keep working.
     assert_array_equal(h.values(), [0, 1, 0, 0, 0])
     assert_array_equal(h.counts(), [0, 1, 0, 0, 0])
     assert_array_equal(h.variances(), [0, 1, 0, 0, 0])
@@ -112,7 +113,7 @@ def test_copy_accessors_match_dense():
     for flow in (False, True):
         assert_array_equal(sparse.values(flow=flow), dense.values(flow=flow))
         assert_array_equal(sparse.counts(flow=flow), dense.counts(flow=flow))
-        assert_array_equal(np.asarray(sparse), np.asarray(dense))
+        assert_array_equal(sparse.variances(flow=flow), dense.variances(flow=flow))
 
 
 def test_to_coo_requires_sparse():
@@ -166,8 +167,6 @@ def test_uhi_roundtrip_with_data():
 
 
 def test_uhi_roundtrip_through_json():
-    import json
-
     h = bh.Histogram(
         bh.axis.Regular(10, 0, 10),
         bh.axis.Regular(6, 0, 6),
