@@ -134,6 +134,53 @@ def test_repr_and_str_do_not_densify():
     assert "DoubleSparse" in str(h)
 
 
+def test_huge_axis_ops_iterate_filled_cells_only():
+    # sum/empty/== (and repr, which calls sum) must iterate the filled cells,
+    # not the logical grid -- a dense iteration over 10**15 cells would never
+    # finish, defeating the entire point of sparse storage.
+    axes = [bh.axis.Regular(100_000, 0, 1) for _ in range(3)]
+    h = bh.Histogram(*axes, storage=bh.storage.DoubleSparse())
+    assert h.empty()
+    assert h.empty(flow=True)
+    assert h.sum() == 0.0
+
+    h.fill([0.5, 0.5, 2.0], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5])  # one overflow
+    assert h.sum() == 2.0
+    assert h.sum(flow=True) == 3.0
+    assert not h.empty()
+    assert h == h.copy()
+    assert h != bh.Histogram(*axes, storage=bh.storage.DoubleSparse())
+
+
+def test_sum_and_empty_match_dense():
+    axes = (bh.axis.Regular(10, 0, 10), bh.axis.IntCategory([5, 6, 7]))
+    x = [-1, 0.5, 0.5, 3.5, 9.5, 100]
+    y = [5, 6, 6, 7, 5, 6]
+
+    dense = bh.Histogram(*axes, storage=bh.storage.Double())
+    dense.fill(x, y)
+    sparse = bh.Histogram(*axes, storage=bh.storage.DoubleSparse())
+    sparse.fill(x, y)
+
+    for flow in (False, True):
+        assert sparse.sum(flow=flow) == dense.sum(flow=flow)
+        assert sparse.empty(flow=flow) == dense.empty(flow=flow)
+
+
+def test_equality_ignores_explicit_zeros():
+    # Subtracting histograms leaves explicit zeros in the hash map; equality,
+    # sum, and empty must treat those the same as absent cells.
+    h = bh.Histogram(bh.axis.Regular(5, 0, 5), storage=bh.storage.DoubleSparse())
+    h.fill([1.5, 3.5])
+    h -= h.copy()
+
+    fresh = bh.Histogram(bh.axis.Regular(5, 0, 5), storage=bh.storage.DoubleSparse())
+    assert h == fresh
+    assert fresh == h
+    assert h.empty(flow=True)
+    assert h.sum(flow=True) == 0.0
+
+
 @pytest.mark.parametrize("copy_fn", [copy.copy, copy.deepcopy, pickle_roundtrip])
 def test_copy_pickle_roundtrip(copy_fn):
     h = bh.Histogram(

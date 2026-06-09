@@ -1398,6 +1398,7 @@ class Histogram(typing.Generic[S]):
     @typing.overload
     def sum(
         self: Histogram[bhs.Double]
+        | Histogram[bhs.DoubleSparse]
         | Histogram[bhs.Int64]
         | Histogram[bhs.AtomicInt64]
         | Histogram[bhs.Unlimited],

@@ -14,6 +14,8 @@
 #include <bh_python/multi_cell.hpp>
 #include <bh_python/storage.hpp>
 
+#include <boost/histogram/algorithm/empty.hpp>
+#include <boost/histogram/algorithm/sum.hpp>
 #include <boost/histogram/detail/axes.hpp>
 #include <boost/histogram/histogram.hpp>
 #include <boost/histogram/unsafe_access.hpp>
@@ -167,6 +169,17 @@ std::vector<axis_layout> make_axis_layout(const Axes& axes) {
     });
     return layout;
 }
+
+/// True if a flat sparse storage key addresses an in-range (non-flow) cell.
+inline bool is_inner_cell(std::size_t lin, const std::vector<axis_layout>& layout) {
+    for(const auto& info : layout) {
+        const std::size_t iflow = lin % info.extent;
+        lin /= info.extent;
+        if(iflow < info.underflow || iflow >= info.underflow + info.size)
+            return false;
+    }
+    return true;
+}
 } // namespace detail
 
 /// Extract the filled cells of a sparse histogram in COO form. Returns a tuple
@@ -265,4 +278,98 @@ void histogram_from_coo(bh::histogram<A, storage::sparse_storage<T>>& h,
         }
         h.at(at_index) = val(j);
     }
+}
+
+template <class A, class S>
+auto histogram_sum(const bh::histogram<A, S>& h, bool flow) {
+    // A rank-0 histogram has no flow bins, so inner == all. Use all to avoid
+    // Boost's indexed range, which is UB for rank-0 (it reads uninitialized
+    // per-axis state); the all path uses plain iteration instead.
+    const auto cov = (flow || h.rank() == 0) ? bh::coverage::all : bh::coverage::inner;
+    return bh::algorithm::sum(h, cov);
+}
+
+/// The storage iterator of a map-backed histogram visits every *logical* cell
+/// (hash lookup per cell), so bh::algorithm::sum would be O(dense size) — for
+/// the huge axis spaces sparse storage targets, that never finishes. Sum only
+/// the filled cells instead; flow=false unravels each key to skip flow cells.
+template <class A, class T>
+T histogram_sum(const bh::histogram<A, storage::sparse_storage<T>>& h, bool flow) {
+    using map_type  = std::unordered_map<std::size_t, T>;
+    const auto& map = static_cast<const map_type&>(bh::unsafe_access::storage(h));
+
+    T total{};
+    if(flow) {
+        for(const auto& kv : map)
+            total += kv.second;
+        return total;
+    }
+
+    const auto layout = detail::make_axis_layout(bh::unsafe_access::axes(h));
+    for(const auto& kv : map)
+        if(detail::is_inner_cell(kv.first, layout))
+            total += kv.second;
+    return total;
+}
+
+template <class A, class S>
+bool histogram_empty(const bh::histogram<A, S>& h, bool flow) {
+    if(h.rank() == 0) {
+        // algorithm::empty drives the same rank-0-UB indexed range; check the
+        // single cell directly instead.
+        using value_type = typename bh::histogram<A, S>::value_type;
+        return !(*h.begin() != value_type());
+    }
+    return bh::algorithm::empty(h, flow ? bh::coverage::all : bh::coverage::inner);
+}
+
+/// Sparse counterpart of bh::algorithm::empty, iterating only the filled cells
+/// (see histogram_sum). Explicit zeros (left behind by e.g. -=) count as empty.
+template <class A, class T>
+bool histogram_empty(const bh::histogram<A, storage::sparse_storage<T>>& h, bool flow) {
+    using map_type  = std::unordered_map<std::size_t, T>;
+    const auto& map = static_cast<const map_type&>(bh::unsafe_access::storage(h));
+
+    if(flow) {
+        for(const auto& kv : map)
+            if(kv.second != T{})
+                return false;
+        return true;
+    }
+
+    const auto layout = detail::make_axis_layout(bh::unsafe_access::axes(h));
+    for(const auto& kv : map)
+        if(kv.second != T{} && detail::is_inner_cell(kv.first, layout))
+            return false;
+    return true;
+}
+
+template <class A, class S>
+bool histogram_equal(const bh::histogram<A, S>& a, const bh::histogram<A, S>& b) {
+    return a == b;
+}
+
+/// Sparse counterpart of histogram::operator==, whose storage comparison walks
+/// every logical cell (see histogram_sum). Compare the two maps directly,
+/// treating absent keys as zero — the maps are not structurally identical for
+/// equal histograms, since -= can leave explicit zeros behind.
+template <class A, class T>
+bool histogram_equal(const bh::histogram<A, storage::sparse_storage<T>>& a,
+                     const bh::histogram<A, storage::sparse_storage<T>>& b) {
+    if(!bh::detail::axes_equal(bh::unsafe_access::axes(a), bh::unsafe_access::axes(b)))
+        return false;
+
+    using map_type = std::unordered_map<std::size_t, T>;
+    const auto& ma = static_cast<const map_type&>(bh::unsafe_access::storage(a));
+    const auto& mb = static_cast<const map_type&>(bh::unsafe_access::storage(b));
+
+    for(const auto& kv : ma) {
+        const auto it = mb.find(kv.first);
+        if(kv.second != (it == mb.end() ? T{} : it->second))
+            return false;
+    }
+    for(const auto& kv : mb)
+        if(kv.second != T{} && ma.find(kv.first) == ma.end())
+            return false;
+    return true;
 }

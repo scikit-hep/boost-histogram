@@ -98,8 +98,10 @@ Stays sparse (or returns a scalar) -- delegates to the C++ storage:
 * Reading a single bin: ``h[bh.loc(...)]``, ``h[5]``.
 * Integer slicing (``h[10:60]``), rebinning (``h[:: bh.rebin(2)]``), integration
   (``h[10:60:sum]``), and projection (``h.project(0)``).
-* ``.sum()``, adding two histograms (``h1 + h2``), and scalar ``*`` / ``/``
-  (which only scale the filled cells, so ``0`` stays ``0``).
+* ``.sum()``, ``.empty()``, and ``==`` comparison -- these iterate only the
+  filled cells, never the dense grid.
+* Adding two histograms (``h1 + h2``) and scalar ``*`` / ``/`` (which only
+  scale the filled cells, so ``0`` stays ``0``).
 * ``copy``/``deepcopy``, pickling, and UHI serialization.
 
 Densifies into a fresh array (works, but allocates the full dense shape):
