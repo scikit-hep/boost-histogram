@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Mapping, MutableMapping
-from typing import Any, ClassVar, Literal
+from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 import numpy as np
 
@@ -15,6 +15,11 @@ class View(np.ndarray[Any, Any]):
     __slots__ = ()
     _FIELDS: ClassVar[tuple[str, ...]]
     _PARENT: type[WeightedSum | WeightedMean | Mean]
+
+    # Whether ``a - b`` (and unary ``-``) and multiplying/dividing two views are
+    # meaningful for this view. Overridden per subclass.
+    _SUPPORTS_SUB: ClassVar[bool] = False
+    _SUPPORTS_VIEW_PRODUCT: ClassVar[bool] = False
 
     def __getitem__(self, ind: StrIndex) -> np.typing.NDArray[Any]:  # type: ignore[override]
         sliced = super().__getitem__(ind)  # type: ignore[index]
@@ -65,6 +70,117 @@ class View(np.ndarray[Any, Any]):
         msg += f", {current_ndim}D {self.dtype} or {current_ndim + 1}D required, got {array.ndim}D {array.dtype}"
         raise ValueError(msg)
 
+    # ------------------------------------------------------------------
+    # Arithmetic: shared ufunc scaffolding that dispatches the field math
+    # to per-view hooks (``_combine``/``_add_scalar``/``_scale``/...).
+    # ------------------------------------------------------------------
+    def __array_ufunc__(
+        self, ufunc: Ufunc, method: UFMethod, *inputs: Any, **kwargs: Any
+    ) -> np.typing.NDArray[Any]:
+        # Avoid infinite recursion by working with plain ndarrays
+        raw_inputs = [np.asarray(x) for x in inputs]
+
+        # Reductions (``.sum()`` / ``np.add.reduce``) don't get a pre-allocated
+        # ``out`` here; the hook builds the reduced accumulator(s) itself.
+        match method, ufunc, raw_inputs:
+            case "reduce", np.add, [raw_input]:
+                return self._reduce(raw_input, **kwargs)
+
+        # Everything else fills a pre-allocated result of this view's dtype
+        (result,) = (
+            kwargs.pop("out") if "out" in kwargs else [np.empty(self.shape, self.dtype)]
+        )
+        match method, ufunc, raw_inputs:
+            # Unary + and -
+            case "__call__", (np.negative | np.positive), [raw_input]:
+                self._unary(raw_input, result, ufunc, **kwargs)
+                return result.view(self.__class__)
+
+            # Addition and subtraction
+            case "__call__", (np.add | np.subtract), [raw1, raw2]:
+                if ufunc is np.subtract and not self._SUPPORTS_SUB:
+                    raise TypeError(
+                        f"{self.__class__.__name__} does not support subtraction"
+                    )
+                if raw1.dtype == raw2.dtype:
+                    self._combine(raw1, raw2, result, ufunc, **kwargs)
+                else:
+                    self._add_scalar(raw1, raw2, result, ufunc, **kwargs)
+                return result.view(self.__class__)
+
+            # Multiplication and division
+            case (
+                "__call__",
+                (np.multiply | np.divide | np.true_divide | np.floor_divide),
+                [raw1, raw2],
+            ):
+                if raw1.dtype == raw2.dtype:
+                    if not self._SUPPORTS_VIEW_PRODUCT:
+                        raise TypeError(
+                            f"{self.__class__.__name__} does not support multiplying "
+                            "or dividing two views"
+                        )
+                    self._product(raw1, raw2, result, ufunc, **kwargs)
+                else:
+                    self._scale(raw1, raw2, result, ufunc, **kwargs)
+                return result.view(self.__class__)
+
+            # Cumulative sums (``np.cumsum`` / ``np.add.accumulate``)
+            case "accumulate", np.add, [raw_input]:
+                self._accumulate(raw_input, result, **kwargs)
+                return result.view(self.__class__)
+
+        # If unsupported, just pass through (will return not implemented)
+        # pylint: disable-next=no-member
+        return super().__array_ufunc__(ufunc, method, *raw_inputs, **kwargs)  # type: ignore[no-any-return]
+
+    # --- Arithmetic hooks; the defaults are the field-wise (linear) behavior
+    # correct for additive storages like WeightedSum. Non-linear views (means)
+    # override the ones they need and reject the rest. ---
+
+    def _unary(self, raw: Any, out: Any, ufunc: Ufunc, **kwargs: Any) -> None:
+        del raw, out, kwargs
+        raise TypeError(
+            f"{self.__class__.__name__} does not support unary {ufunc.__name__}"
+        )
+
+    def _combine(
+        self, raw1: Any, raw2: Any, out: Any, ufunc: Ufunc, **kwargs: Any
+    ) -> None:
+        del raw1, raw2, out, ufunc, kwargs
+        raise TypeError(f"{self.__class__.__name__} does not support this operation")
+
+    def _add_scalar(
+        self, raw1: Any, raw2: Any, out: Any, ufunc: Ufunc, **kwargs: Any
+    ) -> None:
+        del raw1, raw2, out, kwargs
+        raise TypeError(
+            f"{self.__class__.__name__} does not support {ufunc.__name__} "
+            "with a scalar or array"
+        )
+
+    def _scale(
+        self, raw1: Any, raw2: Any, out: Any, ufunc: Ufunc, **kwargs: Any
+    ) -> None:
+        del raw1, raw2, out, kwargs
+        raise TypeError(f"{self.__class__.__name__} does not support {ufunc.__name__}")
+
+    def _product(
+        self, raw1: Any, raw2: Any, out: Any, ufunc: Ufunc, **kwargs: Any
+    ) -> None:
+        del raw1, raw2, out, ufunc, kwargs
+        raise TypeError(
+            f"{self.__class__.__name__} does not support multiplying two views"
+        )
+
+    def _reduce(self, raw: Any, **kwargs: Any) -> np.typing.NDArray[Any]:
+        results = (np.add.reduce(raw[field], **kwargs) for field in self._FIELDS)
+        return self._PARENT._make(*results)  # type: ignore[return-value]
+
+    def _accumulate(self, raw: Any, out: Any, **kwargs: Any) -> None:
+        for field in self._FIELDS:
+            np.add.accumulate(raw[field], out=out[field], **kwargs)
+
 
 def make_getitem_property(name: str) -> property:
     def fget(self: Mapping[str, Any]) -> Any:
@@ -110,120 +226,164 @@ def fields(*names: str) -> Callable[[type[object]], type[object]]:
 class WeightedSumView(View):
     __slots__ = ()
     _PARENT = WeightedSum
+    _SUPPORTS_SUB = True
 
     value: np.typing.NDArray[Any]
     variance: np.typing.NDArray[Any]
 
-    # Could be implemented on master View
-    def __array_ufunc__(
-        self, ufunc: Ufunc, method: UFMethod, *inputs: Any, **kwargs: Any
-    ) -> np.typing.NDArray[Any]:
-        # Avoid infinite recursion
-        raw_inputs = [np.asarray(x) for x in inputs]
+    def _unary(self, raw: Any, out: Any, ufunc: Ufunc, **kwargs: Any) -> None:
+        ufunc(raw["value"], out=out["value"], **kwargs)
+        out["variance"] = raw["variance"]
 
-        # First match the ones without a pre-computed out= parameter
-        match method, ufunc, raw_inputs:
-            case "reduce", np.add, [raw_input]:
-                results = (
-                    ufunc.reduce(raw_input[field], **kwargs) for field in self._FIELDS
-                )
-                return self._PARENT._make(*results)  # type: ignore[return-value]
+    def _combine(
+        self, raw1: Any, raw2: Any, out: Any, ufunc: Ufunc, **kwargs: Any
+    ) -> None:
+        # Values add/subtract; independent variances always add.
+        ufunc(raw1["value"], raw2["value"], out=out["value"], **kwargs)
+        np.add(raw1["variance"], raw2["variance"], out=out["variance"], **kwargs)
 
-        # These use a pre-computed out parameter
-        (result,) = (
-            kwargs.pop("out") if "out" in kwargs else [np.empty(self.shape, self.dtype)]
+    def _add_scalar(
+        self, raw1: Any, raw2: Any, out: Any, ufunc: Ufunc, **kwargs: Any
+    ) -> None:
+        # The scalar/array operand is treated as a constant with variance s**2.
+        if raw1.dtype == self.dtype:
+            ufunc(raw1["value"], raw2, out=out["value"], **kwargs)
+            np.add(raw1["variance"], raw2**2, out=out["variance"], **kwargs)
+        else:
+            ufunc(raw1, raw2["value"], out=out["value"], **kwargs)
+            np.add(raw1**2, raw2["variance"], out=out["variance"], **kwargs)
+
+    def _scale(
+        self, raw1: Any, raw2: Any, out: Any, ufunc: Ufunc, **kwargs: Any
+    ) -> None:
+        # Multiplying/dividing by a scalar scales the variance by s**2.
+        if raw1.dtype == self.dtype:
+            ufunc(raw1["value"], raw2, out=out["value"], **kwargs)
+            ufunc(raw1["variance"], raw2**2, out=out["variance"], **kwargs)
+        else:
+            ufunc(raw1, raw2["value"], out=out["value"], **kwargs)
+            ufunc(raw1**2, raw2["variance"], out=out["variance"], **kwargs)
+
+
+class _MeanArithmetic:
+    """Combine + scalar-scaling arithmetic shared by the mean-like views.
+
+    Addition combines two samples (the Welford/West parallel merge, mirroring the
+    C++ ``mean``/``weighted_mean`` ``operator+=``); multiplication/division by a
+    scalar scales the mean and ``_sum_of_*deltas_squared`` (by ``s`` and ``s**2``
+    respectively) while leaving the weights untouched (mirroring ``operator*=``).
+    Subtraction, scalar addition, unary minus, and cumulative sums are undefined
+    for means and fall through to the rejecting :class:`View` defaults.
+    """
+
+    __slots__ = ()
+
+    # Field names supplied by the concrete view subclass.
+    _WEIGHT_FIELD: ClassVar[str]
+    _DELTAS_FIELD: ClassVar[str]
+    _WEIGHT_SQ_FIELD: ClassVar[str | None] = None
+
+    if TYPE_CHECKING:
+        # Provided by the View base that the concrete subclass also inherits.
+        _FIELDS: ClassVar[tuple[str, ...]]
+        _PARENT: type[Mean | WeightedMean]
+        dtype: np.dtype[Any]
+
+    def _combine(
+        self, raw1: Any, raw2: Any, out: Any, ufunc: Ufunc, **kwargs: Any
+    ) -> None:
+        # Means only ever reach here for addition (subtraction is rejected).
+        del ufunc, kwargs
+        weight, deltas, weight_sq = (
+            self._WEIGHT_FIELD,
+            self._DELTAS_FIELD,
+            self._WEIGHT_SQ_FIELD,
         )
-        match method, ufunc, raw_inputs:
-            # Support unary + and -
-            case "__call__", np.negative | np.positive, [raw_input]:
-                ufunc(raw_input["value"], out=result["value"], **kwargs)
-                result["variance"] = raw_input["variance"]
-                return result.view(self.__class__)
-            # Support + and -
-            case "__call__", np.add | np.subtract, [raw_input1, raw_input2]:
-                if raw_input1.dtype == raw_input2.dtype:
-                    ufunc(
-                        raw_input1["value"],
-                        raw_input2["value"],
-                        out=result["value"],
-                        **kwargs,
-                    )
-                    np.add(
-                        raw_input1["variance"],
-                        raw_input2["variance"],
-                        out=result["variance"],
-                        **kwargs,
-                    )
-                elif self.dtype == raw_input1.dtype:
-                    ufunc(
-                        raw_input1["value"],
-                        raw_input2,
-                        out=result["value"],
-                        **kwargs,
-                    )
-                    np.add(
-                        raw_input1["variance"],
-                        raw_input2**2,
-                        out=result["variance"],
-                        **kwargs,
-                    )
-                else:
-                    ufunc(
-                        raw_input1,
-                        raw_input2["value"],
-                        out=result["value"],
-                        **kwargs,
-                    )
-                    np.add(
-                        raw_input1**2,
-                        raw_input2["variance"],
-                        out=result["variance"],
-                        **kwargs,
-                    )
-                return result.view(self.__class__)
+        n1, n2 = raw1[weight], raw2[weight]
+        mu1, mu2 = raw1["value"], raw2["value"]
 
-            case (
-                "__call__",
-                np.multiply | np.divide | np.true_divide | np.floor_divide,
-                [raw_input1, raw_input2],
-            ):
-                if self.dtype == raw_input1.dtype:
-                    ufunc(
-                        raw_input1["value"],
-                        raw_input2,
-                        out=result["value"],
-                        **kwargs,
-                    )
-                    ufunc(
-                        raw_input1["variance"],
-                        raw_input2**2,
-                        out=result["variance"],
-                        **kwargs,
-                    )
-                else:
-                    ufunc(
-                        raw_input1,
-                        raw_input2["value"],
-                        out=result["value"],
-                        **kwargs,
-                    )
-                    ufunc(
-                        raw_input1**2,
-                        raw_input2["variance"],
-                        out=result["variance"],
-                        **kwargs,
-                    )
+        total = n1 + n2
+        # New mean = weight-weighted average; 0 (not NaN) where both are empty.
+        new_value = np.zeros_like(total)
+        np.divide(n1 * mu1 + n2 * mu2, total, out=new_value, where=(total != 0))
 
-                return result.view(self.__class__)
+        # ``deltas`` uses the *new* value; empty operands contribute nothing.
+        # Compute every field into a fresh array *before* writing, so an
+        # in-place ``v += other`` (where ``out`` aliases ``raw1``) is correct.
+        new_deltas = (
+            raw1[deltas]
+            + raw2[deltas]
+            + n1 * (new_value - mu1) ** 2
+            + n2 * (new_value - mu2) ** 2
+        )
+        new_weight_sq = None if weight_sq is None else raw1[weight_sq] + raw2[weight_sq]
 
-            case "accumulate", np.add, [raw_input]:
-                for field in self._FIELDS:
-                    ufunc.accumulate(self[field], out=result[field], **kwargs)
-                return result.view(self.__class__)
+        out[weight] = total
+        out["value"] = new_value
+        out[deltas] = new_deltas
+        if weight_sq is not None:
+            out[weight_sq] = new_weight_sq
 
-        # If unsupported, just pass through (will return not implemented)
-        # pylint: disable-next=no-member
-        return super().__array_ufunc__(ufunc, method, *raw_inputs, **kwargs)  # type: ignore[no-any-return]
+    def _scale(
+        self, raw1: Any, raw2: Any, out: Any, ufunc: Ufunc, **kwargs: Any
+    ) -> None:
+        del kwargs
+        weight, deltas, weight_sq = (
+            self._WEIGHT_FIELD,
+            self._DELTAS_FIELD,
+            self._WEIGHT_SQ_FIELD,
+        )
+        if raw1.dtype == self.dtype:
+            view, scalar = raw1, raw2
+        else:
+            # ``scalar / view`` is not a meaningful scaling of a mean.
+            if ufunc in (np.divide, np.true_divide, np.floor_divide):
+                raise TypeError(
+                    f"Cannot divide a scalar or array by a {self.__class__.__name__}"
+                )
+            view, scalar = raw2, raw1
+
+        out[weight] = view[weight]
+        out["value"] = ufunc(view["value"], scalar)
+        # Applying ``ufunc`` twice yields *s**2 (multiply) or /s**2 (divide).
+        out[deltas] = ufunc(ufunc(view[deltas], scalar), scalar)
+        if weight_sq is not None:
+            out[weight_sq] = view[weight_sq]
+
+    def _reduce(self, raw: Any, **kwargs: Any) -> np.typing.NDArray[Any]:
+        weight, deltas, weight_sq = (
+            self._WEIGHT_FIELD,
+            self._DELTAS_FIELD,
+            self._WEIGHT_SQ_FIELD,
+        )
+        axis = kwargs.get("axis", 0)
+        counts = raw[weight]
+        values = raw["value"]
+
+        with np.errstate(divide="ignore", invalid="ignore"):
+            total = np.add.reduce(counts, axis=axis)
+            combined = np.where(
+                total != 0,
+                np.add.reduce(counts * values, axis=axis) / total,
+                0.0,
+            )
+            combined_b = combined if axis is None else np.expand_dims(combined, axis)
+            new_deltas = np.add.reduce(raw[deltas], axis=axis) + np.add.reduce(
+                counts * (values - combined_b) ** 2, axis=axis
+            )
+
+        out_fields: dict[str, Any] = {
+            weight: total,
+            "value": combined,
+            deltas: new_deltas,
+        }
+        if weight_sq is not None:
+            out_fields[weight_sq] = np.add.reduce(raw[weight_sq], axis=axis)
+        return self._PARENT._make(*(out_fields[name] for name in self._FIELDS))  # type: ignore[return-value]
+
+    def _accumulate(self, raw: Any, out: Any, **kwargs: Any) -> None:
+        del raw, out, kwargs
+        raise TypeError(f"{self.__class__.__name__} does not support cumulative sums")
 
 
 @fields(
@@ -232,9 +392,13 @@ class WeightedSumView(View):
     "value",
     "_sum_of_weighted_deltas_squared",
 )
-class WeightedMeanView(View):
+class WeightedMeanView(_MeanArithmetic, View):
     __slots__ = ()
     _PARENT = WeightedMean
+
+    _WEIGHT_FIELD = "sum_of_weights"
+    _DELTAS_FIELD = "_sum_of_weighted_deltas_squared"
+    _WEIGHT_SQ_FIELD = "sum_of_weights_squared"
 
     sum_of_weights: np.typing.NDArray[Any]
     sum_of_weights_squared: np.typing.NDArray[Any]
@@ -251,9 +415,13 @@ class WeightedMeanView(View):
 
 
 @fields("count", "value", "_sum_of_deltas_squared")
-class MeanView(View):
+class MeanView(_MeanArithmetic, View):
     __slots__ = ()
     _PARENT = Mean
+
+    _WEIGHT_FIELD = "count"
+    _DELTAS_FIELD = "_sum_of_deltas_squared"
+    _WEIGHT_SQ_FIELD = None
 
     count: np.typing.NDArray[Any]
     value: np.typing.NDArray[Any]
