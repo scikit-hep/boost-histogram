@@ -156,3 +156,49 @@ def test_set_array_slice_mismatch_not_at_start():
         ValueError, match=r"Mismatched shapes \(4, 6\) in dimension 2, 6 != 5"
     ):
         h[0, :, :] = np.ones((4, 6))
+
+
+def test_vectorized_set_basic():
+    """NumPy integer-array indices scatter values through the buffer."""
+    h = bh.Histogram(
+        bh.axis.IntCategory(list(range(5))),
+        bh.axis.IntCategory(list(range(6))),
+        bh.axis.Regular(7, 0, 7),
+    )
+
+    i0 = np.array([0, 2, 4])
+    i1 = np.array([1, 3, 5])
+
+    h[i0, i1, :] = 9.0
+    np.testing.assert_array_equal(h.view()[i0, i1, :], 9.0)
+
+    # Untouched cells remain zero
+    assert h.view()[1, 0, 0] == 0.0
+
+    # Per-cell values, broadcasting over the trailing slice
+    vals = np.arange(3 * 7).reshape(3, 7).astype(float)
+    h[i0, i1, :] = vals
+    np.testing.assert_array_equal(h.view()[i0, i1, :], vals)
+
+
+def test_vectorized_set_accumulator():
+    h = bh.Histogram(bh.axis.Regular(5, 0, 5), storage=bh.storage.Weight())
+
+    idx = np.array([1, 3])
+    # The View accepts a trailing (value, variance) dimension
+    h[idx] = np.array([[10.0, 1.0], [20.0, 2.0]])
+    np.testing.assert_array_equal(h.view()[idx].value, [10.0, 20.0])
+    np.testing.assert_array_equal(h.view()[idx].variance, [1.0, 2.0])
+
+
+def test_vectorized_set_multicell():
+    h = bh.Histogram(
+        bh.axis.Regular(4, 0, 4),
+        bh.axis.Regular(4, 0, 4),
+        storage=bh.storage.MultiCell(3),
+    )
+
+    i0 = np.array([1, 2])
+    i1 = np.array([0, 3])
+    h[i0, i1] = 7.0
+    np.testing.assert_array_equal(h.view()[:, i0, i1], 7.0)

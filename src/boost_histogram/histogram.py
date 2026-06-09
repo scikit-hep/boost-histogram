@@ -113,7 +113,9 @@ _INPLACE_OP_SYMBOLS: dict[str, str] = {
 
 CppAxis = NewType("CppAxis", object)
 
-SimpleIndexing: TypeAlias = "SupportsIndex | slice | RebinProtocol"
+SimpleIndexing: TypeAlias = (
+    "SupportsIndex | slice | RebinProtocol | np.typing.NDArray[Any]"
+)
 InnerIndexing: TypeAlias = "SimpleIndexing | Callable[[Axis], int]"
 FullInnerIndexing: TypeAlias = "InnerIndexing | list[InnerIndexing]"
 IndexingWithMapping: TypeAlias = "FullInnerIndexing | Mapping[int, FullInnerIndexing]"
@@ -191,11 +193,13 @@ def _arg_shortcut(item: tuple[int, float, float] | Axis | CppAxis) -> CppAxis:
 
 def _expand_ellipsis(indexes: Iterable[Any], rank: int) -> list[Any]:
     indexes = list(indexes)
-    number_ellipses = indexes.count(Ellipsis)
+    # Compare by identity: ``==`` is ambiguous when indexes contain NumPy arrays.
+    ellipsis_positions = [i for i, ind in enumerate(indexes) if ind is Ellipsis]
+    number_ellipses = len(ellipsis_positions)
     if number_ellipses == 0:
         return indexes
     if number_ellipses == 1:
-        index = indexes.index(Ellipsis)
+        index = ellipsis_positions[0]
         additional = rank + 1 - len(indexes)
         if additional < 0:
             raise IndexError("too many indices for histogram")
@@ -1051,6 +1055,11 @@ class Histogram(typing.Generic[S]):
         if callable(index):
             return index(self.axes[axis])
 
+        # NumPy integer arrays pass through untouched; they trigger vectorized
+        # gather/scatter in __getitem__/__setitem__ rather than per-element access.
+        if isinstance(index, np.ndarray):
+            return index
+
         if isinstance(index, float):
             raise TypeError(f"Index {index} must be an integer, not float")
 
@@ -1100,6 +1109,43 @@ class Histogram(typing.Generic[S]):
                 indexes[i] = self._compute_uhi_index(indexes[i], i)
 
         return indexes
+
+    def _compute_vectorized_index(self, indexes: list[Any]) -> tuple[Any, ...]:
+        """
+        Build a NumPy fancy-index tuple from already-normalized indexes for
+        vectorized cell access (gather/scatter). Each axis may be an integer
+        array, an integer, or a plain integer slice. Rebin/sum/locator slices
+        and categorical lists are rejected with a pointer to ``.view()``.
+        """
+        view_index: list[Any] = []
+        for i, ind in enumerate(indexes):
+            if isinstance(ind, np.ndarray):
+                view_index.append(ind)
+            elif isinstance(ind, slice):
+                if ind.step is not None or not all(
+                    s is None or isinstance(s, int) for s in (ind.start, ind.stop)
+                ):
+                    msg = (
+                        f"Vectorized (array) indexing on axis {i} only supports plain "
+                        "integer slices; use .view() for rebin, sum, or locator slices"
+                    )
+                    raise IndexError(msg)
+                view_index.append(ind)
+            elif isinstance(ind, SupportsIndex):
+                view_index.append(ind.__index__())
+            else:
+                msg = (
+                    "Vectorized (array) indexing only supports integer arrays, "
+                    f"integers, and integer slices; got {type(ind).__name__} on axis {i}"
+                )
+                raise IndexError(msg)
+
+        if isinstance(self._hist, _core.hist.any_multi_cell):
+            # The buffer of a MultiCell histogram has the cell index as its first
+            # dimension, which is not part of the user-facing axis indexing.
+            view_index.insert(0, slice(None, None, None))
+
+        return tuple(view_index)
 
     @typing.overload
     def to_numpy(
@@ -1254,8 +1300,16 @@ class Histogram(typing.Generic[S]):
 
     def __getitem__(
         self, index: IndexingExpr
-    ) -> Self | float | Accumulator | list[float] | int:
+    ) -> Self | float | Accumulator | list[float] | int | np.typing.NDArray[Any]:
         indexes = self._compute_commonindex(index)
+
+        # Vectorized (NumPy array) indexing gathers scattered cells through the
+        # buffer instead of building a new histogram. Only ndarray indices
+        # trigger this; lists keep their categorical pick semantics.
+        if not hasattr(indexes, "items") and any(
+            isinstance(a, np.ndarray) for a in indexes
+        ):
+            return self.view()[self._compute_vectorized_index(indexes)]
 
         # Early return for all-integer case
         if not hasattr(indexes, "items") and all(
@@ -1508,6 +1562,14 @@ class Histogram(typing.Generic[S]):
         ``h[...] = h2.view()``.
         """
         indexes = self._compute_commonindex(index)
+
+        # Vectorized (NumPy array) indexing scatters values through the buffer.
+        # The View handles accumulator (n+1 dim raw array) assignment itself.
+        if not hasattr(indexes, "items") and any(
+            isinstance(a, np.ndarray) for a in indexes
+        ):
+            self.view()[self._compute_vectorized_index(indexes)] = np.asarray(value)
+            return
 
         in_array = np.asarray(value)
         view: Any = self.view(flow=True)
