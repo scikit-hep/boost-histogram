@@ -328,6 +328,12 @@ class _MeanArithmetic:
         self, raw1: Any, raw2: Any, out: Any, ufunc: Ufunc, **kwargs: Any
     ) -> None:
         del kwargs
+        # Floor division would truncate the (floating-point) mean and deltas, so
+        # it is not a meaningful scaling of a mean accumulator.
+        if ufunc is np.floor_divide:
+            raise TypeError(
+                f"{self.__class__.__name__} does not support floor division"
+            )
         weight, deltas, weight_sq = (
             self._WEIGHT_FIELD,
             self._DELTAS_FIELD,
@@ -335,17 +341,19 @@ class _MeanArithmetic:
         )
         if raw1.dtype == self.dtype:
             view, scalar = raw1, raw2
-        else:
+        elif ufunc in (np.divide, np.true_divide):
             # ``scalar / view`` is not a meaningful scaling of a mean.
-            if ufunc in (np.divide, np.true_divide, np.floor_divide):
-                raise TypeError(
-                    f"Cannot divide a scalar or array by a {self.__class__.__name__}"
-                )
+            raise TypeError(
+                f"Cannot divide a scalar or array by a {self.__class__.__name__}"
+            )
+        else:
             view, scalar = raw2, raw1
 
         out[weight] = view[weight]
         out["value"] = ufunc(view["value"], scalar)
-        # Applying ``ufunc`` twice yields *s**2 (multiply) or /s**2 (divide).
+        # The mean scales by ``s``; its variance (hence ``deltas``) scales by
+        # ``s**2``. Applying ``ufunc`` twice gives exactly that: for multiply
+        # ``(x*s)*s == x*s**2`` and for divide ``(x/s)/s == x/s**2``.
         out[deltas] = ufunc(ufunc(view[deltas], scalar), scalar)
         if weight_sq is not None:
             out[weight_sq] = view[weight_sq]
@@ -357,20 +365,26 @@ class _MeanArithmetic:
             self._WEIGHT_SQ_FIELD,
         )
         axis = kwargs.get("axis", 0)
+        keepdims = kwargs.get("keepdims", False)
         counts = raw[weight]
         values = raw["value"]
 
+        def reduce(array: Any, *, keep: bool = keepdims) -> Any:
+            return np.add.reduce(array, axis=axis, keepdims=keep)  # type: ignore[call-overload]
+
         with np.errstate(divide="ignore", invalid="ignore"):
-            total = np.add.reduce(counts, axis=axis)
-            combined = np.where(
-                total != 0,
-                np.add.reduce(counts * values, axis=axis) / total,
-                0.0,
+            total = reduce(counts)
+            combined = np.where(total != 0, reduce(counts * values) / total, 0.0)
+
+            # The spread term needs the combined mean broadcast back against the
+            # un-reduced ``values``; ``keepdims=True`` keeps the reduced axis as
+            # size 1 so this works for any ``axis`` (int, tuple, or None) and is
+            # independent of the caller's ``keepdims``.
+            total_b = reduce(counts, keep=True)
+            mean_b = np.where(
+                total_b != 0, reduce(counts * values, keep=True) / total_b, 0.0
             )
-            combined_b = combined if axis is None else np.expand_dims(combined, axis)
-            new_deltas = np.add.reduce(raw[deltas], axis=axis) + np.add.reduce(
-                counts * (values - combined_b) ** 2, axis=axis
-            )
+            new_deltas = reduce(raw[deltas]) + reduce(counts * (values - mean_b) ** 2)
 
         out_fields: dict[str, Any] = {
             weight: total,
@@ -378,7 +392,7 @@ class _MeanArithmetic:
             deltas: new_deltas,
         }
         if weight_sq is not None:
-            out_fields[weight_sq] = np.add.reduce(raw[weight_sq], axis=axis)
+            out_fields[weight_sq] = reduce(raw[weight_sq])
         return self._PARENT._make(*(out_fields[name] for name in self._FIELDS))  # type: ignore[return-value]
 
     def _accumulate(self, raw: Any, out: Any, **kwargs: Any) -> None:

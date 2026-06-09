@@ -410,6 +410,30 @@ def test_weighted_mean_view_reduce_sum(weighted_mean_pair):
     )
 
 
+def test_mean_view_reduce_keepdims():
+    h = bh.Histogram(
+        bh.axis.Integer(0, 3), bh.axis.Integer(0, 2), storage=bh.storage.Mean()
+    )
+    h.fill([0, 0, 1, 2], [0, 1, 1, 0], sample=[1.0, 2.0, 3.0, 4.0])
+    v = h.view()
+
+    plain = np.add.reduce(v, axis=0)
+    kept = np.add.reduce(v, axis=0, keepdims=True)
+    assert plain.shape == (2,)
+    assert kept.shape == (1, 2)
+    for field in v.dtype.names:
+        assert_allclose(kept[field][0], plain[field])
+
+
+def test_mean_view_rejects_floor_division(mean_pair):
+    h1, _ = mean_pair
+    v = h1.view()
+    with pytest.raises(TypeError):
+        v // 2
+    with pytest.raises(TypeError):
+        2 // v
+
+
 def test_mean_view_rejects_subtraction(mean_pair):
     h1, h2 = mean_pair
     v1, v2 = h1.view(), h2.view()
