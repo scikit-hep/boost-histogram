@@ -120,7 +120,7 @@ jobs:
       - uses: astral-sh/setup-uv@v8.1.0
 
       - name: Run Hist tests
-        run: uvx nox[uv] -s hist
+        run: uvx nox -s hist
 
   build_wheels:
     name: ${{ matrix.only }}
