@@ -738,22 +738,55 @@ class Histogram(typing.Generic[S]):
 
     def __truediv__(self, other: Histogram[S] | np.typing.NDArray[Any] | float) -> Self:
         result = self.copy(deep=False)
-        return result._compute_inplace_op("__itruediv__", other)
+        return result.__itruediv__(other)
 
     def __div__(self, other: Histogram[S] | np.typing.NDArray[Any] | float) -> Self:
         result = self.copy(deep=False)
-        return result._compute_inplace_op("__idiv__", other)
+        return result.__idiv__(other)
 
     def __idiv__(self, other: Histogram[S] | np.typing.NDArray[Any] | float) -> Self:
-        return self._compute_inplace_op("__idiv__", other)
+        return self.__itruediv__(other)
 
     def __itruediv__(
         self, other: Histogram[S] | np.typing.NDArray[Any] | float
     ) -> Self:
+        # Division should produce floating-point results, so promote integer
+        # storages to Double. Histogram/histogram division in C++ requires both
+        # operands to share a storage, so the divisor is promoted to match.
+        self._convert_int_storage_to_double()
+        if isinstance(other, Histogram):
+            other = self._as_double_cpp(other._hist)  # type: ignore[assignment]
+        elif isinstance(other, tuple(_histograms)):
+            other = self._as_double_cpp(other)  # type: ignore[arg-type, assignment]
         return self._compute_inplace_op("__itruediv__", other)
 
     def __imul__(self, other: Histogram[S] | np.typing.NDArray[Any] | float) -> Self:
         return self._compute_inplace_op("__imul__", other)
+
+    @staticmethod
+    def _as_double_cpp(cpp_hist: CppHistogram) -> CppHistogram:
+        """
+        Return a Double-storage copy of an integer-storage (Int64/AtomicInt64)
+        C++ histogram, so that division produces floating-point results instead
+        of truncating. Returns the input unchanged for storages that are already
+        floating point or richer.
+        """
+        if cpp_hist._storage_type not in {
+            _core.storage.int64,
+            _core.storage.atomic_int64,
+        }:
+            return cpp_hist
+
+        cpp_axes = [cpp_hist.axis(i) for i in range(cpp_hist.rank())]
+        new_hist = _core.hist.any_double(cpp_axes, _core.storage.double())
+        new_hist.view(flow=True)[...] = cpp_hist.view(flow=True)
+        return new_hist
+
+    def _convert_int_storage_to_double(self) -> None:
+        """
+        Convert an integer storage to Double in place (see _as_double_cpp).
+        """
+        self._hist = self._as_double_cpp(self._hist)
 
     def _hist_inplace_op(self, name: str, other: CppHistogram) -> None:
         # The underlying C++ histogram only exposes the in-place dunders its

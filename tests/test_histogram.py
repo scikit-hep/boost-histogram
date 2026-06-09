@@ -623,6 +623,48 @@ def test_hist_hist_div():
     assert h1[True] == 2
 
 
+@pytest.mark.parametrize("storage", [bh.storage.Int64, bh.storage.AtomicInt64])
+def test_int_storage_division_promotes_to_double(storage):
+    # gh #601: dividing integer-storage histograms must not truncate.
+    a = bh.Histogram(bh.axis.Integer(0, 3), storage=storage())
+    b = bh.Histogram(bh.axis.Integer(0, 3), storage=storage())
+    a[:] = (5, 3, 7)
+    b[:] = (2, 4, 3)
+
+    expected = np.array([5, 3, 7]) / np.array([2, 4, 3])
+
+    # hist / hist
+    result = a / b
+    assert result.storage_type is bh.storage.Double
+    assert_array_equal(result.view(), expected)
+    # operands are unchanged
+    assert a.storage_type is storage
+    assert b.storage_type is storage
+
+    # hist / scalar
+    assert_array_equal((a / 2).view(), np.array([5, 3, 7]) / 2)
+    assert (a / 2).storage_type is bh.storage.Double
+
+    # in-place division promotes storage but keeps the same object
+    a_orig = a
+    a /= b
+    assert a is a_orig
+    assert a.storage_type is bh.storage.Double
+    assert_array_equal(a.view(), expected)
+
+
+def test_mixed_int_double_division():
+    # gh #601: storage mismatch must still divide correctly.
+    ai = bh.Histogram(bh.axis.Integer(0, 3), storage=bh.storage.Int64())
+    bd = bh.Histogram(bh.axis.Integer(0, 3), storage=bh.storage.Double())
+    ai[:] = (5, 3, 7)
+    bd[:] = (2, 4, 3)
+
+    expected = np.array([5, 3, 7]) / np.array([2, 4, 3])
+    assert_array_equal((ai / bd).view(), expected)
+    assert_array_equal((bd / ai).view(), 1 / expected)
+
+
 def test_project():
     h = bh.Histogram(bh.axis.Integer(0, 2), bh.axis.Integer(1, 4))
     h.fill(0, 1)
