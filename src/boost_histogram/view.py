@@ -305,7 +305,7 @@ class _MeanArithmetic:
         total = n1 + n2
         # New mean = weight-weighted average; 0 (not NaN) where both are empty.
         new_value = np.zeros_like(total)
-        np.divide(n1 * mu1 + n2 * mu2, total, out=new_value, where=(total != 0))
+        np.divide(n1 * mu1 + n2 * mu2, total, out=new_value, where=total != 0)
 
         # ``deltas`` uses the *new* value; empty operands contribute nothing.
         # Compute every field into a fresh array *before* writing, so an
