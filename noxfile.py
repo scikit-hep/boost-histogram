@@ -46,10 +46,8 @@ def hist(session: nox.Session) -> None:
     session.run("pytest", *session.posargs)
     session.run(
         "mypy",
-        "--disable-error-code",
-        "override",
-        "--disable-error-code",
-        "unused-ignore",
+        "--disable-error-code=override",
+        "--disable-error-code=unused-ignore",
     )
 
 
