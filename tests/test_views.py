@@ -231,6 +231,233 @@ def test_0d_weighted_mean_view():
     assert profile.counts() == approx(4.0)
 
 
+@pytest.fixture
+def mean_pair():
+    # Overlapping fills, each with at least one empty bin, to exercise the
+    # zero-count merge guard.
+    h1 = bh.Histogram(bh.axis.Integer(0, 4), storage=bh.storage.Mean())
+    h1.fill([0, 0, 1, 3], sample=[1.0, 2.0, 3.0, 9.0])  # bin 2 empty
+    h2 = bh.Histogram(bh.axis.Integer(0, 4), storage=bh.storage.Mean())
+    h2.fill([0, 2, 2], sample=[5.0, 6.0, 8.0])  # bins 1 and 3 empty
+    return h1, h2
+
+
+@pytest.fixture
+def weighted_mean_pair():
+    h1 = bh.Histogram(bh.axis.Integer(0, 4), storage=bh.storage.WeightedMean())
+    h1.fill([0, 0, 1, 3], sample=[1.0, 2.0, 3.0, 9.0], weight=[1.0, 2.0, 1.0, 3.0])
+    h2 = bh.Histogram(bh.axis.Integer(0, 4), storage=bh.storage.WeightedMean())
+    h2.fill([0, 2, 2], sample=[5.0, 6.0, 8.0], weight=[2.0, 1.0, 1.0])
+    return h1, h2
+
+
+def test_mean_view_combine_matches_hist(mean_pair):
+    h1, h2 = mean_pair
+    combined = (h1 + h2).view()
+    summed = h1.view() + h2.view()
+
+    assert isinstance(summed, type(h1.view()))
+    for field in combined.dtype.names:
+        assert_allclose(summed[field], combined[field])
+    assert_allclose(summed.value, combined.value)
+    assert_allclose(summed.variance, combined.variance, equal_nan=True)
+
+
+def test_weighted_mean_view_combine_matches_hist(weighted_mean_pair):
+    h1, h2 = weighted_mean_pair
+    combined = (h1 + h2).view()
+    summed = h1.view() + h2.view()
+
+    for field in combined.dtype.names:
+        assert_allclose(summed[field], combined[field])
+    assert_allclose(summed.sum_of_weights, combined.sum_of_weights)
+    assert_allclose(summed.sum_of_weights_squared, combined.sum_of_weights_squared)
+    assert_allclose(summed.value, combined.value)
+    assert_allclose(summed.variance, combined.variance, equal_nan=True)
+
+
+def test_mean_view_iadd(mean_pair):
+    h1, h2 = mean_pair
+    expected = (h1 + h2).view()
+    v = h1.view().copy()
+    v += h2.view()
+    for field in expected.dtype.names:
+        assert_allclose(v[field], expected[field])
+
+
+def test_mean_view_zero_count_bins():
+    # Both empty -> all-zero result, no NaN and (under filterwarnings=error) no
+    # divide/invalid warning.
+    empty = bh.Histogram(bh.axis.Integer(0, 3), storage=bh.storage.Mean()).view()
+    result = empty + empty
+    assert_allclose(result.count, [0, 0, 0])
+    assert_allclose(result.value, [0, 0, 0])
+    assert_allclose(result._sum_of_deltas_squared, [0, 0, 0])
+    assert not np.any(np.isnan(result.value))
+
+    # Empty in one operand only -> result equals the other operand bin-for-bin.
+    h = bh.Histogram(bh.axis.Integer(0, 3), storage=bh.storage.Mean())
+    h.fill([0, 0, 2], sample=[3.0, 5.0, 7.0])
+    left = empty + h.view()
+    right = h.view() + empty
+    for field in h.view().dtype.names:
+        assert_allclose(left[field], h.view()[field])
+        assert_allclose(right[field], h.view()[field])
+
+
+def test_mean_view_add_accumulator(mean_pair):
+    h1, _ = mean_pair
+    v = h1.view()
+    acc = bh.accumulators.Mean(3, 5.0, 2.0)  # count, value, variance
+    result = v + acc
+
+    # Equivalent to merging every bin with a view holding that accumulator.
+    other = bh.Histogram(bh.axis.Integer(0, 4), storage=bh.storage.Mean())
+    other[...] = [[3.0, 5.0, 2.0]] * 4  # count, value, variance (matches acc)
+    expected = v + other.view()
+    for field in v.dtype.names:
+        assert_allclose(result[field], expected[field])
+
+
+def test_weighted_mean_view_add_accumulator(weighted_mean_pair):
+    h1, _ = weighted_mean_pair
+    v = h1.view()
+    acc = bh.accumulators.WeightedMean(2.0, 1.5, 5.0, 2.0)
+    result = v + acc
+
+    # Equivalent to merging every bin with a view holding that accumulator.
+    other = bh.Histogram(bh.axis.Integer(0, 4), storage=bh.storage.WeightedMean())
+    # sum_of_weights, sum_of_weights_squared, value, variance (matches acc)
+    other[...] = [[2.0, 1.5, 5.0, 2.0]] * 4
+    expected = v + other.view()
+    for field in v.dtype.names:
+        assert_allclose(result[field], expected[field])
+
+
+def test_weighted_mean_view_combine_empty_bin():
+    # A genuinely empty bin (sum_of_weights == 0) must not introduce NaN.
+    h = bh.Histogram(bh.axis.Integer(0, 3), storage=bh.storage.WeightedMean())
+    h.fill([0, 2], sample=[3.0, 7.0], weight=[1.0, 1.0])  # bin 1 empty
+    empty = bh.Histogram(
+        bh.axis.Integer(0, 3), storage=bh.storage.WeightedMean()
+    ).view()
+    result = h.view() + empty
+    for field in h.view().dtype.names:
+        assert_allclose(result[field], h.view()[field])
+    assert not np.any(np.isnan(result.value))
+
+
+def test_mean_view_scalar_scale():
+    h = bh.Histogram(bh.axis.Integer(0, 4), storage=bh.storage.Mean())
+    h.fill([0, 0, 1], sample=[2.0, 4.0, 6.0])
+    v = h.view()
+
+    for scaled in (v * 3, 3 * v):
+        assert_allclose(scaled.count, v.count)  # weights unchanged
+        assert_allclose(scaled.value, v.value * 3)
+        assert_allclose(scaled._sum_of_deltas_squared, v._sum_of_deltas_squared * 9)
+
+    divided = v / 2
+    assert_allclose(divided.count, v.count)
+    assert_allclose(divided.value, v.value / 2)
+    assert_allclose(divided._sum_of_deltas_squared, v._sum_of_deltas_squared / 4)
+
+    v2 = v.copy()
+    v2 *= 3
+    assert_allclose(v2.value, v.value * 3)
+    v2 = v.copy()
+    v2 /= 2
+    assert_allclose(v2.value, v.value / 2)
+
+
+def test_weighted_mean_view_scalar_scale(weighted_mean_pair):
+    h1, _ = weighted_mean_pair
+    v = h1.view()
+    scaled = v * 2
+    assert_allclose(scaled.sum_of_weights, v.sum_of_weights)
+    assert_allclose(scaled.sum_of_weights_squared, v.sum_of_weights_squared)
+    assert_allclose(scaled.value, v.value * 2)
+    assert_allclose(
+        scaled._sum_of_weighted_deltas_squared,
+        v._sum_of_weighted_deltas_squared * 4,
+    )
+
+
+def test_mean_view_reduce_sum():
+    h = bh.Histogram(bh.axis.Integer(0, 4), storage=bh.storage.Mean())
+    h.fill([0, 0, 1, 3], sample=[1.0, 2.0, 3.0, 9.0])
+    v = h.view()
+
+    reduced = v.sum()
+    assert isinstance(reduced, bh.accumulators.Mean)
+
+    projected = h.project().view()
+    assert reduced.count == approx(projected.count)
+    assert reduced.value == approx(projected.value)
+    assert reduced._sum_of_deltas_squared == approx(projected._sum_of_deltas_squared)
+
+
+def test_weighted_mean_view_reduce_sum(weighted_mean_pair):
+    h1, _ = weighted_mean_pair
+    reduced = h1.view().sum()
+    assert isinstance(reduced, bh.accumulators.WeightedMean)
+
+    projected = h1.project().view()
+    assert reduced.sum_of_weights == approx(projected.sum_of_weights)
+    assert reduced.value == approx(projected.value)
+    assert reduced._sum_of_weighted_deltas_squared == approx(
+        projected._sum_of_weighted_deltas_squared
+    )
+
+
+def test_mean_view_reduce_keepdims():
+    h = bh.Histogram(
+        bh.axis.Integer(0, 3), bh.axis.Integer(0, 2), storage=bh.storage.Mean()
+    )
+    h.fill([0, 0, 1, 2], [0, 1, 1, 0], sample=[1.0, 2.0, 3.0, 4.0])
+    v = h.view()
+
+    plain = np.add.reduce(v, axis=0)
+    kept = np.add.reduce(v, axis=0, keepdims=True)
+    assert plain.shape == (2,)
+    assert kept.shape == (1, 2)
+    for field in v.dtype.names:
+        assert_allclose(kept[field][0], plain[field])
+
+
+def test_mean_view_rejects_floor_division(mean_pair):
+    h1, _ = mean_pair
+    v = h1.view()
+    with pytest.raises(TypeError):
+        v // 2
+    with pytest.raises(TypeError):
+        2 // v
+
+
+def test_mean_view_rejects_subtraction(mean_pair):
+    h1, h2 = mean_pair
+    v1, v2 = h1.view(), h2.view()
+    with pytest.raises(TypeError):
+        v1 - v2
+    with pytest.raises(TypeError):
+        v1 - 5
+
+
+def test_mean_view_rejects_scalar_add(mean_pair):
+    h1, _ = mean_pair
+    with pytest.raises(TypeError):
+        h1.view() + 5
+
+
+def test_mean_view_rejects_view_product(mean_pair):
+    h1, h2 = mean_pair
+    v1, v2 = h1.view(), h2.view()
+    with pytest.raises(TypeError):
+        v1 * v2
+    with pytest.raises(TypeError):
+        v1 / v2
+
+
 # Issue #696
 def test_view_cumsum():
     h = bh.Histogram(
