@@ -25,7 +25,7 @@ a copy.
 
     h = bh.Histogram(bh.axis.Regular(10, 0, 1))  # Double() is the default
     h.fill([0.2, 0.3], weight=[0.5, 2])  # Weights are optional
-    print(f"{h[bh.loc(.2)]=}\n{h[bh.loc(.3)]=}")  # Python 3.8 print
+    print(f"{h[bh.loc(.2)]=}\n{h[bh.loc(.3)]=}")
 
 .. code-block:: text
 

@@ -12,7 +12,7 @@ Welcome to boost-histogram's documentation!
 ===========================================
 
 |Actions Status| |Documentation Status| |PyPI version| |Conda-Forge|
-|PyPI platforms| |DOI| |GitHub Discussion| |Gitter| |Scikit-HEP|
+|PyPI platforms| |DOI| |GitHub Discussion| |Scikit-HEP|
 
 Boost-histogram (`source <https://github.com/scikit-hep/boost-histogram>`__) is
 a Python package providing Python bindings for Boost.Histogram_ (`source
@@ -126,7 +126,5 @@ Indices and tables
    :target: https://zenodo.org/badge/latestdoi/148885351
 .. |GitHub Discussion| image:: https://img.shields.io/static/v1?label=Discussions&message=Ask&color=blue&logo=github
    :target: https://github.com/scikit-hep/boost-histogram/discussions
-.. |Gitter| image:: https://badges.gitter.im/HSF/PyHEP-histogramming.svg
-   :target: https://gitter.im/HSF/PyHEP-histogramming?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge
 .. |Scikit-HEP| image:: https://scikit-hep.org/assets/images/Scikit--HEP-Project-blue.svg
    :target: https://scikit-hep.org/

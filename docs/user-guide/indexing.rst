@@ -26,7 +26,7 @@ Example::
     # Produces a 3D histogram with Regular(10, 0, 1) x StrCategory(["a", "c"]) x IntCategory([5, 7])
 
 
-This feature is considered experimental in boost-histogram 1.1.0. Removed bins are not added to the overflow bin currently.
+This feature is considered experimental. Removed bins are not added to the overflow bin currently.
 
 
 Vectorized indexing

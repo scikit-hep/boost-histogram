@@ -26,8 +26,8 @@ is internally used by the Double and Unlimited storages to perform sums when
 needed. It uses a highly accurate Neumaier sum to compute the floating point
 sum with a correction term. Since this accumulator is never returned by a
 histogram, it is not available in a view form, but only as a single accumulator
-for comparison and access to the algorithm. Usage example in Python 3.8,
-showing how non-accurate sums fail to produce the obvious answer, 2.0::
+for comparison and access to the algorithm. Usage example showing how
+non-accurate sums fail to produce the obvious answer, 2.0::
 
     import math
     import numpy as np

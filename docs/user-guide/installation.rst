@@ -67,8 +67,7 @@ Source builds
 For a source build, for example from an “sdist” package, the only
 requirements are a C++14 compatible compiler. The compiler requirements
 are dictated by Boost.Histogram’s C++ requirements: gcc >= 5.5, clang >=
-3.8, msvc >= 14.1. You should have a version of pip less than 2-3 years
-old (10+).
+3.8, msvc >= 14.1. A reasonably recent version of pip is recommended.
 
 NumPy is downloaded during the build (enables multithreaded builds).
 Boost is not required or needed (this only depends on included
