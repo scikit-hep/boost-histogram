@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import copy
 import json
+import operator
+import warnings
 from pickle import dumps, loads
 
 import numpy as np
@@ -231,6 +233,92 @@ def test_sparse_histogram_addition():
     dense = bh.Histogram(bh.axis.Regular(5, 0, 5), storage=bh.storage.Double())
     dense.fill([1.5, 1.5, 3.5, 4.5])
     assert_array_equal(h_sum.values(), dense.values())
+
+
+@pytest.mark.parametrize("op", ["mul", "truediv"])
+def test_scalar_mul_div_stays_sparse(op):
+    """Scalar * and / scale filled cells in place and preserve sparsity."""
+    fn = getattr(operator, op)
+    sparse = bh.Histogram(bh.axis.Regular(5, 0, 5), storage=bh.storage.DoubleSparse())
+    sparse.fill([-1, 1.5, 1.5, 3.5, 100])  # includes flow cells
+    dense = bh.Histogram(bh.axis.Regular(5, 0, 5), storage=bh.storage.Double())
+    dense.fill([-1, 1.5, 1.5, 3.5, 100])
+
+    result = fn(sparse, 2.0)
+    assert result.storage_type is bh.storage.DoubleSparse
+    # Original is untouched (operator returns a copy).
+    assert_array_equal(sparse.values(flow=True), dense.values(flow=True))
+    for flow in (False, True):
+        assert_array_equal(result.values(flow=flow), fn(dense, 2.0).values(flow=flow))
+
+
+def test_scalar_imul_in_place_stays_sparse():
+    h = bh.Histogram(bh.axis.Regular(5, 0, 5), storage=bh.storage.DoubleSparse())
+    h.fill([1.5, 1.5, 3.5])
+    h *= 3
+    assert h.storage_type is bh.storage.DoubleSparse
+    assert_array_equal(h.values(), [0, 6, 0, 3, 0])
+
+
+@pytest.mark.parametrize("op", ["+", "-"])
+def test_scalar_add_sub_refused(op):
+    """Scalar +/- would fill every cell, so sparse storage refuses them."""
+    fn = {"+": operator.add, "-": operator.sub}[op]
+    h = bh.Histogram(bh.axis.Regular(5, 0, 5), storage=bh.storage.DoubleSparse())
+    h.fill([1.5])
+    with pytest.raises(TypeError, match="fill every cell"):
+        fn(h, 2.0)
+
+
+def _mixed_axes_hist():
+    h = bh.Histogram(
+        bh.axis.Regular(5, 0, 5),
+        bh.axis.IntCategory([10, 20, 30]),
+        storage=bh.storage.DoubleSparse(),
+    )
+    h.fill([1.5, 1.5, 3.5], [10, 10, 30])
+    return h
+
+
+def test_mixed_int_slice_indexing_raises():
+    """Mixed integer + slice indexing routes through .view() and raises."""
+    h = _mixed_axes_hist()
+    with pytest.raises(TypeError, match=r"to_coo|sparse"):
+        _ = h[2, :]
+
+
+def test_list_pick_indexing_raises():
+    """Categorical list selection routes through .view() and raises."""
+    h = _mixed_axes_hist()
+    # The list-pick path is experimental and warns before it reaches the view.
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        with pytest.raises(TypeError, match=r"to_coo|sparse"):
+            _ = h[:, [0, 2]]
+
+
+def test_vectorized_array_indexing_raises():
+    h = bh.Histogram(bh.axis.Regular(5, 0, 5), storage=bh.storage.DoubleSparse())
+    h.fill([1.5, 3.5])
+    with pytest.raises(TypeError, match=r"to_coo|sparse"):
+        _ = h[np.array([0, 1, 2])]
+
+
+@pytest.mark.parametrize(
+    "make_index",
+    [
+        pytest.param(lambda: slice(1, 4), id="slice"),
+        pytest.param(lambda: slice(None, None, bh.rebin(2)), id="rebin"),
+        pytest.param(lambda: slice(None, None, sum), id="sum"),
+    ],
+)
+def test_reduce_indexing_stays_sparse(make_index):
+    """Slicing, rebin, and integration delegate to C++ and stay sparse."""
+    h = bh.Histogram(bh.axis.Regular(10, 0, 10), storage=bh.storage.DoubleSparse())
+    h.fill([1.5, 5.5, 5.5, 8.5])
+    result = h[make_index()]
+    if isinstance(result, bh.Histogram):
+        assert result.storage_type is bh.storage.DoubleSparse
 
 
 def test_matches_dense_values():

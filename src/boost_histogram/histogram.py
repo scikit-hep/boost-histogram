@@ -922,12 +922,36 @@ class Histogram(typing.Generic[S]):
             else:
                 msg = f"Wrong shape {other.shape}, expected {self.shape} or {self.axes.extent}"
                 raise ValueError(msg)
+        elif isinstance(self._hist, _core.hist.any_double_sparse):
+            self._sparse_scalar_inplace_op(name, other)
         else:
             view = self.view(flow=True)
             getattr(view, name)(other)
 
         self._variance_known = False
         return self
+
+    def _sparse_scalar_inplace_op(
+        self, name: str, other: np.typing.NDArray[Any] | float
+    ) -> None:
+        # Sparse storage has no dense buffer to mutate in place. ``*`` and ``/``
+        # only scale the already-filled cells (0 * x == 0), so sparsity is
+        # preserved -- rescale them through the COO get/set path. ``+`` and
+        # ``-`` would have to touch every cell, densifying the storage, so they
+        # are refused rather than silently materializing the full grid.
+        if name in {"__iadd__", "__isub__"}:
+            symbol = _INPLACE_OP_SYMBOLS[name]
+            msg = (
+                f"Sparse storage does not support scalar {symbol!r}; it would "
+                "fill every cell. Densify with .values() or use a dense storage."
+            )
+            raise TypeError(msg)
+        indices, values = self._hist._to_coo(True)  # type: ignore[attr-defined]
+        if name in {"__itruediv__", "__idiv__"}:
+            values = values / other
+        else:  # __imul__
+            values = values * other
+        self._hist._from_coo(indices, values, True)  # type: ignore[attr-defined]
 
     # TODO: Marked as too complex by flake8. Should be factored out a bit.
     def fill(

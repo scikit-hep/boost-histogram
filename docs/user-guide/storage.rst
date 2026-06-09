@@ -88,18 +88,40 @@ are ever filled.
     h.fill(*data)  # only the filled cells are allocated
 
 Because the data is not stored as a dense array, **sparse storage is not a
-drop-in replacement for a dense histogram**:
+drop-in replacement for a dense histogram**. Operations that can be expressed
+without materializing the full grid keep the result sparse; operations that need
+a dense buffer raise a clear ``TypeError`` (pointing you at
+:meth:`~boost_histogram.Histogram.to_coo`) rather than silently densifying.
 
-* ``h.view()`` and ``np.asarray(h)`` raise, since there is no contiguous buffer
-  to view into.
-* The copying accessors -- ``h.values()``, ``h.variances()``, ``h.counts()`` --
-  *densify* into a freshly allocated array, so they keep working. This is only a
-  good idea when the dense shape actually fits in memory; for a genuinely huge
-  grid, use :meth:`~boost_histogram.Histogram.to_coo` instead.
-* Reading a single bin (``h[bh.loc(...)]``), slicing, projection, ``.sum()``, and
-  adding two histograms together all keep the result sparse.
-* Writes are fill-only: ``h[...] = value`` is not supported (it would need a live
-  buffer).
+Stays sparse (or returns a scalar) -- delegates to the C++ storage:
+
+* Reading a single bin: ``h[bh.loc(...)]``, ``h[5]``.
+* Integer slicing (``h[10:60]``), rebinning (``h[:: bh.rebin(2)]``), integration
+  (``h[10:60:sum]``), and projection (``h.project(0)``).
+* ``.sum()``, adding two histograms (``h1 + h2``), and scalar ``*`` / ``/``
+  (which only scale the filled cells, so ``0`` stays ``0``).
+* ``copy``/``deepcopy``, pickling, and UHI serialization.
+
+Densifies into a fresh array (works, but allocates the full dense shape):
+
+* The copying accessors ``h.values()``, ``h.variances()``, ``h.counts()``. Only
+  use these when the dense shape fits in memory; otherwise prefer
+  :meth:`~boost_histogram.Histogram.to_coo`.
+
+Unsupported -- raises ``TypeError``:
+
+* ``h.view()`` and ``np.asarray(h)`` -- there is no contiguous buffer to view.
+* Writes: ``h[...] = value`` (filling with ``h.fill(...)`` is the only write path).
+* Scalar ``+`` / ``-`` -- these would add to *every* cell, filling the grid.
+* Fancy indexing that gathers through a dense view: mixed integer + slice
+  (``h[2, :]``), categorical list picks (``h[:, [0, 2]]``), and NumPy array
+  indexing (``h[np.array([...])]``).
+
+.. note::
+
+   Mixed integer + slice indexing (``h[2, :]``) is a common pattern and a likely
+   follow-up to support natively on sparse storage; for now, slice without
+   collapsing the axis (``h[2:3, :]``) to stay sparse, or densify first.
 
 Only ``double`` sparse storage is available for now; accumulator-backed sparse
 storages (the equivalent of ``Weight``, ``Mean``, ...) are waiting on a
