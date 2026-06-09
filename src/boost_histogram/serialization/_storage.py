@@ -24,7 +24,7 @@ def _storage_type_to_str(_storage: storage.Storage, /) -> str:
     match _storage:
         case storage.Int64():
             return "int"
-        case storage.Double():
+        case storage.Double() | storage.DoubleSparse():
             return "double"
         case storage.AtomicInt64():
             return "int"
@@ -114,6 +114,8 @@ def _storage_from_dict(
         return storage.AtomicInt64()
     if orig_type == "Unlimited":
         return storage.Unlimited()
+    if orig_type == "DoubleSparse":
+        return storage.DoubleSparse()
 
     storage_type = data["type"]
     if storage_type == "int":

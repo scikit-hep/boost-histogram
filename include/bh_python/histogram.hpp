@@ -12,10 +12,14 @@
 #include <bh_python/accumulators/weighted_sum.hpp>
 #include <bh_python/axis.hpp>
 #include <bh_python/multi_cell.hpp>
+#include <bh_python/storage.hpp>
 
 #include <boost/histogram/detail/axes.hpp>
 #include <boost/histogram/histogram.hpp>
 #include <boost/histogram/unsafe_access.hpp>
+
+#include <unordered_map>
+#include <vector>
 
 namespace pybind11 {
 
@@ -80,6 +84,17 @@ py::buffer_info make_buffer(bh::histogram<A, bh::dense_storage<T>>& h, bool flow
     return detail::make_buffer_impl(axes, flow, &storage[0]);
 }
 
+/// Sparse storage keeps only filled cells in a hash map, so there is no
+/// contiguous buffer to expose. Callers should use ``to_coo()`` instead. We
+/// throw rather than return an empty buffer so ``.view()`` / ``np.asarray`` give
+/// a single, clear error.
+template <class A, class T>
+py::buffer_info make_buffer(bh::histogram<A, storage::sparse_storage<T>>& /* h */,
+                            bool /* flow */) {
+    throw py::type_error(
+        "sparse storage does not support .view() or buffer access; use .to_coo()");
+}
+
 /// Specialization for unlimited_buffer
 template <class A, class Allocator>
 py::buffer_info make_buffer(bh::histogram<A, bh::unlimited_storage<Allocator>>& h,
@@ -121,4 +136,131 @@ py::buffer_info make_buffer(bh::histogram<A, bh::multi_cell<T>>& h, bool flow) {
     new_axes.insert(std::end(new_axes), std::begin(axes), std::end(axes));
     return detail::make_buffer_impl(
         std_as_const(new_axes), flow, static_cast<double*>(storage.get_buffer()));
+}
+
+/// Trait identifying our sparse (hash-map backed) storages.
+template <class S>
+struct is_sparse_storage : std::false_type {};
+
+template <class T>
+struct is_sparse_storage<storage::sparse_storage<T>> : std::true_type {};
+
+namespace detail {
+/// Per-axis layout used to (un)ravel a flat sparse storage index. The flat index
+/// counts flow bins, with underflow (when present) at position 0, exactly like
+/// make_buffer_impl above.
+struct axis_layout {
+    std::size_t extent;    // size + has_underflow + has_overflow
+    std::size_t size;      // number of normal (in-range) bins
+    std::size_t underflow; // 1 if this axis has an underflow bin, else 0
+};
+
+template <class Axes>
+std::vector<axis_layout> make_axis_layout(const Axes& axes) {
+    std::vector<axis_layout> layout;
+    bh::detail::for_each_axis(axes, [&layout](const auto& ax) {
+        const bool has_underflow
+            = bh::axis::traits::options(ax) & bh::axis::option::underflow;
+        layout.push_back({static_cast<std::size_t>(bh::axis::traits::extent(ax)),
+                          static_cast<std::size_t>(ax.size()),
+                          has_underflow ? std::size_t{1} : std::size_t{0}});
+    });
+    return layout;
+}
+} // namespace detail
+
+/// Extract the filled cells of a sparse histogram in COO form. Returns a tuple
+/// ``(indices, values)`` where ``indices`` is an ``(ndim, n)`` integer array and
+/// ``values`` an ``n``-length array. With ``flow=False`` the flow cells are
+/// dropped and indices run 0..size-1; with ``flow=True`` indices run
+/// 0..extent-1 (underflow at 0), matching the ``view(flow=True)`` grid.
+template <class A, class T>
+py::tuple histogram_to_coo(bh::histogram<A, storage::sparse_storage<T>>& h, bool flow) {
+    const auto& axes  = bh::unsafe_access::axes(h);
+    auto& storage     = bh::unsafe_access::storage(h);
+    const auto layout = detail::make_axis_layout(axes);
+    const auto rank   = layout.size();
+
+    // storage_adaptor publicly inherits map_impl<T>, which publicly inherits the
+    // underlying map, so this upcast exposes only the filled cells.
+    using map_type  = std::unordered_map<std::size_t, T>;
+    const auto& map = static_cast<const map_type&>(storage);
+
+    std::vector<std::vector<py::ssize_t>> idx_cols(rank);
+    std::vector<T> vals;
+    vals.reserve(map.size());
+
+    for(const auto& kv : map) {
+        std::size_t lin = kv.first;
+        std::vector<py::ssize_t> multi(rank);
+        bool keep = true;
+        for(std::size_t ax = 0; ax < rank; ++ax) {
+            const auto& info        = layout[ax];
+            const std::size_t iflow = lin % info.extent;
+            lin /= info.extent;
+            if(flow) {
+                multi[ax] = static_cast<py::ssize_t>(iflow);
+            } else {
+                const py::ssize_t real = static_cast<py::ssize_t>(iflow)
+                                         - static_cast<py::ssize_t>(info.underflow);
+                if(real < 0 || real >= static_cast<py::ssize_t>(info.size)) {
+                    keep = false;
+                    break;
+                }
+                multi[ax] = real;
+            }
+        }
+        if(!keep)
+            continue;
+        for(std::size_t ax = 0; ax < rank; ++ax)
+            idx_cols[ax].push_back(multi[ax]);
+        vals.push_back(kv.second);
+    }
+
+    const auto n = static_cast<py::ssize_t>(vals.size());
+    py::array_t<py::ssize_t> indices({static_cast<py::ssize_t>(rank), n});
+    if(n > 0) {
+        auto ind = indices.template mutable_unchecked<2>();
+        for(std::size_t ax = 0; ax < rank; ++ax)
+            for(py::ssize_t j = 0; j < n; ++j)
+                ind(static_cast<py::ssize_t>(ax), j)
+                    = idx_cols[ax][static_cast<std::size_t>(j)];
+    }
+
+    py::array_t<T> values(n);
+    std::copy(vals.begin(), vals.end(), values.mutable_data());
+
+    return py::make_tuple(std::move(indices), std::move(values));
+}
+
+/// Inverse of histogram_to_coo: scatter ``(indices, values)`` back into a sparse
+/// histogram. Uses the same flow convention as histogram_to_coo. This is the
+/// only bulk write path for sparse storage, since the numpy-buffer based
+/// __setitem__ cannot densify the map.
+template <class A, class T>
+void histogram_from_coo(bh::histogram<A, storage::sparse_storage<T>>& h,
+                        py::array_t<py::ssize_t> indices,
+                        py::array_t<T> values,
+                        bool flow) {
+    const auto& axes  = bh::unsafe_access::axes(h);
+    const auto layout = detail::make_axis_layout(axes);
+    const auto rank   = layout.size();
+
+    auto ind = indices.template unchecked<2>();
+    auto val = values.template unchecked<1>();
+    if(static_cast<std::size_t>(ind.shape(0)) != rank)
+        throw py::value_error("indices first dimension must equal histogram rank");
+
+    const auto n = val.shape(0);
+    std::vector<int> at_index(rank);
+    for(py::ssize_t j = 0; j < n; ++j) {
+        for(std::size_t ax = 0; ax < rank; ++ax) {
+            const py::ssize_t coord = ind(static_cast<py::ssize_t>(ax), j);
+            // Convert back to boost's at() signed index (underflow -1, overflow size).
+            const py::ssize_t signed_idx
+                = flow ? coord - static_cast<py::ssize_t>(layout[ax].underflow) : coord;
+            at_index[ax] = static_cast<int>(signed_idx);
+        }
+        h.at(at_index) = val(j);
+    }
 }

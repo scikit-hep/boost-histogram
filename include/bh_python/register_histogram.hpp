@@ -31,6 +31,30 @@
 #include <tuple>
 #include <vector>
 
+/// Bind the COO get/set helpers, but only for sparse storages (no-op otherwise).
+/// Sparse histograms cannot expose a numpy buffer, so these are the supported way
+/// to read filled cells (``_to_coo``) and to bulk-populate them (``_from_coo``,
+/// used by serialization).
+template <class histogram_t, class PyClass>
+void register_sparse_coo(PyClass& hist, std::true_type) {
+    hist.def(
+            "_to_coo",
+            [](histogram_t& self, bool flow) { return histogram_to_coo(self, flow); },
+            "flow"_a = false)
+        .def(
+            "_from_coo",
+            [](histogram_t& self,
+               py::array_t<py::ssize_t> indices,
+               py::array_t<double> values,
+               bool flow) { histogram_from_coo(self, indices, values, flow); },
+            "indices"_a,
+            "values"_a,
+            "flow"_a = true);
+}
+
+template <class histogram_t, class PyClass>
+void register_sparse_coo(PyClass& /* hist */, std::false_type) {}
+
 template <class S>
 auto register_histogram(py::module& m, const char* name, const char* desc) {
     using histogram_t = bh::histogram<vector_axis_variant, S>;
@@ -218,6 +242,8 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
         .def(make_pickle<histogram_t>())
 
         ;
+
+    register_sparse_coo<histogram_t>(hist, is_sparse_storage<S>{});
 
     return hist;
 }
