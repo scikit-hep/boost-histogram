@@ -15,7 +15,7 @@ Boost-histogram allows "picking" using lists, similar to NumPy. If you select wi
 
 Example::
 
-    h = bh.histogram(
+    h = bh.Histogram(
         bh.axis.Regular(10, 0, 1),
         bh.axis.StrCategory(["a", "b", "c"]),
         bh.axis.IntCategory([5, 6, 7]),
@@ -23,7 +23,7 @@ Example::
 
     minihist = h[:, [bh.loc("a"), bh.loc("c")], [0, 2]]
 
-    # Produces a 3D histgoram with Regular(10, 0, 1) x StrCategory(["a", "c"]) x IntCategory([5, 7])
+    # Produces a 3D histogram with Regular(10, 0, 1) x StrCategory(["a", "c"]) x IntCategory([5, 7])
 
 
 This feature is considered experimental in boost-histogram 1.1.0. Removed bins are not added to the overflow bin currently.

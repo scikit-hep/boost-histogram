@@ -9,12 +9,12 @@ Filling
 ^^^^^^^
 
 You call ``.fill`` to fill. You must have one 1D array (or scalar value) per dimension. For maximum performance,
-numeric arrays should be continuously laid out in memory, and either 64-bit floats or ints. If any other layouts or
+numeric arrays should be contiguously laid out in memory, and either 64-bit floats or ints. If any other layouts or
 numeric datatypes are supplied, a temporary copy will be made internally before filling.
 
 All storages support a ``weight=`` parameter, and some storages support a ``sample=`` parameter. If supplied, they must be a scalar (applies to all items equally) or an iterable of scalars/1D arrays that matches the number of dimensions of the histogram.
 
-The summing accumulators (not ``Mean()`` and ``WeightedMean())``) support threaded filling. Pass ``threads=N`` to the fill parameter to fill with ``N`` threads (and using 0 will select the number of virtual cores on your system). This is helpful only if you have a large number of entries compared to your number of bins, as all non-atomic storages will make copies for each thread, and then will recombine after the fill is complete.
+The summing accumulators (not ``Mean()`` and ``WeightedMean()``) support threaded filling. Pass ``threads=N`` to the fill parameter to fill with ``N`` threads (and using 0 will select the number of virtual cores on your system). This is helpful only if you have a large number of entries compared to your number of bins, as all non-atomic storages will make copies for each thread, and then will recombine after the fill is complete.
 
 Data
 ^^^^
@@ -46,8 +46,8 @@ Operations
 * ``h.size or len(h)``: The number of bins
 
 * ``+``: Add two histograms, or add a scalar or array (storages must match types currently)
-* ``*=``: Multiply by a scaler, array, or histogram (not all storages) (``hist * scalar`` and ``scalar * hist`` supported too)
-* ``/=``: Divide by a scaler, array, or histogram (not all storages) (``hist / scalar`` supported too)
+* ``*=``: Multiply by a scalar, array, or histogram (not all storages) (``hist * scalar`` and ``scalar * hist`` supported too)
+* ``/=``: Divide by a scalar, array, or histogram (not all storages) (``hist / scalar`` supported too)
 * ``[...]``: Access a bin or a range of bins (get or set) (see :ref:`usage-indexing`)
 
 * ``.sum(flow=False)``: The total count of all bins
@@ -74,7 +74,7 @@ Operations
     * ``.axes.size``: A tuple of the axes sizes (size without flow)
     * ``.axes.extent``: A tuple of the axes extents (size with flow)
 
-    * ``.axes.bin(*args)``: Returns the bin edges as a tuple of pairs (continuous axis) or values (describe)
+    * ``.axes.bin(*args)``: Returns the bin edges as a tuple of pairs (continuous axis) or values (discrete axis)
     * ``.axes.index(*args)``: Returns the bin index at a value for each axis
     * ``.axes.value(*args)``: Returns the bin value at an index for each axis
 

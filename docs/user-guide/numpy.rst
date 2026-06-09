@@ -25,7 +25,7 @@ NumPy adaptors
 --------------
 
 You can use boost-histogram as a drop in replacement for NumPy histograms.  All
-three histogram functions (``bh.numpy.histogram``, ``bh.numpy.histgoram2d``, and
+three histogram functions (``bh.numpy.histogram``, ``bh.numpy.histogram2d``, and
 ``bh.numpy.histogramdd``) are provided. The syntax is identical, though
 boost-histogram adds three new keyword-only arguments; ``storage=`` to select the
 storage, ``histogram=bh.Histogram`` to produce a boost-histogram instead of a

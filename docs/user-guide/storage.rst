@@ -10,7 +10,7 @@ Simple storages
 ---------------
 
 These storages hold a single value that keeps track of a count, possibly a
-weighed count.
+weighted count.
 
 Double
 ^^^^^^
@@ -45,7 +45,7 @@ Int64
 
 A true integer storage is provided, as well; this storage has the ``np.uint64``
 datatype.  This eventually should provide type safety by not accepting
-non-integer fills for data that should represent raw, unweighed counts.
+non-integer fills for data that should represent raw, unweighted counts.
 
 .. code-block:: python3
 

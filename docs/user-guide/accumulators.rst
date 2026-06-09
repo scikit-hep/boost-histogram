@@ -130,7 +130,7 @@ WeightedMean
 ^^^^^^^^^^^^
 
 This accumulator is contained in the WeightedMean storage, and supports Views.
-It provides four values; ``.sum_of_weights``, ``sum_of_weights_squared``,
+It provides four values; ``.sum_of_weights``, ``.sum_of_weights_squared``,
 ``.value``, and ``.variance``. Internally, the variance is stored as
 ``_sum_of_weighted_deltas_squared``, which is used to compute ``variance``.
 
