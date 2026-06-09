@@ -123,9 +123,7 @@ def test_to_coo_requires_sparse():
 
 def test_repr_and_str_do_not_densify():
     # A huge axis would be impossible to densify; repr/str must still work.
-    h = bh.Histogram(
-        bh.axis.Regular(10**9, 0, 1), storage=bh.storage.DoubleSparse()
-    )
+    h = bh.Histogram(bh.axis.Regular(10**9, 0, 1), storage=bh.storage.DoubleSparse())
     h.fill([0.5, 0.5])
     assert "DoubleSparse" in repr(h)
     assert "Sum: 2" in repr(h)
