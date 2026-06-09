@@ -190,10 +190,10 @@ py::tuple histogram_to_coo(bh::histogram<A, storage::sparse_storage<T>>& h, bool
     std::vector<T> vals;
     vals.reserve(map.size());
 
+    std::vector<py::ssize_t> multi(rank);
     for(const auto& kv : map) {
         std::size_t lin = kv.first;
-        std::vector<py::ssize_t> multi(rank);
-        bool keep = true;
+        bool keep       = true;
         for(std::size_t ax = 0; ax < rank; ++ax) {
             const auto& info        = layout[ax];
             const std::size_t iflow = lin % info.extent;
@@ -252,6 +252,8 @@ void histogram_from_coo(bh::histogram<A, storage::sparse_storage<T>>& h,
         throw py::value_error("indices first dimension must equal histogram rank");
 
     const auto n = val.shape(0);
+    if(ind.shape(1) != n)
+        throw py::value_error("indices second dimension must match values length");
     std::vector<int> at_index(rank);
     for(py::ssize_t j = 0; j < n; ++j) {
         for(std::size_t ax = 0; ax < rank; ++ax) {

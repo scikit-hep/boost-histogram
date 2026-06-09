@@ -205,6 +205,34 @@ def test_uhi_roundtrip_empty():
     assert h2.sum() == 0.0
 
 
+def test_setitem_raises_on_sparse():
+    """Sparse storage does not support direct assignment (no dense buffer)."""
+    h = bh.Histogram(bh.axis.Regular(5, 0, 5), storage=bh.storage.DoubleSparse())
+    with pytest.raises(TypeError, match="buffer"):
+        h[0] = 1.0
+
+
+def test_sparse_histogram_addition():
+    """Adding two sparse histograms stays sparse and combines counts correctly."""
+    h1 = bh.Histogram(bh.axis.Regular(5, 0, 5), storage=bh.storage.DoubleSparse())
+    h1.fill([1.5, 3.5])
+
+    h2 = bh.Histogram(bh.axis.Regular(5, 0, 5), storage=bh.storage.DoubleSparse())
+    h2.fill([1.5, 4.5])
+
+    h_sum = h1 + h2
+    assert h_sum.storage_type is bh.storage.DoubleSparse
+    assert h_sum[1] == 2.0
+    assert h_sum[3] == 1.0
+    assert h_sum[4] == 1.0
+    assert h_sum[2] == 0.0
+
+    # densified view should match a dense histogram with the same fills
+    dense = bh.Histogram(bh.axis.Regular(5, 0, 5), storage=bh.storage.Double())
+    dense.fill([1.5, 1.5, 3.5, 4.5])
+    assert_array_equal(h_sum.values(), dense.values())
+
+
 def test_matches_dense_values():
     # The filled cells should agree with what a dense Double histogram records.
     axes = (bh.axis.Regular(10, 0, 10), bh.axis.IntCategory([5, 6, 7]))
