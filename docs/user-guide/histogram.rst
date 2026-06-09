@@ -51,7 +51,7 @@ Operations
 * ``[...]``: Access a bin or a range of bins (get or set) (see :ref:`usage-indexing`)
 
 * ``.sum(flow=False)``: The total count of all bins
-* ``.project(ax1, ax2, ...)``: Project down to listed axis (numbers)
+* ``.project(ax1, ax2, ..., flow=True)``: Project down to listed axis (numbers); pass ``flow=False`` to drop the flow bins of the removed axes instead of summing them in
 * ``.to_numpy(flow=False, view=False)``: Convert to a NumPy style tuple (with or without under/overflow bins, and either return values (the default) or the entire view for accumulator storages.)
 * ``.view(flow=False)``: Get a view on the bin contents (with or without under/overflow bins)
 * ``.values(flow=False)``: Get a view on the values (counts or means, depending on storage)

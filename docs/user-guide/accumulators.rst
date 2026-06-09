@@ -165,6 +165,12 @@ normal constructor would take. For example, WeighedMean can take an array with a
 dimension four long, with ``sum_of_weights``, ``sum_of_weights_squared``, ``value``, and ``variance``
 elements, even though several of these values are computed from the internal representation.
 
+The ``WeightedSumView``, ``MeanView``, and ``WeightedMeanView`` support arithmetic that respects
+the accumulator semantics. ``WeightedSumView`` adds and subtracts values while always adding the
+variances. ``MeanView`` and ``WeightedMeanView`` combine two views by merging the underlying samples
+(the same parallel merge used by the C++ ``operator+=``), and support scaling by a scalar; subtraction
+and scalar addition are undefined for means.
+
 .. note::
 
    Like all NumPy structured arrays, **fancy indexing (boolean masks, integer arrays) returns a

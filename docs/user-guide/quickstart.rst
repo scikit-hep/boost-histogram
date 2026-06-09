@@ -155,10 +155,8 @@ You can save histograms using pickle:
 
     assert h == h2
 
-Special care was taken to ensure that this is fast and efficient.  Please use
-the latest version of the Pickle protocol you feel comfortable using; you
-cannot use version 0, the version that was default on Python 2. The most recent
-versions provide performance benefits.
+Pickling is fast and efficient; see :ref:`usage-histogram` for details and tips
+on protocol selection.
 
 Computing with Histograms
 -------------------------

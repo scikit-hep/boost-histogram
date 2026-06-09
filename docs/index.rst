@@ -71,7 +71,7 @@ See :ref:`usage-quickstart` for more.
   :caption: Examples:
 
   notebooks/SimpleExample
-  notebooks/aghast
+  notebooks/MultiCellExample
   notebooks/ThreadedFills
   notebooks/PerformanceComparison
   notebooks/xarray
