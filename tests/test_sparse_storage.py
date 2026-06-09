@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import json
 import operator
+import sys
 import warnings
 from pickle import dumps, loads
 
@@ -134,6 +135,7 @@ def test_repr_and_str_do_not_densify():
     assert "DoubleSparse" in str(h)
 
 
+@pytest.mark.skipif(sys.maxsize <= 2**32, reason="linear keys overflow on 32-bit")
 def test_huge_axis_ops_iterate_filled_cells_only():
     # sum/empty/== (and repr, which calls sum) must iterate the filled cells,
     # not the logical grid -- a dense iteration over 10**15 cells would never

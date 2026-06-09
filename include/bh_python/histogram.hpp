@@ -20,6 +20,7 @@
 #include <boost/histogram/histogram.hpp>
 #include <boost/histogram/unsafe_access.hpp>
 
+#include <algorithm>
 #include <unordered_map>
 #include <vector>
 
@@ -330,18 +331,14 @@ bool histogram_empty(const bh::histogram<A, storage::sparse_storage<T>>& h, bool
     using map_type  = std::unordered_map<std::size_t, T>;
     const auto& map = static_cast<const map_type&>(bh::unsafe_access::storage(h));
 
-    if(flow) {
-        for(const auto& kv : map)
-            if(kv.second != T{})
-                return false;
-        return true;
-    }
+    if(flow)
+        return std::all_of(
+            map.begin(), map.end(), [](const auto& kv) { return kv.second == T{}; });
 
     const auto layout = detail::make_axis_layout(bh::unsafe_access::axes(h));
-    for(const auto& kv : map)
-        if(kv.second != T{} && detail::is_inner_cell(kv.first, layout))
-            return false;
-    return true;
+    return std::all_of(map.begin(), map.end(), [&layout](const auto& kv) {
+        return kv.second == T{} || !detail::is_inner_cell(kv.first, layout);
+    });
 }
 
 template <class A, class S>
@@ -368,8 +365,7 @@ bool histogram_equal(const bh::histogram<A, storage::sparse_storage<T>>& a,
         if(kv.second != (it == mb.end() ? T{} : it->second))
             return false;
     }
-    for(const auto& kv : mb)
-        if(kv.second != T{} && ma.find(kv.first) == ma.end())
-            return false;
-    return true;
+    return std::all_of(mb.begin(), mb.end(), [&ma](const auto& kv) {
+        return kv.second == T{} || ma.find(kv.first) != ma.end();
+    });
 }
