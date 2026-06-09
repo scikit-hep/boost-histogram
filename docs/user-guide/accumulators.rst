@@ -164,3 +164,21 @@ with a stacked array, and each item in the stack will be used for the (computed)
 normal constructor would take. For example, WeighedMean can take an array with a final
 dimension four long, with ``sum_of_weights``, ``sum_of_weights_squared``, ``value``, and ``variance``
 elements, even though several of these values are computed from the internal representation.
+
+.. note::
+
+   Like all NumPy structured arrays, **fancy indexing (boolean masks, integer arrays) returns a
+   copy**, not a view. Assigning to a masked result will not modify the original histogram data.
+   Use the mask directly in the assignment instead:
+
+   .. code:: python
+
+      v = h.view()
+
+      # This does NOT work — masked selection returns a copy:
+      v[v.value == 2].value[:] = 3
+
+      # This DOES work — assign through the mask in one step:
+      v.value[v.value == 2] = 3
+
+   Slice indexing (``v[1:3]``) does return a true view.
