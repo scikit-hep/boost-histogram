@@ -239,8 +239,8 @@ py::tuple histogram_to_coo(bh::histogram<A, storage::sparse_storage<T>>& h, bool
 /// __setitem__ cannot densify the map.
 template <class A, class T>
 void histogram_from_coo(bh::histogram<A, storage::sparse_storage<T>>& h,
-                        py::array_t<py::ssize_t> indices,
-                        py::array_t<T> values,
+                        const py::array_t<py::ssize_t>& indices,
+                        const py::array_t<T>& values,
                         bool flow) {
     const auto& axes  = bh::unsafe_access::axes(h);
     const auto layout = detail::make_axis_layout(axes);

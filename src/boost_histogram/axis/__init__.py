@@ -424,7 +424,14 @@ class Regular(Axis, family=boost_histogram):
     def _repr_args_(self) -> list[str]:
         "Return inner part of signature for use in repr"
 
-        ret = [f"{self.size:g}", f"{self.edges[0]:g}", f"{self.edges[-1]:g}"]
+        # Use value() for the endpoints rather than building the full edges
+        # array, which would be enormous (and unrepresentable on 32-bit) for a
+        # very large axis.
+        ret = [
+            f"{self.size:g}",
+            f"{self._ax.value(0):g}",
+            f"{self._ax.value(self.size):g}",
+        ]
 
         if self.traits.growth:
             ret.append("growth=True")

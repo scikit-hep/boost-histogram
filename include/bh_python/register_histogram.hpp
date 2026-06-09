@@ -44,8 +44,8 @@ void register_sparse_coo(PyClass& hist, std::true_type) {
         .def(
             "_from_coo",
             [](histogram_t& self,
-               py::array_t<py::ssize_t> indices,
-               py::array_t<double> values,
+               const py::array_t<py::ssize_t>& indices,
+               const py::array_t<double>& values,
                bool flow) { histogram_from_coo(self, indices, values, flow); },
             "indices"_a,
             "values"_a,
