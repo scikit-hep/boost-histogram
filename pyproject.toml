@@ -96,6 +96,8 @@ test = [
     "numpy>=1.21.3",
     "hypothesis>=6.0; sys_platform != 'ios'", # slow on iOS, can fail health check
     "pytest-xdist; sys_platform != 'ios'",  # No processes on iOS
+    "jsonschema",  # validate UHI serialization against the uhi schema
+    "uhi>=1.1",  # ships the histogram JSON schema with metadata-only storage support
 ]
 github = [
   { include-group = "test" },

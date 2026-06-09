@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ctypes
+import importlib.resources
 import json
 import math
 import sys
@@ -698,3 +699,46 @@ def test_from_uhi_structure_only_no_error() -> None:
     h = from_uhi(data)
     assert h.storage_type is bh.storage.Double
     assert np.asarray(h) == pytest.approx(np.zeros(5))
+
+
+@pytest.mark.parametrize(
+    "storage_type",
+    [
+        pytest.param(bh.storage.Int64(), id="int64"),
+        pytest.param(bh.storage.AtomicInt64(), id="atomic_int64"),
+        pytest.param(bh.storage.Double(), id="double"),
+        pytest.param(bh.storage.Unlimited(), id="unlimited"),
+        pytest.param(bh.storage.Weight(), id="weight"),
+        pytest.param(bh.storage.Mean(), id="mean"),
+        pytest.param(bh.storage.WeightedMean(), id="weighted_mean"),
+    ],
+)
+@pytest.mark.parametrize(
+    "keep_storage", [True, False], ids=["with_data", "metadata_only"]
+)
+def test_to_uhi_matches_uhi_schema(
+    storage_type: bh.storage.Storage, keep_storage: bool
+) -> None:
+    """``to_uhi`` output conforms to the UHI histogram JSON schema, including the
+    metadata-only (``keep_storage=False``) form used for type-only storage."""
+    jsonschema = pytest.importorskip("jsonschema")
+    schema = json.loads(
+        importlib.resources.files("uhi.resources")
+        .joinpath("histogram.schema.json")
+        .read_text()
+    )
+
+    h = bh.Histogram(
+        bh.axis.Regular(3, 0, 1),
+        bh.axis.IntCategory([1, 2]),
+        storage=storage_type,
+    )
+    if isinstance(storage_type, (bh.storage.Mean, bh.storage.WeightedMean)):
+        h.fill([0.1, 0.5, 0.5], [1, 2, 2], sample=[1.0, 2.0, 3.0])
+    else:
+        h.fill([0.1, 0.5, 0.5], [1, 2, 2])
+
+    data = _json_round_trip(to_uhi(h, keep_storage=keep_storage))
+
+    # The schema describes a mapping of named histograms.
+    jsonschema.validate({"hist": data}, schema)
