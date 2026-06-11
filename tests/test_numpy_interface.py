@@ -200,3 +200,52 @@ def test_histogram_all_ones():
 
     assert bh_h1 == approx(h1)
     assert bh_edges == approx(edges)
+
+
+def test_histogram_does_not_mutate_input_edges():
+    edges = np.array([0.0, 1.0, 2.0])
+    original = edges.copy()
+
+    bh.numpy.histogram([0.5, 1.5], bins=edges)
+
+    np.testing.assert_array_equal(edges, original)
+
+
+def test_histogramdd_does_not_mutate_input_edges():
+    x = np.array([0.3, 0.3, 0.1, 0.8])
+    y = np.array([0.4, 0.5, 0.22, 0.65])
+    edges_x = np.array([0.0, 0.5, 1.0])
+    edges_y = np.array([0.0, 0.25, 0.5, 1.0])
+    original_x = edges_x.copy()
+    original_y = edges_y.copy()
+
+    bh.numpy.histogramdd((x, y), bins=(edges_x, edges_y))
+
+    np.testing.assert_array_equal(edges_x, original_x)
+    np.testing.assert_array_equal(edges_y, original_y)
+
+
+@pytest.mark.parametrize("bad_bins", [(2,), (2, 2, 2), (2, 2, 2, 2)])
+def test_histogramdd_mismatched_bins(bad_bins):
+    x = np.array([0.3, 0.3, 0.1, 0.8])
+    y = np.array([0.4, 0.5, 0.22, 0.65])
+
+    with pytest.raises(ValueError, match="dimension of bins"):
+        np.histogramdd((x, y), bins=bad_bins)
+
+    with pytest.raises(ValueError, match="dimension of bins"):
+        bh.numpy.histogramdd((x, y), bins=bad_bins)
+
+
+@pytest.mark.parametrize(
+    "bad_range", [((0, 1),), ((0, 1), (0, 1), (0, 1)), ((0, 1), (0, 1), (0, 1), (0, 1))]
+)
+def test_histogramdd_mismatched_range(bad_range):
+    x = np.array([0.3, 0.3, 0.1, 0.8])
+    y = np.array([0.4, 0.5, 0.22, 0.65])
+
+    with pytest.raises(ValueError, match="range argument"):
+        np.histogramdd((x, y), bins=2, range=bad_range)
+
+    with pytest.raises(ValueError, match="range argument"):
+        bh.numpy.histogramdd((x, y), bins=2, range=bad_range)
