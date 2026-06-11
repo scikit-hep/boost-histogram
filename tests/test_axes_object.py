@@ -82,3 +82,15 @@ def test_axis_misconstuct():
 
     with pytest.raises(TypeError):
         bh.axis.AxesTuple(inp[0])
+
+
+def test_array_tuple_dir(h):
+    # Issue #1143 (B15): __dir__ used dir() of a string literal
+    listing = dir(h.axes.centers)
+
+    assert "sum" in listing
+    assert "broadcast" in listing
+    # ndarray attributes are forwarded, so they should be listed
+    assert "shape" in listing
+    assert "T" in listing
+    assert "upper" not in listing  # no str methods

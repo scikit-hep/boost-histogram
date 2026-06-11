@@ -167,11 +167,10 @@ class TestRegular(Axis):
 
         with pytest.raises(TypeError):
             bh.axis.Regular(1, 1.0, 2.0, bad_keyword="ra")
-        with pytest.raises(AttributeError):
+        with pytest.raises(TypeError):
             bh.axis.Regular(1, 1.0, 2.0, transform=lambda _: 2)
         with pytest.raises(TypeError):
             bh.axis.Regular(1, 1.0, 2.0, transform=bh.axis.transform.Pow)
-        # TODO: These errors could be better
 
     def test_traits(self):
         STD_TRAITS = {"continuous": True, "ordered": True}
@@ -910,3 +909,54 @@ class TestBoolean(Axis):
         assert_allclose(a.edges, [0.0, 1.0, 2.0])
         assert_allclose(a.centers, [0.5, 1.5])
         assert_allclose(a.widths, [1, 1])
+
+
+# Issue #1143 regression tests
+
+
+def test_getitem_negative_wraparound():
+    # Issue #1143 (B8b): ax[-size-1] used to wrap into the underflow bin
+    ax = bh.axis.Regular(10, 0, 1)
+
+    assert ax[-10] == ax[0]
+    assert ax[-1] == ax[9]
+
+    with pytest.raises(IndexError, match="-11"):
+        ax[-11]
+    with pytest.raises(IndexError, match="10"):
+        ax[10]
+
+
+def test_index_empty_sequence():
+    # Issue #1143 (B9): empty sequences are not strings
+    assert bh.axis.Regular(10, 0, 1).index([]).size == 0
+    assert bh.axis.Regular(10, 0, 1).index(np.array([])).size == 0
+    assert bh.axis.Integer(0, 5).index(()).size == 0
+
+    # Still rejects actual strings
+    with pytest.raises(TypeError):
+        bh.axis.Regular(10, 0, 1).index("hi")
+    with pytest.raises(TypeError):
+        bh.axis.Regular(10, 0, 1).index(["hi", "ho"])
+
+    # StrCategory still accepts empty and string input
+    ax = bh.axis.StrCategory(["a", "b"])
+    assert ax.index([]).size == 0
+    assert ax.index(np.array([])).size == 0
+    assert ax.index("a") == 0
+    assert_array_equal(ax.index(["b", "a"]), [1, 0])
+
+    with pytest.raises(TypeError):
+        ax.index([1, 2])
+
+
+def test_transform_validation():
+    # Issue #1143 (B14c): clear TypeErrors for invalid transform arguments
+    with pytest.raises(TypeError, match=r"use Pow\(\)"):
+        bh.axis.Regular(10, 1, 100, transform=bh.axis.transform.Pow)
+
+    with pytest.raises(TypeError, match="AxisTransform"):
+        bh.axis.Regular(10, 1, 100, transform="log")
+
+    with pytest.raises(TypeError, match="AxisTransform"):
+        bh.axis.Regular(10, 1, 100, transform=42)
