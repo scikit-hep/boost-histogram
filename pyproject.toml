@@ -57,7 +57,7 @@ dependencies = [
 [project.urls]
 "Bug Tracker" = "https://github.com/scikit-hep/boost-histogram/issues"
 Changelog = "https://boost-histogram.readthedocs.io/en/latest/CHANGELOG.html"
-Chat = " https://gitter.im/HSF/PyHEP-histogramming"
+Chat = "https://gitter.im/HSF/PyHEP-histogramming"
 Discussions = "https://github.com/scikit-hep/boost-histogram/discussions"
 Documentation = "https://boost-histogram.readthedocs.io/"
 Homepage = "https://github.com/scikit-hep/boost-histogram"
@@ -120,8 +120,6 @@ sdist.exclude = [
   "extern/*/doc/**",
   "extern/*/examples/**",
   "extern/*/tools/**",
-  "extern/pybind11/docs/**",
-  "extern/pybind11/tests/**",
   "extern/*/README.md",
 ]
 logging.level = "INFO"
@@ -180,14 +178,10 @@ build-frontend = "build[uv]"
 test-groups = ["test"]
 test-command = "python -m pytest -n auto --benchmark-disable tests"
 test-sources = ["pyproject.toml", "tests"]
-test-environment.CI = "1"  # Hypothosis needs this on GraalPy
+test-environment.CI = "1"  # Hypothesis needs this on GraalPy
 test-skip = [
   "cp310-win_arm64",
-  "cp310-musllinux_*",
   "cp31*-musllinux_*", # Threading test crashes
-  "gp311_242-macosx_x86_64",
-  "gp311_242-manylinux_aarch64",
-  "gp311_242-win*",  # pytest crashes with module 'io' has no attribute '_WindowsConsoleIO'
   "gp312_*",  # No numpy wheels yet
   "*-ios_*",  # Fails on CI with no device found
 ]

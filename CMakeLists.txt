@@ -5,7 +5,7 @@ project(BOOST_HISTOGRAM LANGUAGES CXX)
 
 include(FetchContent)
 
-# Boost histogram requires C++14
+# boostorg/histogram requires C++14
 set(CMAKE_CXX_STANDARD
     14
     CACHE STRING "The C++ standard to compile with, 14+")
@@ -53,8 +53,8 @@ set(Python_ARTIFACTS_INTERACTIVE TRUE)
 FetchContent_Declare(
   pybind11
   GIT_REPOSITORY https://github.com/pybind/pybind11.git
-  GIT_TAG bd67643652d3800837f1f41549a2a5adbaa3fafe # v2.13.3
-  FIND_PACKAGE_ARGS NAMES pybind11)
+  GIT_TAG d03662f0984f652b60e7ddce53d3868002275197 # v3.0.4
+  FIND_PACKAGE_ARGS 3 NAMES pybind11)
 FetchContent_MakeAvailable(pybind11)
 
 # Display versions
@@ -136,7 +136,7 @@ if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang" OR "${CMAKE_CXX_COMPILER_ID}" MATC
 elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
   target_compile_options(_core PRIVATE /W4)
   if(BOOST_HISTOGRAM_ERRORS)
-    target_compile_options(_core PRIVATE /WE)
+    target_compile_options(_core PRIVATE /WX)
   endif()
 endif()
 
