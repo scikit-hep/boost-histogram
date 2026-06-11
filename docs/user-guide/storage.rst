@@ -118,6 +118,21 @@ Each value in ``sample`` is appended to the bin selected by the corresponding co
 Adding two collector histograms, ``project``, and slicing/cropping ``reduce`` (including factor rebinning) all concatenate the collected values. Because the view returns copies rather than a live buffer, the operations that write back through the view are not supported for this storage and raise ``NotImplementedError``: item assignment (``h[...] = ...``), arithmetic with arrays or scalars (e.g. ``h * 2``), group-based rebinning, integer picking on a subset of axes, and list-based selection. Weighted and threaded filling are also unsupported.
 
 
+WeightedCollector
+^^^^^^^^^^^^^^^^^
+
+This is the weighted analog of ``Collector``: it keeps the original ``(value, weight)`` pairs that fall into each bin. It is filled like ``WeightedMean``, with a required ``sample`` and an optional ``weight`` (a scalar weight broadcasts; an omitted weight is stored as ``1.0``):
+
+.. code-block:: python3
+
+    h = bh.Histogram(bh.axis.Regular(10, 0, 1), storage=bh.storage.WeightedCollector())
+    h.fill(x, sample=values, weight=weights)
+
+``h.view()`` returns a NumPy object-dtype array where each element is a 1-D structured array with ``value`` and ``weight`` fields (a copy), so ``h.view()[i]["value"]`` and ``h.view()[i]["weight"]`` give that bin's collected samples and weights. Indexing a single bin (``h[i]``) returns a list of ``(value, weight)`` tuples.
+
+The supported and unsupported operations are the same as for ``Collector``, except that weighted filling is, of course, supported.
+
+
 Mean
 ^^^^
 
