@@ -385,3 +385,64 @@ def test_pick_multiaxis():
     assert h[[1, 2], [1, 0], sum, bh.loc("f")].sum() == 1
 
     assert mini.values() == approx(np.array(((0, 1), (0, 0))))
+
+
+# to_numpy computes its edges in Python now; the C++ helper (which copies the
+# bin contents too) remains the reference implementation for the NumPy edge
+# convention, including the nextafter nudge of the upper edge and flow bins.
+edge_convention_axes = (
+    bh.axis.Regular(5, 1, 2),
+    bh.axis.Regular(5, 1, 2, underflow=False),
+    bh.axis.Regular(5, 1, 2, overflow=False),
+    bh.axis.Regular(5, 1, 2, underflow=False, overflow=False),
+    bh.axis.Regular(5, 1, 2, growth=True),
+    bh.axis.Regular(5, 1, 2, circular=True),
+    bh.axis.Regular(5, 1, 2, transform=bh.axis.transform.log),
+    bh.axis.Regular(5, 1, 2, transform=bh.axis.transform.sqrt),
+    bh.axis.Regular(5, 1, 2, transform=bh.axis.transform.Pow(0.5)),
+    bh.axis.Variable([1, 2, 5, 8]),
+    bh.axis.Variable([1, 2, 5, 8], underflow=False),
+    bh.axis.Variable([1, 2, 5, 8], overflow=False),
+    bh.axis.Variable([1, 2, 5, 8], underflow=False, overflow=False),
+    bh.axis.Variable([1, 2, 5, 8], growth=True),
+    bh.axis.Variable([1, 2, 5, 8], circular=True),
+    bh.axis.Integer(-2, 3),
+    bh.axis.Integer(-2, 3, underflow=False),
+    bh.axis.Integer(-2, 3, overflow=False),
+    bh.axis.Integer(-2, 3, underflow=False, overflow=False),
+    bh.axis.Integer(-2, 3, growth=True),
+    bh.axis.Integer(-2, 3, circular=True),
+    bh.axis.IntCategory([1, 3, 5]),
+    bh.axis.IntCategory([1, 3, 5], overflow=False),
+    bh.axis.IntCategory([1, 3, 5], growth=True),
+    bh.axis.StrCategory(["a", "b"]),
+    bh.axis.StrCategory(["a", "b"], overflow=False),
+    bh.axis.StrCategory(["a", "b"], growth=True),
+    bh.axis.Boolean(),
+)
+
+
+@pytest.mark.parametrize("flow", [False, True])
+@pytest.mark.parametrize("axis", edge_convention_axes, ids=repr)
+def test_to_numpy_edges_match_cpp_helper(axis, flow):
+    h = bh.Histogram(axis, bh.axis.Regular(3, 0, 1))
+    _, *cpp_edges = h._hist.to_numpy(flow)
+    _, *py_edges = h.to_numpy(flow)
+
+    assert len(cpp_edges) == len(py_edges) == 2
+    for cpp_e, py_e in zip(cpp_edges, py_edges, strict=True):
+        assert cpp_e.dtype == py_e.dtype
+        assert_array_equal(cpp_e, py_e)
+
+
+@pytest.mark.parametrize("flow", [False, True])
+def test_to_numpy_edges_match_cpp_helper_numpy_axis(flow):
+    # bh.numpy.histogram produces the special regular_numpy axis, which does
+    # not get the upper-edge nudge.
+    h = bh.numpy.histogram([0.25, 0.5, 0.75], bins=4, histogram=bh.Histogram)
+    _, *cpp_edges = h._hist.to_numpy(flow)
+    _, *py_edges = h.to_numpy(flow)
+
+    assert len(cpp_edges) == len(py_edges) == 1
+    assert cpp_edges[0].dtype == py_edges[0].dtype
+    assert_array_equal(cpp_edges[0], py_edges[0])

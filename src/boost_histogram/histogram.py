@@ -80,6 +80,10 @@ _histograms: set[type[CppHistogram]] = {
     _core.hist.any_multi_cell,
 }
 
+# Tuple form of ``_histograms`` for fast isinstance checks. The set above is
+# fixed at import time (only ``@register`` reads it), so this never goes stale.
+_histogram_types: tuple[type[CppHistogram], ...] = tuple(_histograms)
+
 logger = logging.getLogger(__name__)
 
 # User-facing operator symbols for the in-place dunders dispatched in
@@ -172,6 +176,56 @@ def _arg_shortcut(item: tuple[int, float, float] | Axis | CppAxis) -> CppAxis:
         return item._ax  # type: ignore[no-any-return]
 
     raise TypeError("Only axes supported in histogram constructor")
+
+
+# Discrete C++ axes that ``axis::edges`` represents as 0..size (the category
+# axes); everything else gets its true (continuous-like) edge values.
+_category_cpp_axes = (
+    _core.axis.category_int,
+    _core.axis.category_int_growth,
+    _core.axis.category_int_none,
+    _core.axis.category_str,
+    _core.axis.category_str_growth,
+    _core.axis.category_str_none,
+)
+
+# Axes that the C++ ``axis::edges`` helper does not nudge when producing
+# NumPy-convention (upper-edge inclusive) edges.
+_no_nudge_cpp_axes = (
+    _core.axis.regular_none,
+    _core.axis.regular_uflow,
+    _core.axis.regular_numpy,
+)
+
+
+def _numpy_compatible_edges(cpp_ax: Any, flow: bool) -> np.typing.NDArray[np.float64]:
+    """
+    Edges for one C++ axis following the NumPy convention (upper edge
+    inclusive); this replicates exactly what the C++ ``axis::edges(ax, flow,
+    true)`` helper produces, without requiring a copy of the bin contents.
+    """
+    if isinstance(cpp_ax, _category_cpp_axes):
+        overflow = int(flow and cpp_ax.traits_overflow)
+        return np.arange(cpp_ax.size + 1 + overflow, dtype=np.float64)
+
+    underflow = int(flow and cpp_ax.traits_underflow)
+    overflow = int(flow and cpp_ax.traits_overflow)
+
+    edges: np.typing.NDArray[np.float64] = cpp_ax.edges
+    if underflow or overflow:
+        full = np.empty(len(edges) + underflow + overflow, dtype=np.float64)
+        full[underflow : underflow + len(edges)] = edges
+        if underflow:
+            full[0] = cpp_ax.value(-1)
+        if overflow:
+            full[-1] = cpp_ax.value(cpp_ax.size + 1)
+        edges = full
+
+    if not isinstance(cpp_ax, _no_nudge_cpp_axes):
+        last = cpp_ax.size + underflow
+        edges[last] = np.nextafter(edges[last], np.finfo(np.float64).tiny)
+
+    return edges
 
 
 def _expand_ellipsis(indexes: Iterable[Any], rank: int) -> list[Any]:
@@ -320,10 +374,10 @@ class Histogram(typing.Generic[S]):
             __dict__ = {}
 
         # Allow construction from a raw histogram object (internal)
-        if len(axes) == 1 and isinstance(axes[0], tuple(_histograms)):
+        if len(axes) == 1 and isinstance(axes[0], _histogram_types):
             if storage is not None:
                 raise TypeError(storage_err_msg)
-            cpp_hist: CppHistogram = axes[0]  # type: ignore[assignment]
+            cpp_hist: CppHistogram = axes[0]
             self._from_histogram_cpp(cpp_hist, __dict__=__dict__)
             return
 
@@ -397,8 +451,8 @@ class Histogram(typing.Generic[S]):
         """
 
         self = cls.__new__(cls)
-        if isinstance(_hist, tuple(_histograms)):
-            self._from_histogram_cpp(_hist, __dict__={})  # type: ignore[arg-type]
+        if isinstance(_hist, _histogram_types):
+            self._from_histogram_cpp(_hist, __dict__={})
             if other is not None:
                 return cls._clone(self, other=other, memo=memo)
             return self
@@ -739,8 +793,8 @@ class Histogram(typing.Generic[S]):
         self._convert_int_storage_to_double()
         if isinstance(other, Histogram):
             other = self._as_double_cpp(other._hist)  # type: ignore[assignment]
-        elif isinstance(other, tuple(_histograms)):
-            other = self._as_double_cpp(other)  # type: ignore[arg-type, assignment]
+        elif isinstance(other, _histogram_types):
+            other = self._as_double_cpp(other)  # type: ignore[assignment]
         return self._compute_inplace_op("__itruediv__", other)
 
     def __imul__(self, other: Histogram[S] | np.typing.NDArray[Any] | float) -> Self:
@@ -792,8 +846,8 @@ class Histogram(typing.Generic[S]):
         # Also takes CppHistogram, but that confuses mypy because it's hard to pick out
         if isinstance(other, Histogram):
             self._hist_inplace_op(name, other._hist)
-        elif isinstance(other, tuple(_histograms)):
-            self._hist_inplace_op(name, other)  # type: ignore[arg-type]
+        elif isinstance(other, _histogram_types):
+            self._hist_inplace_op(name, other)
         elif hasattr(other, "shape") and other.shape:
             assert not isinstance(other, float)
 
@@ -1226,8 +1280,12 @@ class Histogram(typing.Generic[S]):
             The edges for each dimension
         """
 
-        hist, *edges = self._hist.to_numpy(flow)
         hist = self.view(flow=flow) if view else self.values(flow=flow)
+        # Compute the edges directly; this avoids the deep copy of the bin
+        # contents that the C++ ``to_numpy`` helper would make.
+        edges = [
+            _numpy_compatible_edges(self._hist.axis(i), flow) for i in range(self.ndim)
+        ]
 
         return (hist, edges) if dd else (hist, *edges)  # type: ignore[return-value]
 
@@ -1471,12 +1529,12 @@ class Histogram(typing.Generic[S]):
         slices = list[_core.algorithm.reduce_command]()
         integrations = set[int]()
 
-        start_int, stop_int = self.axes[i]._process_loc(start, stop)
-        groups = []
-        new_axis = None
         if start is None and stop is None and step is None:
             return reduced, slices, integrations
 
+        start_int, stop_int = self.axes[i]._process_loc(start, stop)
+        groups = []
+        new_axis = None
         merge = 1
         match step:
             case x if x is sum:  # https://github.com/oracle/graalpython/issues/620

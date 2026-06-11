@@ -69,10 +69,16 @@ def to_uhi(
     # Convert the histogram to a dictionary
     writer_info = {"boost-histogram": {"version": version.version}}
 
+    # The storage_type property does a subclass-walking cast on every access,
+    # so look it up once; a single instance (which for MultiCell carries the
+    # real nelem) serves for dispatch and error messages.
+    storage_type = h.storage_type
+    storage_obj = h.storage
+
     # Store storage type info for AtomicInt64 and Unlimited (they serialize as int/double)
-    storage_type_str = _storage_type_to_str(h.storage_type())
-    if isinstance(h.storage_type(), (storage.AtomicInt64, storage.Unlimited)):
-        writer_info["boost-histogram"]["storage_type"] = type(h.storage_type()).__name__
+    storage_type_str = _storage_type_to_str(storage_obj)
+    if issubclass(storage_type, (storage.AtomicInt64, storage.Unlimited)):
+        writer_info["boost-histogram"]["storage_type"] = storage_type.__name__
 
     data = {
         "uhi_schema": 1,
@@ -80,7 +86,7 @@ def to_uhi(
         "axes": [_axis_to_dict(axis) for axis in h.axes],
     }
     if keep_storage:
-        data["storage"] = _storage_to_dict(h.storage_type(), h.view(flow=True))
+        data["storage"] = _storage_to_dict(storage_obj, h.view(flow=True))
     else:
         data["storage"] = {"type": storage_type_str}
     data["metadata"] = serialize_metadata(h.__dict__)

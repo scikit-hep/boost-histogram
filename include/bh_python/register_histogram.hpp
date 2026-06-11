@@ -63,7 +63,7 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
         .def("__eq__",
              [](const histogram_t& self, const py::object& other) {
                  try {
-                     return self == py::cast<histogram_t>(other);
+                     return self == py::cast<const histogram_t&>(other);
                  } catch(const py::cast_error&) {
                      return false;
                  }
@@ -71,7 +71,7 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
         .def("__ne__",
              [](const histogram_t& self, const py::object& other) {
                  try {
-                     return self != py::cast<histogram_t>(other);
+                     return self != py::cast<const histogram_t&>(other);
                  } catch(const py::cast_error&) {
                      return true;
                  }
@@ -257,7 +257,7 @@ auto inline register_histogram<bh::multi_cell<double>>(py::module& m,
         .def("__eq__",
              [](const histogram_t& self, const py::object& other) {
                  try {
-                     return self == py::cast<histogram_t>(other);
+                     return self == py::cast<const histogram_t&>(other);
                  } catch(const py::cast_error&) {
                      return false;
                  }
@@ -265,7 +265,7 @@ auto inline register_histogram<bh::multi_cell<double>>(py::module& m,
         .def("__ne__",
              [](const histogram_t& self, const py::object& other) {
                  try {
-                     return self != py::cast<histogram_t>(other);
+                     return self != py::cast<const histogram_t&>(other);
                  } catch(const py::cast_error&) {
                      return true;
                  }
