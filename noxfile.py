@@ -77,9 +77,7 @@ def docs(session: nox.Session) -> None:
     )
 
     if serve:
-        session.run(
-            "sphinx-autobuild", "--open-browser", "--ignore=docs/.build", *shared_args
-        )
+        session.run("sphinx-autobuild", "--open-browser", *shared_args)
     else:
         session.run("sphinx-build", "--keep-going", *shared_args)
 
