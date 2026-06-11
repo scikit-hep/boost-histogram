@@ -5,10 +5,10 @@ project(BOOST_HISTOGRAM LANGUAGES CXX)
 
 include(FetchContent)
 
-# pybind11 3 requires C++17
+# boostorg/histogram requires C++14
 set(CMAKE_CXX_STANDARD
-    17
-    CACHE STRING "The C++ standard to compile with, 17+")
+    14
+    CACHE STRING "The C++ standard to compile with, 14+")
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
