@@ -186,7 +186,13 @@ def _axis_from_dict(data: dict[str, Any], /) -> axis.Axis:
     writer_info = data.get("writer_info", {}).get("boost-histogram", {})
     orig_type = writer_info.get("orig_type", "")
     if orig_type == "Integer":
-        assert data["upper"] - data["lower"] == data["bins"]
+        if data["upper"] - data["lower"] != data["bins"]:
+            msg = (
+                "Invalid Integer axis: bins "
+                f"({data['bins']}) must equal upper - lower "
+                f"({data['upper']} - {data['lower']} = {data['upper'] - data['lower']})"
+            )
+            raise ValueError(msg)
         return axis.Integer(
             data["lower"],
             data["upper"],

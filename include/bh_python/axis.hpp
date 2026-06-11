@@ -220,15 +220,16 @@ py::array_t<double> edges(const A& ax, bool flow = false, bool numpy_upper = fal
         py::array_t<double> edges(
             static_cast<py::ssize_t>(ax.size() + 1 + overflow + underflow));
 
+        double* data = edges.mutable_data();
         for(index_type i = -underflow; i <= ax.size() + overflow; ++i)
-            edges.mutable_at(i + underflow) = ax.value(i);
+            data[i + underflow] = ax.value(i);
 
         if(numpy_upper
            && !(std::is_same<A, axis::regular_none>::value
                 || std::is_same<A, axis::regular_uflow>::value
                 || std::is_same<A, axis::regular_numpy>::value)) {
-            edges.mutable_at(ax.size() + underflow) = std::nextafter(
-                edges.at(ax.size() + underflow), std::numeric_limits<double>::min());
+            data[ax.size() + underflow] = std::nextafter(
+                data[ax.size() + underflow], std::numeric_limits<double>::min());
         }
 
         return edges;
@@ -247,8 +248,9 @@ py::array_t<double> edges(const A& ax, bool flow = false, bool numpy_upper = fal
             py::array_t<double> edges(
                 static_cast<py::ssize_t>(ax.size() + 1 + overflow));
 
+            double* data = edges.mutable_data();
             for(bh::axis::index_type i = 0; i <= ax.size() + overflow; ++i)
-                edges.mutable_at(i) = i;
+                data[i] = i;
 
             return edges;
         },

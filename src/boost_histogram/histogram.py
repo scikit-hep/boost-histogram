@@ -106,7 +106,6 @@ _INPLACE_OP_SYMBOLS: dict[str, str] = {
     "__iadd__": "+",
     "__isub__": "-",
     "__imul__": "*",
-    "__idiv__": "/",
     "__itruediv__": "/",
 }
 
@@ -469,7 +468,6 @@ class Histogram(typing.Generic[S]):
         self.axes = self._generate_axes_()
         for ax in self.axes:
             ax.__dict__.update(ax._ax.raw_metadata)
-        self.__dict__.update(other.__dict__)
         self.__dict__.update(__dict__)
 
         # Allow custom behavior on either "from" or "to"
@@ -739,13 +737,6 @@ class Histogram(typing.Generic[S]):
     def __truediv__(self, other: Histogram[S] | np.typing.NDArray[Any] | float) -> Self:
         result = self.copy(deep=False)
         return result.__itruediv__(other)
-
-    def __div__(self, other: Histogram[S] | np.typing.NDArray[Any] | float) -> Self:
-        result = self.copy(deep=False)
-        return result.__idiv__(other)
-
-    def __idiv__(self, other: Histogram[S] | np.typing.NDArray[Any] | float) -> Self:
-        return self.__itruediv__(other)
 
     def __itruediv__(
         self, other: Histogram[S] | np.typing.NDArray[Any] | float
@@ -1339,15 +1330,11 @@ class Histogram(typing.Generic[S]):
         # Vectorized (NumPy array) indexing gathers scattered cells through the
         # buffer instead of building a new histogram. Only ndarray indices
         # trigger this; lists keep their categorical pick semantics.
-        if not hasattr(indexes, "items") and any(
-            isinstance(a, np.ndarray) for a in indexes
-        ):
+        if any(isinstance(a, np.ndarray) for a in indexes):
             return self.view()[self._compute_vectorized_index(indexes)]
 
         # Early return for all-integer case
-        if not hasattr(indexes, "items") and all(
-            isinstance(a, SupportsIndex) for a in indexes
-        ):
+        if all(isinstance(a, SupportsIndex) for a in indexes):
             return self._hist.at(*indexes)  # type: ignore[no-any-return, arg-type]
 
         integrations = set[int]()
@@ -1598,9 +1585,7 @@ class Histogram(typing.Generic[S]):
 
         # Vectorized (NumPy array) indexing scatters values through the buffer.
         # The View handles accumulator (n+1 dim raw array) assignment itself.
-        if not hasattr(indexes, "items") and any(
-            isinstance(a, np.ndarray) for a in indexes
-        ):
+        if any(isinstance(a, np.ndarray) for a in indexes):
             self.view()[self._compute_vectorized_index(indexes)] = np.asarray(value)
             return
 

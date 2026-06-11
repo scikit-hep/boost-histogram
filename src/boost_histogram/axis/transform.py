@@ -1,15 +1,13 @@
 from __future__ import annotations
 
 import copy
-from typing import Any, ClassVar, TypeVar
+from typing import Any, ClassVar
 
 import boost_histogram
 
 from .._compat.typing import Self
 from .._core import axis as ca
 from .._utils import register
-
-T = TypeVar("T", bound="AxisTransform")
 
 __all__ = ["AxisTransform", "Function", "Pow", "log", "sqrt"]
 

@@ -99,7 +99,9 @@ struct weighted_mean {
                       == rhs._sum_of_weighted_deltas_squared;
     }
 
-    bool operator!=(const weighted_mean rhs) const noexcept { return !operator==(rhs); }
+    bool operator!=(const weighted_mean& rhs) const noexcept {
+        return !operator==(rhs);
+    }
 
     value_type variance() const {
         const value_type denom
