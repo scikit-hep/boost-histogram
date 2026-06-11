@@ -21,11 +21,18 @@ struct type_caster<std::vector<std::string>>
 
     bool load(handle src, bool convert) {
         if(isinstance<array>(src)) {
-            auto arr = reinterpret_borrow<array>(src);
-            if(arr.dtype().kind() == 'S')
-                return load_from_array_s(arr);
-            if(arr.dtype().kind() == 'U')
-                return load_from_array_u(arr);
+            auto arr        = reinterpret_borrow<array>(src);
+            const auto kind = arr.dtype().kind();
+            if(kind == 'S' || kind == 'U') {
+                // the loaders below assume tightly packed (C-contiguous) data,
+                // so make a contiguous copy if needed (e.g. sliced arrays)
+                if((arr.flags() & array::c_style) == 0) {
+                    arr = array::ensure(arr, array::c_style);
+                    if(!arr)
+                        return false;
+                }
+                return kind == 'S' ? load_from_array_s(arr) : load_from_array_u(arr);
+            }
         }
         return base_t::load(src, convert);
     }

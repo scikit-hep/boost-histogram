@@ -1746,3 +1746,36 @@ import boost_histogram
     )
     assert result.returncode != 0
     assert "Did you forget to compile boost-histogram?" in result.stderr
+
+
+def test_fill_noncontiguous_int_category():
+    # Regression test for gh-1143: fill must honor input strides
+    cat = [1, 2, 3]
+    expected = bh.Histogram(bh.axis.IntCategory(cat))
+    expected.fill([1, 3, 2, 1])
+
+    h = bh.Histogram(bh.axis.IntCategory(cat))
+    h.fill(np.array([1, 2, 3, 1])[::-1])
+    assert_array_equal(h.view(flow=True), expected.view(flow=True))
+
+    h2 = bh.Histogram(bh.axis.IntCategory(cat))
+    h2.fill(np.array([1, 7, 3, 7, 2, 7, 1, 7])[::2])
+    assert_array_equal(h2.view(flow=True), expected.view(flow=True))
+
+
+def test_fill_noncontiguous_str_category():
+    # Regression test for gh-1143: fill must honor input strides
+    cat = ["a", "b", "c"]
+    expected = bh.Histogram(bh.axis.StrCategory(cat))
+    expected.fill(["a", "c", "a"])
+
+    h = bh.Histogram(bh.axis.StrCategory(cat))
+    h.fill(np.array(["a", "b", "c", "b", "a"])[::2])
+    assert_array_equal(h.view(flow=True), expected.view(flow=True))
+
+    expected2 = bh.Histogram(bh.axis.StrCategory(cat))
+    expected2.fill(["c", "b", "a"])
+
+    h2 = bh.Histogram(bh.axis.StrCategory(cat))
+    h2.fill(np.array(["a", "b", "c"])[::-1])
+    assert_array_equal(h2.view(flow=True), expected2.view(flow=True))

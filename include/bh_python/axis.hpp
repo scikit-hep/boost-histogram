@@ -229,7 +229,7 @@ py::array_t<double> edges(const A& ax, bool flow = false, bool numpy_upper = fal
                 || std::is_same<A, axis::regular_uflow>::value
                 || std::is_same<A, axis::regular_numpy>::value)) {
             data[ax.size() + underflow] = std::nextafter(
-                data[ax.size() + underflow], std::numeric_limits<double>::min());
+                data[ax.size() + underflow], std::numeric_limits<double>::lowest());
         }
 
         return edges;
