@@ -8,6 +8,8 @@
 #include <boost/histogram/detail/iterator_adaptor.hpp>
 #include <iostream>
 #include <memory>
+#include <stdexcept>
+#include <vector>
 
 namespace boost {
 namespace histogram {
@@ -248,6 +250,9 @@ class multi_cell {
         std::vector<element_type> w;
         if(Archive::is_loading::value) {
             ar& make_nvp("buffer", w);
+            if(w.size() != size_ * nelem_)
+                throw std::runtime_error(
+                    "multi_cell: serialized buffer size does not match size * nelem");
             reset(size_);
             std::swap_ranges(buffer_.get(), buffer_.get() + size_ * nelem_, w.data());
         } else {
