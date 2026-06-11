@@ -112,11 +112,12 @@ def test_fill_int_1d():
     assert h[bh.underflow + 1] == 2
 
     assert h[-1] == 3
+    assert h[-3] == h[0]
 
     with pytest.raises(IndexError):
         h[3]
     with pytest.raises(IndexError):
-        h[-3]
+        h[-4]
 
 
 def test_fill_int_with_float_single_1d():

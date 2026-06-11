@@ -693,3 +693,28 @@ def test_vectorized_get_rejects_unsupported():
     # A categorical pick list cannot be combined with array indexing
     with pytest.raises(IndexError, match="integer arrays"):
         h[[0, 1], arr]
+
+
+def test_negative_size_index():
+    # Issue #1143 (B8a): -size is a valid Python index for bin 0
+    h = bh.Histogram(bh.axis.Regular(10, 0, 1))
+    h[0] = 7
+
+    assert h[-10] == 7
+    assert h[-10] == h[0]
+
+    with pytest.raises(IndexError):
+        h[-11]
+    with pytest.raises(IndexError):
+        h[10]
+
+
+def test_string_index_raises():
+    # Issue #1143 (B14a): a plain string is not a valid index (use bh.loc)
+    h = bh.Histogram(bh.axis.StrCategory(["a", "b"]))
+    h.fill(["a", "a", "b"])
+
+    with pytest.raises(IndexError, match="locator protocol"):
+        h["a"]
+
+    assert h[bh.loc("a")] == 2

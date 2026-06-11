@@ -359,13 +359,13 @@ class Histogram(typing.Generic[S]):
 
         # Check for missed parenthesis or incorrect types
         if not isinstance(resolved_storage, Storage):
-            msg_storage = (  # type: ignore[unreachable]
-                "Passing in an initialized storage has been removed. Please add ()."
-            )
-            msg_unknown = "Only storages allowed in storage argument"
-            raise KeyError(
-                msg_storage if issubclass(resolved_storage, Storage) else msg_unknown
-            )
+            if isinstance(resolved_storage, type) and issubclass(  # type: ignore[unreachable]
+                resolved_storage, Storage
+            ):
+                msg = f"Storages need to be initialized; use {resolved_storage.__name__}() instead. Please add ()."
+                raise TypeError(msg)
+            msg = f"Only storages allowed in storage argument, got {resolved_storage!r}"
+            raise TypeError(msg)
 
         # Allow a tuple to represent a regular axis
         axes = tuple(_arg_shortcut(arg) for arg in axes)  # type: ignore[arg-type]
@@ -893,22 +893,33 @@ class Histogram(typing.Generic[S]):
         }:
             raise RuntimeError("Mean histograms do not support threaded filling")
 
-        data: list[list[np.typing.NDArray[Any]] | list[str]] = []
+        # If everything is scalar, there is only a single fill; threading would
+        # incorrectly repeat it, so fill directly instead.
+        if (
+            all(isinstance(a, str) or np.ndim(a) == 0 for a in args_ars)
+            and (weight_ars is None or np.ndim(weight_ars) == 0)
+            and (sample_ars is None or np.ndim(sample_ars) == 0)
+        ):
+            self._hist.fill(*args_ars, weight=weight_ars, sample=sample_ars)
+            return self
+
+        data: list[list[Any]] = []
         for a in args_ars:
-            if isinstance(a, str):
+            if isinstance(a, str) or np.ndim(a) == 0:
+                # Scalars broadcast against each thread's chunk
                 data.append([a] * threads)
             else:
-                data.append(np.array_split(np.asarray(a), threads))
+                data.append(list(np.array_split(np.asarray(a), threads)))
 
         weights: list[Any]
-        if weight is None or np.isscalar(weight):
+        if weight_ars is None or np.ndim(weight_ars) == 0:
             assert threads is not None
             weights = [weight_ars] * threads
         else:
             weights = np.array_split(np.asarray(weight_ars), threads)
 
         samples: list[Any]
-        if sample_ars is None or np.isscalar(sample_ars):
+        if sample_ars is None or np.ndim(sample_ars) == 0:
             assert threads is not None
             samples = [sample_ars] * threads
         else:
@@ -1080,9 +1091,11 @@ class Histogram(typing.Generic[S]):
             raise TypeError(f"Index {index} must be an integer, not float")
 
         if isinstance(index, SupportsIndex):
-            if abs(int(index)) >= self._hist.axis(axis).size:
+            idx = int(index)
+            size: int = self._hist.axis(axis).size
+            if not -size <= idx < size:
                 raise IndexError("histogram index is out of range")
-            return int(index) % self._hist.axis(axis).size
+            return idx % size
 
         return index
 
@@ -1345,7 +1358,9 @@ class Histogram(typing.Generic[S]):
                     pick_each[i] = ind.__index__() + (
                         1 if self.axes[i].traits.underflow else 0
                     )
-                case collections.abc.Sequence():
+                # str/bytes are Sequences but not valid indices; they fall
+                # through to the IndexError below.
+                case collections.abc.Sequence() if not isinstance(ind, (str, bytes)):  # type: ignore[unreachable]
                     pick_set[i] = list(ind)
                 case slice(start=start, stop=stop, step=step):
                     reduced, new_slices, new_integrations = self._handle_slice(
@@ -1587,7 +1602,11 @@ class Histogram(typing.Generic[S]):
             self.view()[self._compute_vectorized_index(indexes)] = np.asarray(value)
             return
 
-        in_array = np.asarray(value)
+        # A Histogram value must keep its flow bins; np.asarray() would call
+        # __array__, which drops them (returns view(flow=False)).
+        in_array = (
+            value.view(flow=True) if isinstance(value, Histogram) else np.asarray(value)
+        )
         view: Any = self.view(flow=True)
 
         value_shape: tuple[int, ...]
