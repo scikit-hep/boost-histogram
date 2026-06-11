@@ -19,7 +19,7 @@ py::class_<A> register_storage(py::module& m, const char* name, const char* desc
         .def("__eq__",
              [](const A& self, const py::object& other) {
                  try {
-                     return self == py::cast<A>(other);
+                     return self == py::cast<const A&>(other);
                  } catch(const py::cast_error&) {
                      return false;
                  }
@@ -27,7 +27,7 @@ py::class_<A> register_storage(py::module& m, const char* name, const char* desc
         .def("__ne__",
              [](const A& self, const py::object& other) {
                  try {
-                     return self != py::cast<A>(other);
+                     return self != py::cast<const A&>(other);
                  } catch(const py::cast_error&) {
                      return true;
                  }
@@ -52,7 +52,7 @@ py::class_<storage::unlimited> inline register_storage(py::module& m,
         .def("__eq__",
              [](const A& self, const py::object& other) {
                  try {
-                     return self == py::cast<A>(other);
+                     return self == py::cast<const A&>(other);
                  } catch(const py::cast_error&) {
                      return false;
                  }
@@ -60,7 +60,7 @@ py::class_<storage::unlimited> inline register_storage(py::module& m,
         .def("__ne__",
              [](const A& self, const py::object& other) {
                  try {
-                     return !(self == py::cast<A>(other));
+                     return !(self == py::cast<const A&>(other));
                  } catch(const py::cast_error&) {
                      return true;
                  }
@@ -85,7 +85,7 @@ py::class_<storage::multi_cell> inline register_storage(py::module& m,
         .def("__eq__",
              [](const A& self, const py::object& other) {
                  try {
-                     return self == py::cast<A>(other);
+                     return self == py::cast<const A&>(other);
                  } catch(const py::cast_error&) {
                      return false;
                  }
@@ -93,7 +93,7 @@ py::class_<storage::multi_cell> inline register_storage(py::module& m,
         .def("__ne__",
              [](const A& self, const py::object& other) {
                  try {
-                     return !(self == py::cast<A>(other));
+                     return !(self == py::cast<const A&>(other));
                  } catch(const py::cast_error&) {
                      return true;
                  }

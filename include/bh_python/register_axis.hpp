@@ -141,7 +141,7 @@ py::class_<A> register_axis(py::module& m, Args&&... args) {
         .def("__eq__",
              [](const A& self, const py::object& other) {
                  try {
-                     return self == py::cast<A>(other);
+                     return self == py::cast<const A&>(other);
                  } catch(const py::cast_error&) {
                      return false;
                  }
@@ -149,7 +149,7 @@ py::class_<A> register_axis(py::module& m, Args&&... args) {
         .def("__ne__",
              [](const A& self, const py::object& other) {
                  try {
-                     return self != py::cast<A>(other);
+                     return self != py::cast<const A&>(other);
                  } catch(const py::cast_error&) {
                      return true;
                  }
