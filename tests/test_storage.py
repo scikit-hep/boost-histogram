@@ -498,6 +498,40 @@ def test_unsupported_histogram_subtraction(storage, fill_kwargs):
         mk() - mk()
 
 
+# Issue #1143 (B6a)
+def test_multi_cell_rebin_groups():
+    h = bh.Histogram(bh.axis.Regular(4, 0, 4), storage=bh.storage.MultiCell(2))
+    h.fill([0.5, 1.5, 2.5, 3.5], weight=[[1, 10], [2, 20], [3, 30], [4, 40]])
+    h.view(flow=True)[:, 0] = [100, 1000]
+    h.view(flow=True)[:, -1] = [200, 2000]
+
+    hs = h[bh.rebin(groups=[2, 2])]
+    assert hs.storage.nelem == 2
+    assert_array_equal(hs.view(), [[3, 7], [30, 70]])
+    assert_array_equal(hs.view(flow=True), [[100, 3, 7, 200], [1000, 30, 70, 2000]])
+
+
+def test_multi_cell_rebin_groups_2d():
+    # Rebin a non-leading axis: the cell index is the leading view dimension,
+    # so the axis offset must be applied when combining groups.
+    h = bh.Histogram(
+        bh.axis.Regular(2, 0, 2),
+        bh.axis.Regular(4, 0, 4),
+        storage=bh.storage.MultiCell(2),
+    )
+    h.fill(
+        [0.5, 0.5, 0.5, 0.5, 1.5],
+        [0.5, 1.5, 2.5, 3.5, 0.5],
+        weight=[[1, 10], [2, 20], [3, 30], [4, 40], [5, 50]],
+    )
+
+    hs = h[:, bh.rebin(groups=[2, 2])]
+    assert hs.storage.nelem == 2
+    assert_array_equal(hs.view(), [[[3, 7], [5, 0]], [[30, 70], [50, 0]]])
+    # The first axis is untouched
+    assert_array_equal(hs.view().sum(axis=(1, 2)), h.view().sum(axis=(1, 2)))
+
+
 @pytest.mark.parametrize("nelem", [1, 3])
 def test_multi_cell_reset(nelem):
     h = _filled_multi_cell(nelem)
