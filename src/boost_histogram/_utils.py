@@ -129,7 +129,7 @@ def cast(self: object, cpp_object: object, parent_class: type[T]) -> T:
             ccr = typing.cast(Registerable, canidate_class)
             is_valid_type = cpp_class in ccr._types
         else:
-            is_valid_type = cpp_class in set(_walk_bases(canidate_class))
+            is_valid_type = cpp_class in _walk_bases(canidate_class)
 
         if is_valid_type and hasattr(canidate_class, "_family"):
             ccf = typing.cast(HasFamily, canidate_class)

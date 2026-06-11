@@ -9,7 +9,6 @@ from typing import (
     ClassVar,
     Literal,
     TypedDict,
-    TypeVar,
 )
 
 import numpy as np  # pylint: disable=unused-import
@@ -92,9 +91,6 @@ class Traits:
     def discrete(self) -> bool:
         "True if axis is not continuous"
         return not self.continuous
-
-
-T = TypeVar("T", bound="Axis")
 
 
 # Contains common methods and properties to all axes
@@ -832,9 +828,6 @@ class MGridOpts(TypedDict):
     indexing: Literal["ij", "xy"]
 
 
-A = TypeVar("A", bound="ArrayTuple")
-
-
 class ArrayTuple(tuple):  # type: ignore[type-arg]
     __slots__ = ()
     # This is an exhaustive list as of NumPy 1.19
@@ -860,9 +853,6 @@ class ArrayTuple(tuple):  # type: ignore[type-arg]
         representation.
         """
         return self.__class__(np.broadcast_arrays(*self))
-
-
-B = TypeVar("B", bound="AxesTuple")
 
 
 class AxesTuple(tuple):  # type: ignore[type-arg]
@@ -914,7 +904,7 @@ class AxesTuple(tuple):  # type: ignore[type-arg]
             )
         return tuple(self[i].bin(indexes[i]) for i in range(len(indexes)))
 
-    def index(self, *values: float) -> tuple[int, ...]:  # type: ignore[override, override]
+    def index(self, *values: float) -> tuple[int, ...]:  # type: ignore[override]
         if len(values) != len(self):
             raise IndexError(
                 "Must have the same number of arguments as the number of axes"

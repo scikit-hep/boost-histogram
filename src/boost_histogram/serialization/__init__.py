@@ -117,7 +117,6 @@ def from_uhi(data: dict[str, Any], /) -> histogram.Histogram[Any]:
     # Reshape raw_data to the expected shape. This is necessary because JSON
     # serialization can collapse empty dimensions (e.g. (5, 0, 0) -> (5, 0)),
     # so we must restore the correct number of dimensions.
-    storage_type = storage_data["type"]
     if storage_type in {"weighted", "mean", "weighted_mean"}:
         raw_data = np.asarray(raw_data)
         raw_data = raw_data.reshape(view_shape + raw_data.shape[-1:])

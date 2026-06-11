@@ -51,7 +51,6 @@
 #include <boost/core/span.hpp>
 #include <boost/histogram/detail/array_wrapper.hpp>
 #include <boost/mp11/function.hpp> // mp_or
-#include <boost/mp11/utility.hpp>  // mp_valid
 
 #include <algorithm>
 #include <cstddef>
@@ -67,15 +66,6 @@ constexpr boost::span<T> make_span(T* begin, std::size_t size) noexcept {
     return boost::span<T>{begin, size};
 }
 } // namespace
-
-template <class T,
-          class = decltype(std::declval<T&>().serialize(std::declval<std::nullptr_t&>(),
-                                                        0))>
-struct has_method_serialize_impl {};
-
-template <class T>
-using has_method_serialize =
-    typename boost::mp11::mp_valid<has_method_serialize_impl, T>::type;
 
 namespace boost {
 namespace serialization {
@@ -173,7 +163,7 @@ class tuple_oarchive {
     }
 
     tuple_oarchive& operator<<(const py::object& obj) {
-        lst_.attr("append")(obj);
+        lst_.append(obj);
         return *this;
     }
 
