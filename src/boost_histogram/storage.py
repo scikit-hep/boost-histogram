@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import ClassVar
+from typing import Any, ClassVar
 
 import boost_histogram
 
@@ -17,6 +17,7 @@ __all__ = [
     "Storage",
     "Unlimited",
     "Weight",
+    "WeightedCollector",
     "WeightedMean",
 ]
 
@@ -41,6 +42,7 @@ class Storage:
             type[
                 int
                 | float
+                | tuple[Any, ...]
                 | accumulators.WeightedMean
                 | accumulators.WeightedSum
                 | accumulators.Mean
@@ -88,3 +90,7 @@ class MultiCell(store.multi_cell, Storage, family=boost_histogram):
 
 class Collector(store.collector, Storage, family=boost_histogram):
     accumulator = float
+
+
+class WeightedCollector(store.weighted_collector, Storage, family=boost_histogram):
+    accumulator = tuple
