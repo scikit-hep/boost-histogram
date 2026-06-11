@@ -202,3 +202,42 @@ def test_vectorized_set_multicell():
     i1 = np.array([0, 3])
     h[i0, i1] = 7.0
     np.testing.assert_array_equal(h.view()[:, i0, i1], 7.0)
+
+
+def test_set_histogram_with_flow():
+    # Issue #1143 (B1): np.asarray(value) dropped a Histogram's flow bins
+    h = bh.Histogram(bh.axis.Regular(3, 0, 1))
+    h2 = bh.Histogram(bh.axis.Regular(3, 0, 1))
+    h2.view(flow=True)[:] = [100, 1, 2, 3, 200]
+
+    h[:] = h2
+    assert_array_equal(h.view(flow=True), [100, 1, 2, 3, 200])
+
+
+def test_set_histogram_with_flow_2d():
+    h = bh.Histogram(bh.axis.Regular(2, 0, 1), bh.axis.Regular(2, 0, 1))
+    h2 = bh.Histogram(bh.axis.Regular(2, 0, 1), bh.axis.Regular(2, 0, 1))
+    h2.view(flow=True)[...] = np.arange(16).reshape(4, 4)
+
+    h[:, :] = h2
+    assert_array_equal(h.view(flow=True), np.arange(16).reshape(4, 4))
+
+
+def test_set_histogram_without_flow():
+    # A flow-less histogram value still sets the inner bins only
+    h = bh.Histogram(bh.axis.Regular(3, 0, 1))
+    h3 = bh.Histogram(bh.axis.Regular(3, 0, 1, underflow=False, overflow=False))
+    h3[:] = [1, 2, 3]
+
+    h[0:3] = h3
+    assert_array_equal(h.view(flow=True), [0, 1, 2, 3, 0])
+
+
+def test_set_histogram_flow_mismatch():
+    # Cannot set flow bins of a slice that does not include them
+    h = bh.Histogram(bh.axis.Regular(3, 0, 1))
+    h2 = bh.Histogram(bh.axis.Regular(3, 0, 1))
+    h2.view(flow=True)[:] = [100, 1, 2, 3, 200]
+
+    with pytest.raises(ValueError):
+        h[0:3] = h2

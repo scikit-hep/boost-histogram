@@ -134,3 +134,12 @@ def test_make_selection(ax, storage):
     histogram = bh.Histogram(ax, ax, storage=storage())
     assert isinstance(histogram, bh.Histogram)
     # TODO: Make this test do something useful
+
+
+def test_init_bad_storage():
+    # Issue #1143 (B14b): clear TypeErrors for invalid storage arguments
+    with pytest.raises(TypeError, match="Only storages allowed"):
+        bh.Histogram(bh.axis.Regular(10, 0, 1), storage=42)
+
+    with pytest.raises(TypeError, match=r"use Double\(\)"):
+        bh.Histogram(bh.axis.Regular(10, 0, 1), storage=bh.storage.Double)
