@@ -45,4 +45,9 @@ void register_storages(py::module& storage) {
         storage,
         "collector",
         "Dense storage that collects all original sample values in each bin");
+
+    register_storage<storage::weighted_collector>(
+        storage,
+        "weighted_collector",
+        "Dense storage that collects all original (sample, weight) pairs in each bin");
 }

@@ -15,6 +15,11 @@
 void register_histograms(py::module& hist) {
     hist.attr("_axes_limit") = BOOST_HISTOGRAM_DETAIL_AXES_LIMIT;
 
+    // Make the weighted collector's per-bin entries visible to numpy as a
+    // structured dtype; used by view() (the macro cannot take template commas)
+    using weighted_collector_entry = accumulators::weighted_collector<double>::entry;
+    PYBIND11_NUMPY_DTYPE(weighted_collector_entry, value, weight);
+
     register_histogram<storage::int64>(
         hist,
         "any_int64",
@@ -62,4 +67,10 @@ void register_histograms(py::module& hist) {
         "any_collector",
         "N-dimensional histogram that collects the original sample values in each bin "
         "with any axis types.");
+
+    register_histogram<storage::weighted_collector>(
+        hist,
+        "any_weighted_collector",
+        "N-dimensional histogram that collects the original (sample, weight) pairs in "
+        "each bin with any axis types.");
 }

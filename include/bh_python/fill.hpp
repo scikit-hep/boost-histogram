@@ -234,7 +234,8 @@ void fill_impl(bh::detail::accumulator_traits_holder<true, const double&>,
         sample);
 }
 
-// for collector: appends one sample value per fill, no weight support
+// for the unweighted collector: appends one sample value per fill, no weight support
+// (the weighted collector matches the <true, const double&> overload above)
 template <class Histogram, class VArgs>
 void fill_impl(bh::detail::accumulator_traits_holder<false, const double&>,
                Histogram& h,

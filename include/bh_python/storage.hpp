@@ -8,6 +8,7 @@
 #include <bh_python/pybind11.hpp>
 
 #include <bh_python/accumulators/mean.hpp>
+#include <bh_python/accumulators/weighted_collector.hpp>
 #include <bh_python/accumulators/weighted_mean.hpp>
 #include <bh_python/accumulators/weighted_sum.hpp>
 #include <bh_python/multi_cell.hpp>
@@ -36,6 +37,7 @@ using multi_cell    = bh::multi_cell<double>;
 using mean          = bh::dense_storage<accumulators::mean<double>>;
 using weighted_mean = bh::dense_storage<accumulators::weighted_mean<double>>;
 using collector = bh::dense_storage<bh::accumulators::collector<std::vector<double>>>;
+using weighted_collector = bh::dense_storage<accumulators::weighted_collector<double>>;
 
 // Allow repr to show python name
 template <class S>
@@ -86,6 +88,11 @@ inline const char* name<weighted_mean>() {
 template <>
 inline const char* name<collector>() {
     return "collector";
+}
+
+template <>
+inline const char* name<weighted_collector>() {
+    return "weighted_collector";
 }
 
 } // namespace storage
@@ -246,6 +253,58 @@ void load(Archive& ar, storage::collector& s, unsigned /* version */) {
         const auto c = static_cast<std::size_t>(count_ptr[i]);
         s[i]         = collector_t(value_ptr, value_ptr + c);
         value_ptr += c;
+    }
+}
+
+// Same offsets+content layout as the collector above, with the per-bin
+// (value, weight) pairs split into two flat numpy arrays.
+template <class Archive>
+void save(Archive& ar, const storage::weighted_collector& s, unsigned /* version */) {
+    const auto n = s.size();
+    py::array_t<std::int64_t> counts(static_cast<py::ssize_t>(n));
+    auto* count_ptr   = counts.mutable_data();
+    std::size_t total = 0;
+    for(std::size_t i = 0; i < n; ++i) {
+        const auto c = s[i].size();
+        count_ptr[i] = static_cast<std::int64_t>(c);
+        total += c;
+    }
+    py::array_t<double> values(static_cast<py::ssize_t>(total));
+    py::array_t<double> weights(static_cast<py::ssize_t>(total));
+    auto* value_ptr  = values.mutable_data();
+    auto* weight_ptr = weights.mutable_data();
+    for(std::size_t i = 0; i < n; ++i) {
+        for(const auto& e : s[i]) {
+            *value_ptr++  = e.value;
+            *weight_ptr++ = e.weight;
+        }
+    }
+    ar << counts;
+    ar << values;
+    ar << weights;
+}
+
+template <class Archive>
+void load(Archive& ar, storage::weighted_collector& s, unsigned /* version */) {
+    py::array_t<std::int64_t> counts;
+    py::array_t<double> values;
+    py::array_t<double> weights;
+    ar >> counts;
+    ar >> values;
+    ar >> weights;
+    const auto n = static_cast<std::size_t>(counts.size());
+    s.resize(n);
+    const auto* count_ptr  = counts.data();
+    const auto* value_ptr  = values.data();
+    const auto* weight_ptr = weights.data();
+    using collector_t      = accumulators::weighted_collector<double>;
+    for(std::size_t i = 0; i < n; ++i) {
+        const auto c = static_cast<std::size_t>(count_ptr[i]);
+        typename collector_t::container_type cont;
+        cont.reserve(c);
+        for(std::size_t j = 0; j < c; ++j)
+            cont.push_back({*value_ptr++, *weight_ptr++});
+        s[i] = collector_t(std::move(cont));
     }
 }
 

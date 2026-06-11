@@ -125,10 +125,12 @@ py::buffer_info make_buffer(bh::histogram<A, bh::multi_cell<T>>& h, bool flow) {
 }
 
 /// Build a numpy object-dtype array for ragged (collector) storage. Each element is a
-/// 1D float64 array holding a copy of that bin's collected values. The result has the
-/// same shape as the histogram axes; ``flow`` controls inclusion of under/overflow
-/// bins. Unlike the buffer-protocol views of the other storages, this returns copies,
-/// so it cannot be used to write back into the histogram.
+/// 1D array holding a copy of that bin's collected entries: float64 for the plain
+/// collector, the registered (value, weight) structured dtype for the weighted
+/// collector. The result has the same shape as the histogram axes; ``flow`` controls
+/// inclusion of under/overflow bins. Unlike the buffer-protocol views of the other
+/// storages, this returns copies, so it cannot be used to write back into the
+/// histogram.
 template <class Histogram>
 py::object make_object_view(const Histogram& self, bool flow) {
     const auto rank = self.rank();
@@ -166,8 +168,9 @@ py::object make_object_view(const Histogram& self, bool flow) {
             k += static_cast<std::size_t>(x.index(d) + static_cast<int>(offset[d]))
                  * cstride[d];
         const auto& cell = *x;
-        const py::array_t<double> cell_arr(static_cast<py::ssize_t>(cell.size()),
-                                           cell.data());
+        using element_t  = std::decay_t<decltype(*cell.data())>;
+        const py::array_t<element_t> cell_arr(static_cast<py::ssize_t>(cell.size()),
+                                              cell.data());
         arr.attr("__setitem__")(py::int_(k), cell_arr);
     }
 

@@ -29,6 +29,7 @@
 #include <string>
 #include <thread>
 #include <tuple>
+#include <utility>
 #include <vector>
 
 template <class S>
@@ -222,18 +223,45 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
     return hist;
 }
 
-template <>
-auto inline register_histogram<storage::collector>(py::module& m,
-                                                   const char* name,
-                                                   const char* desc) {
-    using S           = storage::collector;
+/// Python-facing per-bin value conversions shared by the collector storages.
+inline std::vector<double>
+collector_to_python(const bh::accumulators::collector<std::vector<double>>& cell) {
+    return {cell.begin(), cell.end()};
+}
+
+inline std::vector<std::pair<double, double>>
+collector_to_python(const accumulators::weighted_collector<double>& cell) {
+    std::vector<std::pair<double, double>> out;
+    out.reserve(cell.size());
+    for(const auto& e : cell)
+        out.emplace_back(e.value, e.weight);
+    return out;
+}
+
+inline void
+collector_from_python(const std::vector<double>& input,
+                      bh::accumulators::collector<std::vector<double>>& cell) {
+    cell = bh::accumulators::collector<std::vector<double>>(input);
+}
+
+inline void collector_from_python(const std::vector<std::pair<double, double>>& input,
+                                  accumulators::weighted_collector<double>& cell) {
+    typename accumulators::weighted_collector<double>::container_type cont;
+    cont.reserve(input.size());
+    for(const auto& p : input)
+        cont.push_back({p.first, p.second});
+    cell = accumulators::weighted_collector<double>(std::move(cont));
+}
+
+template <class S>
+auto register_collector_histogram(py::module& m, const char* name, const char* desc) {
     using histogram_t = bh::histogram<vector_axis_variant, S>;
-    using value_type  = std::vector<double>;
-    using cell_type   = bh::accumulators::collector<std::vector<double>>;
+    using cell_type   = typename S::value_type;
+    using value_type  = decltype(collector_to_python(std::declval<const cell_type&>()));
 
     // No buffer protocol: a collector holds a variable-length list per bin, so it
     // cannot be exposed as a contiguous numpy buffer. The view() method below returns
-    // a numpy object-dtype array of per-bin float64 arrays (copies) instead.
+    // a numpy object-dtype array of per-bin arrays (copies) instead.
     py::class_<histogram_t> hist(m, name, desc);
 
     hist.def(py::init<const vector_axis_variant&, S>(), "axes"_a, "storage"_a = S())
@@ -310,24 +338,26 @@ auto inline register_histogram<storage::collector>(py::module& m,
 
         .def("at",
              [](const histogram_t& self, const py::args& args) -> value_type {
-                 auto int_args    = py::cast<std::vector<int>>(args);
-                 const auto& cell = self.at(int_args);
-                 return {cell.begin(), cell.end()};
+                 auto int_args = py::cast<std::vector<int>>(args);
+                 return collector_to_python(self.at(int_args));
              })
 
         .def("_at_set",
              [](histogram_t& self, const value_type& input, const py::args& args) {
-                 auto int_args     = py::cast<std::vector<int>>(args);
-                 self.at(int_args) = cell_type(input);
+                 auto int_args = py::cast<std::vector<int>>(args);
+                 collector_from_python(input, self.at(int_args));
              })
 
         .def(
             "sum",
             [](const histogram_t& self, bool flow) -> value_type {
-                const py::gil_scoped_release release;
-                const cell_type result = bh::algorithm::sum(
-                    self, flow ? bh::coverage::all : bh::coverage::inner);
-                return {result.begin(), result.end()};
+                cell_type result;
+                {
+                    const py::gil_scoped_release release;
+                    result = bh::algorithm::sum(
+                        self, flow ? bh::coverage::all : bh::coverage::inner);
+                }
+                return collector_to_python(result);
             },
             "flow"_a = false)
 
@@ -362,6 +392,24 @@ auto inline register_histogram<storage::collector>(py::module& m,
         ;
 
     return hist;
+}
+
+template <>
+auto inline register_histogram<storage::collector>(py::module& m,
+                                                   const char* name,
+                                                   const char* desc) {
+    return register_collector_histogram<storage::collector>(m, name, desc);
+}
+
+template <>
+auto inline register_histogram<storage::weighted_collector>(py::module& m,
+                                                            const char* name,
+                                                            const char* desc) {
+    static_assert(
+        bh::detail::accumulator_traits<
+            accumulators::weighted_collector<double>>::weight_support,
+        "weighted_collector must deduce as a weighted accumulator (see fill.hpp)");
+    return register_collector_histogram<storage::weighted_collector>(m, name, desc);
 }
 
 template <>
