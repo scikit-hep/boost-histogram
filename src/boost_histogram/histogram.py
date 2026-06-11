@@ -4,7 +4,6 @@ import collections.abc
 import copy
 import enum
 import logging
-import sys
 import threading
 import typing
 import warnings
@@ -46,22 +45,6 @@ if TYPE_CHECKING:
         WeightedMean,
         WeightedSum,
     )
-
-try:
-    from . import _core
-except ImportError as err:
-    if "_core" not in str(err):
-        raise
-
-    new_msg = "Did you forget to compile boost-histogram? Use CMake or scikit-build-core to build, see the readme."
-
-    if sys.version_info >= (3, 11):
-        err.add_note(new_msg)
-        raise
-
-    total_msg = f"{err}\n{new_msg}"
-    new_exception = type(err)(new_msg, name=err.name, path=err.path)
-    raise new_exception from err
 
 
 # This is a StrEnum as defined in Python 3.11

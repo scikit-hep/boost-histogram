@@ -5,6 +5,7 @@ import functools
 import operator
 import pickle
 import platform
+import subprocess
 import sys
 import threading
 from collections import OrderedDict
@@ -1719,3 +1720,28 @@ def test_allclose_different_continuous_traits():
     h2 = bh.Histogram(bh.axis.Integer(0, 3))
 
     assert not h1.allclose(h2)
+
+
+@pytest.mark.skipif(sys.platform.startswith("emscripten"), reason="needs subprocess")
+def test_missing_core_hint():
+    # Issue #1143 (B10): if the compiled _core module is missing, the import
+    # error must include the "did you forget to compile" hint. This only works
+    # if boost_histogram/__init__.py imports _core before any submodule does.
+    code = """
+import sys
+import importlib.abc
+
+class Blocker(importlib.abc.MetaPathFinder):
+    def find_spec(self, name, path=None, target=None):
+        if name == "boost_histogram._core":
+            raise ModuleNotFoundError(f"No module named {name!r}", name=name)
+        return None
+
+sys.meta_path.insert(0, Blocker())
+import boost_histogram
+"""
+    result = subprocess.run(
+        [sys.executable, "-c", code], capture_output=True, text=True, check=False
+    )
+    assert result.returncode != 0
+    assert "Did you forget to compile boost-histogram?" in result.stderr
