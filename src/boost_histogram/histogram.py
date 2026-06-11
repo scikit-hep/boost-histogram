@@ -254,7 +254,8 @@ def _combine_group_contents(
     jj: int,
 ) -> None:
     """
-    Combine two views into one, in-place. This is used for threaded filling.
+    Add bin ``j`` (along view dimension ``i``) of ``reduced_view`` into bin
+    ``jj`` of ``new_view``, in-place. Used for rebinning with groups.
     """
     pos = [slice(None)] * (i)
     if new_view.dtype.names:
@@ -1588,31 +1589,55 @@ class Histogram(typing.Generic[S]):
 
         new_reduced: _core.hist._BaseHistogram | _core.hist.any_multi_cell
         new_reduced = reduced.__class__(axes)
+        if isinstance(reduced, _core.hist.any_multi_cell) and isinstance(
+            new_reduced, _core.hist.any_multi_cell
+        ):
+            # The constructor in reduced.__class__(axes) does not take care of the number of cells.
+            # If reduced is a multi cell histogram, we have to set the number of cells per bin manually for new_reduced
+            new_reduced.reset_nelem(reduced.nelem())
         new_view = new_reduced.view(flow=True)
+
+        # Views of multi cell histograms have the cell index as the first
+        # (index 0) dimension, so the axis position within the view is
+        # shifted by one.
+        view_i = i + 1 if isinstance(reduced, _core.hist.any_multi_cell) else i
+
+        groups = list(groups)  # do not modify the caller's list
         j = 0
         new_j_base = 0
 
         if old_axis.traits_underflow and axes[i].traits_underflow:
-            groups = [1, *groups]
+            groups.insert(0, 1)
         elif axes[i].traits_underflow:
             new_j_base = 1
+        elif old_axis.traits_underflow:
+            # The new axis has no underflow bin: skip the old underflow bin
+            # here. For unordered (categorical) axes its contents are folded
+            # into the new overflow bin below; otherwise they are dropped.
+            j = 1
 
         if old_axis.traits_overflow and axes[i].traits_overflow:
             groups.append(1)
+        # If the old axis has an overflow bin but the new one does not, the
+        # old overflow contents are dropped (the bin is simply not consumed).
 
         for new_j, group in enumerate(groups):
             for _ in range(group):
                 _combine_group_contents(
-                    new_view, reduced_view, i, j, new_j + new_j_base
+                    new_view, reduced_view, view_i, j, new_j + new_j_base
                 )
                 j += 1
 
-            if (
-                old_axis.traits_underflow
-                and not axes[i].traits_ordered
-                and axes[i].traits_overflow
-            ):
-                _combine_group_contents(new_view, reduced_view, i, 0, -1)
+        if (
+            old_axis.traits_underflow
+            and not axes[i].traits_underflow
+            and not axes[i].traits_ordered
+            and axes[i].traits_overflow
+        ):
+            # On an unordered (categorical) axis every out-of-range entry
+            # lands in the overflow bin, so the old underflow contents are
+            # added to the new overflow bin -- exactly once.
+            _combine_group_contents(new_view, reduced_view, view_i, 0, -1)
 
         return new_reduced
 

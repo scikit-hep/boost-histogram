@@ -136,6 +136,9 @@ class rebin:
         total_args = sum(i is not None for i in [factor, groups, edges])
         if total_args != 1 and axis is None:
             raise ValueError("Exactly one argument should be provided")
+        if factor is not None and axis is not None:
+            msg = "A factor cannot be combined with an axis; use groups= or edges= with axis= instead"
+            raise ValueError(msg)
 
         self.groups = groups
         self.edges = edges
@@ -166,13 +169,22 @@ class rebin:
         return (self.group_mapping(axis), self.axis)
 
     def group_mapping(self, axis: PlottableAxis) -> Sequence[int]:
+        """
+        Return the list of group sizes (numbers of adjacent bins to merge)
+        for ``axis``. For explicit groups, the sum of the group sizes must
+        equal the number of bins in the axis. For a factor, this returns
+        ``len(axis) // factor`` groups of size ``factor``; if the factor does
+        not divide the number of bins evenly, the leftover bins are not part
+        of any group (a consumer should merge them into the overflow bin,
+        matching the C++ factor-based rebinning).
+        """
         if self.groups is not None:
             if sum(self.groups) != len(axis):
                 msg = f"The sum of the groups ({sum(self.groups)}) must be equal to the number of bins in the axis ({len(axis)})"
                 raise ValueError(msg)
             return self.groups
         if self.factor is not None:
-            return [self.factor] * len(axis)
+            return [self.factor] * (len(axis) // self.factor)
         if self.edges is not None or self.axis is not None:
             newedges = None
             if self.edges is not None:

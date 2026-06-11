@@ -819,8 +819,62 @@ def test_rebin_change_axis_cat():
     h.fill([-1, 1.1, 2.2, 3.3, 4.4, 5.5])
     hs = h[bh.rebin(groups=[2, 3], axis=bh.axis.StrCategory(["a", "b"]))]
     assert_array_equal(hs.view(), [1, 3])
-    assert_array_equal(hs.view(flow=True), [1, 3, 4])
+    # Old underflow (1) and old overflow (1) both end up in the new overflow,
+    # exactly once each.
+    assert_array_equal(hs.view(flow=True), [1, 3, 2])
     assert_array_equal(list(hs.axes[0]), ["a", "b"])
+
+
+def test_rebin_groups_flow_to_noflow():
+    # Issue #1143 (B6b): rebinning a flow axis onto a categorical axis
+    # without an underflow bin must not fold the old underflow into the
+    # first group, and must add it to the new overflow exactly once.
+    h = bh.Histogram(bh.axis.Regular(4, 0, 4))
+    h.view(flow=True)[:] = [100, 1, 2, 3, 4, 200]
+    hs = h[bh.rebin(groups=[2, 2], axis=bh.axis.IntCategory([0, 1]))]
+    assert_array_equal(hs.view(flow=True), [3, 7, 300])
+
+
+def test_rebin_groups_flow_combinations():
+    # All combinations of (old flow) x (new flow) for group rebinning.
+    h = bh.Histogram(bh.axis.Regular(4, 0, 4))
+    h.view(flow=True)[:] = [100, 1, 2, 3, 4, 200]
+
+    # Old flow -> new flow: flow bins are carried over unchanged
+    assert_array_equal(h[bh.rebin(groups=[2, 2])].view(flow=True), [100, 3, 7, 200])
+
+    # Old underflow dropped on an ordered axis without underflow
+    hs = h[bh.rebin(groups=[2, 2], axis=bh.axis.Variable([0, 2, 4], underflow=False))]
+    assert_array_equal(hs.view(flow=True), [3, 7, 200])
+
+    # Old overflow dropped on an axis without overflow
+    hs = h[bh.rebin(groups=[2, 2], axis=bh.axis.Variable([0, 2, 4], overflow=False))]
+    assert_array_equal(hs.view(flow=True), [100, 3, 7])
+
+    # Both flow bins dropped on a flowless ordered axis
+    hs = h[
+        bh.rebin(
+            groups=[2, 2],
+            axis=bh.axis.Variable([0, 2, 4], underflow=False, overflow=False),
+        )
+    ]
+    assert_array_equal(hs.view(flow=True), [3, 7])
+
+    # Old axis without underflow: new axis copies the traits
+    h2 = bh.Histogram(bh.axis.Regular(4, 0, 4, underflow=False))
+    h2.view(flow=True)[:] = [1, 2, 3, 4, 200]
+    assert_array_equal(h2[bh.rebin(groups=[2, 2])].view(flow=True), [3, 7, 200])
+
+    # Old axis without underflow onto a categorical axis: only the old
+    # overflow goes to the new overflow
+    hs = h2[bh.rebin(groups=[2, 2], axis=bh.axis.IntCategory([0, 1]))]
+    assert_array_equal(hs.view(flow=True), [3, 7, 200])
+
+    # Old flowless axis onto an axis with flow: new flow bins stay empty
+    h3 = bh.Histogram(bh.axis.Regular(4, 0, 4, underflow=False, overflow=False))
+    h3.view(flow=True)[:] = [1, 2, 3, 4]
+    hs = h3[bh.rebin(groups=[2, 2], axis=bh.axis.Variable([0, 2, 4]))]
+    assert_array_equal(hs.view(flow=True), [0, 3, 7, 0])
 
 
 def test_shrink_rebin_1d():

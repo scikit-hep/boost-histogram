@@ -609,6 +609,34 @@ def test_rebin_groups_no_inplace_modification():
     assert h3 == h4
 
 
+# Issue #1143 (B7)
+def test_rebin_group_mapping_factor():
+    # The factor form of the RebinProtocol must produce groups that sum to
+    # the number of bins when the factor divides evenly
+    ax = bh.axis.Regular(10, 0, 10)
+    groups = bh.rebin(2).group_mapping(ax)
+    assert list(groups) == [2] * 5
+    assert sum(groups) == len(ax)
+
+    # With a remainder, the leftover bins are not part of any group (they
+    # are merged into overflow, matching the C++ factor rebinning)
+    ax5 = bh.axis.Regular(5, 0, 5)
+    assert list(bh.rebin(2).group_mapping(ax5)) == [2, 2]
+
+    # The group form of group_mapping must match the C++ factor rebinning
+    h = bh.Histogram(bh.axis.Regular(5, 0, 5))
+    h.view(flow=True)[:] = [100, 1, 2, 3, 4, 5, 200]
+    hs = h[:: bh.rebin(2)]
+    assert_array_equal(hs.view(flow=True), [100, 3, 7, 205])
+
+
+def test_rebin_factor_and_axis_raises():
+    with pytest.raises(ValueError, match="factor cannot be combined"):
+        bh.rebin(2, axis=bh.axis.Regular(2, 0, 4))
+    with pytest.raises(ValueError, match="factor cannot be combined"):
+        bh.rebin(factor=2, axis=bh.axis.Regular(2, 0, 4))
+
+
 def test_vectorized_get_basic():
     """NumPy integer-array indices gather scattered cells through the buffer."""
     h = bh.Histogram(
