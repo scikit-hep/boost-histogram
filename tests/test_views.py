@@ -47,9 +47,10 @@ def test_view_div(v):
     assert_allclose(v2.value, [0, -6, -4, -2])
     assert_allclose(v2.variance, [0, 12, 8, 4])
 
-    v2 = 1 / v[1:]
-    assert_allclose(v2.value, [1 / 3, 1 / 2, 1])
-    assert_allclose(v2.variance, [1 / 3, 1 / 2, 1])
+    # Issue #1143 (B11): the reciprocal of a weighted sum has no meaningful
+    # variance, so dividing by a view is rejected.
+    with pytest.raises(TypeError, match="divide a scalar or array"):
+        1 / v[1:]
 
     v /= 0.5
     assert_allclose(v.value, [0, 6, 4, 2])
@@ -229,6 +230,84 @@ def test_0d_weighted_mean_view():
     # values() and counts() on the histogram should work
     assert profile.values() == approx(2.5)
     assert profile.counts() == approx(4.0)
+
+
+@pytest.fixture
+def v2d():
+    h = bh.Histogram(
+        bh.axis.Integer(0, 2), bh.axis.Integer(0, 2), storage=bh.storage.Weight()
+    )
+    h.fill([0, 0, 1, 1], [0, 1, 0, 1], weight=[1, 2, 1, 1])
+    return h.view()
+
+
+# Issue #1143 (B11): ``scalar / view`` would produce a statistically
+# meaningless variance (s**2 / variance), so it must raise like the mean views.
+def test_view_rdiv_rejected(v):
+    with pytest.raises(TypeError, match="divide a scalar or array"):
+        2.0 / v
+    with pytest.raises(TypeError, match="divide a scalar or array"):
+        2 // v
+    with pytest.raises(TypeError, match="divide a scalar or array"):
+        np.true_divide(2.0, v)
+    with pytest.raises(TypeError, match="divide a scalar or array"):
+        np.ones(4) / v
+
+    # Scaling in the other direction must keep working.
+    assert_allclose((v / 2).value, v.value / 2)
+    assert_allclose((2 * v).value, v.value * 2)
+
+
+# Issue #1143 (B2): a caller-supplied ``out=`` used to be forwarded into the
+# per-field reductions, so every field overwrote the same buffer.
+def test_view_reduce_out_mismatched_dtype(v2d):
+    with pytest.raises(TypeError, match="out="):
+        np.sum(v2d, axis=0, out=np.empty(2))
+
+
+def test_view_reduce_out_matching_dtype(v2d):
+    out = np.zeros(2, dtype=v2d.dtype)
+    result = np.sum(v2d, axis=0, out=out)
+
+    assert np.shares_memory(result, out)
+    assert isinstance(result, type(v2d))
+    assert_allclose(out["value"], np.sum(v2d["value"], axis=0))
+    assert_allclose(out["variance"], np.sum(v2d["variance"], axis=0))
+
+
+def test_view_reduce_out_full(v2d):
+    out = np.zeros((), dtype=v2d.dtype)
+    result = np.sum(v2d, out=out)
+
+    assert np.shares_memory(result, out)
+    assert out["value"] == approx(np.sum(v2d["value"]))
+    assert out["variance"] == approx(np.sum(v2d["variance"]))
+
+
+def test_view_reduce_axis(v2d):
+    result = np.sum(v2d, axis=0)
+    assert_allclose(result["value"], [2, 3])
+    assert_allclose(result["variance"], [2, 5])
+
+
+# Issue #1143 (B12): binary ops used to preallocate the result with the view's
+# own shape, breaking legal broadcasts.
+def test_view_broadcast_add(v):
+    arr = np.ones((2, 4))
+    for result in (v + arr, arr + v):
+        assert result.shape == (2, 4)
+        assert isinstance(result, type(v))
+        assert_allclose(result.value, np.broadcast_to(v.value + 1, (2, 4)))
+        assert_allclose(result.variance, np.broadcast_to(v.variance + 1, (2, 4)))
+
+
+def test_view_broadcast_mul(v):
+    arr = np.full((2, 4), 2.0)
+    for result in (v * arr, arr * v):
+        assert result.shape == (2, 4)
+        assert isinstance(result, type(v))
+        assert_allclose(result.value, np.broadcast_to(v.value * 2, (2, 4)))
+        assert_allclose(result.variance, np.broadcast_to(v.variance * 4, (2, 4)))
 
 
 @pytest.fixture
@@ -423,6 +502,36 @@ def test_mean_view_reduce_keepdims():
     assert kept.shape == (1, 2)
     for field in v.dtype.names:
         assert_allclose(kept[field][0], plain[field])
+
+
+# Issue #1143 (B2): mean reductions used to silently ignore reduction
+# arguments (out, where, initial, dtype) they cannot honor.
+def test_mean_view_reduce_rejects_unsupported_kwargs(mean_pair):
+    h1, _ = mean_pair
+    v = h1.view()
+
+    with pytest.raises(TypeError, match="axis and keepdims"):
+        np.sum(v, dtype=np.float32)
+    with pytest.raises(TypeError, match="axis and keepdims"):
+        np.sum(v, initial=2.0)
+    with pytest.raises(TypeError, match="axis and keepdims"):
+        np.sum(v, where=np.zeros(v.shape, dtype=bool))
+    with pytest.raises(TypeError, match="out="):
+        np.sum(v, out=np.empty(()))
+
+
+def test_mean_view_reduce_out_matching_dtype(mean_pair):
+    h1, _ = mean_pair
+    v = h1.view()
+
+    out = np.zeros((), dtype=v.dtype)
+    result = np.sum(v, out=out)
+    assert np.shares_memory(result, out)
+
+    expected = np.sum(v)
+    assert out["count"] == approx(expected.count)
+    assert out["value"] == approx(expected.value)
+    assert out["_sum_of_deltas_squared"] == approx(expected._sum_of_deltas_squared)
 
 
 def test_mean_view_rejects_floor_division(mean_pair):
