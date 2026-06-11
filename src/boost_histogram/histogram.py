@@ -222,7 +222,7 @@ def _numpy_compatible_edges(cpp_ax: Any, flow: bool) -> np.typing.NDArray[np.flo
 
     if not isinstance(cpp_ax, _no_nudge_cpp_axes):
         last = cpp_ax.size + underflow
-        edges[last] = np.nextafter(edges[last], np.finfo(np.float64).tiny)
+        edges[last] = np.nextafter(edges[last], -np.inf)
 
     return edges
 

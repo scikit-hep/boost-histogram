@@ -960,3 +960,50 @@ def test_transform_validation():
 
     with pytest.raises(TypeError, match="AxisTransform"):
         bh.axis.Regular(10, 1, 100, transform=42)
+
+
+class TestNonContiguousIndex:
+    """Regression tests for gh-1143: category axis index() must honor the
+    input array's memory layout (Fortran order, slices, reversed views)."""
+
+    def test_intcategory_fortran_order(self):
+        ax = bh.axis.IntCategory([1, 2, 3])
+        arr = np.asfortranarray([[1, 2], [3, 1]])
+        assert_array_equal(ax.index(arr), [[0, 1], [2, 0]])
+
+    def test_intcategory_negative_stride(self):
+        ax = bh.axis.IntCategory([1, 2, 3])
+        arr = np.array([1, 2, 3, 1])[::-1]
+        assert_array_equal(ax.index(arr), [0, 2, 1, 0])
+
+    def test_intcategory_strided(self):
+        ax = bh.axis.IntCategory([1, 2, 3])
+        arr = np.array([1, 2, 3, 1])[::2]
+        assert_array_equal(ax.index(arr), [0, 2])
+
+    def test_strcategory_strided(self):
+        ax = bh.axis.StrCategory(["a", "b", "c"])
+        arr = np.array(["a", "b", "c", "a"])[::2]
+        assert_array_equal(ax.index(arr), [0, 2])
+
+    def test_strcategory_negative_stride(self):
+        ax = bh.axis.StrCategory(["a", "b", "c"])
+        arr = np.array(["a", "b", "c"])[::-1]
+        assert_array_equal(ax.index(arr), [2, 1, 0])
+
+    def test_strcategory_bytes_strided(self):
+        ax = bh.axis.StrCategory(["a", "b", "c"])
+        arr = np.array([b"a", b"b", b"c", b"a"])[::2]
+        assert_array_equal(ax.index(arr), [0, 2])
+
+
+def test_to_numpy_upper_edge_nudge_direction():
+    # Regression test for gh-1143: the last edge returned by to_numpy() is
+    # nudged one ulp *below* the true edge, which must also hold for
+    # negative and zero upper edges.
+    for start, stop in [(-2, -1), (-1, 0), (1, 2)]:
+        ax = bh.axis.Regular(4, start, stop)
+        h = bh.Histogram(ax)
+        edges = h.to_numpy()[1]
+        assert edges[-1] == np.nextafter(ax.edges[-1], -np.inf)
+        assert edges[-1] < stop

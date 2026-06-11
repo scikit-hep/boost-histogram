@@ -18,6 +18,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <stdexcept>
 #include <type_traits>
 
 namespace storage {
@@ -128,6 +129,9 @@ void load(Archive& ar,
     // data is stored as flat numpy array
     py::array_t<double> a;
     ar >> a;
+    if(a.size() % 2 != 0)
+        throw std::runtime_error(
+            "weighted_sum: serialized buffer size is not a multiple of 2");
     s.resize(static_cast<std::size_t>(a.size() / 2));
     // sadly we cannot move the memory from the numpy array into the vector
     std::copy(a.data(), a.data() + a.size(), reinterpret_cast<double*>(s.data()));
@@ -155,6 +159,8 @@ void load(Archive& ar,
     // data is stored as flat numpy array
     py::array_t<double> a;
     ar >> a;
+    if(a.size() % 3 != 0)
+        throw std::runtime_error("mean: serialized buffer size is not a multiple of 3");
     s.resize(static_cast<std::size_t>(a.size() / 3));
     // sadly we cannot move the memory from the numpy array into the vector
     std::copy(a.data(), a.data() + a.size(), reinterpret_cast<double*>(s.data()));
@@ -182,6 +188,9 @@ void load(Archive& ar,
     // data is stored as flat numpy array
     py::array_t<double> a;
     ar >> a;
+    if(a.size() % 4 != 0)
+        throw std::runtime_error(
+            "weighted_mean: serialized buffer size is not a multiple of 4");
     s.resize(static_cast<std::size_t>(a.size() / 4));
     // sadly we cannot move the memory from the numpy array into the vector
     std::copy(a.data(), a.data() + a.size(), reinterpret_cast<double*>(s.data()));

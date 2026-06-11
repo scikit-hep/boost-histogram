@@ -291,3 +291,39 @@ def test_cloudpickle():
 
     assert h == h2
     assert h is not h2
+
+
+# Regression tests for gh-1143: a corrupted pickle state must raise instead
+# of writing/reading out of bounds.
+def _corrupt_state(h, corrupt):
+    ch = h._hist
+    state = list(ch.__getstate__())
+    # the (last) flat numpy buffer in the state is the storage data
+    (idx,) = [i for i, x in enumerate(state) if isinstance(x, np.ndarray)][-1:]
+    state[idx] = corrupt(state[idx])
+    new = ch.__class__.__new__(ch.__class__)
+    new.__setstate__(tuple(state))
+
+
+def test_corrupted_pickle_truncated_buffer():
+    h = bh.Histogram(bh.axis.Regular(4, 0, 1), storage=bh.storage.Weight())
+    h.fill([0.1, 0.2])
+
+    with pytest.raises(RuntimeError, match="not a multiple of 2"):
+        _corrupt_state(h, lambda a: a[:-1])
+
+
+def test_corrupted_pickle_non_array():
+    h = bh.Histogram(bh.axis.Regular(4, 0, 1), storage=bh.storage.Weight())
+    h.fill([0.1, 0.2])
+
+    with pytest.raises(ValueError, match="expected a numpy array"):
+        _corrupt_state(h, lambda _: "not an array")
+
+
+def test_corrupted_pickle_mean_storage():
+    h = bh.Histogram(bh.axis.Regular(4, 0, 1), storage=bh.storage.Mean())
+    h.fill([0.1, 0.2], sample=[1.0, 2.0])
+
+    with pytest.raises(RuntimeError, match="not a multiple of 3"):
+        _corrupt_state(h, lambda a: a[:-1])

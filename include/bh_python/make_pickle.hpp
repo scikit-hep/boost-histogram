@@ -54,6 +54,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <stdexcept>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -300,7 +301,16 @@ class tuple_iarchive {
 
     template <class T>
     tuple_iarchive& operator>>(py::array_t<T>& a) {
-        return operator>>(static_cast<py::object&>(a));
+        py::object obj;
+        this->operator>>(obj);
+        // validate that the pickled object really is an array of the right
+        // dtype; make a C-contiguous copy/conversion if needed
+        auto arr
+            = py::array_t<T, py::array::c_style | py::array::forcecast>::ensure(obj);
+        if(!arr)
+            throw py::value_error("expected a numpy array in pickle data");
+        a = std::move(arr);
+        return *this;
     }
 
     template <class T>
@@ -334,7 +344,9 @@ class tuple_iarchive {
         py::array_t<T> a;
         this->operator>>(a);
         // buffer wrapped by array_wrapper must already have correct size
-        BOOST_ASSERT(static_cast<std::size_t>(a.size()) == w.size);
+        if(static_cast<std::size_t>(a.size()) != w.size)
+            throw std::runtime_error(
+                "array size does not match expected size in pickle data");
         // sadly we cannot move the memory from the numpy array into the vector
         std::copy(a.data(), a.data() + a.size(), w.ptr);
         return *this;

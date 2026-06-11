@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <functional>
 #include <iostream>
+#include <memory>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -48,8 +49,8 @@ decltype(auto) axis_cast(py::handle x) {
 
 template <>
 inline decltype(auto) axis_cast<int>(py::handle x) {
-    if(py::isinstance<int>(x))
-        return py::cast<int>(x);
+    if(py::isinstance<py::int_>(x))
+        return py::cast<int>(x); // overflow raises here
 
     auto val  = py::cast<double>(x);
     auto ival = static_cast<int>(val);
@@ -201,7 +202,7 @@ py::class_<A> register_axis(py::module& m, Args&&... args) {
         .def("__copy__", [](const A& self) { return A(self); })
         .def("__deepcopy__",
              [](const A& self, const py::object& memo) {
-                 A* a                  = new A(self);
+                 auto a                = std::make_unique<A>(self);
                  py::module const copy = py::module::import("copy");
                  a->metadata()         = copy.attr("deepcopy")(a->metadata(), memo);
                  return a;

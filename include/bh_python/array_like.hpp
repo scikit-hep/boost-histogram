@@ -8,9 +8,12 @@
 #include <bh_python/pybind11.hpp>
 
 #include <boost/core/span.hpp>
-#include <vector>
 
-/// Generate empty array with same shape and strides as argument
+/// Generate empty C-contiguous array with same shape as argument
+///
+/// Note: the result is always C-contiguous regardless of the input's memory
+/// layout (strides are *not* copied); callers fill it linearly in C order from
+/// a C-contiguous copy of the input.
 template <class T>
 py::array_t<T> array_like(const py::object& obj) {
     if(!py::isinstance<py::array>(obj)) {
@@ -23,13 +26,6 @@ py::array_t<T> array_like(const py::object& obj) {
         return py::array_t<T>(shape);
     }
     auto arr = py::cast<py::array>(obj);
-    std::vector<py::ssize_t> strides;
-    strides.reserve(static_cast<std::size_t>(arr.ndim()));
-    for(int i = 0; i < arr.ndim(); ++i) {
-        strides.emplace_back(arr.strides()[i] / arr.itemsize()
-                             * static_cast<py::ssize_t>(sizeof(T)));
-    }
     return py::array_t<T>{boost::span<const py::ssize_t>{
-                              arr.shape(), static_cast<std::size_t>(arr.ndim())},
-                          strides};
+        arr.shape(), static_cast<std::size_t>(arr.ndim())}};
 }
