@@ -81,14 +81,35 @@ class View(np.ndarray[Any, Any]):
         raw_inputs = [np.asarray(x) for x in inputs]
 
         # Reductions (``.sum()`` / ``np.add.reduce``) don't get a pre-allocated
-        # ``out`` here; the hook builds the reduced accumulator(s) itself.
+        # ``out`` here; the hook builds the reduced accumulator(s) itself. A
+        # caller-supplied ``out`` cannot be forwarded to the per-field math (it
+        # would be reused for every field), so it is filled in afterwards.
         match method, ufunc, raw_inputs:
             case "reduce", np.add, [raw_input]:
-                return self._reduce(raw_input, **kwargs)
+                out_tuple = kwargs.pop("out", None)
+                reduced = self._reduce(raw_input, **kwargs)
+                if out_tuple is None:
+                    return reduced
+                out_array: np.typing.NDArray[Any] = out_tuple[0]
+                if out_array.dtype != self.dtype:
+                    raise TypeError(
+                        f"out= with dtype {out_array.dtype} is not supported for "
+                        f"{self.__class__.__name__} reductions; the dtype must "
+                        f"match the view ({self.dtype})"
+                    )
+                out_array[...] = reduced
+                return out_array.view(self.__class__)
 
         # Everything else fills a pre-allocated result of this view's dtype
         (result,) = (
-            kwargs.pop("out") if "out" in kwargs else [np.empty(self.shape, self.dtype)]
+            kwargs.pop("out")
+            if "out" in kwargs
+            else [
+                np.empty(
+                    np.broadcast_shapes(*(np.shape(r) for r in raw_inputs)),
+                    self.dtype,
+                )
+            ]
         )
         match method, ufunc, raw_inputs:
             # Unary + and -
@@ -111,7 +132,7 @@ class View(np.ndarray[Any, Any]):
             # Multiplication and division
             case (
                 "__call__",
-                (np.multiply | np.divide | np.true_divide | np.floor_divide),
+                (np.multiply | np.divide | np.floor_divide),
                 [raw1, raw2],
             ):
                 if raw1.dtype == raw2.dtype:
@@ -260,6 +281,12 @@ class WeightedSumView(View):
         if raw1.dtype == self.dtype:
             ufunc(raw1["value"], raw2, out=out["value"], **kwargs)
             ufunc(raw1["variance"], raw2**2, out=out["variance"], **kwargs)
+        elif ufunc in {np.divide, np.floor_divide}:
+            # ``scalar / view``: the reciprocal of a weighted sum is not a
+            # linear scaling, so no meaningful variance can be propagated.
+            raise TypeError(
+                f"Cannot divide a scalar or array by a {self.__class__.__name__}"
+            )
         else:
             ufunc(raw1, raw2["value"], out=out["value"], **kwargs)
             ufunc(raw1**2, raw2["variance"], out=out["variance"], **kwargs)
@@ -341,7 +368,7 @@ class _MeanArithmetic:
         )
         if raw1.dtype == self.dtype:
             view, scalar = raw1, raw2
-        elif ufunc in (np.divide, np.true_divide):
+        elif ufunc is np.divide:
             # ``scalar / view`` is not a meaningful scaling of a mean.
             raise TypeError(
                 f"Cannot divide a scalar or array by a {self.__class__.__name__}"
@@ -359,13 +386,26 @@ class _MeanArithmetic:
             out[weight_sq] = view[weight_sq]
 
     def _reduce(self, raw: Any, **kwargs: Any) -> np.typing.NDArray[Any]:
+        axis = kwargs.pop("axis", 0)
+        keepdims = kwargs.pop("keepdims", False)
+        # ``np.sum`` always forwards ``dtype=None`` and ``where=True``; any
+        # other reduction argument (a real dtype, a where mask, initial, ...)
+        # cannot be honored by the mean-merging math below, so reject it
+        # instead of silently ignoring it.
+        if (
+            kwargs.pop("dtype", None) is not None
+            or kwargs.pop("where", True) is not True
+            or kwargs
+        ):
+            raise TypeError(
+                f"{self.__class__.__name__} reductions only support the "
+                "axis and keepdims arguments"
+            )
         weight, deltas, weight_sq = (
             self._WEIGHT_FIELD,
             self._DELTAS_FIELD,
             self._WEIGHT_SQ_FIELD,
         )
-        axis = kwargs.get("axis", 0)
-        keepdims = kwargs.get("keepdims", False)
         counts = raw[weight]
         values = raw["value"]
 
