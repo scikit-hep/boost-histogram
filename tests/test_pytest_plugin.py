@@ -1,11 +1,23 @@
 from __future__ import annotations
 
+import importlib.metadata
+
 import pytest
 
 import boost_histogram as bh
 from boost_histogram._pytest import pytest_assertrepr_compare
 
 pytest_plugins = ["pytester"]
+
+
+def _plugin_autoloaded() -> bool:
+    """True when boost-histogram is installed with its pytest11 entry point.
+
+    In a CMake-only / in-place build the package is importable but not
+    pip-installed, so there is no entry point and the auto-load test is skipped.
+    """
+    eps = importlib.metadata.entry_points(group="pytest11")
+    return any(ep.value == "boost_histogram._pytest" for ep in eps)
 
 
 def text(lines: list[str] | None) -> str:
@@ -123,6 +135,10 @@ def test_axis_metadata_differs() -> None:
 # --- end-to-end through pytest (proves the entry point is wired up) -------
 
 
+@pytest.mark.skipif(
+    not _plugin_autoloaded(),
+    reason="boost-histogram not installed with its pytest11 entry point (CMake-only build)",
+)
 def test_plugin_loaded_end_to_end(pytester: pytest.Pytester) -> None:
     pytester.makepyfile(
         """
