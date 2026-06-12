@@ -54,6 +54,9 @@ dependencies = [
     "numpy>=1.21.3",
 ]
 
+[project.entry-points.pytest11]
+boost_histogram = "boost_histogram._pytest"
+
 [project.urls]
 "Bug Tracker" = "https://github.com/scikit-hep/boost-histogram/issues"
 Changelog = "https://boost-histogram.readthedocs.io/en/latest/CHANGELOG.html"
@@ -150,6 +153,13 @@ addopts = [
 filterwarnings = [
   "error",
   "default:could not create cache path:pytest.PytestCacheWarning",
+  # Editable installs import the _boost_histogram_editable shim at interpreter
+  # startup (via .pth), so pytest cannot assertion-rewrite it once our pytest11
+  # plugin is registered. We do not want our own library rewritten anyway.
+  # pytest's fix for this (PR #10231, v7.2.0) only skips setuptools-style
+  # "__editable__*" finders, not scikit-build-core's "_<pkg>_editable" name.
+  # Fixed in pyest 7.2.0
+  "ignore:Module already imported so cannot be rewritten:pytest.PytestAssertRewriteWarning",
 ]
 xfail_strict = true
 testpaths = ["tests"]
