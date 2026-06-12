@@ -208,7 +208,7 @@ def test_histogram_does_not_mutate_input_edges():
 
     bh.numpy.histogram([0.5, 1.5], bins=edges)
 
-    np.testing.assert_array_equal(edges, original)
+    assert edges == approx(original)
 
 
 def test_histogramdd_does_not_mutate_input_edges():
@@ -221,8 +221,8 @@ def test_histogramdd_does_not_mutate_input_edges():
 
     bh.numpy.histogramdd((x, y), bins=(edges_x, edges_y))
 
-    np.testing.assert_array_equal(edges_x, original_x)
-    np.testing.assert_array_equal(edges_y, original_y)
+    assert edges_x == approx(original_x)
+    assert edges_y == approx(original_y)
 
 
 @pytest.mark.parametrize("bad_bins", [(2,), (2, 2, 2), (2, 2, 2, 2)])

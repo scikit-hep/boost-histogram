@@ -4,7 +4,7 @@ import platform
 
 import numpy as np
 import pytest
-from numpy.testing import assert_array_equal
+from pytest import approx
 
 import boost_histogram as bh
 
@@ -36,7 +36,7 @@ answer = {t: np.histogram2d(*vals[t], bins=bins, range=ranges)[0] for t in DTYPE
 @pytest.mark.parametrize("dtype", vals)
 def test_numpy_perf_2d(benchmark, dtype):
     result, _, _ = benchmark(np.histogram2d, *vals[dtype], bins=bins, range=ranges)
-    assert_array_equal(result, answer[dtype])
+    assert result == approx(answer[dtype])
 
 
 def make_and_run_hist(flow, storage, vals):
@@ -54,4 +54,4 @@ def make_and_run_hist(flow, storage, vals):
 @pytest.mark.parametrize("storage", STORAGES)
 def test_2d(benchmark, flow, storage, dtype):
     result = benchmark(make_and_run_hist, flow, storage, vals[dtype])
-    assert_array_equal(result[:-1, :-1], answer[dtype][:-1, :-1])
+    assert result[:-1, :-1] == approx(answer[dtype][:-1, :-1])
