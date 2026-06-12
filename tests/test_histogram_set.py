@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-from numpy.testing import assert_array_equal
+from pytest import approx
 
 import boost_histogram as bh
 
@@ -37,10 +37,10 @@ def test_1d_set_array():
     h = bh.Histogram(bh.axis.Regular(10, 0, 1))
 
     h[...] = np.arange(10)
-    assert_array_equal(h.view(), np.arange(10))
+    assert h.view() == approx(np.arange(10))
 
     h[...] = np.arange(12)
-    assert_array_equal(h.view(flow=True), np.arange(12))
+    assert h.view(flow=True) == approx(np.arange(12))
 
     with pytest.raises(ValueError):
         h[...] = np.arange(9)
@@ -50,17 +50,17 @@ def test_1d_set_array():
         h[...] = np.arange(13)
 
     h[...] = 1
-    assert_array_equal(h.view(), np.ones(10))
+    assert h.view() == approx(np.ones(10))
 
 
 def test_2d_set_array():
     h = bh.Histogram(bh.axis.Regular(10, 0, 1), bh.axis.Regular(10, 0, 1))
 
     h[...] = np.arange(10).reshape(-1, 1)
-    assert_array_equal(h.view()[:, 2], np.arange(10))
+    assert h.view()[:, 2] == approx(np.arange(10))
 
     h[...] = np.arange(12).reshape(-1, 1)
-    assert_array_equal(h.view(flow=True)[:, 3], np.arange(12))
+    assert h.view(flow=True)[:, 3] == approx(np.arange(12))
 
     with pytest.raises(ValueError):
         h[...] = np.arange(9).reshape(-1, 1)
@@ -70,7 +70,7 @@ def test_2d_set_array():
         h[...] = np.arange(13).reshape(-1, 1)
 
     h[...] = 1
-    assert_array_equal(h.view(), np.ones((10, 10)))
+    assert h.view() == approx(np.ones((10, 10)))
 
 
 def test_weighted_set_shortcut():
@@ -106,27 +106,27 @@ def test_set_special_dtype(storage, default):
 
     arr = np.full((10, 1), default)
     h[...] = arr
-    assert_array_equal(h.view()[:, 1:2], arr)
+    assert h.view()[:, 1:2] == approx(arr)
 
     arr = np.full((12, 1), default)
     h[...] = arr
-    assert_array_equal(h.view(flow=True)[:, 2:3], arr)
+    assert h.view(flow=True)[:, 2:3] == approx(arr)
 
     arr = np.full((10, 10), default)
     h[...] = arr
-    assert_array_equal(h.view(), arr)
+    assert h.view() == approx(arr)
 
     arr = np.full((10, 12), default)
     h[...] = arr
-    assert_array_equal(h.view(flow=True)[1:11, :], arr)
+    assert h.view(flow=True)[1:11, :] == approx(arr)
 
     arr = np.full((12, 10), default)
     h[...] = arr
-    assert_array_equal(h.view(flow=True)[:, 1:11], arr)
+    assert h.view(flow=True)[:, 1:11] == approx(arr)
 
     arr = np.full((12, 12), default)
     h[...] = arr
-    assert_array_equal(h.view(flow=True), arr)
+    assert h.view(flow=True) == approx(arr)
 
     arr = np.full((9, 1), default)
     with pytest.raises(ValueError):
@@ -170,7 +170,7 @@ def test_vectorized_set_basic():
     i1 = np.array([1, 3, 5])
 
     h[i0, i1, :] = 9.0
-    np.testing.assert_array_equal(h.view()[i0, i1, :], 9.0)
+    assert h.view()[i0, i1, :] == approx(9.0)
 
     # Untouched cells remain zero
     assert h.view()[1, 0, 0] == 0.0
@@ -178,7 +178,7 @@ def test_vectorized_set_basic():
     # Per-cell values, broadcasting over the trailing slice
     vals = np.arange(3 * 7).reshape(3, 7).astype(float)
     h[i0, i1, :] = vals
-    np.testing.assert_array_equal(h.view()[i0, i1, :], vals)
+    assert h.view()[i0, i1, :] == approx(vals)
 
 
 def test_vectorized_set_accumulator():
@@ -187,8 +187,8 @@ def test_vectorized_set_accumulator():
     idx = np.array([1, 3])
     # The View accepts a trailing (value, variance) dimension
     h[idx] = np.array([[10.0, 1.0], [20.0, 2.0]])
-    np.testing.assert_array_equal(h.view()[idx].value, [10.0, 20.0])
-    np.testing.assert_array_equal(h.view()[idx].variance, [1.0, 2.0])
+    assert h.view()[idx].value == approx([10.0, 20.0])
+    assert h.view()[idx].variance == approx([1.0, 2.0])
 
 
 def test_vectorized_set_multicell():
@@ -201,7 +201,7 @@ def test_vectorized_set_multicell():
     i0 = np.array([1, 2])
     i1 = np.array([0, 3])
     h[i0, i1] = 7.0
-    np.testing.assert_array_equal(h.view()[:, i0, i1], 7.0)
+    assert h.view()[:, i0, i1] == approx(7.0)
 
 
 def test_set_histogram_with_flow():
@@ -211,7 +211,7 @@ def test_set_histogram_with_flow():
     h2.view(flow=True)[:] = [100, 1, 2, 3, 200]
 
     h[:] = h2
-    assert_array_equal(h.view(flow=True), [100, 1, 2, 3, 200])
+    assert h.view(flow=True) == approx([100, 1, 2, 3, 200])
 
 
 def test_set_histogram_with_flow_2d():
@@ -220,7 +220,7 @@ def test_set_histogram_with_flow_2d():
     h2.view(flow=True)[...] = np.arange(16).reshape(4, 4)
 
     h[:, :] = h2
-    assert_array_equal(h.view(flow=True), np.arange(16).reshape(4, 4))
+    assert h.view(flow=True) == approx(np.arange(16).reshape(4, 4))
 
 
 def test_set_histogram_without_flow():
@@ -230,7 +230,7 @@ def test_set_histogram_without_flow():
     h3[:] = [1, 2, 3]
 
     h[0:3] = h3
-    assert_array_equal(h.view(flow=True), [0, 1, 2, 3, 0])
+    assert h.view(flow=True) == approx([0, 1, 2, 3, 0])
 
 
 def test_set_histogram_flow_mismatch():

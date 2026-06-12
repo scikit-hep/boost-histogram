@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-from numpy.testing import assert_array_equal
 from pytest import approx
 
 import boost_histogram as bh
@@ -178,8 +177,8 @@ def test_mix_value_with_slice():
     assert h[1, 1, True] == 11
     assert h[3, 4, False] == 0
 
-    assert_array_equal(h[:, :, True].view(), vals[:, :, 0])
-    assert_array_equal(h[:, :, False].view(), 0)
+    assert h[:, :, True].view() == approx(vals[:, :, 0])
+    assert h[:, :, False].view() == approx(0)
 
 
 def test_mix_value_with_slice_2():
@@ -195,11 +194,11 @@ def test_mix_value_with_slice_2():
     assert h[1, 1, True] == 11
     assert h[3, 4, False] == 0
 
-    assert_array_equal(h[:, :, True].view(), vals)
-    assert_array_equal(h[:, :, False].view(), 0)
+    assert h[:, :, True].view() == approx(vals)
+    assert h[:, :, False].view() == approx(0)
 
     h2 = h[bh.rebin(2), bh.rebin(5), :]
-    assert_array_equal(h2.shape, (5, 2, 2))
+    assert h2.shape == approx((5, 2, 2))
 
 
 def test_one_sided_slice():
@@ -210,7 +209,7 @@ def test_one_sided_slice():
     assert h[bh.tag.at(-1) : bh.tag.at(5) : sum] == 6  # keeps underflow, keeps overflow
 
     # check that slicing without bh.sum adds removed counts to flow bins
-    assert_array_equal(h[1:3].view(True), [2, 1, 1, 2])
+    assert h[1:3].view(True) == approx([2, 1, 1, 2])
 
     assert h[0::sum] == 5  # removes underflow, keeps overflow
     assert h[:4:sum] == 5  # removes overflow, keeps underflow
@@ -260,8 +259,8 @@ def test_noflow_slicing():
     assert h[3, 4, False] == 0
     assert h[{0: 3, 1: 4, 2: False}] == 0
 
-    assert_array_equal(h[:, :, True].view(), vals)
-    assert_array_equal(h[:, :, False].view(), 0)
+    assert h[:, :, True].view() == approx(vals)
+    assert h[:, :, False].view() == approx(0)
 
 
 def test_singleflow_slicing():
@@ -277,9 +276,9 @@ def test_singleflow_slicing():
     assert h[1, 0] == 4
     assert h[1, 1] == 5
 
-    assert_array_equal(h[:, 1 : 3 : bh.sum], vals[:, 1:3].sum(axis=1))
-    assert_array_equal(h[{1: slice(1, 3, bh.sum)}], vals[:, 1:3].sum(axis=1))
-    assert_array_equal(h[1 : 3 : bh.sum, :], vals[1:3, :].sum(axis=0))
+    assert np.asarray(h[:, 1 : 3 : bh.sum]) == approx(vals[:, 1:3].sum(axis=1))
+    assert np.asarray(h[{1: slice(1, 3, bh.sum)}]) == approx(vals[:, 1:3].sum(axis=1))
+    assert np.asarray(h[1 : 3 : bh.sum, :]) == approx(vals[1:3, :].sum(axis=0))
 
 
 def test_set_range_with_scalar():
@@ -331,9 +330,9 @@ def test_pick_str_category():
     assert h[1, 1, bh.loc("on")] == 11
     assert h[3, 4, bh.loc("maybe")] == 0
 
-    assert_array_equal(h[:, :, bh.loc("on")].view(), vals)
-    assert_array_equal(h[{2: bh.loc("on")}].view(), vals)
-    assert_array_equal(h[:, :, bh.loc("off")].view(), 0)
+    assert h[:, :, bh.loc("on")].view() == approx(vals)
+    assert h[{2: bh.loc("on")}].view() == approx(vals)
+    assert h[:, :, bh.loc("off")].view() == approx(0)
 
 
 def test_string_requirement():
@@ -375,10 +374,10 @@ def test_pick_int_category():
     assert h[3, 4, bh.loc(7)] == 0
     assert h[3, 4, bh.loc(12)] == 134
 
-    assert_array_equal(h[:, :, bh.loc(3)].view(), vals)
-    assert_array_equal(h[{2: bh.loc(3)}].view(), vals)
-    assert_array_equal(h[:, :, bh.loc(5)].view(), vals + 1)
-    assert_array_equal(h[:, :, bh.loc(7)].view(), 0)
+    assert h[:, :, bh.loc(3)].view() == approx(vals)
+    assert h[{2: bh.loc(3)}].view() == approx(vals)
+    assert h[:, :, bh.loc(5)].view() == approx(vals + 1)
+    assert h[:, :, bh.loc(7)].view() == approx(0)
 
 
 @pytest.mark.parametrize(
@@ -413,7 +412,7 @@ def test_axes_tuple():
     (before,) = h.axes.centers[:1]
     (after,) = h.axes[:1].centers
 
-    assert_array_equal(before, after)
+    assert before == approx(after)
 
 
 def test_axes_tuple_Nd():
@@ -426,8 +425,8 @@ def test_axes_tuple_Nd():
     b1, b2 = h.axes.centers[1:3]
     a1, a2 = h.axes[1:3].centers
 
-    assert_array_equal(b1.flatten(), a1.flatten())
-    assert_array_equal(b2.flatten(), a2.flatten())
+    assert b1.flatten() == approx(a1.flatten())
+    assert b2.flatten() == approx(a2.flatten())
 
     assert b1.ndim == 3
     assert a1.ndim == 2
@@ -588,9 +587,9 @@ def test_setting_histogram_slice_not_at_start():
     h_first[:, :, 2, 2] = h_2D
 
     # Verify that the data was correctly set (use a non-flow slice comparison)
-    np.testing.assert_array_equal(h_first.view()[:, :, 2, 2], h_2D.view())
-    np.testing.assert_array_equal(h_middle.view()[2, :, :, 2], h_2D.view())
-    np.testing.assert_array_equal(h_last.view()[2, 2, :, :], h_2D.view())
+    assert h_first.view()[:, :, 2, 2] == approx(h_2D.view())
+    assert h_middle.view()[2, :, :, 2] == approx(h_2D.view())
+    assert h_last.view()[2, 2, :, :] == approx(h_2D.view())
 
 
 def test_rebin_groups_no_inplace_modification():
@@ -627,7 +626,7 @@ def test_rebin_group_mapping_factor():
     h = bh.Histogram(bh.axis.Regular(5, 0, 5))
     h.view(flow=True)[:] = [100, 1, 2, 3, 4, 5, 200]
     hs = h[:: bh.rebin(2)]
-    assert_array_equal(hs.view(flow=True), [100, 3, 7, 205])
+    assert hs.view(flow=True) == approx([100, 3, 7, 205])
 
 
 def test_rebin_factor_and_axis_raises():
@@ -651,13 +650,13 @@ def test_vectorized_get_basic():
     i2 = np.array([2, 4, 6])
 
     # Full gather (no slice) -> 1D array of values, like view() fancy indexing
-    assert_array_equal(h[i0, i1, i2], h.view()[i0, i1, i2])
+    assert h[i0, i1, i2] == approx(h.view()[i0, i1, i2])
 
     # Arrays plus a trailing slice keep the axis
-    assert_array_equal(h[i0, i1, :], h.view()[i0, i1, :])
+    assert h[i0, i1, :] == approx(h.view()[i0, i1, :])
 
     # Arrays plus an ellipsis expand the remaining axes
-    assert_array_equal(h[i0, i1, ...], h.view()[i0, i1, :])
+    assert h[i0, i1, ...] == approx(h.view()[i0, i1, :])
 
 
 def test_vectorized_get_mixed_scalar_and_loc():
@@ -670,8 +669,8 @@ def test_vectorized_get_mixed_scalar_and_loc():
 
     i1 = np.array([0, 2])
     # Scalar locator + array + slice mix
-    assert_array_equal(h[bh.loc("1"), i1, :], h.view()[1, i1, :])
-    assert_array_equal(h[2, i1, :], h.view()[2, i1, :])
+    assert h[bh.loc("1"), i1, :] == approx(h.view()[1, i1, :])
+    assert h[2, i1, :] == approx(h.view()[2, i1, :])
 
 
 def test_vectorized_get_flow_offset():
@@ -680,7 +679,7 @@ def test_vectorized_get_flow_offset():
     h.view(flow=True)[...] = np.arange(7.0)
 
     idx = np.array([0, 4])
-    assert_array_equal(h[idx], np.array([h[0], h[4]]))
+    assert h[idx] == approx(np.array([h[0], h[4]]))
 
 
 def test_vectorized_get_accumulator_storage():
@@ -690,8 +689,8 @@ def test_vectorized_get_accumulator_storage():
     idx = np.array([0, 1, 3])
     got = h[idx]
     assert isinstance(got, bh.view.WeightedSumView)
-    assert_array_equal(got.value, h.view()[idx].value)
-    assert_array_equal(got.variance, h.view()[idx].variance)
+    assert got.value == approx(h.view()[idx].value)
+    assert got.variance == approx(h.view()[idx].variance)
 
 
 def test_vectorized_get_multicell_storage():
@@ -705,7 +704,7 @@ def test_vectorized_get_multicell_storage():
     i0 = np.array([1, 2])
     i1 = np.array([0, 3])
     # The cell index stays the leading dimension of the result
-    assert_array_equal(h[i0, i1], h.view()[:, i0, i1])
+    assert h[i0, i1] == approx(h.view()[:, i0, i1])
 
 
 def test_vectorized_get_rejects_unsupported():

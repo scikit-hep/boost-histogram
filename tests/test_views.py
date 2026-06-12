@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-from numpy.testing import assert_allclose
 from pytest import approx
 
 import boost_histogram as bh
@@ -16,36 +15,36 @@ def v():
 
 
 def test_basic_view(v):
-    assert_allclose(v.value, [0, 3, 2, 1])
-    assert_allclose(v.variance, [0, 3, 2, 1])
+    assert v.value == approx([0, 3, 2, 1])
+    assert v.variance == approx([0, 3, 2, 1])
 
 
 def test_view_mul(v):
     v2 = v * 2
-    assert_allclose(v2.value, [0, 6, 4, 2])
-    assert_allclose(v2.variance, [0, 12, 8, 4])
+    assert v2.value == approx([0, 6, 4, 2])
+    assert v2.variance == approx([0, 12, 8, 4])
 
     v2 = 2 * v
-    assert_allclose(v2.value, [0, 6, 4, 2])
-    assert_allclose(v2.variance, [0, 12, 8, 4])
+    assert v2.value == approx([0, 6, 4, 2])
+    assert v2.variance == approx([0, 12, 8, 4])
 
     v2 = v * (-2)
-    assert_allclose(v2.value, [0, -6, -4, -2])
-    assert_allclose(v2.variance, [0, 12, 8, 4])
+    assert v2.value == approx([0, -6, -4, -2])
+    assert v2.variance == approx([0, 12, 8, 4])
 
     v *= 2
-    assert_allclose(v.value, [0, 6, 4, 2])
-    assert_allclose(v.variance, [0, 12, 8, 4])
+    assert v.value == approx([0, 6, 4, 2])
+    assert v.variance == approx([0, 12, 8, 4])
 
 
 def test_view_div(v):
     v2 = v / 2
-    assert_allclose(v2.value, [0, 1.5, 1, 0.5])
-    assert_allclose(v2.variance, [0, 0.75, 0.5, 0.25])
+    assert v2.value == approx([0, 1.5, 1, 0.5])
+    assert v2.variance == approx([0, 0.75, 0.5, 0.25])
 
     v2 = v / (-0.5)
-    assert_allclose(v2.value, [0, -6, -4, -2])
-    assert_allclose(v2.variance, [0, 12, 8, 4])
+    assert v2.value == approx([0, -6, -4, -2])
+    assert v2.variance == approx([0, 12, 8, 4])
 
     # Issue #1143 (B11): the reciprocal of a weighted sum has no meaningful
     # variance, so dividing by a view is rejected.
@@ -53,79 +52,79 @@ def test_view_div(v):
         1 / v[1:]
 
     v /= 0.5
-    assert_allclose(v.value, [0, 6, 4, 2])
-    assert_allclose(v.variance, [0, 12, 8, 4])
+    assert v.value == approx([0, 6, 4, 2])
+    assert v.variance == approx([0, 12, 8, 4])
 
 
 def test_view_add(v):
     v2 = v + 1
-    assert_allclose(v2.value, [1, 4, 3, 2])
-    assert_allclose(v2.variance, [1, 4, 3, 2])
+    assert v2.value == approx([1, 4, 3, 2])
+    assert v2.variance == approx([1, 4, 3, 2])
 
     v2 = v + 2
-    assert_allclose(v2.value, [2, 5, 4, 3])
-    assert_allclose(v2.variance, [4, 7, 6, 5])
+    assert v2.value == approx([2, 5, 4, 3])
+    assert v2.variance == approx([4, 7, 6, 5])
 
     v2 = 2 + v
-    assert_allclose(v2.value, [2, 5, 4, 3])
-    assert_allclose(v2.variance, [4, 7, 6, 5])
+    assert v2.value == approx([2, 5, 4, 3])
+    assert v2.variance == approx([4, 7, 6, 5])
 
     v2 = v.copy()
     v2 += 2
-    assert_allclose(v2.value, [2, 5, 4, 3])
-    assert_allclose(v2.variance, [4, 7, 6, 5])
+    assert v2.value == approx([2, 5, 4, 3])
+    assert v2.variance == approx([4, 7, 6, 5])
 
     v2 = v + v
-    assert_allclose(v2.value, v.value * 2)
-    assert_allclose(v2.variance, v.variance * 2)
+    assert v2.value == approx(v.value * 2)
+    assert v2.variance == approx(v.variance * 2)
 
 
 def test_view_sub(v):
     v2 = v - 1
-    assert_allclose(v2.value, [-1, 2, 1, 0])
-    assert_allclose(v2.variance, [1, 4, 3, 2])
+    assert v2.value == approx([-1, 2, 1, 0])
+    assert v2.variance == approx([1, 4, 3, 2])
 
     v2 = v - 2
-    assert_allclose(v2.value, [-2, 1, 0, -1])
-    assert_allclose(v2.variance, [4, 7, 6, 5])
+    assert v2.value == approx([-2, 1, 0, -1])
+    assert v2.variance == approx([4, 7, 6, 5])
 
     v2 = 1 - v
-    assert_allclose(v2.value, [1, -2, -1, 0])
-    assert_allclose(v2.variance, [1, 4, 3, 2])
+    assert v2.value == approx([1, -2, -1, 0])
+    assert v2.variance == approx([1, 4, 3, 2])
 
     v2 = v.copy()
     v2 -= 2
-    assert_allclose(v2.value, [-2, 1, 0, -1])
-    assert_allclose(v2.variance, [4, 7, 6, 5])
+    assert v2.value == approx([-2, 1, 0, -1])
+    assert v2.variance == approx([4, 7, 6, 5])
 
     v2 = v - v
-    assert_allclose(v2.value, [0, 0, 0, 0])
-    assert_allclose(v2.variance, v.variance * 2)
+    assert v2.value == approx([0, 0, 0, 0])
+    assert v2.variance == approx(v.variance * 2)
 
 
 def test_view_unary(v):
     v2 = +v
-    assert_allclose(v.value, v2.value)
-    assert_allclose(v.variance, v2.variance)
+    assert v.value == approx(v2.value)
+    assert v.variance == approx(v2.variance)
 
     v2 = -v
-    assert_allclose(-v.value, v2.value)
-    assert_allclose(v.variance, v2.variance)
+    assert -v.value == approx(v2.value)
+    assert v.variance == approx(v2.variance)
 
 
 def test_view_add_same(v):
     v2 = v + v
 
-    assert_allclose(v.value * 2, v2.value)
-    assert_allclose(v.variance * 2, v2.variance)
+    assert v.value * 2 == approx(v2.value)
+    assert v.variance * 2 == approx(v2.variance)
 
     v2 = v + v[1]
-    assert_allclose(v.value + 3, v2.value)
-    assert_allclose(v.variance + 3, v2.variance)
+    assert v.value + 3 == approx(v2.value)
+    assert v.variance + 3 == approx(v2.variance)
 
     v2 = v + bh.accumulators.WeightedSum(5, 6)
-    assert_allclose(v.value + 5, v2.value)
-    assert_allclose(v.variance + 6, v2.variance)
+    assert v.value + 5 == approx(v2.value)
+    assert v.variance + 6 == approx(v2.variance)
 
     with pytest.raises(TypeError):
         v2 = v + bh.accumulators.WeightedMean(1, 2, 5, 6)
@@ -134,8 +133,8 @@ def test_view_add_same(v):
 def test_view_assign(v):
     v[...] = [[4, 1], [5, 2], [6, 1], [7, 2]]
 
-    assert_allclose(v.value, [4, 5, 6, 7])
-    assert_allclose(v.variance, [1, 2, 1, 2])
+    assert v.value == approx([4, 5, 6, 7])
+    assert v.variance == approx([1, 2, 1, 2])
 
 
 def test_view_assign_mean():
@@ -143,9 +142,9 @@ def test_view_assign_mean():
     m = h.copy().view()
 
     h[...] = [[10, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]]
-    assert_allclose(h.view().count, [10, 4, 7, 10])
-    assert_allclose(h.view().value, [2, 5, 8, 11])
-    assert_allclose(h.view().variance, [3, 6, 9, 12])
+    assert h.view().count == approx([10, 4, 7, 10])
+    assert h.view().value == approx([2, 5, 8, 11])
+    assert h.view().variance == approx([3, 6, 9, 12])
 
     # Make sure this really was a copy
     assert m.count[0] != 10
@@ -153,9 +152,9 @@ def test_view_assign_mean():
     # Assign directly on view
     m[...] = [[10, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]]
 
-    assert_allclose(m.count, [10, 4, 7, 10])
-    assert_allclose(m.value, [2, 5, 8, 11])
-    assert_allclose(m.variance, [3, 6, 9, 12])
+    assert m.count == approx([10, 4, 7, 10])
+    assert m.value == approx([2, 5, 8, 11])
+    assert m.variance == approx([3, 6, 9, 12])
     # Note: if counts <= 1, variance is undefined
 
 
@@ -166,10 +165,10 @@ def test_view_assign_wmean():
 
     h[...] = [[10, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]
 
-    assert_allclose(h.view().sum_of_weights, [10, 5, 9, 13])
-    assert_allclose(h.view().sum_of_weights_squared, [2, 6, 10, 14])
-    assert_allclose(h.view().value, [3, 7, 11, 15])
-    assert_allclose(h.view().variance, [4, 8, 12, 16])
+    assert h.view().sum_of_weights == approx([10, 5, 9, 13])
+    assert h.view().sum_of_weights_squared == approx([2, 6, 10, 14])
+    assert h.view().value == approx([3, 7, 11, 15])
+    assert h.view().variance == approx([4, 8, 12, 16])
 
     # Make sure this really was a copy
     assert w.sum_of_weights[0] != 10
@@ -177,10 +176,10 @@ def test_view_assign_wmean():
     # Assign directly on view
     w[...] = [[10, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]]
 
-    assert_allclose(w.sum_of_weights, [10, 5, 9, 13])
-    assert_allclose(w.sum_of_weights_squared, [2, 6, 10, 14])
-    assert_allclose(w.value, [3, 7, 11, 15])
-    assert_allclose(w.variance, [4, 8, 12, 16])
+    assert w.sum_of_weights == approx([10, 5, 9, 13])
+    assert w.sum_of_weights_squared == approx([2, 6, 10, 14])
+    assert w.value == approx([3, 7, 11, 15])
+    assert w.variance == approx([4, 8, 12, 16])
     # Note: if sum_of_weights <= 1, variance is undefined
 
     w[0] = [9, 1, 2, 3]
@@ -254,8 +253,8 @@ def test_view_rdiv_rejected(v):
         np.ones(4) / v
 
     # Scaling in the other direction must keep working.
-    assert_allclose((v / 2).value, v.value / 2)
-    assert_allclose((2 * v).value, v.value * 2)
+    assert (v / 2).value == approx(v.value / 2)
+    assert (2 * v).value == approx(v.value * 2)
 
 
 # Issue #1143 (B2): a caller-supplied ``out=`` used to be forwarded into the
@@ -271,8 +270,8 @@ def test_view_reduce_out_matching_dtype(v2d):
 
     assert np.shares_memory(result, out)
     assert isinstance(result, type(v2d))
-    assert_allclose(out["value"], np.sum(v2d["value"], axis=0))
-    assert_allclose(out["variance"], np.sum(v2d["variance"], axis=0))
+    assert out["value"] == approx(np.sum(v2d["value"], axis=0))
+    assert out["variance"] == approx(np.sum(v2d["variance"], axis=0))
 
 
 def test_view_reduce_out_full(v2d):
@@ -286,8 +285,8 @@ def test_view_reduce_out_full(v2d):
 
 def test_view_reduce_axis(v2d):
     result = np.sum(v2d, axis=0)
-    assert_allclose(result["value"], [2, 3])
-    assert_allclose(result["variance"], [2, 5])
+    assert result["value"] == approx([2, 3])
+    assert result["variance"] == approx([2, 5])
 
 
 # Issue #1143 (B12): binary ops used to preallocate the result with the view's
@@ -297,8 +296,8 @@ def test_view_broadcast_add(v):
     for result in (v + arr, arr + v):
         assert result.shape == (2, 4)
         assert isinstance(result, type(v))
-        assert_allclose(result.value, np.broadcast_to(v.value + 1, (2, 4)))
-        assert_allclose(result.variance, np.broadcast_to(v.variance + 1, (2, 4)))
+        assert result.value == approx(np.broadcast_to(v.value + 1, (2, 4)))
+        assert result.variance == approx(np.broadcast_to(v.variance + 1, (2, 4)))
 
 
 def test_view_broadcast_mul(v):
@@ -306,8 +305,8 @@ def test_view_broadcast_mul(v):
     for result in (v * arr, arr * v):
         assert result.shape == (2, 4)
         assert isinstance(result, type(v))
-        assert_allclose(result.value, np.broadcast_to(v.value * 2, (2, 4)))
-        assert_allclose(result.variance, np.broadcast_to(v.variance * 4, (2, 4)))
+        assert result.value == approx(np.broadcast_to(v.value * 2, (2, 4)))
+        assert result.variance == approx(np.broadcast_to(v.variance * 4, (2, 4)))
 
 
 @pytest.fixture
@@ -337,9 +336,9 @@ def test_mean_view_combine_matches_hist(mean_pair):
 
     assert isinstance(summed, type(h1.view()))
     for field in combined.dtype.names:
-        assert_allclose(summed[field], combined[field])
-    assert_allclose(summed.value, combined.value)
-    assert_allclose(summed.variance, combined.variance, equal_nan=True)
+        assert summed[field] == approx(combined[field])
+    assert summed.value == approx(combined.value)
+    assert summed.variance == approx(combined.variance, nan_ok=True)
 
 
 def test_weighted_mean_view_combine_matches_hist(weighted_mean_pair):
@@ -348,11 +347,11 @@ def test_weighted_mean_view_combine_matches_hist(weighted_mean_pair):
     summed = h1.view() + h2.view()
 
     for field in combined.dtype.names:
-        assert_allclose(summed[field], combined[field])
-    assert_allclose(summed.sum_of_weights, combined.sum_of_weights)
-    assert_allclose(summed.sum_of_weights_squared, combined.sum_of_weights_squared)
-    assert_allclose(summed.value, combined.value)
-    assert_allclose(summed.variance, combined.variance, equal_nan=True)
+        assert summed[field] == approx(combined[field])
+    assert summed.sum_of_weights == approx(combined.sum_of_weights)
+    assert summed.sum_of_weights_squared == approx(combined.sum_of_weights_squared)
+    assert summed.value == approx(combined.value)
+    assert summed.variance == approx(combined.variance, nan_ok=True)
 
 
 def test_mean_view_iadd(mean_pair):
@@ -361,7 +360,7 @@ def test_mean_view_iadd(mean_pair):
     v = h1.view().copy()
     v += h2.view()
     for field in expected.dtype.names:
-        assert_allclose(v[field], expected[field])
+        assert v[field] == approx(expected[field])
 
 
 def test_mean_view_zero_count_bins():
@@ -369,9 +368,9 @@ def test_mean_view_zero_count_bins():
     # divide/invalid warning.
     empty = bh.Histogram(bh.axis.Integer(0, 3), storage=bh.storage.Mean()).view()
     result = empty + empty
-    assert_allclose(result.count, [0, 0, 0])
-    assert_allclose(result.value, [0, 0, 0])
-    assert_allclose(result._sum_of_deltas_squared, [0, 0, 0])
+    assert result.count == approx([0, 0, 0])
+    assert result.value == approx([0, 0, 0])
+    assert result._sum_of_deltas_squared == approx([0, 0, 0])
     assert not np.any(np.isnan(result.value))
 
     # Empty in one operand only -> result equals the other operand bin-for-bin.
@@ -380,8 +379,8 @@ def test_mean_view_zero_count_bins():
     left = empty + h.view()
     right = h.view() + empty
     for field in h.view().dtype.names:
-        assert_allclose(left[field], h.view()[field])
-        assert_allclose(right[field], h.view()[field])
+        assert left[field] == approx(h.view()[field])
+        assert right[field] == approx(h.view()[field])
 
 
 def test_mean_view_add_accumulator(mean_pair):
@@ -395,7 +394,7 @@ def test_mean_view_add_accumulator(mean_pair):
     other[...] = [[3.0, 5.0, 2.0]] * 4  # count, value, variance (matches acc)
     expected = v + other.view()
     for field in v.dtype.names:
-        assert_allclose(result[field], expected[field])
+        assert result[field] == approx(expected[field])
 
 
 def test_weighted_mean_view_add_accumulator(weighted_mean_pair):
@@ -410,7 +409,7 @@ def test_weighted_mean_view_add_accumulator(weighted_mean_pair):
     other[...] = [[2.0, 1.5, 5.0, 2.0]] * 4
     expected = v + other.view()
     for field in v.dtype.names:
-        assert_allclose(result[field], expected[field])
+        assert result[field] == approx(expected[field])
 
 
 def test_weighted_mean_view_combine_empty_bin():
@@ -422,7 +421,7 @@ def test_weighted_mean_view_combine_empty_bin():
     ).view()
     result = h.view() + empty
     for field in h.view().dtype.names:
-        assert_allclose(result[field], h.view()[field])
+        assert result[field] == approx(h.view()[field])
     assert not np.any(np.isnan(result.value))
 
 
@@ -432,33 +431,32 @@ def test_mean_view_scalar_scale():
     v = h.view()
 
     for scaled in (v * 3, 3 * v):
-        assert_allclose(scaled.count, v.count)  # weights unchanged
-        assert_allclose(scaled.value, v.value * 3)
-        assert_allclose(scaled._sum_of_deltas_squared, v._sum_of_deltas_squared * 9)
+        assert scaled.count == approx(v.count)  # weights unchanged
+        assert scaled.value == approx(v.value * 3)
+        assert scaled._sum_of_deltas_squared == approx(v._sum_of_deltas_squared * 9)
 
     divided = v / 2
-    assert_allclose(divided.count, v.count)
-    assert_allclose(divided.value, v.value / 2)
-    assert_allclose(divided._sum_of_deltas_squared, v._sum_of_deltas_squared / 4)
+    assert divided.count == approx(v.count)
+    assert divided.value == approx(v.value / 2)
+    assert divided._sum_of_deltas_squared == approx(v._sum_of_deltas_squared / 4)
 
     v2 = v.copy()
     v2 *= 3
-    assert_allclose(v2.value, v.value * 3)
+    assert v2.value == approx(v.value * 3)
     v2 = v.copy()
     v2 /= 2
-    assert_allclose(v2.value, v.value / 2)
+    assert v2.value == approx(v.value / 2)
 
 
 def test_weighted_mean_view_scalar_scale(weighted_mean_pair):
     h1, _ = weighted_mean_pair
     v = h1.view()
     scaled = v * 2
-    assert_allclose(scaled.sum_of_weights, v.sum_of_weights)
-    assert_allclose(scaled.sum_of_weights_squared, v.sum_of_weights_squared)
-    assert_allclose(scaled.value, v.value * 2)
-    assert_allclose(
-        scaled._sum_of_weighted_deltas_squared,
-        v._sum_of_weighted_deltas_squared * 4,
+    assert scaled.sum_of_weights == approx(v.sum_of_weights)
+    assert scaled.sum_of_weights_squared == approx(v.sum_of_weights_squared)
+    assert scaled.value == approx(v.value * 2)
+    assert scaled._sum_of_weighted_deltas_squared == approx(
+        v._sum_of_weighted_deltas_squared * 4
     )
 
 
@@ -501,7 +499,7 @@ def test_mean_view_reduce_keepdims():
     assert plain.shape == (2,)
     assert kept.shape == (1, 2)
     for field in v.dtype.names:
-        assert_allclose(kept[field][0], plain[field])
+        assert kept[field][0] == approx(plain[field])
 
 
 # Issue #1143 (B2): mean reductions used to silently ignore reduction

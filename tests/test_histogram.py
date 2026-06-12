@@ -13,7 +13,6 @@ from io import BytesIO
 
 import numpy as np
 import pytest
-from numpy.testing import assert_array_equal
 from pytest import approx
 
 import boost_histogram as bh
@@ -180,7 +179,7 @@ def test_setting(count_single_storage):
     assert h[9] == 5
     assert h[bh.overflow] == 6
 
-    assert_array_equal(h.view(flow=True), [1, 2, 3, 0, 0, 0, 4, 0, 0, 0, 5, 6])
+    assert h.view(flow=True) == approx([1, 2, 3, 0, 0, 0, 4, 0, 0, 0, 5, 6])
 
 
 def test_growth():
@@ -638,13 +637,13 @@ def test_int_storage_division_promotes_to_double(storage):
     # hist / hist
     result = a / b
     assert result.storage_type is bh.storage.Double
-    assert_array_equal(result.view(), expected)
+    assert result.view() == approx(expected)
     # operands are unchanged
     assert a.storage_type is storage
     assert b.storage_type is storage
 
     # hist / scalar
-    assert_array_equal((a / 2).view(), np.array([5, 3, 7]) / 2)
+    assert (a / 2).view() == approx(np.array([5, 3, 7]) / 2)
     assert (a / 2).storage_type is bh.storage.Double
 
     # in-place division promotes storage but keeps the same object
@@ -652,7 +651,7 @@ def test_int_storage_division_promotes_to_double(storage):
     a /= b
     assert a is a_orig
     assert a.storage_type is bh.storage.Double
-    assert_array_equal(a.view(), expected)
+    assert a.view() == approx(expected)
 
 
 def test_mixed_int_double_division():
@@ -663,8 +662,8 @@ def test_mixed_int_double_division():
     bd[:] = (2, 4, 3)
 
     expected = np.array([5, 3, 7]) / np.array([2, 4, 3])
-    assert_array_equal((ai / bd).view(), expected)
-    assert_array_equal((bd / ai).view(), 1 / expected)
+    assert (ai / bd).view() == approx(expected)
+    assert (bd / ai).view() == approx(1 / expected)
 
 
 def test_project():
@@ -733,11 +732,11 @@ def test_shrink_1d():
     h = bh.Histogram(bh.axis.Regular(20, 1, 5))
     h.fill(1.1)
     hs = h[{0: slice(bh.loc(1), bh.loc(2))}]
-    assert_array_equal(hs.view(), [1, 0, 0, 0, 0])
+    assert hs.view() == approx([1, 0, 0, 0, 0])
 
     d = OrderedDict({0: slice(bh.loc(1), bh.loc(2))})
     hs = h[d]
-    assert_array_equal(hs.view(), [1, 0, 0, 0, 0])
+    assert hs.view() == approx([1, 0, 0, 0, 0])
 
 
 @pytest.mark.parametrize(
@@ -748,33 +747,33 @@ def test_rebin_1d(metadata):
     h.fill([1.1, 2.2, 3.3, 4.4])
 
     hs = h[{0: slice(None, None, bh.rebin(4))}]
-    assert_array_equal(hs.view(), [1, 1, 1, 0, 1])
+    assert hs.view() == approx([1, 1, 1, 0, 1])
     assert h.axes[0].metadata is hs.axes[0].metadata
 
     hs = h[{0: bh.rebin(4)}]
-    assert_array_equal(hs.view(), [1, 1, 1, 0, 1])
+    assert hs.view() == approx([1, 1, 1, 0, 1])
     assert h.axes[0].metadata is hs.axes[0].metadata
 
     hs = h[{0: bh.rebin(groups=[1, 2, 3, 14])}]
-    assert_array_equal(hs.view(), [1, 0, 0, 3])
-    assert_array_equal(hs.axes.edges[0], [1.0, 1.2, 1.6, 2.2, 5.0])
+    assert hs.view() == approx([1, 0, 0, 3])
+    assert hs.axes.edges[0] == approx([1.0, 1.2, 1.6, 2.2, 5.0])
     assert h.axes[0].metadata is hs.axes[0].metadata
 
     exact_edges = [1.0, 1.2, 1.6, 2.2, 5.0]
     hs = h[bh.rebin(edges=exact_edges)]
-    assert_array_equal(hs.view(), [1, 0, 0, 3])
-    assert_array_equal(hs.axes.edges[0], exact_edges)
+    assert hs.view() == approx([1, 0, 0, 3])
+    assert hs.axes.edges[0] == approx(exact_edges)
     assert h.axes[0].metadata is hs.axes[0].metadata
 
     fuzzy_edges = [1.0, 1.200000000000001, 1.6, 2.2, 5.0]
     hs = h[bh.rebin(edges=fuzzy_edges)]
-    assert_array_equal(hs.view(), [1, 0, 0, 3])
-    assert_array_equal(hs.axes.edges[0], exact_edges)
+    assert hs.view() == approx([1, 0, 0, 3])
+    assert hs.axes.edges[0] == approx(exact_edges)
     assert h.axes[0].metadata is hs.axes[0].metadata
 
     hs = h[bh.rebin(axis=bh.axis.Variable([1.0, 1.2, 1.6, 2.2, 5.0], metadata="hi"))]
-    assert_array_equal(hs.view(), [1, 0, 0, 3])
-    assert_array_equal(hs.axes.edges[0], [1.0, 1.2, 1.6, 2.2, 5.0])
+    assert hs.view() == approx([1, 0, 0, 3])
+    assert hs.axes.edges[0] == approx([1.0, 1.2, 1.6, 2.2, 5.0])
     assert hs.axes[0].metadata == "hi"
 
 
@@ -782,47 +781,47 @@ def test_rebin_1d_flow():
     h = bh.Histogram(bh.axis.Regular(5, 0, 5, underflow=True, overflow=True))
     h.fill([-1, 1.1, 2.2, 3.3, 4.4, 5.5])
     hs = h[bh.rebin(edges=[0, 3, 5.0])]
-    assert_array_equal(hs.view(), [2, 2])
-    assert_array_equal(hs.view(flow=True), [1, 2, 2, 1])
-    assert_array_equal(hs.axes.edges[0], [0.0, 3.0, 5.0])
+    assert hs.view() == approx([2, 2])
+    assert hs.view(flow=True) == approx([1, 2, 2, 1])
+    assert hs.axes.edges[0] == approx([0.0, 3.0, 5.0])
 
     # Flow bins are kept from the original
     h = bh.Histogram(bh.axis.Regular(5, 0, 5, underflow=False, overflow=False))
     h.fill([-1, 1.1, 2.2, 3.3, 4.4, 5.5])
     hs = h[bh.rebin(edges=[0, 3, 5.0])]
-    assert_array_equal(hs.view(flow=True), [2, 2])
+    assert hs.view(flow=True) == approx([2, 2])
 
     h = bh.Histogram(bh.axis.Regular(5, 0, 5, underflow=True, overflow=False))
     h.fill([-1, 1.1, 2.2, 3.3, 4.4, 5.5])
     hs = h[bh.rebin(edges=[0, 3, 5.0])]
-    assert_array_equal(hs.view(flow=True), [1, 2, 2])
+    assert hs.view(flow=True) == approx([1, 2, 2])
 
     h = bh.Histogram(bh.axis.Regular(5, 0, 5, underflow=True, overflow=True))
     h.fill([-1, 1.1, 2.2, 3.3, 4.4, 5.5])
     hs = h[
         bh.rebin(axis=bh.axis.Variable([0, 3, 5.0], underflow=False, overflow=False))
     ]
-    assert_array_equal(hs.view(flow=True), [2, 2])
+    assert hs.view(flow=True) == approx([2, 2])
 
 
 def test_rebin_change_axis_int():
     h = bh.Histogram(bh.axis.Regular(5, 0, 5))
     h.fill([-1, 1.1, 2.2, 3.3, 4.4, 5.5])
     hs = h[bh.rebin(edges=[0, 3, 5.0], axis=bh.axis.Integer(10, 12))]
-    assert_array_equal(hs.view(), [2, 2])
-    assert_array_equal(hs.view(flow=True), [1, 2, 2, 1])
-    assert_array_equal(hs.axes.edges[0], [10, 11, 12])
+    assert hs.view() == approx([2, 2])
+    assert hs.view(flow=True) == approx([1, 2, 2, 1])
+    assert hs.axes.edges[0] == approx([10, 11, 12])
 
 
 def test_rebin_change_axis_cat():
     h = bh.Histogram(bh.axis.Regular(5, 0, 5))
     h.fill([-1, 1.1, 2.2, 3.3, 4.4, 5.5])
     hs = h[bh.rebin(groups=[2, 3], axis=bh.axis.StrCategory(["a", "b"]))]
-    assert_array_equal(hs.view(), [1, 3])
+    assert hs.view() == approx([1, 3])
     # Old underflow (1) and old overflow (1) both end up in the new overflow,
     # exactly once each.
-    assert_array_equal(hs.view(flow=True), [1, 3, 2])
-    assert_array_equal(list(hs.axes[0]), ["a", "b"])
+    assert hs.view(flow=True) == approx([1, 3, 2])
+    assert list(hs.axes[0]) == approx(["a", "b"])
 
 
 def test_rebin_groups_flow_to_noflow():
@@ -832,7 +831,7 @@ def test_rebin_groups_flow_to_noflow():
     h = bh.Histogram(bh.axis.Regular(4, 0, 4))
     h.view(flow=True)[:] = [100, 1, 2, 3, 4, 200]
     hs = h[bh.rebin(groups=[2, 2], axis=bh.axis.IntCategory([0, 1]))]
-    assert_array_equal(hs.view(flow=True), [3, 7, 300])
+    assert hs.view(flow=True) == approx([3, 7, 300])
 
 
 def test_rebin_groups_flow_combinations():
@@ -841,15 +840,15 @@ def test_rebin_groups_flow_combinations():
     h.view(flow=True)[:] = [100, 1, 2, 3, 4, 200]
 
     # Old flow -> new flow: flow bins are carried over unchanged
-    assert_array_equal(h[bh.rebin(groups=[2, 2])].view(flow=True), [100, 3, 7, 200])
+    assert h[bh.rebin(groups=[2, 2])].view(flow=True) == approx([100, 3, 7, 200])
 
     # Old underflow dropped on an ordered axis without underflow
     hs = h[bh.rebin(groups=[2, 2], axis=bh.axis.Variable([0, 2, 4], underflow=False))]
-    assert_array_equal(hs.view(flow=True), [3, 7, 200])
+    assert hs.view(flow=True) == approx([3, 7, 200])
 
     # Old overflow dropped on an axis without overflow
     hs = h[bh.rebin(groups=[2, 2], axis=bh.axis.Variable([0, 2, 4], overflow=False))]
-    assert_array_equal(hs.view(flow=True), [100, 3, 7])
+    assert hs.view(flow=True) == approx([100, 3, 7])
 
     # Both flow bins dropped on a flowless ordered axis
     hs = h[
@@ -858,30 +857,30 @@ def test_rebin_groups_flow_combinations():
             axis=bh.axis.Variable([0, 2, 4], underflow=False, overflow=False),
         )
     ]
-    assert_array_equal(hs.view(flow=True), [3, 7])
+    assert hs.view(flow=True) == approx([3, 7])
 
     # Old axis without underflow: new axis copies the traits
     h2 = bh.Histogram(bh.axis.Regular(4, 0, 4, underflow=False))
     h2.view(flow=True)[:] = [1, 2, 3, 4, 200]
-    assert_array_equal(h2[bh.rebin(groups=[2, 2])].view(flow=True), [3, 7, 200])
+    assert h2[bh.rebin(groups=[2, 2])].view(flow=True) == approx([3, 7, 200])
 
     # Old axis without underflow onto a categorical axis: only the old
     # overflow goes to the new overflow
     hs = h2[bh.rebin(groups=[2, 2], axis=bh.axis.IntCategory([0, 1]))]
-    assert_array_equal(hs.view(flow=True), [3, 7, 200])
+    assert hs.view(flow=True) == approx([3, 7, 200])
 
     # Old flowless axis onto an axis with flow: new flow bins stay empty
     h3 = bh.Histogram(bh.axis.Regular(4, 0, 4, underflow=False, overflow=False))
     h3.view(flow=True)[:] = [1, 2, 3, 4]
     hs = h3[bh.rebin(groups=[2, 2], axis=bh.axis.Variable([0, 2, 4]))]
-    assert_array_equal(hs.view(flow=True), [0, 3, 7, 0])
+    assert hs.view(flow=True) == approx([0, 3, 7, 0])
 
 
 def test_shrink_rebin_1d():
     h = bh.Histogram(bh.axis.Regular(20, 0, 4))
     h.fill(1.1)
     hs = h[{0: slice(bh.loc(1), bh.loc(3), bh.rebin(2))}]
-    assert_array_equal(hs.view(), [1, 0, 0, 0, 0])
+    assert hs.view() == approx([1, 0, 0, 0, 0])
 
 
 def test_rebin_nd():
@@ -1034,7 +1033,7 @@ def test_fill_bool_not_bool():
 
     h.fill([0, 1, 1, 7, -3])
 
-    assert_array_equal(h.view(), [1, 4])
+    assert h.view() == approx([1, 4])
 
 
 def test_pick_bool():
@@ -1043,22 +1042,22 @@ def test_pick_bool():
     h.fill([True, True, False, False], [True, False, True, True])
     h.fill([True, True, True], True)
 
-    assert_array_equal(h[True, :].view(), [1, 4])
-    assert_array_equal(h[False, :].view(), [0, 2])
-    assert_array_equal(h[:, False].view(), [0, 1])
-    assert_array_equal(h[:, True].view(), [2, 4])
+    assert h[True, :].view() == approx([1, 4])
+    assert h[False, :].view() == approx([0, 2])
+    assert h[:, False].view() == approx([0, 1])
+    assert h[:, True].view() == approx([2, 4])
 
 
 def test_slice_bool():
     h = bh.Histogram(bh.axis.Boolean())
     h.fill([0, 0, 0, 1, 3, 4, -2])
 
-    assert_array_equal(h.view(), [3, 4])
-    assert_array_equal(h[1:].view(), [4])
-    assert_array_equal(h[:1].view(), [3])
+    assert h.view() == approx([3, 4])
+    assert h[1:].view() == approx([4])
+    assert h[:1].view() == approx([3])
 
-    assert_array_equal(h[:1].axes[0].centers, [0.5])
-    assert_array_equal(h[1:].axes[0].centers, [1.5])
+    assert h[:1].axes[0].centers == approx([0.5])
+    assert h[1:].axes[0].centers == approx([1.5])
 
 
 def test_pickle_bool():
@@ -1086,7 +1085,7 @@ def test_pickle_bool():
     assert repr(a) == repr(b)
     assert str(a) == str(b)
     assert a == b
-    assert_array_equal(a.view(), b.view())
+    assert a.view() == approx(b.view())
 
 
 # NumPy tests
@@ -1102,20 +1101,20 @@ def test_numpy_conversion_0():
 
     for t in (c, v):
         assert t.dtype == np.double  # CLASSIC: np.uint8
-        assert_array_equal(t, (1, 5, 0))
+        assert t == approx((1, 5, 0))
 
     for _ in range(10):
         a.fill(2)
     # copy does not change, but view does
-    assert_array_equal(c, (1, 5, 0))
-    assert_array_equal(v, (1, 5, 10))
+    assert c == approx((1, 5, 0))
+    assert v == approx((1, 5, 10))
 
     for _ in range(255):
         a.fill(1)
     c = np.array(a)
 
     assert c.dtype == np.double  # CLASSIC: np.uint16
-    assert_array_equal(c, (1, 260, 10))
+    assert c == approx((1, 260, 10))
     # view does not follow underlying switch in word size
     # assert not np.all(c, v)
 
@@ -1128,8 +1127,8 @@ def test_numpy_conversion_1():
     c = np.array(h)  # a copy
     v = np.asarray(h)  # a view
     assert c.dtype == np.double  # CLASSIC: np.float64
-    assert_array_equal(c, np.array((0, 30, 0)))
-    assert_array_equal(v, c)
+    assert c == approx(np.array((0, 30, 0)))
+    assert v == approx(c)
 
 
 def test_numpy_conversion_2():
@@ -1152,13 +1151,13 @@ def test_numpy_conversion_2():
             for k in range(a.axes[2].extent):
                 d[i, j, k] = a[i, j, k]
 
-    assert_array_equal(d, r)
+    assert d == approx(r)
 
     c = np.array(a)  # a copy
     v = np.asarray(a)  # a view
 
-    assert_array_equal(c, r)
-    assert_array_equal(v, r)
+    assert c == approx(r)
+    assert v == approx(r)
 
 
 def test_numpy_conversion_3():
@@ -1177,7 +1176,7 @@ def test_numpy_conversion_3():
                 r[i, j, k] = i + j + k
     c = a.view(flow=True)
 
-    assert_array_equal(c, r)
+    assert c == approx(r)
 
     assert a.sum() == approx(144)
     assert a.sum(flow=True) == approx(720)
@@ -1254,7 +1253,7 @@ def test_fill_with_sequence_0():
     a.fill(np.array(1))  # 0-dim arrays work
     a.fill(ia(-1, 0, 1, 2))
     a.fill((2, 1, 0, -1))
-    assert_array_equal(a.view(True), [2, 2, 3, 2])
+    assert a.view(True) == approx([2, 2, 3, 2])
 
     with pytest.raises(ValueError):
         a.fill(np.empty((2, 2)))
@@ -1271,13 +1270,13 @@ def test_fill_with_sequence_0():
     b = bh.Histogram(bh.axis.Regular(3, 0, 3))
     b.fill(fa(0, 0, 1, 2))
     b.fill(ia(1, 0, 2, 2))
-    assert_array_equal(b.view(True), [0, 3, 2, 3, 0])
+    assert b.view(True) == approx([0, 3, 2, 3, 0])
 
     c = bh.Histogram(
         bh.axis.Integer(0, 2, underflow=False, overflow=False), bh.axis.Regular(2, 0, 2)
     )
     c.fill(ia(-1, 0, 1), fa(-1.0, 1.5, 0.5))
-    assert_array_equal(c.view(True), [[0, 0, 1, 0], [0, 1, 0, 0]])
+    assert c.view(True) == approx(np.array([[0, 0, 1, 0], [0, 1, 0, 0]]))
     # we don't support: assert a[[1, 1]].value, 0
 
     with pytest.raises(ValueError):
@@ -1287,11 +1286,11 @@ def test_fill_with_sequence_0():
 
     # this broadcasts
     c.fill([1, 0], -1)
-    assert_array_equal(c.view(True), [[1, 0, 1, 0], [1, 1, 0, 0]])
+    assert c.view(True) == approx(np.array([[1, 0, 1, 0], [1, 1, 0, 0]]))
     c.fill([1, 0], 0)
-    assert_array_equal(c.view(True), [[1, 1, 1, 0], [1, 2, 0, 0]])
+    assert c.view(True) == approx(np.array([[1, 1, 1, 0], [1, 2, 0, 0]]))
     c.fill(0, [-1, 0.5, 1.5, 2.5])
-    assert_array_equal(c.view(True), [[2, 2, 2, 1], [1, 2, 0, 0]])
+    assert c.view(True) == approx(np.array([[2, 2, 2, 1], [1, 2, 0, 0]]))
 
     with pytest.raises(IndexError):
         c[1]
@@ -1370,10 +1369,10 @@ def test_fill_with_sequence_2():
     a.fill("A")
     a.fill(np.array("B"))  # 0-dim array is also accepted
     a.fill(("A", "B", "C"))
-    assert_array_equal(a.view(True), [2, 2, 1])
+    assert a.view(True) == approx([2, 2, 1])
     a.fill(np.array(("D", "B", "A"), dtype="S5"))
     a.fill(np.array(("D", "B", "A"), dtype="U1"))
-    assert_array_equal(a.view(True), [4, 4, 3])
+    assert a.view(True) == approx([4, 4, 3])
 
     with pytest.raises(ValueError):
         a.fill(np.array((("B", "A"), ("C", "A"))))  # ndim == 2 not allowed
@@ -1383,7 +1382,7 @@ def test_fill_with_sequence_2():
         bh.axis.StrCategory(["A", "B"]),
     )
     b.fill((1, 0, 10), ("C", "B", "A"))
-    assert_array_equal(b.view(True), [[0, 1, 0], [0, 0, 1]])
+    assert b.view(True) == approx(np.array([[0, 1, 0], [0, 0, 1]]))
 
 
 def test_fill_with_sequence_3():
@@ -1394,7 +1393,7 @@ def test_fill_with_sequence_3():
     assert h.axes[0].size == 1
     h.fill(["A", "B"])
     assert h.axes[0].size == 2
-    assert_array_equal(h.view(True), [3, 1])
+    assert h.view(True) == approx([3, 1])
 
 
 def test_fill_with_sequence_4():
@@ -1404,7 +1403,7 @@ def test_fill_with_sequence_4():
     h.fill("1", np.arange(2))
     assert h.axes[0].size == 1
     assert h.axes[1].size == 2
-    assert_array_equal(h.view(True), [[1, 1]])
+    assert h.view(True) == approx(np.array([[1, 1]]))
 
     with pytest.raises(ValueError):
         h.fill(["1"], np.arange(2))  # lengths do not match
@@ -1489,7 +1488,7 @@ def test_hist_division():
 
     h1 /= h.axes[0].widths * h.sum()
 
-    assert_array_equal(h1.view(), dens)
+    assert h1.view() == approx(dens)
 
 
 def test_add_hists():
@@ -1508,10 +1507,10 @@ def test_add_hists():
     h3 = h.copy()
     h3 += 5
 
-    assert_array_equal(h, 1)
-    assert_array_equal(h1, 2)
-    assert_array_equal(h2, 3)
-    assert_array_equal(h3, 6)
+    assert np.asarray(h) == approx(1)
+    assert np.asarray(h1) == approx(2)
+    assert np.asarray(h2) == approx(3)
+    assert np.asarray(h3) == approx(6)
 
 
 def test_add_broadcast():
@@ -1561,7 +1560,7 @@ def test_reductions():
     widths_1 = functools.reduce(operator.mul, h.axes.widths)
     widths_2 = np.prod(h.axes.widths, axis=0)
 
-    assert_array_equal(widths_1, widths_2)
+    assert widths_1 == approx(widths_2)
 
 
 # Issue 435
@@ -1810,11 +1809,11 @@ def test_fill_noncontiguous_int_category():
 
     h = bh.Histogram(bh.axis.IntCategory(cat))
     h.fill(np.array([1, 2, 3, 1])[::-1])
-    assert_array_equal(h.view(flow=True), expected.view(flow=True))
+    assert h.view(flow=True) == approx(expected.view(flow=True))
 
     h2 = bh.Histogram(bh.axis.IntCategory(cat))
     h2.fill(np.array([1, 7, 3, 7, 2, 7, 1, 7])[::2])
-    assert_array_equal(h2.view(flow=True), expected.view(flow=True))
+    assert h2.view(flow=True) == approx(expected.view(flow=True))
 
 
 def test_fill_noncontiguous_str_category():
@@ -1825,11 +1824,11 @@ def test_fill_noncontiguous_str_category():
 
     h = bh.Histogram(bh.axis.StrCategory(cat))
     h.fill(np.array(["a", "b", "c", "b", "a"])[::2])
-    assert_array_equal(h.view(flow=True), expected.view(flow=True))
+    assert h.view(flow=True) == approx(expected.view(flow=True))
 
     expected2 = bh.Histogram(bh.axis.StrCategory(cat))
     expected2.fill(["c", "b", "a"])
 
     h2 = bh.Histogram(bh.axis.StrCategory(cat))
     h2.fill(np.array(["a", "b", "c"])[::-1])
-    assert_array_equal(h2.view(flow=True), expected2.view(flow=True))
+    assert h2.view(flow=True) == approx(expected2.view(flow=True))

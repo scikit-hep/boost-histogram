@@ -5,7 +5,6 @@ import operator
 
 import numpy as np
 import pytest
-from numpy.testing import assert_array_equal
 from pytest import approx
 
 import boost_histogram as bh
@@ -26,7 +25,7 @@ def test_setting(storage):
     assert h[1] == 3
     assert h[9] == 5
 
-    assert_array_equal(h.view(), [2, 3, 0, 0, 0, 0, 0, 0, 0, 5])
+    assert h.view() == approx([2, 3, 0, 0, 0, 0, 0, 0, 0, 5])
 
 
 def test_setting_weight():
@@ -65,8 +64,8 @@ def test_setting_weight():
     assert b["value"][0] == a["value"][0]
     assert b["variance"][0] == a["variance"][0]
 
-    assert_array_equal(a.view().value, b.view()["value"])
-    assert_array_equal(a.view().variance, b.view()["variance"])
+    assert a.view().value == approx(b.view()["value"])
+    assert a.view().variance == approx(b.view()["variance"])
 
 
 def test_sum_weight():
@@ -81,7 +80,8 @@ def test_sum_weight():
     v2 = v + v
     h2 = h + h
 
-    assert_array_equal(h2.view(), v2)
+    assert h2.view().value == approx(v2.value)
+    assert h2.view().variance == approx(v2.variance)
 
 
 def test_setting_profile():
@@ -124,11 +124,9 @@ def test_setting_profile():
     assert b[0]["count"] == a["count"][0]
     assert b[0]["_sum_of_deltas_squared"] == a["_sum_of_deltas_squared"][0]
 
-    assert_array_equal(a.view().value, b.view()["value"])
-    assert_array_equal(a.view().count, b.view()["count"])
-    assert_array_equal(
-        a.view()._sum_of_deltas_squared, b.view()["_sum_of_deltas_squared"]
-    )
+    assert a.view().value == approx(b.view()["value"])
+    assert a.view().count == approx(b.view()["count"])
+    assert a.view()._sum_of_deltas_squared == approx(b.view()["_sum_of_deltas_squared"])
 
 
 def test_mean_storage_rejects_string_sample():
@@ -208,14 +206,11 @@ def test_setting_weighted_profile():
         == a["_sum_of_weighted_deltas_squared"][0]
     )
 
-    assert_array_equal(a.view().value, b.view()["value"])
-    assert_array_equal(a.view().sum_of_weights, b.view()["sum_of_weights"])
-    assert_array_equal(
-        a.view().sum_of_weights_squared, b.view()["sum_of_weights_squared"]
-    )
-    assert_array_equal(
-        a.view()._sum_of_weighted_deltas_squared,
-        b.view()["_sum_of_weighted_deltas_squared"],
+    assert a.view().value == approx(b.view()["value"])
+    assert a.view().sum_of_weights == approx(b.view()["sum_of_weights"])
+    assert a.view().sum_of_weights_squared == approx(b.view()["sum_of_weights_squared"])
+    assert a.view()._sum_of_weighted_deltas_squared == approx(
+        b.view()["_sum_of_weighted_deltas_squared"]
     )
 
 
@@ -326,20 +321,19 @@ def test_non_uniform_rebin_with_weights():
     )
 
     hs = h[{0: slice(None, None, bh.rebin(4))}]
-    assert_array_equal(hs.view(), rslt)
+    assert hs.view() == approx(rslt)
 
     hs = h[{0: bh.rebin(4)}]
-    assert_array_equal(hs.view(), rslt)
+    assert hs.view() == approx(rslt)
 
     hs = h[{0: bh.rebin(groups=[1, 2, 3, 14])}]
-    assert_array_equal(
-        hs.view(),
+    assert hs.view() == approx(
         np.array(
             [(1.0, 1.0), (0.0, 0.0), (0.0, 0.0), (3.0, 3.0)],
             dtype=[("value", "<f8"), ("variance", "<f8")],
-        ),
+        )
     )
-    assert_array_equal(hs.axes.edges[0], [1.0, 1.2, 1.6, 2.2, 5.0])
+    assert hs.axes.edges[0] == approx([1.0, 1.2, 1.6, 2.2, 5.0])
 
     # nD
     h = bh.Histogram(
@@ -420,34 +414,34 @@ def test_multi_cell_arithmetic(nelem):
     base = h.view().copy()
 
     # Histogram + Histogram (and the in-place form)
-    assert_array_equal((h + h).view(), base * 2)
+    assert (h + h).view() == approx(base * 2)
 
     h_iadd = _filled_multi_cell(nelem)
     h_iadd += h
-    assert_array_equal(h_iadd.view(), base * 2)
+    assert h_iadd.view() == approx(base * 2)
 
     # Histogram - Histogram (element-wise on the cells), including the in-place
     # form and a result with negative cells
-    assert_array_equal((h - h).view(), base * 0)
-    assert_array_equal((h + h - h).view(), base)
-    assert_array_equal((h - h - h).view(), -base)
+    assert (h - h).view() == approx(base * 0)
+    assert (h + h - h).view() == approx(base)
+    assert (h - h - h).view() == approx(-base)
 
     h_isub = _filled_multi_cell(nelem)
     h_isub -= h
-    assert_array_equal(h_isub.view(), base * 0)
+    assert h_isub.view() == approx(base * 0)
 
     # Scalar multiplication / division (both orders and in-place)
-    assert_array_equal((h * 2).view(), base * 2)
-    assert_array_equal((2 * h).view(), base * 2)
-    assert_array_equal((h / 2).view(), base / 2)
+    assert (h * 2).view() == approx(base * 2)
+    assert (2 * h).view() == approx(base * 2)
+    assert (h / 2).view() == approx(base / 2)
 
     h_imul = _filled_multi_cell(nelem)
     h_imul *= 2
-    assert_array_equal(h_imul.view(), base * 2)
+    assert h_imul.view() == approx(base * 2)
 
     h_idiv = _filled_multi_cell(nelem)
     h_idiv /= 2
-    assert_array_equal(h_idiv.view(), base / 2)
+    assert h_idiv.view() == approx(base / 2)
 
 
 @pytest.mark.parametrize("nelem", [1, 3])
@@ -507,8 +501,10 @@ def test_multi_cell_rebin_groups():
 
     hs = h[bh.rebin(groups=[2, 2])]
     assert hs.storage.nelem == 2
-    assert_array_equal(hs.view(), [[3, 7], [30, 70]])
-    assert_array_equal(hs.view(flow=True), [[100, 3, 7, 200], [1000, 30, 70, 2000]])
+    assert hs.view() == approx(np.array([[3, 7], [30, 70]]))
+    assert hs.view(flow=True) == approx(
+        np.array([[100, 3, 7, 200], [1000, 30, 70, 2000]])
+    )
 
 
 def test_multi_cell_rebin_groups_2d():
@@ -527,9 +523,9 @@ def test_multi_cell_rebin_groups_2d():
 
     hs = h[:, bh.rebin(groups=[2, 2])]
     assert hs.storage.nelem == 2
-    assert_array_equal(hs.view(), [[[3, 7], [5, 0]], [[30, 70], [50, 0]]])
+    assert hs.view() == approx(np.array([[[3, 7], [5, 0]], [[30, 70], [50, 0]]]))
     # The first axis is untouched
-    assert_array_equal(hs.view().sum(axis=(1, 2)), h.view().sum(axis=(1, 2)))
+    assert hs.view().sum(axis=(1, 2)) == approx(h.view().sum(axis=(1, 2)))
 
 
 @pytest.mark.parametrize("nelem", [1, 3])
@@ -537,8 +533,8 @@ def test_multi_cell_reset(nelem):
     h = _filled_multi_cell(nelem)
     assert h.view().sum() != 0
     h.reset()
-    assert_array_equal(h.view(), np.zeros_like(h.view()))
-    assert_array_equal(h.view(flow=True), np.zeros_like(h.view(flow=True)))
+    assert h.view() == approx(np.zeros_like(h.view()))
+    assert h.view(flow=True) == approx(np.zeros_like(h.view(flow=True)))
 
 
 # Issue #1129
@@ -577,8 +573,8 @@ def test_multi_cell():
 
     # Filling 1-Dim
     h.fill(x, weight=weights)
-    assert_array_equal(h[1], [1, 2, 3])
-    assert_array_equal(h[2], [4, 5, 6])
+    assert h[1] == approx([1, 2, 3])
+    assert h[2] == approx([4, 5, 6])
 
     h = bh.Histogram(
         bh.axis.Regular(5, 0, 5),
@@ -588,8 +584,8 @@ def test_multi_cell():
 
     # Filling 2-Dim
     h.fill(x, y, weight=weights)
-    assert_array_equal(h[1, 0], [1, 2, 3])
-    assert_array_equal(h[2, 1], [4, 5, 6])
+    assert h[1, 0] == approx([1, 2, 3])
+    assert h[2, 1] == approx([4, 5, 6])
 
     # View and values
 
@@ -635,47 +631,47 @@ def test_multi_cell():
 
     expected_view = expected_view_with_flow[:, 1:-1, 1:-1]
 
-    assert_array_equal(h.view(), expected_view)
-    assert_array_equal(h.view(flow=True), expected_view_with_flow)
+    assert h.view() == approx(expected_view)
+    assert h.view(flow=True) == approx(expected_view_with_flow)
 
-    assert_array_equal(h.values(), expected_view)
-    assert_array_equal(h.values(flow=True), expected_view_with_flow)
+    assert h.values() == approx(expected_view)
+    assert h.values(flow=True) == approx(expected_view_with_flow)
 
     # Modify view
     expected_view[0, 1, 0] = 10
     expected_view_with_flow[0, 2, 1] = 10
     h.view()[0, 1, 0] = 10
 
-    assert_array_equal(h.view(), expected_view)
-    assert_array_equal(h.view(flow=True), expected_view_with_flow)
+    assert h.view() == approx(expected_view)
+    assert h.view(flow=True) == approx(expected_view_with_flow)
 
-    assert_array_equal(h.values(), expected_view)
-    assert_array_equal(h.values(flow=True), expected_view_with_flow)
+    assert h.values() == approx(expected_view)
+    assert h.values(flow=True) == approx(expected_view_with_flow)
 
     # Slice histogram
     ## via reduce() (only use real slices)
-    assert_array_equal(h[1:3, 1:3].view(), expected_view[:, 1:3, 1:3])
+    assert h[1:3, 1:3].view() == approx(expected_view[:, 1:3, 1:3])
 
     ## Without reduce() (only slices and single elements)
-    assert_array_equal(h[2, 1:3].view(), expected_view[:, 2, 1:3])
+    assert h[2, 1:3].view() == approx(expected_view[:, 2, 1:3])
 
     # Project histogram
-    assert_array_equal(
-        h.project(1).view(), np.sum(expected_view_with_flow, axis=1)[:, 1:-1]
+    assert h.project(1).view() == approx(
+        np.sum(expected_view_with_flow, axis=1)[:, 1:-1]
     )
-    assert_array_equal(
-        h.project(0).view(), np.sum(expected_view_with_flow, axis=2)[:, 1:-1]
+    assert h.project(0).view() == approx(
+        np.sum(expected_view_with_flow, axis=2)[:, 1:-1]
     )
 
     # Sum histogram
-    assert_array_equal(h.sum(), np.sum(expected_view, axis=(1, 2)))
-    assert_array_equal(h.sum(flow=True), np.sum(expected_view_with_flow, axis=(1, 2)))
+    assert h.sum() == approx(np.sum(expected_view, axis=(1, 2)))
+    assert h.sum(flow=True) == approx(np.sum(expected_view_with_flow, axis=(1, 2)))
 
     # __setitem__ for histogram
     sub_array_to_set = np.array([[20, 30], [21, 31], [22, 32]])
     expected_view[:, 2:4, 1] = sub_array_to_set
     h[2:4, 1] = sub_array_to_set
-    assert_array_equal(h.view(), expected_view)
+    assert h.view() == approx(expected_view)
 
     sub_array_to_set = np.array(
         [
@@ -686,4 +682,4 @@ def test_multi_cell():
     )
     expected_view[:, 2:4, 0:3] = sub_array_to_set
     h[2:4, 0:3] = sub_array_to_set
-    assert_array_equal(h.view(), expected_view)
+    assert h.view() == approx(expected_view)
