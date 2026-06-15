@@ -173,8 +173,13 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
             "sum",
             [](const histogram_t& self, bool flow) {
                 const py::gil_scoped_release release;
-                return bh::algorithm::sum(
-                    self, flow ? bh::coverage::all : bh::coverage::inner);
+                // A rank-0 histogram has no flow bins, so inner == all. Use
+                // all to avoid Boost's indexed range, which is UB for rank-0
+                // (it reads uninitialized per-axis state); the all path uses
+                // plain iteration instead.
+                const auto cov = (flow || self.rank() == 0) ? bh::coverage::all
+                                                            : bh::coverage::inner;
+                return bh::algorithm::sum(self, cov);
             },
             "flow"_a = false)
 
@@ -182,6 +187,12 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
             "empty",
             [](const histogram_t& self, bool flow) {
                 const py::gil_scoped_release release;
+                if(self.rank() == 0) {
+                    // algorithm::empty drives the same rank-0-UB indexed range;
+                    // check the single cell directly instead.
+                    using value_type = typename histogram_t::value_type;
+                    return !(*self.begin() != value_type());
+                }
                 return bh::algorithm::empty(
                     self, flow ? bh::coverage::all : bh::coverage::inner);
             },
@@ -368,8 +379,12 @@ auto inline register_histogram<bh::multi_cell<double>>(py::module& m,
             "sum",
             [](const histogram_t& self, bool flow) -> value_type {
                 const py::gil_scoped_release release;
-                value_type result = bh::algorithm::sum(
-                    self, flow ? bh::coverage::all : bh::coverage::inner);
+                // rank-0 inner coverage drives Boost's indexed range, which is
+                // UB for rank-0; all coverage is equivalent (no flow bins) and
+                // uses plain iteration.
+                const auto cov    = (flow || self.rank() == 0) ? bh::coverage::all
+                                                               : bh::coverage::inner;
+                value_type result = bh::algorithm::sum(self, cov);
                 // A histogram with zero bins has no cells to accumulate, so the
                 // default-constructed accumulator stays empty. Return a
                 // zero-filled vector of length nelem so the result shape is
@@ -385,6 +400,12 @@ auto inline register_histogram<bh::multi_cell<double>>(py::module& m,
             "empty",
             [](const histogram_t& self, bool flow) {
                 const py::gil_scoped_release release;
+                if(self.rank() == 0) {
+                    // algorithm::empty drives the same rank-0-UB indexed range;
+                    // the single MultiCell cell is empty iff it collected
+                    // nothing.
+                    return self.begin()->empty();
+                }
                 return bh::algorithm::empty(
                     self, flow ? bh::coverage::all : bh::coverage::inner);
             },

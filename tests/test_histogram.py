@@ -1231,6 +1231,25 @@ def test_numpy_conversion_5():
     assert a1[2, 1] == 5
 
 
+def test_rank0_sum_empty():
+    # A rank-0 histogram has a single cell and no flow bins. inner coverage
+    # used to drive Boost's indexed range, which is UB for rank-0 and crashed
+    # depending on stack layout (e.g. free-threaded Windows). inner == all here.
+    h = bh.Histogram()
+    assert h.ndim == 0
+    assert h.empty() is True
+    assert h.empty(flow=True) is True
+    assert h.sum() == 0
+    assert h.sum(flow=True) == 0
+
+    h.fill()
+    h.fill()
+    h.fill()
+    assert h.empty() is False
+    assert h.sum() == 3
+    assert h.sum(flow=True) == 3
+
+
 @pytest.mark.parametrize(
     "dtype",
     [np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16, np.uint32, np.uint64],
