@@ -402,9 +402,9 @@ auto inline register_histogram<bh::multi_cell<double>>(py::module& m,
                 const py::gil_scoped_release release;
                 if(self.rank() == 0) {
                     // algorithm::empty drives the same rank-0-UB indexed range;
-                    // check the single cell directly instead.
-                    using value_type = typename histogram_t::value_type;
-                    return !(*self.begin() != value_type());
+                    // the single MultiCell cell is empty iff it collected
+                    // nothing.
+                    return self.begin()->empty();
                 }
                 return bh::algorithm::empty(
                     self, flow ? bh::coverage::all : bh::coverage::inner);
