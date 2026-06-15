@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.metadata
+import sys
 
 import pytest
 
@@ -135,6 +136,7 @@ def test_axis_metadata_differs() -> None:
 # --- end-to-end through pytest (proves the entry point is wired up) -------
 
 
+@pytest.mark.skipif(sys.platform.startswith("emscripten"), reason="needs subprocess")
 @pytest.mark.skipif(
     not _plugin_autoloaded(),
     reason="boost-histogram not installed with its pytest11 entry point (CMake-only build)",
