@@ -223,41 +223,12 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
     return hist;
 }
 
-/// Python-facing per-bin value conversions shared by the collector storages.
-inline std::vector<double>
-collector_to_python(const bh::accumulators::collector<std::vector<double>>& cell) {
-    return {cell.begin(), cell.end()};
-}
-
-inline std::vector<std::pair<double, double>>
-collector_to_python(const accumulators::weighted_collector<double>& cell) {
-    std::vector<std::pair<double, double>> out;
-    out.reserve(cell.size());
-    for(const auto& e : cell)
-        out.emplace_back(e.value, e.weight);
-    return out;
-}
-
-inline void
-collector_from_python(const std::vector<double>& input,
-                      bh::accumulators::collector<std::vector<double>>& cell) {
-    cell = bh::accumulators::collector<std::vector<double>>(input);
-}
-
-inline void collector_from_python(const std::vector<std::pair<double, double>>& input,
-                                  accumulators::weighted_collector<double>& cell) {
-    typename accumulators::weighted_collector<double>::container_type cont;
-    cont.reserve(input.size());
-    for(const auto& p : input)
-        cont.push_back({p.first, p.second});
-    cell = accumulators::weighted_collector<double>(std::move(cont));
-}
-
 template <class S>
 auto register_collector_histogram(py::module& m, const char* name, const char* desc) {
     using histogram_t = bh::histogram<vector_axis_variant, S>;
-    using cell_type   = typename S::value_type;
-    using value_type  = decltype(collector_to_python(std::declval<const cell_type&>()));
+    // The per-bin cell (a (weighted_)collector) is itself the Python-facing
+    // accumulator (Values / WeightedValues); at()/sum() hand it back directly.
+    using value_type = typename S::value_type;
 
     // No buffer protocol: a collector holds a variable-length list per bin, so it
     // cannot be exposed as a contiguous numpy buffer. The view() method below returns
@@ -339,25 +310,21 @@ auto register_collector_histogram(py::module& m, const char* name, const char* d
         .def("at",
              [](const histogram_t& self, const py::args& args) -> value_type {
                  auto int_args = py::cast<std::vector<int>>(args);
-                 return collector_to_python(self.at(int_args));
+                 return self.at(int_args);
              })
 
         .def("_at_set",
              [](histogram_t& self, const value_type& input, const py::args& args) {
-                 auto int_args = py::cast<std::vector<int>>(args);
-                 collector_from_python(input, self.at(int_args));
+                 auto int_args     = py::cast<std::vector<int>>(args);
+                 self.at(int_args) = input;
              })
 
         .def(
             "sum",
             [](const histogram_t& self, bool flow) -> value_type {
-                cell_type result;
-                {
-                    const py::gil_scoped_release release;
-                    result = bh::algorithm::sum(
-                        self, flow ? bh::coverage::all : bh::coverage::inner);
-                }
-                return collector_to_python(result);
+                const py::gil_scoped_release release;
+                return bh::algorithm::sum(
+                    self, flow ? bh::coverage::all : bh::coverage::inner);
             },
             "flow"_a = false)
 

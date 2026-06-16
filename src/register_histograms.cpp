@@ -17,8 +17,8 @@ void register_histograms(py::module& hist) {
 
     // Make the weighted collector's per-bin entries visible to numpy as a
     // structured dtype; used by view() (the macro cannot take template commas)
-    using weighted_collector_entry = accumulators::weighted_collector<double>::entry;
-    PYBIND11_NUMPY_DTYPE(weighted_collector_entry, value, weight);
+    using weighted_value = accumulators::weighted_value<double>;
+    PYBIND11_NUMPY_DTYPE(weighted_value, value, weight);
 
     register_histogram<storage::int64>(
         hist,

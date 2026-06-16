@@ -303,7 +303,9 @@ void load(Archive& ar, storage::weighted_collector& s, unsigned /* version */) {
         typename collector_t::container_type cont;
         cont.reserve(c);
         for(std::size_t j = 0; j < c; ++j)
-            cont.push_back({*value_ptr++, *weight_ptr++});
+            cont.emplace_back(value_ptr[j], weight_ptr[j]);
+        value_ptr += c;
+        weight_ptr += c;
         s[i] = collector_t(std::move(cont));
     }
 }

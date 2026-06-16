@@ -9,6 +9,8 @@ from numpy.testing import assert_array_equal
 
 import boost_histogram as bh
 
+V = bh.accumulators.Values
+
 
 def _filled_1d():
     """A 1D Collector histogram where bin i holds the values filled into it."""
@@ -28,9 +30,14 @@ def test_construction_and_repr():
 
 def test_fill_and_index():
     h = _filled_1d()
+    # h[i] is a Values accumulator (the per-bin cell)
+    assert isinstance(h[0], V)
     assert list(h[0]) == [1.0, 2.0]
     assert list(h[1]) == [3.0]
     assert list(h[2]) == [4.0, 5.0, 6.0]
+    assert h[0][0] == 1.0
+    assert len(h[0]) == 2
+    assert_array_equal(h[0].value, [1.0, 2.0])
 
 
 def test_view_is_object_array():
@@ -74,10 +81,11 @@ def test_2d():
 
 def test_sum_is_concatenation():
     h = _filled_1d()
+    assert isinstance(h.sum(), V)
     assert sorted(h.sum()) == [1.0, 2.0, 3.0, 4.0, 5.0, 6.0]
-    # empty histogram sums to an empty list
+    # empty histogram sums to an empty cell
     empty = bh.Histogram(bh.axis.Regular(3, 0, 3), storage=bh.storage.Collector())
-    assert empty.sum() == []
+    assert list(empty.sum()) == []
 
 
 def test_addition_concatenates():
@@ -196,3 +204,41 @@ def test_structural_match():
             pass
         case _:
             raise AssertionError("Collector storage did not match")
+
+
+# --- The Values cell accumulator ---
+
+
+def test_values_construction():
+    c = V([1.0, 2.0, 3.0])
+    assert len(c) == 3
+    assert c[0] == 1.0
+    assert c[-1] == 3.0
+    assert list(c) == [1.0, 2.0, 3.0]
+    assert_array_equal(c.value, [1.0, 2.0, 3.0])
+    assert len(V()) == 0
+
+
+def test_values_index_error():
+    c = V([1.0])
+    with pytest.raises(IndexError):
+        c[5]
+
+
+def test_values_repr():
+    assert repr(V([1.0, 2.0])) == "Values([1.0, 2.0])"
+
+
+def test_values_equality_copy_pickle():
+    c = V([1.0, 2.0])
+    assert c == V([1.0, 2.0])
+    assert c != V([1.0])
+    assert c != 1.0
+    assert copy.copy(c) == c
+    assert copy.deepcopy(c) == c
+    assert pickle.loads(pickle.dumps(c)) == c
+
+
+def test_values_in_accumulators():
+    assert V is bh.accumulators.Values
+    assert V.__module__ == "boost_histogram.accumulators"

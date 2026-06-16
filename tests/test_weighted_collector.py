@@ -9,6 +9,7 @@ from numpy.testing import assert_array_equal
 
 import boost_histogram as bh
 
+WV = bh.accumulators.WeightedValues
 ENTRY_DTYPE = np.dtype([("value", "<f8"), ("weight", "<f8")])
 
 
@@ -34,23 +35,37 @@ def test_construction_and_repr():
 
 def test_fill_and_index():
     h = _filled_1d()
-    assert h[0] == [(1.0, 0.1), (2.0, 0.2)]
-    assert h[1] == [(3.0, 0.3)]
-    assert h[2] == [(4.0, 0.4), (5.0, 0.5), (6.0, 0.6)]
+    # h[i] is a WeightedValues accumulator (the per-bin cell)
+    assert isinstance(h[0], WV)
+    assert list(h[0]) == [(1.0, 0.1), (2.0, 0.2)]
+    assert list(h[1]) == [(3.0, 0.3)]
+    assert list(h[2]) == [(4.0, 0.4), (5.0, 0.5), (6.0, 0.6)]
+    # individual entries are (value, weight) tuples
+    assert h[0][0] == (1.0, 0.1)
+    assert len(h[0]) == 2
+
+
+def test_value_and_weight_columns():
+    h = _filled_1d()
+    assert_array_equal(h[0].value, [1.0, 2.0])
+    assert_array_equal(h[0].weight, [0.1, 0.2])
+    assert h[0].value.dtype == np.float64
+    assert_array_equal(h[2].value, [4.0, 5.0, 6.0])
+    assert_array_equal(h[2].weight, [0.4, 0.5, 0.6])
 
 
 def test_weight_omitted_defaults_to_one():
     h = bh.Histogram(bh.axis.Regular(2, 0, 2), storage=bh.storage.WeightedCollector())
     h.fill([0, 1], sample=[1.0, 2.0])
-    assert h[0] == [(1.0, 1.0)]
-    assert h[1] == [(2.0, 1.0)]
+    assert list(h[0]) == [(1.0, 1.0)]
+    assert list(h[1]) == [(2.0, 1.0)]
 
 
 def test_scalar_weight_broadcast():
     h = bh.Histogram(bh.axis.Regular(2, 0, 2), storage=bh.storage.WeightedCollector())
     h.fill([0, 1, 1], sample=[1.0, 2.0, 3.0], weight=0.5)
-    assert h[0] == [(1.0, 0.5)]
-    assert h[1] == [(2.0, 0.5), (3.0, 0.5)]
+    assert list(h[0]) == [(1.0, 0.5)]
+    assert list(h[1]) == [(2.0, 0.5), (3.0, 0.5)]
 
 
 def test_sample_required():
@@ -88,7 +103,7 @@ def test_view_flow():
 def test_scalar_arg_broadcast():
     h = bh.Histogram(bh.axis.Regular(1, 0, 1), storage=bh.storage.WeightedCollector())
     h.fill(0, sample=[1.0, 2.0, 3.0], weight=[0.1, 0.2, 0.3])
-    assert h[0] == [(1.0, 0.1), (2.0, 0.2), (3.0, 0.3)]
+    assert list(h[0]) == [(1.0, 0.1), (2.0, 0.2), (3.0, 0.3)]
 
 
 def test_2d():
@@ -100,14 +115,15 @@ def test_2d():
     h.fill([0, 0, 1], [0, 1, 1], sample=[1.0, 2.0, 3.0], weight=[0.1, 0.2, 0.3])
     v = h.view()
     assert v.shape == (2, 2)
-    assert h[0, 0] == [(1.0, 0.1)]
-    assert h[0, 1] == [(2.0, 0.2)]
-    assert h[1, 0] == []
-    assert h[1, 1] == [(3.0, 0.3)]
+    assert list(h[0, 0]) == [(1.0, 0.1)]
+    assert list(h[0, 1]) == [(2.0, 0.2)]
+    assert list(h[1, 0]) == []
+    assert list(h[1, 1]) == [(3.0, 0.3)]
 
 
 def test_sum_is_concatenation():
     h = _filled_1d()
+    assert isinstance(h.sum(), WV)
     assert sorted(h.sum()) == [
         (1.0, 0.1),
         (2.0, 0.2),
@@ -116,18 +132,18 @@ def test_sum_is_concatenation():
         (5.0, 0.5),
         (6.0, 0.6),
     ]
-    # empty histogram sums to an empty list
+    # empty histogram sums to an empty cell
     empty = bh.Histogram(
         bh.axis.Regular(3, 0, 3), storage=bh.storage.WeightedCollector()
     )
-    assert empty.sum() == []
+    assert list(empty.sum()) == []
 
 
 def test_addition_concatenates():
     h = _filled_1d()
     hh = h + h
-    assert hh[0] == [(1.0, 0.1), (2.0, 0.2), (1.0, 0.1), (2.0, 0.2)]
-    assert hh[1] == [(3.0, 0.3), (3.0, 0.3)]
+    assert list(hh[0]) == [(1.0, 0.1), (2.0, 0.2), (1.0, 0.1), (2.0, 0.2)]
+    assert list(hh[1]) == [(3.0, 0.3), (3.0, 0.3)]
 
 
 def test_project_concatenates():
@@ -138,8 +154,8 @@ def test_project_concatenates():
     )
     h.fill([0, 0, 1], [0, 1, 1], sample=[1.0, 2.0, 3.0], weight=[0.1, 0.2, 0.3])
     p = h.project(0)
-    assert p[0] == [(1.0, 0.1), (2.0, 0.2)]
-    assert p[1] == [(3.0, 0.3)]
+    assert list(p[0]) == [(1.0, 0.1), (2.0, 0.2)]
+    assert list(p[1]) == [(3.0, 0.3)]
 
 
 def test_slice_reduce():
@@ -164,7 +180,7 @@ def test_pickle_roundtrip():
     h = _filled_1d()
     h2 = pickle.loads(pickle.dumps(h))
     assert h2 == h
-    assert h2[2] == [(4.0, 0.4), (5.0, 0.5), (6.0, 0.6)]
+    assert list(h2[2]) == [(4.0, 0.4), (5.0, 0.5), (6.0, 0.6)]
 
 
 def test_copy_and_deepcopy():
@@ -256,3 +272,42 @@ def test_structural_match():
             pass
         case _:
             raise AssertionError("WeightedCollector storage did not match")
+
+
+# --- The WeightedValues cell accumulator ---
+
+
+def test_weighted_values_construction():
+    c = WV([(1.0, 0.1), (2.0, 0.2)])
+    assert len(c) == 2
+    assert c[0] == (1.0, 0.1)
+    assert c[-1] == (2.0, 0.2)
+    assert list(c) == [(1.0, 0.1), (2.0, 0.2)]
+    assert_array_equal(c.value, [1.0, 2.0])
+    assert_array_equal(c.weight, [0.1, 0.2])
+    assert len(WV()) == 0
+
+
+def test_weighted_values_index_error():
+    c = WV([(1.0, 0.1)])
+    with pytest.raises(IndexError):
+        c[5]
+
+
+def test_weighted_values_repr():
+    assert repr(WV([(1.0, 0.5)])) == "WeightedValues([(1.0, 0.5)])"
+
+
+def test_weighted_values_equality_copy_pickle():
+    c = WV([(1.0, 0.1), (2.0, 0.2)])
+    assert c == WV([(1.0, 0.1), (2.0, 0.2)])
+    assert c != WV([(1.0, 0.1)])
+    assert c != (1.0, 0.1)
+    assert copy.copy(c) == c
+    assert copy.deepcopy(c) == c
+    assert pickle.loads(pickle.dumps(c)) == c
+
+
+def test_weighted_values_in_accumulators():
+    assert WV is bh.accumulators.WeightedValues
+    assert WV.__module__ == "boost_histogram.accumulators"

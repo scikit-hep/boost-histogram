@@ -10,14 +10,22 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike
     from uhi.typing.plottable import PlottableAxis
 
-    from boost_histogram._core.accumulators import Mean, WeightedMean, WeightedSum
+    from boost_histogram._core.accumulators import (
+        Mean,
+        Values,
+        WeightedMean,
+        WeightedSum,
+        WeightedValues,
+    )
     from boost_histogram._core.hist import _BaseHistogram as CppHistogram
 
-    Accumulator = WeightedSum | Mean | WeightedMean
+    Accumulator = WeightedSum | Mean | WeightedMean | Values | WeightedValues
 else:
     WeightedSum = Any
     Mean = Any
     WeightedMean = Any
+    Values = Any
+    WeightedValues = Any
     ArrayLike = Any
     Ufunc = Any
     CppHistogram = Any
@@ -33,8 +41,10 @@ __all__ = (
     "StdIndex",
     "StrIndex",
     "Ufunc",
+    "Values",
     "WeightedMean",
     "WeightedSum",
+    "WeightedValues",
 )
 
 

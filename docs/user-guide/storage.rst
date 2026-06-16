@@ -113,7 +113,7 @@ This storage keeps the *original* sample values that fall into each bin, instead
     h = bh.Histogram(bh.axis.Regular(10, 0, 1), storage=bh.storage.Collector())
     h.fill(x, sample=values)
 
-Each value in ``sample`` is appended to the bin selected by the corresponding coordinate in ``x``. Because the per-bin data is ragged, ``h.view()`` returns a NumPy object-dtype array with the same shape as the histogram axes, where each element is a 1-D ``float64`` array of that bin's collected values (a copy). Indexing a single bin (``h[i]``) returns that bin's values as a list.
+Each value in ``sample`` is appended to the bin selected by the corresponding coordinate in ``x``. Because the per-bin data is ragged, ``h.view()`` returns a NumPy object-dtype array with the same shape as the histogram axes, where each element is a 1-D ``float64`` array of that bin's collected values (a copy). Indexing a single bin (``h[i]``), like ``h.sum()``, returns that bin's cell as a :class:`~boost_histogram.accumulators.Values` accumulator: a sequence of the collected floats (``len``, indexing, and iteration work) whose ``.value`` attribute gives them as a NumPy array.
 
 Adding two collector histograms, ``project``, and slicing/cropping ``reduce`` (including factor rebinning) all concatenate the collected values. Because the view returns copies rather than a live buffer, the operations that write back through the view are not supported for this storage and raise ``NotImplementedError``: item assignment (``h[...] = ...``), arithmetic with arrays or scalars (e.g. ``h * 2``), group-based rebinning, integer picking on a subset of axes, and list-based selection. Weighted and threaded filling are also unsupported.
 
@@ -128,7 +128,7 @@ This is the weighted analog of ``Collector``: it keeps the original ``(value, we
     h = bh.Histogram(bh.axis.Regular(10, 0, 1), storage=bh.storage.WeightedCollector())
     h.fill(x, sample=values, weight=weights)
 
-``h.view()`` returns a NumPy object-dtype array where each element is a 1-D structured array with ``value`` and ``weight`` fields (a copy), so ``h.view()[i]["value"]`` and ``h.view()[i]["weight"]`` give that bin's collected samples and weights. Indexing a single bin (``h[i]``) returns a list of ``(value, weight)`` tuples.
+``h.view()`` returns a NumPy object-dtype array where each element is a 1-D structured array with ``value`` and ``weight`` fields (a copy), so ``h.view()[i]["value"]`` and ``h.view()[i]["weight"]`` give that bin's collected samples and weights. Indexing a single bin (``h[i]``), like ``h.sum()``, returns the cell as a :class:`~boost_histogram.accumulators.WeightedValues` accumulator: a sequence of ``(value, weight)`` tuples (``len``, indexing, and iteration work) with ``.value`` and ``.weight`` attributes giving the two columns as NumPy arrays.
 
 The supported and unsupported operations are the same as for ``Collector``, except that weighted filling is, of course, supported.
 

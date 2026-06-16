@@ -12,10 +12,11 @@
 
 #pragma once
 
+#include <bh_python/accumulators/weighted_value.hpp>
+
 #include <boost/core/nvp.hpp>
 #include <boost/histogram/weight.hpp>
 
-#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -32,24 +33,8 @@ struct weighted_collector {
     using value_type      = ValueType;
     using const_reference = const value_type&;
 
-    // Plain aggregate: standard-layout and trivially copyable so a per-bin
-    // contiguous std::vector<entry> can be copied directly into a packed
-    // [('value', 'f8'), ('weight', 'f8')] structured numpy array.
-    struct entry {
-        value_type value;
-        value_type weight;
-
-        bool operator==(const entry& rhs) const noexcept {
-            return value == rhs.value && weight == rhs.weight;
-        }
-        bool operator!=(const entry& rhs) const noexcept { return !operator==(rhs); }
-
-        template <class Archive>
-        void serialize(Archive& ar, unsigned /* version */) {
-            ar& boost::make_nvp("value", value);
-            ar& boost::make_nvp("weight", weight);
-        }
-    };
+    // Each collected (value, weight) pair; see weighted_value.hpp.
+    using entry = weighted_value<value_type>;
 
     using container_type = std::vector<entry>;
     using const_iterator = typename container_type::const_iterator;
@@ -97,11 +82,5 @@ struct weighted_collector {
   private:
     container_type container_;
 };
-
-static_assert(
-    std::is_standard_layout<weighted_collector<double>::entry>::value
-        && std::is_trivially_copyable<weighted_collector<double>::entry>::value
-        && sizeof(weighted_collector<double>::entry) == 2 * sizeof(double),
-    "weighted_collector entry must be two packed doubles");
 
 } // namespace accumulators

@@ -42,8 +42,10 @@ if TYPE_CHECKING:
         CppHistogram,
         Mean,
         RebinProtocol,
+        Values,
         WeightedMean,
         WeightedSum,
+        WeightedValues,
     )
 
 
@@ -124,11 +126,10 @@ IntHists = TypeVar(
 FloatHists = TypeVar(
     "FloatHists", bound="Histogram[bhs.Double] | Histogram[bhs.Unlimited]"
 )
-ListHists = TypeVar(
-    "ListHists", bound="Histogram[bhs.MultiCell] | Histogram[bhs.Collector]"
-)
-WeightedListHists = TypeVar(
-    "WeightedListHists", bound="Histogram[bhs.WeightedCollector]"
+MultiCellHists = TypeVar("MultiCellHists", bound="Histogram[bhs.MultiCell]")
+CollectorHists = TypeVar("CollectorHists", bound="Histogram[bhs.Collector]")
+WeightedCollectorHists = TypeVar(
+    "WeightedCollectorHists", bound="Histogram[bhs.WeightedCollector]"
 )
 WeightHists = TypeVar("WeightHists", bound="Histogram[bhs.Weight]")
 MeanHists = TypeVar("MeanHists", bound="Histogram[bhs.Mean]")
@@ -1352,15 +1353,21 @@ class Histogram(typing.Generic[S]):
 
     @typing.overload
     def sum(
-        self: Histogram[bhs.MultiCell] | Histogram[bhs.Collector],
+        self: Histogram[bhs.MultiCell],
         flow: bool = False,
     ) -> list[float]: ...
 
     @typing.overload
     def sum(
+        self: Histogram[bhs.Collector],
+        flow: bool = False,
+    ) -> Values: ...
+
+    @typing.overload
+    def sum(
         self: Histogram[bhs.WeightedCollector],
         flow: bool = False,
-    ) -> list[tuple[float, float]]: ...
+    ) -> WeightedValues: ...
 
     @typing.overload
     def sum(self: Histogram[bhs.Weight], flow: bool = False) -> WeightedSum: ...
@@ -1372,13 +1379,9 @@ class Histogram(typing.Generic[S]):
     def sum(self: Histogram[bhs.WeightedMean], flow: bool = False) -> WeightedMean: ...
 
     @typing.overload
-    def sum(
-        self, flow: bool = False
-    ) -> float | Accumulator | list[float] | list[tuple[float, float]]: ...
+    def sum(self, flow: bool = False) -> float | Accumulator | list[float]: ...
 
-    def sum(
-        self, flow: bool = False
-    ) -> float | Accumulator | list[float] | list[tuple[float, float]]:
+    def sum(self, flow: bool = False) -> float | Accumulator | list[float]:
         """
         Compute the sum over the histogram bins (optionally including the flow bins).
         """
@@ -1406,13 +1409,18 @@ class Histogram(typing.Generic[S]):
 
     @typing.overload
     def __getitem__(
-        self: ListHists, index: IndexingExpr
-    ) -> ListHists | list[float]: ...
+        self: MultiCellHists, index: IndexingExpr
+    ) -> MultiCellHists | list[float]: ...
 
     @typing.overload
     def __getitem__(
-        self: WeightedListHists, index: IndexingExpr
-    ) -> WeightedListHists | list[tuple[float, float]]: ...
+        self: CollectorHists, index: IndexingExpr
+    ) -> CollectorHists | Values: ...
+
+    @typing.overload
+    def __getitem__(
+        self: WeightedCollectorHists, index: IndexingExpr
+    ) -> WeightedCollectorHists | WeightedValues: ...
 
     @typing.overload
     def __getitem__(
@@ -1430,19 +1438,11 @@ class Histogram(typing.Generic[S]):
     @typing.overload
     def __getitem__(
         self, index: IndexingExpr
-    ) -> Self | float | list[float] | list[tuple[float, float]] | int | Accumulator: ...
+    ) -> Self | float | list[float] | int | Accumulator: ...
 
     def __getitem__(
         self, index: IndexingExpr
-    ) -> (
-        Self
-        | float
-        | Accumulator
-        | list[float]
-        | list[tuple[float, float]]
-        | int
-        | np.typing.NDArray[Any]
-    ):
+    ) -> Self | float | Accumulator | list[float] | int | np.typing.NDArray[Any]:
         indexes = self._compute_commonindex(index)
 
         # Vectorized (NumPy array) indexing gathers scattered cells through the
