@@ -129,6 +129,26 @@ def test_pickle_roundtrip():
     assert list(h2[2]) == [4.0, 5.0, 6.0]
 
 
+@pytest.mark.parametrize(
+    "corrupt",
+    [
+        [-1, 2, 1, 3, 0],  # negative count
+        [0, 2, 1, 4, 0],  # counts sum exceeds value buffer
+        [0, 2, 1, 2, 0],  # counts sum falls short of value buffer
+    ],
+)
+def test_pickle_rejects_corrupt_counts(corrupt):
+    # The on-disk layout is a per-bin int64 counts array plus a flat float64 value
+    # array; load() must reject counts that don't describe the value buffer exactly,
+    # otherwise native code reads past the NumPy buffer (see PR #1133 review).
+    data = pickle.dumps(_filled_1d())
+    counts = np.array([0, 2, 1, 3, 0], dtype=np.int64).tobytes()
+    assert data.count(counts) == 1
+    bad = data.replace(counts, np.array(corrupt, dtype=np.int64).tobytes())
+    with pytest.raises(Exception, match="collector"):
+        pickle.loads(bad)
+
+
 def test_copy_and_deepcopy():
     h = _filled_1d()
     assert copy.copy(h) == h

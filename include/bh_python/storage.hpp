@@ -212,6 +212,30 @@ void load(Archive& ar,
     std::copy(a.data(), a.data() + a.size(), reinterpret_cast<double*>(s.data()));
 }
 
+// Validate per-bin counts coming from an untrusted (e.g. pickled) buffer before they
+// are used as lengths into the flat value/weight arrays: every count must be
+// non-negative and the accumulated total must exactly match the content length,
+// guarding against negative counts wrapping to huge sizes and out-of-bounds reads.
+inline void validate_collector_counts(const py::array_t<std::int64_t>& counts,
+                                      py::ssize_t expected) {
+    const auto n          = static_cast<std::size_t>(counts.size());
+    const auto* count_ptr = counts.data();
+    std::size_t total     = 0;
+    for(std::size_t i = 0; i < n; ++i) {
+        const auto c = count_ptr[i];
+        if(c < 0)
+            throw std::runtime_error("collector: serialized bin count is negative");
+        const auto uc = static_cast<std::size_t>(c);
+        if(uc > static_cast<std::size_t>(expected) - total)
+            throw std::runtime_error(
+                "collector: serialized bin counts exceed value buffer length");
+        total += uc;
+    }
+    if(total != static_cast<std::size_t>(expected))
+        throw std::runtime_error(
+            "collector: serialized bin counts do not match value buffer length");
+}
+
 // The collector storage holds a variable-length std::vector<double> per bin, so it
 // cannot be viewed as a flat numpy array like the other accumulators. We serialize it
 // as a numpy array of per-bin counts plus a single numpy array of all values
@@ -245,6 +269,7 @@ void load(Archive& ar, storage::collector& s, unsigned /* version */) {
     ar >> counts;
     ar >> values;
     const auto n = static_cast<std::size_t>(counts.size());
+    validate_collector_counts(counts, values.size());
     s.resize(n);
     const auto* count_ptr = counts.data();
     const auto* value_ptr = values.data();
@@ -292,7 +317,11 @@ void load(Archive& ar, storage::weighted_collector& s, unsigned /* version */) {
     ar >> counts;
     ar >> values;
     ar >> weights;
+    if(weights.size() != values.size())
+        throw std::runtime_error(
+            "weighted_collector: value and weight buffers differ in length");
     const auto n = static_cast<std::size_t>(counts.size());
+    validate_collector_counts(counts, values.size());
     s.resize(n);
     const auto* count_ptr  = counts.data();
     const auto* value_ptr  = values.data();
