@@ -764,6 +764,11 @@ class Histogram(typing.Generic[S]):
 
         return self
 
+    def __rsub__(self, other: np.typing.NDArray[Any] | float) -> Self:
+        # Subtraction is not commutative, so unlike __radd__ this cannot defer
+        # to the forward operator: other - self == -(self - other).
+        return (self - other) * -1
+
     # If these fail, the underlying object throws the correct error
     def __mul__(self, other: Histogram[S] | np.typing.NDArray[Any] | float) -> Self:
         result = self.copy(deep=False)
@@ -788,6 +793,19 @@ class Histogram(typing.Generic[S]):
         elif isinstance(other, _histogram_types):
             other = self._as_double_cpp(other)  # type: ignore[assignment]
         return self._compute_inplace_op("__itruediv__", other)
+
+    def __rtruediv__(self, other: np.typing.NDArray[Any] | float) -> Self:
+        # Division is not commutative, so unlike __rmul__ this cannot defer to
+        # the forward operator: divide other by each cell. Promote integer
+        # storages to Double first, matching __itruediv__.
+        result = self.copy(deep=False)
+        result._convert_int_storage_to_double()
+        view = result.view(flow=True)
+        # Empty bins divide to inf/nan; suppress the warnings as elsewhere.
+        with np.errstate(divide="ignore", invalid="ignore"):
+            np.true_divide(other, view, out=view)
+        result._variance_known = False
+        return result
 
     def __imul__(self, other: Histogram[S] | np.typing.NDArray[Any] | float) -> Self:
         return self._compute_inplace_op("__imul__", other)
