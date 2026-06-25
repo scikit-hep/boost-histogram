@@ -210,6 +210,10 @@ class Axis:
             return default
         if callable(value):
             return value(self)
+        # Normalize plain negative integers relative to the axis length, like
+        # Python/NumPy indexing. Locators (callables) are handled above.
+        if value < 0:
+            return value + len(self)
         return value
 
     def _process_loc(

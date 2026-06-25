@@ -224,6 +224,32 @@ def test_one_sided_slice():
     assert h[bh.loc(0) : bh.loc(10) + 1 : sum] == 6
 
 
+def test_negative_index_access():
+    # Negative plain-int indices and slice bounds are normalized relative to the
+    # number of bins on the axis, like Python/NumPy semantics.
+    h = bh.Histogram(bh.axis.Regular(10, 0, 10))
+    h.fill(range(10))
+
+    # Bare integer index already worked, but check it stays consistent
+    assert h[-1] == h[9]
+    assert h[-2] == h[8]
+
+    # Slice bounds (positional)
+    assert h[1:-2] == h[1:8]
+    assert h[-3:-1] == h[7:9]
+    assert h[-3:] == h[7:]
+    assert h[:-2] == h[:8]
+
+    # Dict indexing goes through the same path
+    assert h[{0: -2}] == h[8]
+    assert h[{0: slice(1, -2)}] == h[1:8]
+
+    # Two-axis case to confirm per-axis normalization uses the right length
+    h2 = bh.Histogram(bh.axis.Regular(10, 0, 10), bh.axis.Regular(4, 0, 4))
+    assert h2[1:-2, :].axes[0].size == h2[1:8, :].axes[0].size
+    assert h2[:, -1] == h2[:, 3]
+
+
 def test_repr():
     assert repr(bh.loc(2)) == "loc(2)"
     assert repr(bh.loc(3) + 1) == "loc(3) + 1"
