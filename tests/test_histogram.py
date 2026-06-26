@@ -666,6 +666,45 @@ def test_mixed_int_double_division():
     assert (bd / ai).view() == approx(1 / expected)
 
 
+def test_reflected_scalar_operators():
+    # gh-1154: scalar - hist and scalar / hist were missing (only the
+    # commutative __radd__/__rmul__ existed).
+    h = bh.Histogram(bh.axis.Regular(4, 0, 4))
+    h[:] = (1, 2, 4, 5)
+    values = h.view().copy()
+
+    # scalar - hist == -(hist - scalar)
+    assert (10 - h).view() == approx(10 - values)
+    assert (10 - h).view() == approx(((h - 10) * -1).view())
+    # scalar / hist, elementwise
+    assert (8 / h).view() == approx(8 / values)
+    # operands left unchanged
+    assert h.view() == approx(values)
+
+
+def test_reflected_division_promotes_int_storage():
+    # gh-1154: scalar / int-hist must not truncate (mirrors __itruediv__).
+    h = bh.Histogram(bh.axis.Integer(0, 3), storage=bh.storage.Int64())
+    h[:] = (2, 4, 8)
+    result = 1 / h
+    assert result.storage_type is bh.storage.Double
+    assert result.view() == approx(1 / np.array([2, 4, 8]))
+    assert h.storage_type is bh.storage.Int64
+
+
+def test_reflected_operators_weight_storage():
+    # scalar - weighted-hist works (variance is preserved through the negation),
+    # but scalar / weighted-hist is rejected: the reciprocal of a weighted sum
+    # has no meaningful variance (matches test_view_rdiv_rejected).
+    h = bh.Histogram(bh.axis.Regular(3, 0, 3), storage=bh.storage.Weight())
+    h.fill([0, 1, 1, 2], weight=[1, 2, 3, 4])
+    values = h.values().copy()
+
+    assert (10 - h).values() == approx(10 - values)
+    with pytest.raises(TypeError, match="divide a scalar or array"):
+        12 / h
+
+
 def test_project():
     h = bh.Histogram(bh.axis.Integer(0, 2), bh.axis.Integer(1, 4))
     h.fill(0, 1)
