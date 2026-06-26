@@ -210,7 +210,13 @@ class Axis:
             return default
         if callable(value):
             return value(self)
-        return value
+        # Normalize plain integer bounds like NumPy slicing: negative values
+        # count from the end, and out-of-range values clamp to [0, len].
+        # Locators (callables) are handled above and keep flow access (e.g.
+        # tag.at(-1) for underflow).
+        if value < 0:
+            value += len(self)
+        return min(max(int(value), 0), len(self))
 
     def _process_loc(
         self, start: AxCallOrInt | None, stop: AxCallOrInt | None

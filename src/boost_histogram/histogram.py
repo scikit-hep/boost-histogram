@@ -1496,6 +1496,13 @@ class Histogram(typing.Generic[S]):
 
         return self._new_hist(reduced) if reduced.rank() > 0 else reduced.sum(flow=True)
 
+    @staticmethod
+    def _empty_slice_msg(i: int, start: Any, stop: Any) -> str:
+        return (
+            f"Slice [{start}:{stop}] on axis {i} selects no bins; boost-histogram "
+            "axes cannot have zero bins (NumPy would return an empty array here)"
+        )
+
     def _handle_slice(
         self,
         i: int,
@@ -1528,6 +1535,8 @@ class Histogram(typing.Generic[S]):
             case x if x is sum:  # https://github.com/oracle/graalpython/issues/620
                 integrations.add(i)
                 if start is not None or stop is not None:
+                    if start_int >= stop_int:
+                        raise IndexError(self._empty_slice_msg(i, start, stop))
                     slices.append(
                         _core.algorithm.slice(
                             i, start_int, stop_int, _core.algorithm.slice_mode.crop
@@ -1552,6 +1561,11 @@ class Histogram(typing.Generic[S]):
         assert isinstance(stop_int, int)
         # rebinning with factor
         if len(groups) == 0:
+            # NumPy returns an empty array for slices like [1:-15] or [5:2];
+            # a Boost.Histogram axis cannot have zero bins, so refuse with a
+            # clear message instead of the low-level "begin < end required".
+            if min(stop_int, self.axes[i].size) <= max(start_int, 0):
+                raise IndexError(self._empty_slice_msg(i, start, stop))
             slices.append(
                 _core.algorithm.slice_and_rebin(i, start_int, stop_int, merge)
             )

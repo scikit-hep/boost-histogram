@@ -224,6 +224,72 @@ def test_one_sided_slice():
     assert h[bh.loc(0) : bh.loc(10) + 1 : sum] == 6
 
 
+def test_negative_index_access():
+    # Negative plain-int indices and slice bounds are normalized relative to the
+    # number of bins on the axis, like Python/NumPy semantics.
+    h = bh.Histogram(bh.axis.Regular(10, 0, 10))
+    h.fill(range(10))
+
+    # Bare integer index already worked, but check it stays consistent
+    assert h[-1] == h[9]
+    assert h[-2] == h[8]
+
+    # Slice bounds (positional)
+    assert h[1:-2] == h[1:8]
+    assert h[-3:-1] == h[7:9]
+    assert h[-3:] == h[7:]
+    assert h[:-2] == h[:8]
+
+    # Dict indexing goes through the same path
+    assert h[{0: -2}] == h[8]
+    assert h[{0: slice(1, -2)}] == h[1:8]
+
+    # Two-axis case to confirm per-axis normalization uses the right length
+    h2 = bh.Histogram(bh.axis.Regular(10, 0, 10), bh.axis.Regular(4, 0, 4))
+    assert h2[1:-2, :].axes[0].size == h2[1:8, :].axes[0].size
+    assert h2[:, -1] == h2[:, 3]
+
+
+def test_out_of_range_slice_clamps_like_numpy():
+    # Out-of-range bounds clamp to [0, len] like NumPy, instead of raising or
+    # accidentally pulling in flow bins.
+    h = bh.Histogram(bh.axis.Regular(10, 0, 10))
+    h.fill(range(10))
+
+    a = np.arange(10)
+    for sl in [
+        slice(-15, None),
+        slice(-15, 5),
+        slice(5, 100),
+        slice(None, 100),
+        slice(-100, 8),
+        slice(2, 100),
+    ]:
+        assert h[sl].axes[0].size == len(a[sl])
+
+
+def test_empty_slice_raises():
+    # NumPy returns an empty array; a Boost.Histogram axis cannot have zero
+    # bins, so these raise a clear IndexError rather than a low-level error.
+    h = bh.Histogram(bh.axis.Regular(10, 0, 10))
+    h.fill(range(10))
+
+    for sl in [
+        slice(5, 2),
+        slice(3, 3),
+        slice(1, -15),
+        slice(None, -15),
+        slice(100, None),
+    ]:
+        with pytest.raises(IndexError):
+            h[sl]
+
+    # Reversed bounds are also empty under integration (but flow access like
+    # h[3::sum] on a size-3 axis stays valid; see test_single_flow_bin).
+    with pytest.raises(IndexError):
+        h[5:2:sum]
+
+
 def test_repr():
     assert repr(bh.loc(2)) == "loc(2)"
     assert repr(bh.loc(3) + 1) == "loc(3) + 1"
@@ -442,7 +508,8 @@ def test_single_flow_bin():
     assert h[0::sum] == 3
     assert h[1::sum] == 2
     assert h[2::sum] == 1
-    with pytest.raises(ValueError):
+    # start past the last bin selects no bins -> clear empty-slice error
+    with pytest.raises(IndexError):
         h[3::sum]
 
     assert h[1:2][sum] == 4

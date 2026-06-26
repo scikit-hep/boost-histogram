@@ -42,7 +42,9 @@ def hist(session: nox.Session) -> None:
     shutil.rmtree("hist", ignore_errors=True)
     session.run("git", "clone", "https://github.com/scikit-hep/hist", external=True)
     session.chdir("hist")
-    session.install(".", "--group=test", "--group=plot", "mypy", "pandas-stubs")
+    session.install(
+        ".", "--group=test", "--group=plot", "mypy", "pandas-stubs", "numpy<2.5"
+    )
     session.run("pytest", *session.posargs)
     session.run(
         "mypy",
