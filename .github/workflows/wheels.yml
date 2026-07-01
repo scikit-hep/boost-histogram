@@ -29,7 +29,7 @@ jobs:
     name: Build SDist
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           submodules: true
@@ -93,14 +93,14 @@ jobs:
             build: "*musllinux*"
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           submodules: true
 
-      - uses: astral-sh/setup-uv@v8.1.0
+      - uses: astral-sh/setup-uv@v8.2.0
 
-      - uses: pypa/cibuildwheel@v4.0
+      - uses: pypa/cibuildwheel@v4.1
         env:
           CIBW_BUILD: ${{ matrix.build }}
           CIBW_ARCHS: ${{ matrix.arch }}
@@ -119,12 +119,12 @@ jobs:
     name: Pyodide
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           submodules: true
 
-      - uses: pypa/cibuildwheel@v4.0
+      - uses: pypa/cibuildwheel@v4.1
         env:
           CIBW_PLATFORM: pyodide
 
@@ -147,14 +147,14 @@ jobs:
         runs-on: [macos-latest, macos-15-intel]
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           submodules: true
 
       - run: brew uninstall cmake; brew install cmake
 
-      - uses: pypa/cibuildwheel@v4.0
+      - uses: pypa/cibuildwheel@v4.1
         env:
           CIBW_PLATFORM: ios
 
@@ -176,7 +176,7 @@ jobs:
   #      matrix:
   #        runs-on: [ubuntu-latest, macos-latest]
   #    steps:
-  #      - uses: actions/checkout@v6
+  #      - uses: actions/checkout@v7
   #        with:
   #          fetch-depth: 0
   #          submodules: true
