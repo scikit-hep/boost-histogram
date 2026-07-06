@@ -30,13 +30,13 @@ repos:
         additional_dependencies: [pyyaml]
 
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: "v3.8.3"
+    rev: "v3.9.4"
     hooks:
       - id: prettier
         types_or: [yaml, markdown, html, css, scss, javascript, json]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.15.15"
+    rev: "v0.15.20"
     hooks:
       - id: ruff-check
         args: ["--fix", "--show-fixes"]
@@ -78,12 +78,12 @@ repos:
       - id: rst-inline-touching-normal
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.37.2
+    rev: 0.37.4
     hooks:
       - id: check-readthedocs
       - id: check-github-workflows
 
   - repo: https://github.com/henryiii/validate-pyproject-schema-store
-    rev: 2026.05.28
+    rev: 2026.07.06
     hooks:
       - id: validate-pyproject
