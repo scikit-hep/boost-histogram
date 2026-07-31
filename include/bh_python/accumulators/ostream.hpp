@@ -88,7 +88,7 @@ operator<<(std::basic_ostream<CharT, Traits>& os,
 
 } // namespace accumulators
 
-# Python style output instead of C++
+#Python style output instead of C++
 inline std::string
 shift_to_string(const ::boost::histogram::accumulators::sum<double>& x) {
     std::ostringstream out;
