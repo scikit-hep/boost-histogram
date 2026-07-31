@@ -3,38 +3,19 @@
 // Distributed under the 3-Clause BSD License.  See accompanying
 // file LICENSE or https://github.com/scikit-hep/boost-histogram for details.
 
-#pragma once
+#include <bh_python/register_histogram.hpp>
+#include <bh_python/register_histograms.hpp>
 
-#include <bh_python/pybind11.hpp>
-
-#include <bh_python/accumulators/ostream.hpp>
-#include <bh_python/axis.hpp>
-#include <bh_python/fill.hpp>
-#include <bh_python/histogram.hpp>
-#include <bh_python/make_pickle.hpp>
-#include <bh_python/storage.hpp>
-
-#include <boost/histogram/algorithm/empty.hpp>
-#include <boost/histogram/algorithm/project.hpp>
-#include <boost/histogram/algorithm/reduce.hpp>
-#include <boost/histogram/algorithm/sum.hpp>
-#include <boost/histogram/histogram.hpp>
-#include <boost/histogram/ostream.hpp>
-#include <boost/histogram/unsafe_access.hpp>
-#include <boost/mp11.hpp>
-
-#include <future>
-#include <memory>
-#include <sstream>
-#include <string>
-#include <thread>
-#include <tuple>
-#include <vector>
-
-template <class S>
-auto register_histogram(py::module& m, const char* name, const char* desc) {
+// The multi_cell specialization lives here, in the only TU that uses it, so
+// the other register_hist_*.cpp files do not compile its body.
+template <>
+// NOLINTNEXTLINE(misc-use-internal-linkage)
+auto register_histogram<bh::multi_cell<double>>(py::module& m,
+                                                const char* name,
+                                                const char* desc) {
+    using S           = bh::multi_cell<double>;
     using histogram_t = bh::histogram<vector_axis_variant, S>;
-    using value_type  = typename histogram_t::value_type;
+    using value_type  = std::vector<double>;
 
     py::class_<histogram_t> hist(m, name, desc, py::buffer_protocol());
 
@@ -45,13 +26,24 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
 
         .def("rank", &histogram_t::rank)
         .def("size", &histogram_t::size)
+        .def("nelem",
+             [](const histogram_t& self) {
+                 return bh::unsafe_access::storage(self).nelem();
+             })
         .def("reset", &histogram_t::reset)
 
+        // Reset number of cells per bin after recreation of histogram because number
+        // of cells can (?) not be passed to the creation of the new histogram. Set it
+        // manually afterwards.
+        .def("reset_nelem",
+             [](histogram_t& self, const std::size_t nelem) {
+                 bh::unsafe_access::storage(self).reset_nelem(nelem);
+             })
         .def("__copy__", [](const histogram_t& self) { return histogram_t(self); })
         .def("__deepcopy__",
              [](const histogram_t& self, const py::object& memo) {
                  auto a                = std::make_unique<histogram_t>(self);
-                 py::module const copy = py::module::import("copy");
+                 const py::module copy = py::module::import("copy");
                  for(unsigned i = 0; i < a->rank(); i++) {
                      bh::unsafe_access::axis(*a, i).metadata()
                          = copy.attr("deepcopy")(a->axis(i).metadata(), memo);
@@ -158,7 +150,8 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
         .def("at",
              [](const histogram_t& self, const py::args& args) -> value_type {
                  auto int_args = py::cast<std::vector<int>>(args);
-                 return self.at(int_args);
+                 auto at_value = self.at(int_args);
+                 return {at_value.begin(), at_value.end()};
              })
 
         .def("_at_set",
@@ -171,15 +164,22 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
 
         .def(
             "sum",
-            [](const histogram_t& self, bool flow) {
+            [](const histogram_t& self, bool flow) -> value_type {
                 const py::gil_scoped_release release;
-                // A rank-0 histogram has no flow bins, so inner == all. Use
-                // all to avoid Boost's indexed range, which is UB for rank-0
-                // (it reads uninitialized per-axis state); the all path uses
-                // plain iteration instead.
-                const auto cov = (flow || self.rank() == 0) ? bh::coverage::all
-                                                            : bh::coverage::inner;
-                return bh::algorithm::sum(self, cov);
+                // rank-0 inner coverage drives Boost's indexed range, which is
+                // UB for rank-0; all coverage is equivalent (no flow bins) and
+                // uses plain iteration.
+                const auto cov    = (flow || self.rank() == 0) ? bh::coverage::all
+                                                               : bh::coverage::inner;
+                value_type result = bh::algorithm::sum(self, cov);
+                // A histogram with zero bins has no cells to accumulate, so the
+                // default-constructed accumulator stays empty. Return a
+                // zero-filled vector of length nelem so the result shape is
+                // consistent with the non-empty case.
+                if(result.empty()) {
+                    result.assign(bh::unsafe_access::storage(self).nelem(), 0.0);
+                }
+                return result;
             },
             "flow"_a = false)
 
@@ -189,9 +189,9 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
                 const py::gil_scoped_release release;
                 if(self.rank() == 0) {
                     // algorithm::empty drives the same rank-0-UB indexed range;
-                    // check the single cell directly instead.
-                    using value_type = typename histogram_t::value_type;
-                    return !(*self.begin() != value_type());
+                    // the single MultiCell cell is empty iff it collected
+                    // nothing.
+                    return self.begin()->empty();
                 }
                 return bh::algorithm::empty(
                     self, flow ? bh::coverage::all : bh::coverage::inner);
@@ -220,4 +220,19 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
         ;
 
     return hist;
+}
+
+void register_histogram_weight(py::module& hist) {
+    register_histogram<storage::weight>(
+        hist,
+        "any_weight",
+        "N-dimensional histogram for weighted data with any axis types.");
+}
+
+void register_histogram_multi_cell(py::module& hist) {
+    register_histogram<storage::multi_cell>(
+        hist,
+        "any_multi_cell",
+        "N-dimensional histogram for storing multiple cells at once with any axis "
+        "types.");
 }

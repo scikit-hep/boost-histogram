@@ -13,6 +13,7 @@
 #include <bh_python/vector_string_caster.hpp>
 
 #include <boost/core/ignore_unused.hpp>
+#include <boost/core/span.hpp>
 #include <boost/histogram/detail/accumulator_traits.hpp>
 #include <boost/histogram/detail/axes.hpp>
 #include <boost/histogram/sample.hpp>
