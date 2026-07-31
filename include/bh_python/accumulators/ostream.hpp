@@ -88,11 +88,7 @@ operator<<(std::basic_ostream<CharT, Traits>& os,
 
 } // namespace accumulators
 
-// Repr contents for Boost's sum accumulator: "large + small" evaluates
-// correctly in Python. An overload of shift_to_string rather than an
-// operator<< in the boost namespace, which would be an ODR violation with
-// boost/histogram/accumulators/ostream.hpp. A non-template so that
-// &shift_to_string<T> stays unambiguous.
+# Python style output instead of C++
 inline std::string
 shift_to_string(const ::boost::histogram::accumulators::sum<double>& x) {
     std::ostringstream out;
