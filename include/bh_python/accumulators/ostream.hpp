@@ -16,6 +16,8 @@
 #include <boost/histogram/detail/counting_streambuf.hpp>
 #include <boost/histogram/fwd.hpp>
 #include <iosfwd>
+#include <sstream>
+#include <string>
 
 /**
   \file boost/histogram/accumulators/ostream.hpp
@@ -85,3 +87,11 @@ operator<<(std::basic_ostream<CharT, Traits>& os,
 }
 
 } // namespace accumulators
+
+// Python style output instead of C++
+inline std::string
+shift_to_string(const ::boost::histogram::accumulators::sum<double>& x) {
+    std::ostringstream out;
+    out << x.large_part() << " + " << x.small_part();
+    return out.str();
+}
