@@ -20,10 +20,10 @@ jobs:
         with:
           fetch-depth: 0
           submodules: true
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.10"
-      - uses: astral-sh/setup-uv@v8.2.0
+      - uses: astral-sh/setup-uv@v9.0.0
       - name: Build and install kernel
         run: uv run --group examples -m ipykernel install --user --name boost-hist
       - name: Examples
