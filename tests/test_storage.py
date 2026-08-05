@@ -683,3 +683,39 @@ def test_multi_cell():
     expected_view[:, 2:4, 0:3] = sub_array_to_set
     h[2:4, 0:3] = sub_array_to_set
     assert h.view() == approx(expected_view)
+
+
+@pytest.mark.parametrize("nelem", [1, 3])
+def test_multi_cell_growth_preserves_contents(nelem):
+    # A growing axis (here StrCategory) reallocates the storage mid-fill. Boost
+    # relocates the existing cells with `*new_ref = *old_ref`, which goes through
+    # multi_cell_reference's copy-assignment; if that rebinds the span instead of
+    # writing the elements through, every growth silently zeroes the bins filled
+    # before it. Filling category by category (so each new category forces a
+    # resize) must therefore match filling with every category declared up front.
+    def make(categories):
+        return bh.Histogram(
+            bh.axis.StrCategory(categories, growth=True),
+            bh.axis.Regular(3, 0, 3),
+            storage=bh.storage.MultiCell(nelem),
+        )
+
+    # Each call is a single new category, so each triggers a storage resize; the
+    # last revisits an existing category to check bins survive a later growth too.
+    categories = ["a", "b", "c", "a"]
+    values = [[0.5, 1.5, 2.5], [0.5, 2.5], [1.5], [0.5]]
+    # cell vector for a fill value v is [v, 10*v, ..., 10**(nelem-1) * v]
+    scales = 10.0 ** np.arange(nelem)
+
+    grown = make([])
+    predeclared = make(["a", "b", "c"])  # never resizes during fill
+    for category, xs in zip(categories, values, strict=True):
+        weight = np.asarray(xs)[:, None] * scales
+        grown.fill(category, xs, weight=weight)
+        predeclared.fill(category, xs, weight=weight)
+
+    # The full per-cell contents (including flow) must be identical either way.
+    assert grown.view(flow=True) == approx(predeclared.view(flow=True))
+    # Sanity check that nothing was dropped: cell k holds 10**k times the sum of
+    # all fill values, 0.5 + 1.5 + 2.5 + 0.5 + 2.5 + 1.5 + 0.5 = 9.5.
+    assert grown.view().reshape(nelem, -1).sum(axis=1) == approx(9.5 * scales)

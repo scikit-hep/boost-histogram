@@ -37,6 +37,10 @@ struct multi_cell_reference : public multi_cell_base<T, boost::span<T>> {
     // using boost::span<T>::span;
     using multi_cell_base<T, boost::span<T>>::multi_cell_base;
 
+    // Copy construction rebinds the view (proxy-reference semantics), so that a
+    // reference refers to the same cells as the one it was copied from.
+    multi_cell_reference(const multi_cell_reference&) = default;
+
     void operator()(const boost::span<T> values) { operator+=(values); }
 
     void operator+=(const boost::span<T> values) {
@@ -62,6 +66,22 @@ struct multi_cell_reference : public multi_cell_base<T, boost::span<T>> {
         auto it = this->begin();
         for(const T& x : values)
             *it++ = x;
+        return *this;
+    }
+
+    // Assignment writes through to the referenced cells (proxy-reference
+    // semantics), it does not rebind the view. This overload must be provided
+    // explicitly: the templated operator= above does not suppress the implicitly
+    // declared copy-assignment operator, and that compiler-generated one (which
+    // rebinds the span and thus discards the write) would otherwise win overload
+    // resolution whenever the right-hand side is another multi_cell_reference.
+    // boost::histogram relies on write-through assignment when it relocates cells
+    // during axis growth (detail::storage_grower::apply does `*new = *old`);
+    // without this overload every growth silently zeroes the existing contents.
+    multi_cell_reference& operator=(const multi_cell_reference& values) {
+        if(values.size() != this->size())
+            throw std::range_error("size does not match for = ref");
+        std::copy(values.begin(), values.end(), this->begin());
         return *this;
     }
 };
