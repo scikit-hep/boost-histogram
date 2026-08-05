@@ -6,6 +6,7 @@
 
 - Support `flow=False` in histogram projections by @Rishabh-git10 in [#1109][]
 - Support subtraction for the `MultiCell` storage by @henryiii in [#1131][]
+- Python 3.15 wheels, including free-threading and Pyodide, by @henryiii in [#1163][]
 
 #### Fixes
 
