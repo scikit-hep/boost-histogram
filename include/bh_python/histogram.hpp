@@ -15,6 +15,7 @@
 
 #include <boost/histogram/detail/axes.hpp>
 #include <boost/histogram/histogram.hpp>
+#include <boost/histogram/indexed.hpp>
 #include <boost/histogram/unsafe_access.hpp>
 
 namespace pybind11 {
@@ -121,4 +122,60 @@ py::buffer_info make_buffer(bh::histogram<A, bh::multi_cell<T>>& h, bool flow) {
     new_axes.insert(std::end(new_axes), std::begin(axes), std::end(axes));
     return detail::make_buffer_impl(
         std_as_const(new_axes), flow, static_cast<double*>(storage.get_buffer()));
+}
+
+/// Build a numpy object-dtype array for ragged (collector) storage. Each element is a
+/// 1D array holding a copy of that bin's collected entries: float64 for the plain
+/// collector, the registered (value, weight) structured dtype for the weighted
+/// collector. The result has the same shape as the histogram axes; ``flow`` controls
+/// inclusion of under/overflow bins. Unlike the buffer-protocol views of the other
+/// storages, this returns copies, so it cannot be used to write back into the
+/// histogram.
+template <class Histogram>
+py::object make_object_view(const Histogram& self, bool flow) {
+    const auto rank = self.rank();
+
+    std::vector<py::ssize_t> shape(rank);
+    std::vector<py::ssize_t> offset(rank); // numpy position shift for underflow bins
+    {
+        unsigned d = 0;
+        self.for_each_axis([&](const auto& ax) {
+            const bool underflow
+                = bh::axis::traits::options(ax) & bh::axis::option::underflow;
+            shape[d]  = flow ? bh::axis::traits::extent(ax) : ax.size();
+            offset[d] = (flow && underflow) ? 1 : 0;
+            ++d;
+        });
+    }
+
+    std::size_t total = 1;
+    for(auto s : shape)
+        total *= static_cast<std::size_t>(s);
+
+    // C-order strides, in elements
+    std::vector<std::size_t> cstride(rank, 1);
+    for(int d = static_cast<int>(rank) - 2; d >= 0; --d) {
+        const auto dd = static_cast<std::size_t>(d);
+        cstride[dd]   = cstride[dd + 1] * static_cast<std::size_t>(shape[dd + 1]);
+    }
+
+    const py::object np = py::module::import("numpy");
+    const py::array arr = np.attr("empty")(total, py::arg("dtype") = "object");
+
+    for(auto&& x : bh::indexed(self, flow ? bh::coverage::all : bh::coverage::inner)) {
+        std::size_t k = 0;
+        for(unsigned d = 0; d < rank; ++d)
+            k += static_cast<std::size_t>(x.index(d) + static_cast<int>(offset[d]))
+                 * cstride[d];
+        const auto& cell = *x;
+        using element_t  = std::decay_t<decltype(*cell.data())>;
+        const py::array_t<element_t> cell_arr(static_cast<py::ssize_t>(cell.size()),
+                                              cell.data());
+        arr.attr("__setitem__")(py::int_(k), cell_arr);
+    }
+
+    const py::tuple shape_tuple(rank);
+    for(unsigned d = 0; d < rank; ++d)
+        shape_tuple[d] = shape[d];
+    return arr.attr("reshape")(shape_tuple);
 }

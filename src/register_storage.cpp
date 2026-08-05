@@ -40,4 +40,14 @@ void register_storages(py::module& storage) {
         storage,
         "multi_cell",
         "Dense storage which tracks sums of cell entries for multiple cells per entry");
+
+    register_storage<storage::collector>(
+        storage,
+        "collector",
+        "Dense storage that collects all original sample values in each bin");
+
+    register_storage<storage::weighted_collector>(
+        storage,
+        "weighted_collector",
+        "Dense storage that collects all original (sample, weight) pairs in each bin");
 }
