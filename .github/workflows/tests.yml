@@ -64,6 +64,8 @@ jobs:
           - python-version: "3.11"
           - python-version: "3.14"
           - python-version: "3.14t"
+          - python-version: "3.15"
+            nightly-numpy: true
           - python-version: "pypy3.11"
 
     steps:
@@ -88,6 +90,12 @@ jobs:
 
       - name: Install python tools
         run: uv pip install --system --python=python --group github
+        env:
+          # SPEC 4 nightly wheels: numpy has no 3.15 release yet
+          UV_INDEX: ${{ matrix.nightly-numpy && 'https://pypi.anaconda.org/scientific-python-nightly-wheels/simple' || '' }}
+          UV_PRERELEASE: ${{ matrix.nightly-numpy && 'allow' || 'disallow' }}
+          # Let uv fall back to PyPI for packages the nightly index also mirrors
+          UV_INDEX_STRATEGY: ${{ matrix.nightly-numpy && 'unsafe-best-match' || 'first-index' }}
 
       - name: Configure
         run: cmake --preset default ${{ matrix.cmake-extras }}
@@ -143,6 +151,8 @@ jobs:
             only: cp312-macosx_arm64
           - os: windows-11-arm
             only: cp311-win_arm64
+          - os: ubuntu-latest
+            only: cp315-manylinux_x86_64
           - os: ubuntu-latest
             only: gp312_250-manylinux_x86_64
 
