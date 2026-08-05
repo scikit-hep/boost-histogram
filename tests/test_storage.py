@@ -133,7 +133,7 @@ def test_mean_storage_rejects_string_sample():
     h = bh.Histogram(bh.axis.Regular(10, 0, 10), storage=bh.storage.Mean())
 
     with pytest.raises(
-        ValueError,
+        TypeError,
         match=r"Sample key-argument needs to be a number or a sequence, str given\.",
     ):
         h.fill([0.3], sample="abc")

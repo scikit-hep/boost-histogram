@@ -203,7 +203,7 @@ environment.UV_ONLY_BINARY = "numpy"
 environment.UV_PREFER_BINARY = "1"
 
 [tool.cibuildwheel.pyodide]
-build-frontend = {name = "build", args = ["--exports", "whole_archive"]}
+build-frontend = {name = "pyodide-build", args = ["--exports", "whole_archive"]}
 test-command = "pytest --benchmark-disable tests"
 
 [tool.cibuildwheel.ios]
