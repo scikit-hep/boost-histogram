@@ -37,6 +37,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
     "Programming Language :: Python :: Free Threading :: 3 - Stable",
     "Programming Language :: Python :: Free Threading",
     "Programming Language :: Python :: Implementation :: CPython",
@@ -192,6 +193,7 @@ test-environment.CI = "1"  # Hypothesis needs this on GraalPy
 test-skip = [
   "cp310-win_arm64",
   "cp31*-musllinux_*", # Threading test crashes
+  "cp315*",  # No numpy wheels yet
   "gp312_*",  # No numpy wheels yet
   "*-ios_*",  # Fails on CI with no device found
 ]
@@ -203,7 +205,7 @@ environment.UV_ONLY_BINARY = "numpy"
 environment.UV_PREFER_BINARY = "1"
 
 [tool.cibuildwheel.pyodide]
-build-frontend = {name = "build", args = ["--exports", "whole_archive"]}
+build-frontend = {name = "pyodide-build", args = ["--exports", "whole_archive"]}
 test-command = "pytest --benchmark-disable tests"
 
 [tool.cibuildwheel.ios]

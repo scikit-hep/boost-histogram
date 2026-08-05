@@ -6,10 +6,12 @@
 
 - Support `flow=False` in histogram projections by @Rishabh-git10 in [#1109][]
 - Support subtraction for the `MultiCell` storage by @henryiii in [#1131][]
+- Python 3.15 wheels, including free-threading and Pyodide, by @henryiii in [#1163][]
 
 #### Fixes
 
 - Return a zero-filled vector from `MultiCell` `sum()` over zero bins instead of an empty list by @henryiii in [#1132][]
+- Raise `TypeError` instead of `ValueError` for a non-integer locator `offset` and a string `sample=` by @henryiii in [#1163][]
 
 ## Version 1.7
 
@@ -50,6 +52,7 @@
 [#1109]: https://github.com/scikit-hep/boost-histogram/pull/1109
 [#1131]: https://github.com/scikit-hep/boost-histogram/pull/1131
 [#1132]: https://github.com/scikit-hep/boost-histogram/pull/1132
+[#1163]: https://github.com/scikit-hep/boost-histogram/pull/1163
 
 ### Version 1.7.1
 

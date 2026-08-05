@@ -38,7 +38,7 @@ class Locator:
 
     def __init__(self, offset: int = 0) -> None:
         if not isinstance(offset, int):
-            raise ValueError("The offset must be an integer")
+            raise TypeError("The offset must be an integer")
 
         self.offset = offset
 
