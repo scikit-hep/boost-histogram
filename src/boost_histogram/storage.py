@@ -10,6 +10,7 @@ from ._core import storage as store  # pylint: disable=no-name-in-module
 __all__ = [
     "AtomicInt64",
     "Double",
+    "DoubleSparse",
     "Int64",
     "Mean",
     "MultiCell",
@@ -53,6 +54,17 @@ class Int64(store.int64, Storage, family=boost_histogram):
 
 
 class Double(store.double, Storage, family=boost_histogram):
+    accumulator = float
+
+
+class DoubleSparse(store.double_sparse, Storage, family=boost_histogram):
+    """
+    Sparse storage of doubles: only filled cells are kept (in a hash map), so
+    histograms over very large or high-dimensional axis spaces stay small in
+    memory. It does not support ``.view()`` / dense-array access; use
+    :meth:`Histogram.to_coo` to read the filled cells instead.
+    """
+
     accumulator = float
 
 

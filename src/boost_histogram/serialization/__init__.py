@@ -70,14 +70,18 @@ def to_uhi(
     writer_info = {"boost-histogram": {"version": version.version}}
 
     # The storage_type property does a subclass-walking cast on every access,
-    # so look it up once; a single instance (which for MultiCell carries the
+    # so look it up once; the storage instance (which for MultiCell carries the
     # real nelem) serves for dispatch and error messages.
     storage_type = h.storage_type
     storage_obj = h.storage
 
-    # Store storage type info for AtomicInt64 and Unlimited (they serialize as int/double)
+    # Store storage type info for types that serialize as a plain int/double, so
+    # the exact storage can be restored (AtomicInt64, Unlimited, DoubleSparse).
     storage_type_str = _storage_type_to_str(storage_obj)
-    if issubclass(storage_type, (storage.AtomicInt64, storage.Unlimited)):
+    is_sparse = issubclass(storage_type, storage.DoubleSparse)
+    if issubclass(
+        storage_type, (storage.AtomicInt64, storage.Unlimited, storage.DoubleSparse)
+    ):
         writer_info["boost-histogram"]["storage_type"] = storage_type.__name__
 
     data = {
@@ -85,10 +89,26 @@ def to_uhi(
         "writer_info": writer_info,
         "axes": [_axis_to_dict(axis) for axis in h.axes],
     }
-    if keep_storage:
-        data["storage"] = _storage_to_dict(storage_obj, h.view(flow=True))
-    else:
+    if not keep_storage:
         data["storage"] = {"type": storage_type_str}
+    elif is_sparse:
+        # Sparse storage has no dense view; serialize only the filled cells (COO),
+        # with flow so the round-trip is exact. This encoding is boost-histogram
+        # specific (other UHI consumers will not understand "sparse").
+        idx_tuple, values = h.to_coo(flow=True)
+        indices = (
+            np.stack(idx_tuple)
+            if idx_tuple
+            else np.empty((0, values.shape[0]), dtype=np.intp)
+        )
+        data["storage"] = {
+            "type": storage_type_str,
+            "sparse": True,
+            "indices": indices,
+            "values": values,
+        }
+    else:
+        data["storage"] = _storage_to_dict(storage_obj, h.view(flow=True))
     data["metadata"] = serialize_metadata(h.__dict__)
 
     return data
@@ -103,6 +123,17 @@ def from_uhi(data: dict[str, Any], /) -> histogram.Histogram[Any]:
     storage_ = _storage_from_dict(storage_data, data.get("writer_info", {}))
     h = histogram.Histogram[Any](*axis, storage=storage_)
     h.__dict__ = data.get("metadata", {})
+
+    # Sparse storage is stored as COO (filled cells only) and cannot go through
+    # the dense view-based reconstruction below. Scatter the cells back directly.
+    if storage_data.get("sparse"):
+        indices = np.asarray(storage_data["indices"], dtype=np.intp)
+        values = np.asarray(storage_data["values"], dtype=np.float64)
+        # JSON round-trips can collapse a zero-length 2D array to 1D; restore it.
+        if indices.ndim == 1:
+            indices = indices.reshape(len(h.axes), values.shape[0])
+        h._hist._from_coo(indices, values, True)  # type: ignore[attr-defined]
+        return h
 
     # Check if storage has data (if not, it's a structure-only histogram)
     # Validate required keys per storage type before deciding to skip data loading

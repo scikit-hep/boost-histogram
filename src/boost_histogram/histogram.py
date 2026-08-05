@@ -78,6 +78,7 @@ _histograms: set[type[CppHistogram]] = {
     _core.hist.any_mean,
     _core.hist.any_weighted_mean,
     _core.hist.any_multi_cell,
+    _core.hist.any_double_sparse,
 }
 
 # Tuple form of ``_histograms`` for fast isinstance checks. The set above is
@@ -590,6 +591,11 @@ class Histogram(typing.Generic[S]):
 
     @typing.overload
     def view(
+        self: Histogram[bhs.DoubleSparse], flow: bool = False
+    ) -> typing.NoReturn: ...
+
+    @typing.overload
+    def view(
         self: Histogram[Any], flow: bool = False
     ) -> (
         np.typing.NDArray[np.float64]
@@ -610,8 +616,64 @@ class Histogram(typing.Generic[S]):
     ):
         """
         Return a view into the data, optionally with overflow turned on.
+
+        Sparse storage (:class:`~boost_histogram.storage.DoubleSparse`) does not
+        support this, since there is no dense buffer to view into (``np.asarray``
+        raises for the same reason); use :meth:`to_coo` to read the filled cells,
+        or :meth:`values` (and the other copying accessors) if an explicitly
+        densified array is acceptable.
         """
         return _to_view(self._hist.view(flow))
+
+    def _densify(self, flow: bool = False) -> np.typing.NDArray[np.float64]:
+        """
+        Build a dense array of values from sparse (COO) storage. Unlike
+        :meth:`view`, this is a freshly allocated copy, so writing to it does not
+        change the histogram. Densifying a very large axis space can exhaust
+        memory; that is the caller's choice (use :meth:`to_coo` to avoid it).
+        """
+        shape = tuple(
+            ax.size
+            + (int(ax.traits.underflow) + int(ax.traits.overflow) if flow else 0)
+            for ax in self.axes
+        )
+        arr = np.zeros(shape, dtype=np.float64)
+        indices, values = self.to_coo(flow=flow)
+        if values.size:
+            arr[indices] = values
+        return arr
+
+    def _view_or_dense(self, flow: bool) -> Any:
+        """
+        Like :meth:`view`, but densifies sparse storage into a copy instead of
+        raising. Used by the copying accessors (:meth:`values` etc.) so they keep
+        working for sparse histograms, while :meth:`view` stays buffer-only.
+        """
+        if isinstance(self._hist, _core.hist.any_double_sparse):
+            return self._densify(flow)
+        return self.view(flow)
+
+    def to_coo(
+        self, flow: bool = False
+    ) -> tuple[tuple[np.typing.NDArray[np.intp], ...], np.typing.NDArray[np.float64]]:
+        """
+        Return the filled cells of a sparse histogram in coordinate (COO) form.
+
+        This is the sparse-storage replacement for :meth:`view`. It returns a
+        tuple ``(indices, values)`` where ``indices`` is a tuple of per-axis
+        index arrays (one per dimension, in the style of :func:`numpy.nonzero`,
+        so it can be used directly as a fancy index) and ``values`` is the array
+        of corresponding cell values. Only filled cells are returned.
+
+        :param flow: If True, include flow bins, with indices running over the
+            with-flow grid (underflow at 0); if False (default), flow cells are
+            dropped and indices run ``0..size-1`` per axis.
+        """
+        if not isinstance(self._hist, _core.hist.any_double_sparse):
+            msg = "to_coo() is only available for sparse storage; use view() instead"
+            raise TypeError(msg)
+        indices, values = self._hist._to_coo(flow)
+        return tuple(indices), values
 
     def __array__(
         self,
@@ -624,6 +686,8 @@ class Histogram(typing.Generic[S]):
         kwargs = {}
         if copy is not None:
             kwargs["copy"] = copy
+        # Implicit array conversion goes through view(), so it raises for sparse
+        # storage rather than silently densifying. Use .values() or .to_coo().
         return np.asarray(self.view(False), dtype=dtype, **kwargs)  # type: ignore[call-overload, no-any-return]
 
     __hash__ = None  # type: ignore[assignment]
@@ -876,12 +940,36 @@ class Histogram(typing.Generic[S]):
             else:
                 msg = f"Wrong shape {other.shape}, expected {self.shape} or {self.axes.extent}"
                 raise ValueError(msg)
+        elif isinstance(self._hist, _core.hist.any_double_sparse):
+            self._sparse_scalar_inplace_op(name, other)
         else:
             view = self.view(flow=True)
             getattr(view, name)(other)
 
         self._variance_known = False
         return self
+
+    def _sparse_scalar_inplace_op(
+        self, name: str, other: np.typing.NDArray[Any] | float
+    ) -> None:
+        # Sparse storage has no dense buffer to mutate in place. ``*`` and ``/``
+        # only scale the already-filled cells (0 * x == 0), so sparsity is
+        # preserved -- rescale them through the COO get/set path. ``+`` and
+        # ``-`` would have to touch every cell, densifying the storage, so they
+        # are refused rather than silently materializing the full grid.
+        if name in {"__iadd__", "__isub__"}:
+            symbol = _INPLACE_OP_SYMBOLS[name]
+            msg = (
+                f"Sparse storage does not support scalar {symbol!r}; it would "
+                "fill every cell. Densify with .values() or use a dense storage."
+            )
+            raise TypeError(msg)
+        indices, values = self._hist._to_coo(True)  # type: ignore[attr-defined]
+        if name in {"__itruediv__", "__idiv__"}:
+            values = values / other
+        else:  # __imul__
+            values = values * other
+        self._hist._from_coo(indices, values, True)  # type: ignore[attr-defined]
 
     # TODO: Marked as too complex by flake8. Should be factored out a bit.
     def fill(
@@ -1032,8 +1120,11 @@ class Histogram(typing.Generic[S]):
         still experimental. Do not rely on any particular rendering.
         """
         # TODO check the terminal width and adjust the presentation
-        # only use for 1D, fall back to repr for ND
-        if self._hist.rank() != 1:
+        # only use for 1D, fall back to repr for ND. Sparse storage also falls
+        # back to repr, since the C++ rendering would iterate every (dense) bin.
+        if self._hist.rank() != 1 or isinstance(
+            self._hist, _core.hist.any_double_sparse
+        ):
             return repr(self)
         s = str(self._hist)
         # get rid of first line and last character
@@ -1325,6 +1416,7 @@ class Histogram(typing.Generic[S]):
     @typing.overload
     def sum(
         self: Histogram[bhs.Double]
+        | Histogram[bhs.DoubleSparse]
         | Histogram[bhs.Int64]
         | Histogram[bhs.AtomicInt64]
         | Histogram[bhs.Unlimited],
@@ -1875,6 +1967,7 @@ class Histogram(typing.Generic[S]):
     @typing.overload
     def values(
         self: Histogram[bhs.Double]
+        | Histogram[bhs.DoubleSparse]
         | Histogram[bhs.Unlimited]
         | Histogram[bhs.Weight]
         | Histogram[bhs.Mean]
@@ -1904,7 +1997,7 @@ class Histogram(typing.Generic[S]):
         :return: "np.typing.NDArray[Any]"[np.float64]
         """
 
-        view: Any = self.view(flow)
+        view: Any = self._view_or_dense(flow)
         # TODO: Might be a NumPy typing bug
         if len(view.dtype) == 0:
             return view  # type: ignore[no-any-return]
@@ -1918,6 +2011,7 @@ class Histogram(typing.Generic[S]):
     @typing.overload
     def variances(
         self: Histogram[bhs.Double]
+        | Histogram[bhs.DoubleSparse]
         | Histogram[bhs.Unlimited]
         | Histogram[bhs.MultiCell],
         flow: bool = ...,
@@ -1960,7 +2054,7 @@ class Histogram(typing.Generic[S]):
         :return: "np.typing.NDArray[Any]"[np.float64]
         """
 
-        view: Any = self.view(flow)
+        view: Any = self._view_or_dense(flow)
         if len(view.dtype) == 0:
             return view if self._variance_known else None
 
@@ -1991,6 +2085,7 @@ class Histogram(typing.Generic[S]):
     @typing.overload
     def counts(
         self: Histogram[bhs.Double]
+        | Histogram[bhs.DoubleSparse]
         | Histogram[bhs.Unlimited]
         | Histogram[bhs.Weight]
         | Histogram[bhs.Mean]
@@ -2029,7 +2124,7 @@ class Histogram(typing.Generic[S]):
         :return: "np.typing.NDArray[Any]"[np.float64]
         """
 
-        view: Any = self.view(flow)
+        view: Any = self._view_or_dense(flow)
 
         if len(view.dtype) == 0:
             return view  # type: ignore[no-any-return]
