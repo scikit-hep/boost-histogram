@@ -4,14 +4,108 @@
 
 #### Features
 
-- Support `flow=False` in histogram projections by @Rishabh-git10 in [#1109][]
-- Support subtraction for the `MultiCell` storage by @henryiii in [#1131][]
 - Python 3.15 wheels, including free-threading and Pyodide, by @henryiii in [#1163][]
+- Support `flow=False` in histogram projections by @Rishabh-git10 in [#1109][]
+- Add `Histogram.allclose` for approximate histogram comparison by @gohil-jay in [#778][]
+- Add a pytest plugin with rich assertion reporting for histogram comparisons by @gohil-jay in [#763][]
+
+#### Changes
+
+- Support subtraction for the `MultiCell` storage by @henryiii in [#1131][]
+- Support vectorized NumPy-array indexing for getting and setting bins by @henryiii in [#1134][]
+- Support addition for `Mean`/`WeightedMean` views by @henryiii in [#1137][]
+- Add reflected `__rsub__` and `__rtruediv__` operators by @henryiii in [#1155][]
+- Accept a scalar `sample` argument in `fill` by @henryiii in [#1124][]
+- Rebin with groups: `MultiCell` support, flow handling, and a `group_mapping` protocol by @henryiii in [#1148][]
 
 #### Fixes
 
 - Return a zero-filled vector from `MultiCell` `sum()` over zero bins instead of an empty list by @henryiii in [#1132][]
 - Raise `TypeError` instead of `ValueError` for a non-integer locator `offset` and a string `sample=` by @henryiii in [#1163][]
+- Clear error for unsupported histogram in-place operations by @henryiii in [#1130][]
+- Support common transformed axes in the `numpy` shortcuts by @henryiii in [#1122][]
+- Correct `Mean` storage string rejection and `__setitem__` error message by @henryiii in [#1117][]
+- Several fixes from automated review by @henryiii in [#1116][] and [#1118][]
+- Promote integer storages to double on division by @henryiii in [#1138][]
+- Do not mutate input edges and validate `histogramdd` dimensions in the `numpy` module by @henryiii in [#1144][]
+- Fix `out=` handling, scalar division, and broadcasting in structured views by @henryiii in [#1146][]
+- Fix non-contiguous array handling and memory safety in the C++ bindings by @henryiii in [#1147][]
+- Fix indexing, `__setitem__` flow transfer, and fill edge cases by @henryiii in [#1149][]
+- Avoid Boost indexed-range UB in rank-0 `sum()`/`empty()` by @henryiii in [#1153][]
+- Normalize negative integer slice bounds in indexing by @henryiii in [#1156][]
+- Remove ODR-violating `operator<<` for `accumulators::sum` by @henryiii in [#1161][]
+
+#### Performance
+
+- Avoid deep copies in comparisons and hot paths by @henryiii in [#1150][]
+
+#### Documentation
+
+- Cleanup, modernization, and gap-filling in the user guide by @henryiii in [#1141][]
+- Note that fancy indexing on views returns a copy by @henryiii in [#1136][]
+
+#### Tests
+
+- Use `pytest.approx` instead of NumPy assertion helpers by @gohil-jay in [#780][]
+- Validate UHI serialization against the uhi JSON schema by @henryiii in [#1140][]
+- Broaden `MultiCell` storage coverage by @henryiii in [#1127][]
+- Add regression test for scalar-broadcast fill on non-inclusive axes by @henryiii in [#1125][]
+- Add ND projection test for `flow=False` by @Rishabh-git10 in [#1111][]
+- Disable cloudpickle tests on PyPy by @henryiii in [#1120][]
+- Skip the pytest plugin end-to-end test on Emscripten by @henryiii in [#1152][]
+
+#### Internal
+
+- Bump to Boost 1.91 by @henryiii in [#1112][]
+- Bump setup-uv to the maintained tag scheme by @henryiii in [#1110][]
+- Update cibuildwheel to v4.0 by @henryiii in [#1119][]
+- Update AGENTS instructions and ignore the CLAUDE symlink by @henryiii in [#1121][]
+- Make the nox `hist` session fail on a missing dir and mypy override errors by @henryiii in [#1135][]
+- Set up uv cache keys by @henryiii in [#1142][]
+- pybind11 v3 pin, MSVC `/WX`, config and stub cleanups by @henryiii in [#1145][]
+- Remove dead code and minor C++ cleanups by @henryiii in [#1151][]
+
+[#763]: https://github.com/scikit-hep/boost-histogram/pull/763
+[#778]: https://github.com/scikit-hep/boost-histogram/pull/778
+[#780]: https://github.com/scikit-hep/boost-histogram/pull/780
+[#1109]: https://github.com/scikit-hep/boost-histogram/pull/1109
+[#1110]: https://github.com/scikit-hep/boost-histogram/pull/1110
+[#1111]: https://github.com/scikit-hep/boost-histogram/pull/1111
+[#1112]: https://github.com/scikit-hep/boost-histogram/pull/1112
+[#1116]: https://github.com/scikit-hep/boost-histogram/pull/1116
+[#1117]: https://github.com/scikit-hep/boost-histogram/pull/1117
+[#1118]: https://github.com/scikit-hep/boost-histogram/pull/1118
+[#1119]: https://github.com/scikit-hep/boost-histogram/pull/1119
+[#1120]: https://github.com/scikit-hep/boost-histogram/pull/1120
+[#1121]: https://github.com/scikit-hep/boost-histogram/pull/1121
+[#1122]: https://github.com/scikit-hep/boost-histogram/pull/1122
+[#1124]: https://github.com/scikit-hep/boost-histogram/pull/1124
+[#1125]: https://github.com/scikit-hep/boost-histogram/pull/1125
+[#1127]: https://github.com/scikit-hep/boost-histogram/pull/1127
+[#1130]: https://github.com/scikit-hep/boost-histogram/pull/1130
+[#1131]: https://github.com/scikit-hep/boost-histogram/pull/1131
+[#1132]: https://github.com/scikit-hep/boost-histogram/pull/1132
+[#1134]: https://github.com/scikit-hep/boost-histogram/pull/1134
+[#1135]: https://github.com/scikit-hep/boost-histogram/pull/1135
+[#1136]: https://github.com/scikit-hep/boost-histogram/pull/1136
+[#1137]: https://github.com/scikit-hep/boost-histogram/pull/1137
+[#1138]: https://github.com/scikit-hep/boost-histogram/pull/1138
+[#1140]: https://github.com/scikit-hep/boost-histogram/pull/1140
+[#1141]: https://github.com/scikit-hep/boost-histogram/pull/1141
+[#1142]: https://github.com/scikit-hep/boost-histogram/pull/1142
+[#1144]: https://github.com/scikit-hep/boost-histogram/pull/1144
+[#1145]: https://github.com/scikit-hep/boost-histogram/pull/1145
+[#1146]: https://github.com/scikit-hep/boost-histogram/pull/1146
+[#1147]: https://github.com/scikit-hep/boost-histogram/pull/1147
+[#1148]: https://github.com/scikit-hep/boost-histogram/pull/1148
+[#1149]: https://github.com/scikit-hep/boost-histogram/pull/1149
+[#1150]: https://github.com/scikit-hep/boost-histogram/pull/1150
+[#1152]: https://github.com/scikit-hep/boost-histogram/pull/1152
+[#1153]: https://github.com/scikit-hep/boost-histogram/pull/1153
+[#1155]: https://github.com/scikit-hep/boost-histogram/pull/1155
+[#1156]: https://github.com/scikit-hep/boost-histogram/pull/1156
+[#1161]: https://github.com/scikit-hep/boost-histogram/pull/1161
+[#1163]: https://github.com/scikit-hep/boost-histogram/pull/1163
 
 ## Version 1.7
 
@@ -49,10 +143,6 @@
 [#1092]: https://github.com/scikit-hep/boost-histogram/pull/1092
 [#1105]: https://github.com/scikit-hep/boost-histogram/pull/1105
 [#1106]: https://github.com/scikit-hep/boost-histogram/pull/1106
-[#1109]: https://github.com/scikit-hep/boost-histogram/pull/1109
-[#1131]: https://github.com/scikit-hep/boost-histogram/pull/1131
-[#1132]: https://github.com/scikit-hep/boost-histogram/pull/1132
-[#1163]: https://github.com/scikit-hep/boost-histogram/pull/1163
 
 ### Version 1.7.1
 
