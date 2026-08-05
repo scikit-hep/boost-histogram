@@ -31,12 +31,12 @@ def __dir__() -> list[str]:
 def histogramdd(
     a: tuple[ArrayLike, ...],
     bins: int | tuple[int, ...] | tuple[np.typing.NDArray[Any], ...] = 10,
-    range: None | (Sequence[None | tuple[float, float]]) = None,
+    range: Sequence[tuple[float, float] | None] | None = None,
     normed: None = None,
     weights: ArrayLike | None = None,
     density: bool = False,
     *,
-    histogram: None | (type[Histogram[Any]]) = None,
+    histogram: type[Histogram[Any]] | None = None,
     storage: _storage.Storage | None = None,
     threads: int | None = None,
 ) -> Any:
@@ -111,12 +111,12 @@ def histogram2d(
     x: ArrayLike,
     y: ArrayLike,
     bins: int | tuple[int, int] = 10,
-    range: None | (Sequence[None | tuple[float, float]]) = None,
+    range: Sequence[tuple[float, float] | None] | None = None,
     normed: None = None,
     weights: ArrayLike | None = None,
     density: bool = False,
     *,
-    histogram: None | (type[Histogram[Any]]) = None,
+    histogram: type[Histogram[Any]] | None = None,
     storage: _storage.Storage | None = None,
     threads: int | None = None,
 ) -> Any:
@@ -149,7 +149,7 @@ def histogram(
     weights: ArrayLike | None = None,
     density: bool = False,
     *,
-    histogram: None | (type[Histogram[Any]]) = None,
+    histogram: type[Histogram[Any]] | None = None,
     storage: _storage.Storage | None = None,
     threads: int | None = None,
 ) -> Any:
