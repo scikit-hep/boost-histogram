@@ -4,16 +4,18 @@
 
 #### Features
 
-- Bump to Boost 1.91 by @henryiii in [#1112][]
+- Python 3.15 wheels, including free-threading and Pyodide, by @henryiii in [#1163][]
+- Support `flow=False` in histogram projections by @Rishabh-git10 in [#1109][]
 - Add `Histogram.allclose` for approximate histogram comparison by @gohil-jay in [#778][]
 - Add a pytest plugin with rich assertion reporting for histogram comparisons by @gohil-jay in [#763][]
-- Support `flow=False` in histogram projections by @Rishabh-git10 in [#1109][]
+
+#### Changes
+
 - Support subtraction for the `MultiCell` storage by @henryiii in [#1131][]
-- Python 3.15 wheels, including free-threading and Pyodide, by @henryiii in [#1163][]
-- Accept a scalar `sample` argument in `fill` by @henryiii in [#1124][]
 - Support vectorized NumPy-array indexing for getting and setting bins by @henryiii in [#1134][]
 - Support addition for `Mean`/`WeightedMean` views by @henryiii in [#1137][]
 - Add reflected `__rsub__` and `__rtruediv__` operators by @henryiii in [#1155][]
+- Accept a scalar `sample` argument in `fill` by @henryiii in [#1124][]
 - Rebin with groups: `MultiCell` support, flow handling, and a `group_mapping` protocol by @henryiii in [#1148][]
 
 #### Fixes
@@ -54,6 +56,7 @@
 
 #### Internal
 
+- Bump to Boost 1.91 by @henryiii in [#1112][]
 - Bump setup-uv to the maintained tag scheme by @henryiii in [#1110][]
 - Update cibuildwheel to v4.0 by @henryiii in [#1119][]
 - Update AGENTS instructions and ignore the CLAUDE symlink by @henryiii in [#1121][]
