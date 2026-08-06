@@ -606,6 +606,26 @@ def test_operators():
         h + h2
 
 
+@pytest.mark.parametrize("operation", [operator.add, operator.iadd])
+@pytest.mark.parametrize(
+    ("left_storage", "right_storage"),
+    [
+        (bh.storage.Int64, bh.storage.Double),
+        (bh.storage.Double, bh.storage.Int64),
+    ],
+)
+def test_add_mismatched_storage_raises(operation, left_storage, right_storage):
+    left = bh.Histogram(bh.axis.Regular(3, -1, 1), storage=left_storage())
+    right = bh.Histogram(bh.axis.Regular(3, -1, 1), storage=right_storage())
+    right.fill(0)
+
+    message = (
+        f"different storage types: {left_storage.__name__} and {right_storage.__name__}"
+    )
+    with pytest.raises(TypeError, match=message):
+        operation(left, right)
+
+
 def test_hist_hist_div():
     h1 = bh.Histogram(bh.axis.Boolean())
     h2 = bh.Histogram(bh.axis.Boolean())
