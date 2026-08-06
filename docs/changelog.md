@@ -20,6 +20,7 @@
 
 #### Fixes
 
+- Reject arithmetic with mismatched storages by @divyanshu-iitian in [#1166][]
 - Return a zero-filled vector from `MultiCell` `sum()` over zero bins instead of an empty list by @henryiii in [#1132][]
 - Raise `TypeError` instead of `ValueError` for a non-integer locator `offset` and a string `sample=` by @henryiii in [#1163][]
 - Clear error for unsupported histogram in-place operations by @henryiii in [#1130][]
@@ -106,6 +107,7 @@
 [#1156]: https://github.com/scikit-hep/boost-histogram/pull/1156
 [#1161]: https://github.com/scikit-hep/boost-histogram/pull/1161
 [#1163]: https://github.com/scikit-hep/boost-histogram/pull/1163
+[#1166]: https://github.com/scikit-hep/boost-histogram/pull/1166
 
 ## Version 1.7
 
