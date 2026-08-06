@@ -17,7 +17,7 @@
 
 Python bindings for [Boost::Histogram][] ([source][Boost::Histogram source]), a C++14 library. This is one of the [fastest libraries][] for
 histogramming, while still providing the power of a full histogram object. See
-[what's new](./docs/CHANGELOG.md).
+[what's new](./docs/changelog.md).
 
 Other members of the boost-histogram family include:
 
@@ -193,19 +193,20 @@ when you run the above command on a supported platform. Wheels are produced usin
 [cibuildwheel](https://cibuildwheel.readthedocs.io/en/stable/); all common
 platforms have wheels provided in boost-histogram:
 
-| System    | Arch   | Python versions                            | PyPy versions | GraalPy versions |
-| --------- | ------ | ------------------------------------------ | ------------- | ---------------- |
-| manylinux | 64-bit | 3.10, 3.11, 3.12, 3.13, 3.13t, 3.14, 3.14t | 3.11          | 24.2, 25.0       |
-| manylinux | ARM64  | 3.10, 3.11, 3.12, 3.13, 3.13t, 3.14, 3.14t | 3.11          | 24.2, 25.0       |
-| musllinux | 64-bit | 3.10, 3.11, 3.12, 3.13, 3.13t, 3.14, 3.14t |               |                  |
-| macOS     | 64-bit | 3.10, 3.11, 3.12, 3.13, 3.13t, 3.14, 3.14t | 3.11          | 24.2, 25.0       |
-| macOS     | Arm64  | 3.10, 3.11, 3.12, 3.13, 3.13t, 3.14, 3.14t | 3.11          | 24.2, 25.0       |
-| Windows   | 32-bit | 3.10, 3.11, 3.12, 3.13, 3.13t, 3.14, 3.14t |               |                  |
-| Windows   | 64-bit | 3.10, 3.11, 3.12, 3.13, 3.13t, 3.14, 3.14t | 3.11          | 24.2, 25.0       |
-| Windows   | ARM64  | 3.11, 3.12, 3.13, 3.13t, 3.14, 3.14t       |               |                  |
-| iOS       | Device | 3.13, 3.14                                 |               |                  |
-| iOS       | AS Sim | 3.13, 3.14                                 |               |                  |
-| iOS       | Intel  | 3.13, 3.14                                 |               |                  |
+| System    | Arch   | Python versions                                  | PyPy versions | GraalPy versions |
+| --------- | ------ | ------------------------------------------------ | ------------- | ---------------- |
+| manylinux | 64-bit | 3.10, 3.11, 3.12, 3.13, 3.14, 3.14t, 3.15, 3.15t | 3.11          | 25.0             |
+| manylinux | ARM64  | 3.10, 3.11, 3.12, 3.13, 3.14, 3.14t, 3.15, 3.15t | 3.11          | 25.0             |
+| musllinux | 64-bit | 3.10, 3.11, 3.12, 3.13, 3.14, 3.14t, 3.15, 3.15t |               |                  |
+| macOS     | 64-bit | 3.10, 3.11, 3.12, 3.13, 3.14, 3.14t, 3.15, 3.15t | 3.11          | 25.0             |
+| macOS     | Arm64  | 3.10, 3.11, 3.12, 3.13, 3.14, 3.14t, 3.15, 3.15t | 3.11          | 25.0             |
+| Windows   | 32-bit | 3.10, 3.11, 3.12, 3.13, 3.14, 3.14t, 3.15, 3.15t |               |                  |
+| Windows   | 64-bit | 3.10, 3.11, 3.12, 3.13, 3.14, 3.14t, 3.15, 3.15t | 3.11          | 25.0             |
+| Windows   | ARM64  | 3.10, 3.11, 3.12, 3.13, 3.14, 3.14t, 3.15, 3.15t |               |                  |
+| iOS       | Device | 3.13, 3.14, 3.15                                 |               |                  |
+| iOS       | AS Sim | 3.13, 3.14, 3.15                                 |               |                  |
+| iOS       | Intel  | 3.13, 3.14, 3.15                                 |               |                  |
+| Pyodide   | wasm32 | 3.13, 3.14, 3.15                                 |               |                  |
 
 PowerPC, IBM-Z, and RISC-V wheels are not provided but are available on request.
 
