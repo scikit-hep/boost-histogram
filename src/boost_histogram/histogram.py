@@ -836,6 +836,17 @@ class Histogram(typing.Generic[S]):
         self._hist = self._as_double_cpp(self._hist)
 
     def _hist_inplace_op(self, name: str, other: CppHistogram) -> None:
+        if self._hist._storage_type is not other._storage_type:
+            symbol = _INPLACE_OP_SYMBOLS.get(name, name)
+            other_storage = typing.cast(
+                type[Storage], cast(self, other._storage_type, Storage)
+            )
+            msg = (
+                f"Cannot {symbol} histograms with different storage types: "
+                f"{self.storage_type.__name__} and {other_storage.__name__}"
+            )
+            raise TypeError(msg)
+
         # The underlying C++ histogram only exposes the in-place dunders its
         # storage supports (e.g. weight/mean/multi_cell storages have no
         # __isub__). Calling a missing one raises a confusing AttributeError
