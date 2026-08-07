@@ -85,3 +85,21 @@ When adding a new axis/storage/accumulator wrapper, follow this pattern: registe
 - mypy runs in strict mode on `src/` and `examples/`; tests are exempt from untyped-def rules.
 - Version is dynamic from git tags via `setuptools_scm`, generated at build time into
   `boost_histogram/version.py` (do not commit/edit it).
+
+## Supported Python versions
+
+When the supported versions change (a new Python, a dropped one, a new cibuildwheel version, or a
+new wheel platform), update all of these:
+
+- `requires-python` and the `Programming Language :: Python :: *` classifiers in `pyproject.toml`
+- the matrix in `.github/workflows/tests.yml` and the jobs in `.github/workflows/wheels.yml`
+- the "Binaries available" wheel table in `README.md`
+
+Get the true list of wheels from cibuildwheel instead of writing it by hand, one call per platform:
+
+```bash
+uvx cibuildwheel --platform linux --print-build-identifiers
+```
+
+Free-threaded and alternative-implementation builds are opt-in and change between cibuildwheel
+releases, so a version can disappear from the table without an intentional drop.

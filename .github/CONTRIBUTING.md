@@ -247,7 +247,7 @@ nox -s bump_boost -- 1.88.0
 <details><summary>Making a new release (click to expand)</summary>
 
 - Finish merging open PRs that you want in the new version
-- Add most recent changes to the `docs/CHANGELOG.md`
+- Add most recent changes to the `docs/changelog.md`
 - Sync master with develop using `git checkout master; git merge develop --ff-only` and push
 - Make sure the `cmake --preset tidy` build runs on master without issues (manually trigger if needed)
 - Make the GitHub release in the GitHub UI. Copy the changelog entries and

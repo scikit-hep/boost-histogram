@@ -101,6 +101,7 @@
 [#1148]: https://github.com/scikit-hep/boost-histogram/pull/1148
 [#1149]: https://github.com/scikit-hep/boost-histogram/pull/1149
 [#1150]: https://github.com/scikit-hep/boost-histogram/pull/1150
+[#1151]: https://github.com/scikit-hep/boost-histogram/pull/1151
 [#1152]: https://github.com/scikit-hep/boost-histogram/pull/1152
 [#1153]: https://github.com/scikit-hep/boost-histogram/pull/1153
 [#1155]: https://github.com/scikit-hep/boost-histogram/pull/1155
@@ -259,8 +260,7 @@ This release drops support for Python 3.8, and adds Python 3.14(t), iOS, Windows
 [#999]: https://github.com/scikit-hep/boost-histogram/pull/999
 [#1000]: https://github.com/scikit-hep/boost-histogram/pull/1000
 [#1001]: https://github.com/scikit-hep/boost-histogram/pull/1001
-
-:[#1002]: https://github.com/scikit-hep/boost-histogram/pull/1002
+[#1002]: https://github.com/scikit-hep/boost-histogram/pull/1002
 [#1009]: https://github.com/scikit-hep/boost-histogram/pull/1009
 [#1010]: https://github.com/scikit-hep/boost-histogram/pull/1010
 [#1011]: https://github.com/scikit-hep/boost-histogram/pull/1011
@@ -921,6 +921,7 @@ along with a few new features to better support downstream projects.
 [#401]: https://github.com/scikit-hep/boost-histogram/pull/401
 [#402]: https://github.com/scikit-hep/boost-histogram/pull/402
 [#403]: https://github.com/scikit-hep/boost-histogram/pull/403
+[#404]: https://github.com/scikit-hep/boost-histogram/pull/404
 [#406]: https://github.com/scikit-hep/boost-histogram/pull/406
 
 ## Version 0.8
