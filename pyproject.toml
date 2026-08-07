@@ -193,7 +193,6 @@ test-environment.CI = "1"  # Hypothesis needs this on GraalPy
 test-skip = [
   "cp310-win_arm64",
   "cp31*-musllinux_*", # Threading test crashes
-  "cp315*",  # No numpy wheels yet
   "gp312_*",  # No numpy wheels yet
   "*-ios_*",  # Fails on CI with no device found
 ]
@@ -203,6 +202,17 @@ environment.PIP_ONLY_BINARY = "numpy"
 environment.PIP_PREFER_BINARY = "1"
 environment.UV_ONLY_BINARY = "numpy"
 environment.UV_PREFER_BINARY = "1"
+
+# SPEC 4 nightly wheels: numpy has no 3.15 release yet
+[[tool.cibuildwheel.overrides]]
+select = "cp315*"
+test-environment.CI = "1"
+test-environment.PIP_PRE = "1"
+test-environment.PIP_EXTRA_INDEX_URL = "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple"
+test-environment.UV_PRERELEASE = "allow"
+test-environment.UV_INDEX = "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple"
+# Let uv fall back to PyPI for packages the nightly index also mirrors
+test-environment.UV_INDEX_STRATEGY = "unsafe-best-match"
 
 [tool.cibuildwheel.pyodide]
 build-frontend = {name = "pyodide-build", args = ["--exports", "whole_archive"]}
