@@ -1,6 +1,8 @@
 # Changelog
 
-## WIP
+## Version 1.8
+
+### Version 1.8.0
 
 #### Features
 
@@ -44,6 +46,7 @@
 
 - Cleanup, modernization, and gap-filling in the user guide by @henryiii in [#1141][]
 - Note that fancy indexing on views returns a copy by @henryiii in [#1136][]
+- Correct the wheel table and add a version-support checklist by @henryiii in [#1168][]
 
 #### Tests
 
@@ -65,6 +68,7 @@
 - Set up uv cache keys by @henryiii in [#1142][]
 - pybind11 v3 pin, MSVC `/WX`, config and stub cleanups by @henryiii in [#1145][]
 - Remove dead code and minor C++ cleanups by @henryiii in [#1151][]
+- Remove the needs-changelog labeler by @henryiii in [#1164][]
 
 [#763]: https://github.com/scikit-hep/boost-histogram/pull/763
 [#778]: https://github.com/scikit-hep/boost-histogram/pull/778
@@ -108,7 +112,9 @@
 [#1156]: https://github.com/scikit-hep/boost-histogram/pull/1156
 [#1161]: https://github.com/scikit-hep/boost-histogram/pull/1161
 [#1163]: https://github.com/scikit-hep/boost-histogram/pull/1163
+[#1164]: https://github.com/scikit-hep/boost-histogram/pull/1164
 [#1166]: https://github.com/scikit-hep/boost-histogram/pull/1166
+[#1168]: https://github.com/scikit-hep/boost-histogram/pull/1168
 
 ## Version 1.7
 
