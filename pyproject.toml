@@ -193,7 +193,6 @@ test-environment.CI = "1"  # Hypothesis needs this on GraalPy
 test-skip = [
   "cp310-win_arm64",
   "cp31*-musllinux_*", # Threading test crashes
-  "cp315*",  # No numpy wheels yet
   "gp312_*",  # No numpy wheels yet
   "*-ios_*",  # Fails on CI with no device found
 ]
