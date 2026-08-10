@@ -64,6 +64,7 @@ jobs:
           - python-version: "3.11"
           - python-version: "3.14"
           - python-version: "3.14t"
+          - python-version: "3.15"
           - python-version: "pypy3.11"
 
     steps:
@@ -143,6 +144,8 @@ jobs:
             only: cp312-macosx_arm64
           - os: windows-11-arm
             only: cp311-win_arm64
+          - os: ubuntu-latest
+            only: cp315-manylinux_x86_64
           - os: ubuntu-latest
             only: gp312_250-manylinux_x86_64
 
