@@ -31,6 +31,30 @@
 #include <tuple>
 #include <vector>
 
+/// Bind the COO get/set helpers, but only for sparse storages (no-op otherwise).
+/// Sparse histograms cannot expose a numpy buffer, so these are the supported way
+/// to read filled cells (``_to_coo``) and to bulk-populate them (``_from_coo``,
+/// used by serialization).
+template <class histogram_t, class PyClass>
+void register_sparse_coo(PyClass& hist, std::true_type) {
+    hist.def(
+            "_to_coo",
+            [](histogram_t& self, bool flow) { return histogram_to_coo(self, flow); },
+            "flow"_a = false)
+        .def(
+            "_from_coo",
+            [](histogram_t& self,
+               const py::array_t<py::ssize_t>& indices,
+               const py::array_t<double>& values,
+               bool flow) { histogram_from_coo(self, indices, values, flow); },
+            "indices"_a,
+            "values"_a,
+            "flow"_a = true);
+}
+
+template <class histogram_t, class PyClass>
+void register_sparse_coo(PyClass& /* hist */, std::false_type) {}
+
 template <class S>
 auto register_histogram(py::module& m, const char* name, const char* desc) {
     using histogram_t = bh::histogram<vector_axis_variant, S>;
@@ -61,10 +85,12 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
 
         .def(py::self += py::self)
 
+        // histogram_equal dispatches to a sparse-aware comparison; the default
+        // operator== walks every logical cell, which sparse storage cannot afford.
         .def("__eq__",
              [](const histogram_t& self, const py::object& other) {
                  try {
-                     return self == py::cast<const histogram_t&>(other);
+                     return histogram_equal(self, py::cast<const histogram_t&>(other));
                  } catch(const py::cast_error&) {
                      return false;
                  }
@@ -72,7 +98,7 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
         .def("__ne__",
              [](const histogram_t& self, const py::object& other) {
                  try {
-                     return self != py::cast<const histogram_t&>(other);
+                     return !histogram_equal(self, py::cast<const histogram_t&>(other));
                  } catch(const py::cast_error&) {
                      return true;
                  }
@@ -169,17 +195,13 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
 
         .def("__repr__", &shift_to_string<histogram_t>)
 
+        // histogram_sum/histogram_empty dispatch to filled-cells-only versions
+        // for sparse storage; the bh::algorithm versions are O(dense size).
         .def(
             "sum",
             [](const histogram_t& self, bool flow) {
                 const py::gil_scoped_release release;
-                // A rank-0 histogram has no flow bins, so inner == all. Use
-                // all to avoid Boost's indexed range, which is UB for rank-0
-                // (it reads uninitialized per-axis state); the all path uses
-                // plain iteration instead.
-                const auto cov = (flow || self.rank() == 0) ? bh::coverage::all
-                                                            : bh::coverage::inner;
-                return bh::algorithm::sum(self, cov);
+                return histogram_sum(self, flow);
             },
             "flow"_a = false)
 
@@ -187,14 +209,7 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
             "empty",
             [](const histogram_t& self, bool flow) {
                 const py::gil_scoped_release release;
-                if(self.rank() == 0) {
-                    // algorithm::empty drives the same rank-0-UB indexed range;
-                    // check the single cell directly instead.
-                    using value_type = typename histogram_t::value_type;
-                    return !(*self.begin() != value_type());
-                }
-                return bh::algorithm::empty(
-                    self, flow ? bh::coverage::all : bh::coverage::inner);
+                return histogram_empty(self, flow);
             },
             "flow"_a = false)
 
@@ -218,6 +233,8 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
         .def(make_pickle<histogram_t>())
 
         ;
+
+    register_sparse_coo<histogram_t>(hist, is_sparse_storage<S>{});
 
     return hist;
 }
@@ -266,10 +283,12 @@ auto inline register_histogram<bh::multi_cell<double>>(py::module& m,
 
         .def(py::self += py::self)
 
+        // histogram_equal dispatches to a sparse-aware comparison; the default
+        // operator== walks every logical cell, which sparse storage cannot afford.
         .def("__eq__",
              [](const histogram_t& self, const py::object& other) {
                  try {
-                     return self == py::cast<const histogram_t&>(other);
+                     return histogram_equal(self, py::cast<const histogram_t&>(other));
                  } catch(const py::cast_error&) {
                      return false;
                  }
@@ -277,7 +296,7 @@ auto inline register_histogram<bh::multi_cell<double>>(py::module& m,
         .def("__ne__",
              [](const histogram_t& self, const py::object& other) {
                  try {
-                     return self != py::cast<const histogram_t&>(other);
+                     return !histogram_equal(self, py::cast<const histogram_t&>(other));
                  } catch(const py::cast_error&) {
                      return true;
                  }

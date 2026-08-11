@@ -20,8 +20,16 @@
 #include <cstdint>
 #include <stdexcept>
 #include <type_traits>
+#include <unordered_map>
 
 namespace storage {
+
+// Sparse storage only allocates cells that are actually filled, by keeping them
+// in a hash map keyed on the (flattened) bin index. Accumulator-backed sparse
+// storages need https://github.com/boostorg/histogram/pull/421 (Boost 1.92), so
+// for now only the arithmetic double_sparse is exposed.
+template <typename T>
+using sparse_storage = bh::storage_adaptor<std::unordered_map<std::size_t, T>>;
 
 // Names match Python names
 using int64         = bh::dense_storage<int64_t>;
@@ -32,6 +40,7 @@ using weight        = bh::dense_storage<accumulators::weighted_sum<double>>;
 using multi_cell    = bh::multi_cell<double>;
 using mean          = bh::dense_storage<accumulators::mean<double>>;
 using weighted_mean = bh::dense_storage<accumulators::weighted_mean<double>>;
+using double_sparse = sparse_storage<double>;
 
 // Allow repr to show python name
 template <class S>
@@ -77,6 +86,11 @@ inline const char* name<mean>() {
 template <>
 inline const char* name<weighted_mean>() {
     return "weighted_mean";
+}
+
+template <>
+inline const char* name<double_sparse>() {
+    return "double_sparse";
 }
 
 } // namespace storage
@@ -194,6 +208,48 @@ void load(Archive& ar,
     s.resize(static_cast<std::size_t>(a.size() / 4));
     // sadly we cannot move the memory from the numpy array into the vector
     std::copy(a.data(), a.data() + a.size(), reinterpret_cast<double*>(s.data()));
+}
+
+// Sparse storage cannot be flat-serialized: its hash map only holds filled
+// cells. We instead store the logical size plus parallel (key, value) arrays.
+// storage_adaptor publicly inherits the underlying map, so the upcast exposes
+// just the filled cells.
+template <class Archive>
+void save(Archive& ar, const storage::double_sparse& s, unsigned /* version */) {
+    using map_type  = std::unordered_map<std::size_t, double>;
+    const auto& map = static_cast<const map_type&>(s);
+    const auto n    = static_cast<py::ssize_t>(map.size());
+
+    py::array_t<std::uint64_t> keys(n);
+    py::array_t<double> values(n);
+    auto* kp = keys.mutable_data();
+    auto* vp = values.mutable_data();
+    for(const auto& kv : map) {
+        *kp++ = static_cast<std::uint64_t>(kv.first);
+        *vp++ = kv.second;
+    }
+
+    ar << static_cast<std::uint64_t>(s.size());
+    ar << keys;
+    ar << values;
+}
+
+template <class Archive>
+void load(Archive& ar, storage::double_sparse& s, unsigned /* version */) {
+    using map_type             = std::unordered_map<std::size_t, double>;
+    std::uint64_t logical_size = 0;
+    py::array_t<std::uint64_t> keys;
+    py::array_t<double> values;
+    ar >> logical_size;
+    ar >> keys;
+    ar >> values;
+
+    s.reset(static_cast<std::size_t>(logical_size));
+    auto& map = static_cast<map_type&>(s);
+    auto k    = keys.unchecked<1>();
+    auto v    = values.unchecked<1>();
+    for(py::ssize_t i = 0; i < v.shape(0); ++i)
+        map.emplace(static_cast<std::size_t>(k(i)), v(i));
 }
 
 namespace pybind11 {

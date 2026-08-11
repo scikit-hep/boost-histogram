@@ -66,6 +66,114 @@ This storage is like ``Int64()``, but also provides a thread safety guarantee.
 You can fill a single histogram from multiple threads.
 
 
+Sparse storages
+---------------
+
+DoubleSparse
+^^^^^^^^^^^^
+
+The ``DoubleSparse()`` storage is like ``Double()``, but only the bins that are
+actually filled are stored (in a hash map keyed on the bin index). This makes
+histograms over very large or high-dimensional axis spaces feasible, where a
+dense grid would not fit in memory even though only a small fraction of the bins
+are ever filled.
+
+.. code-block:: python3
+
+    import boost_histogram as bh
+
+    # A 5-dimensional grid; dense storage would need 10**15 cells.
+    axes = [bh.axis.Regular(1000, 0, 1) for _ in range(5)]
+    h = bh.Histogram(*axes, storage=bh.storage.DoubleSparse())
+    h.fill(*data)  # only the filled cells are allocated
+
+Because the data is not stored as a dense array, **sparse storage is not a
+drop-in replacement for a dense histogram**. Operations that can be expressed
+without materializing the full grid keep the result sparse; operations that need
+a dense buffer raise a clear ``TypeError`` (pointing you at
+:meth:`~boost_histogram.Histogram.to_coo`) rather than silently densifying.
+
+Stays sparse (or returns a scalar) -- delegates to the C++ storage:
+
+* Reading a single bin: ``h[bh.loc(...)]``, ``h[5]``.
+* Integer slicing (``h[10:60]``), rebinning (``h[:: bh.rebin(2)]``), integration
+  (``h[10:60:sum]``), and projection (``h.project(0)``).
+* ``.sum()``, ``.empty()``, and ``==`` comparison -- these iterate only the
+  filled cells, never the dense grid.
+* Adding two histograms (``h1 + h2``) and scalar ``*`` / ``/`` (which only
+  scale the filled cells, so ``0`` stays ``0``).
+* ``copy``/``deepcopy``, pickling, and UHI serialization.
+
+Densifies into a fresh array (works, but allocates the full dense shape):
+
+* The copying accessors ``h.values()``, ``h.variances()``, ``h.counts()``. Only
+  use these when the dense shape fits in memory; otherwise prefer
+  :meth:`~boost_histogram.Histogram.to_coo`.
+
+Unsupported -- raises ``TypeError``:
+
+* ``h.view()`` and ``np.asarray(h)`` -- there is no contiguous buffer to view.
+* Writes: ``h[...] = value`` (filling with ``h.fill(...)`` is the only write path).
+* Scalar ``+`` / ``-`` -- these would add to *every* cell, filling the grid.
+* Fancy indexing that gathers through a dense view: mixed integer + slice
+  (``h[2, :]``), categorical list picks (``h[:, [0, 2]]``), and NumPy array
+  indexing (``h[np.array([...])]``).
+
+.. note::
+
+   Mixed integer + slice indexing (``h[2, :]``) is a common pattern and a likely
+   follow-up to support natively on sparse storage; for now, slice without
+   collapsing the axis (``h[2:3, :]``) to stay sparse, or densify first.
+
+Only ``double`` sparse storage is available for now; accumulator-backed sparse
+storages (the equivalent of ``Weight``, ``Mean``, ...) are waiting on a
+Boost.Histogram fix that ships in Boost 1.92.
+
+Reading the filled cells
+""""""""""""""""""""""""
+
+:meth:`~boost_histogram.Histogram.to_coo` returns the filled cells in coordinate
+(COO) form -- a tuple of per-axis index arrays (in the style of
+:func:`numpy.nonzero`, so they can be used directly as a fancy index) and the
+array of corresponding values:
+
+.. code-block:: python3
+
+    h = bh.Histogram(bh.axis.Regular(5, 0, 5), storage=bh.storage.DoubleSparse())
+    h.fill([1.5, 1.5, 3.5])
+
+    indices, values = h.to_coo()
+    # indices == (array([1, 3]),)   values == array([2., 1.])
+
+Pass ``flow=True`` to include the underflow/overflow bins (the indices then run
+over the with-flow grid, with underflow at ``0``).
+
+Converting to a SciPy sparse array
+""""""""""""""""""""""""""""""""""
+
+For a 2D histogram, the COO output maps directly onto a
+:class:`scipy.sparse.coo_array`. The per-axis index arrays are the row and
+column coordinates, and ``h.axes.size`` is the dense shape:
+
+.. code-block:: python3
+
+    from scipy.sparse import coo_array
+
+    h = bh.Histogram(
+        bh.axis.Regular(1000, 0, 1000),
+        bh.axis.Regular(1000, 0, 1000),
+        storage=bh.storage.DoubleSparse(),
+    )
+    h.fill(xs, ys)
+
+    (rows, cols), values = h.to_coo()
+    matrix = coo_array((values, (rows, cols)), shape=h.axes.size)
+
+(SciPy sparse arrays are two-dimensional, so this applies to 2D histograms; for
+higher dimensions, use the ``(indices, values)`` pair directly, e.g. with an
+N-dimensional sparse library such as ``sparse``.)
+
+
 Accumulator storages
 --------------------
 

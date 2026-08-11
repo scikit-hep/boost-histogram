@@ -40,4 +40,9 @@ void register_storages(py::module& storage) {
         storage,
         "multi_cell",
         "Dense storage which tracks sums of cell entries for multiple cells per entry");
+
+    register_storage<storage::double_sparse>(
+        storage,
+        "double_sparse",
+        "Sparse storage for doubles (only filled cells are stored)");
 }

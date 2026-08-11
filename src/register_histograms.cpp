@@ -56,4 +56,10 @@ void register_histograms(py::module& hist) {
         "any_multi_cell",
         "N-dimensional histogram for storing multiple cells at once with any axis "
         "types.");
+
+    register_histogram<storage::double_sparse>(
+        hist,
+        "any_double_sparse",
+        "N-dimensional histogram for real-valued data using sparse storage (only "
+        "filled cells are stored) with any axis types.");
 }
