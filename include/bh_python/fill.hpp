@@ -234,6 +234,26 @@ void fill_impl(bh::detail::accumulator_traits_holder<true, const double&>,
         sample);
 }
 
+// for the unweighted collector: appends one sample value per fill, no weight support
+// (the weighted collector matches the <true, const double&> overload above)
+template <class Histogram, class VArgs>
+void fill_impl(bh::detail::accumulator_traits_holder<false, const double&>,
+               Histogram& h,
+               const VArgs& vargs,
+               const weight_t& weight,
+               py::kwargs& kwargs) {
+    if(!variant::holds_alternative<variant::monostate>(weight))
+        throw std::invalid_argument("Collector storage does not support weights");
+    auto s = required_arg(kwargs, "sample");
+    finalize_args(kwargs);
+    auto sample = get_sample(s);
+
+    // releasing gil here is safe, we don't manipulate refcounts
+    const py::gil_scoped_release lock;
+    variant::visit([&h, &vargs](const auto& sval) { h.fill(vargs, bh::sample(sval)); },
+                   sample);
+}
+
 // for multi_cell
 template <class Histogram, class VArgs>
 void fill_impl(bh::detail::accumulator_traits_holder<false, const boost::span<double>&>,

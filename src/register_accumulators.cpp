@@ -7,12 +7,18 @@
 
 #include <bh_python/accumulators/mean.hpp>
 #include <bh_python/accumulators/ostream.hpp>
+#include <bh_python/accumulators/weighted_collector.hpp>
 #include <bh_python/accumulators/weighted_mean.hpp>
 #include <bh_python/accumulators/weighted_sum.hpp>
 #include <bh_python/kwargs.hpp>
+#include <bh_python/make_pickle.hpp>
 #include <bh_python/register_accumulator.hpp>
+#include <boost/histogram/accumulators/collector.hpp>
 #include <boost/histogram/accumulators/sum.hpp>
 #include <pybind11/operators.h>
+
+#include <utility>
+#include <vector>
 
 namespace {
 /// The mean fill can be implemented once. (sum fill varies slightly)
@@ -342,4 +348,144 @@ void register_accumulators(py::module& accumulators) {
              })
 
         ;
+
+    // The per-bin cells of the (Weighted)Collector storages, exposed as their own
+    // sequence accumulators: a vector of collected samples. h[i] and sum() return
+    // these. Elements are plain floats / (value, weight) tuples; .value (and .weight)
+    // give the columns as numpy arrays. __len__ + __getitem__ make them iterable.
+    using values = bh::accumulators::collector<std::vector<double>>;
+
+    py::class_<values>(accumulators, "Values")
+        .def(py::init<>())
+        .def(py::init([](const std::vector<double>& v) { return values(v); }),
+             "values"_a)
+
+        .def("__len__", [](const values& self) { return self.size(); })
+        .def("__getitem__",
+             [](const values& self, py::ssize_t i) {
+                 const auto n = static_cast<py::ssize_t>(self.size());
+                 if(i < 0)
+                     i += n;
+                 if(i < 0 || i >= n)
+                     throw py::index_error();
+                 return self[static_cast<std::size_t>(i)];
+             })
+
+        .def_property_readonly("value",
+                               [](const values& self) {
+                                   return py::array_t<double>(
+                                       static_cast<py::ssize_t>(self.size()),
+                                       self.data());
+                               })
+
+        .def("__eq__",
+             [](const values& self, const py::object& other) {
+                 try {
+                     return self == py::cast<const values&>(other);
+                 } catch(const py::cast_error&) {
+                     return false;
+                 }
+             })
+        .def("__ne__",
+             [](const values& self, const py::object& other) {
+                 try {
+                     return self != py::cast<const values&>(other);
+                 } catch(const py::cast_error&) {
+                     return true;
+                 }
+             })
+
+        .def("__repr__",
+             [](const py::object& self) {
+                 const auto& item = py::cast<const values&>(self);
+                 py::list items;
+                 for(const auto& v : item)
+                     items.append(v);
+                 return py::str("{0.__class__.__name__}({1})").format(self, items);
+             })
+
+        .def("__copy__", [](const values& self) { return values(self); })
+        .def("__deepcopy__",
+             [](const values& self, const py::object&) { return values(self); })
+
+        .def(make_pickle<values>());
+
+    using weighted_values = accumulators::weighted_collector<double>;
+
+    py::class_<weighted_values>(accumulators, "WeightedValues")
+        .def(py::init<>())
+        .def(py::init([](const std::vector<std::pair<double, double>>& v) {
+                 weighted_values::container_type cont;
+                 cont.reserve(v.size());
+                 for(const auto& p : v)
+                     cont.emplace_back(p.first, p.second);
+                 return weighted_values(std::move(cont));
+             }),
+             "values"_a)
+
+        .def("__len__", [](const weighted_values& self) { return self.size(); })
+        .def("__getitem__",
+             [](const weighted_values& self, py::ssize_t i) {
+                 const auto n = static_cast<py::ssize_t>(self.size());
+                 if(i < 0)
+                     i += n;
+                 if(i < 0 || i >= n)
+                     throw py::index_error();
+                 const auto& e = self[static_cast<std::size_t>(i)];
+                 return py::make_tuple(e.value, e.weight);
+             })
+
+        .def_property_readonly("value",
+                               [](const weighted_values& self) {
+                                   py::array_t<double> arr(
+                                       static_cast<py::ssize_t>(self.size()));
+                                   double* out = arr.mutable_data();
+                                   for(const auto& e : self)
+                                       *out++ = e.value;
+                                   return arr;
+                               })
+        .def_property_readonly("weight",
+                               [](const weighted_values& self) {
+                                   py::array_t<double> arr(
+                                       static_cast<py::ssize_t>(self.size()));
+                                   double* out = arr.mutable_data();
+                                   for(const auto& e : self)
+                                       *out++ = e.weight;
+                                   return arr;
+                               })
+
+        .def("__eq__",
+             [](const weighted_values& self, const py::object& other) {
+                 try {
+                     return self == py::cast<const weighted_values&>(other);
+                 } catch(const py::cast_error&) {
+                     return false;
+                 }
+             })
+        .def("__ne__",
+             [](const weighted_values& self, const py::object& other) {
+                 try {
+                     return self != py::cast<const weighted_values&>(other);
+                 } catch(const py::cast_error&) {
+                     return true;
+                 }
+             })
+
+        .def("__repr__",
+             [](const py::object& self) {
+                 const auto& item = py::cast<const weighted_values&>(self);
+                 py::list items;
+                 for(const auto& e : item)
+                     items.append(py::make_tuple(e.value, e.weight));
+                 return py::str("{0.__class__.__name__}({1})").format(self, items);
+             })
+
+        .def("__copy__",
+             [](const weighted_values& self) { return weighted_values(self); })
+        .def("__deepcopy__",
+             [](const weighted_values& self, const py::object&) {
+                 return weighted_values(self);
+             })
+
+        .def(make_pickle<weighted_values>());
 }

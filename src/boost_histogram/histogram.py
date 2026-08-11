@@ -42,8 +42,10 @@ if TYPE_CHECKING:
         CppHistogram,
         Mean,
         RebinProtocol,
+        Values,
         WeightedMean,
         WeightedSum,
+        WeightedValues,
     )
 
 
@@ -78,11 +80,17 @@ _histograms: set[type[CppHistogram]] = {
     _core.hist.any_mean,
     _core.hist.any_weighted_mean,
     _core.hist.any_multi_cell,
+    _core.hist.any_collector,
+    _core.hist.any_weighted_collector,
 }
 
 # Tuple form of ``_histograms`` for fast isinstance checks. The set above is
 # fixed at import time (only ``@register`` reads it), so this never goes stale.
 _histogram_types: tuple[type[CppHistogram], ...] = tuple(_histograms)
+
+# C++ histogram classes with ragged per-bin collections; their object-dtype
+# views return copies, so operations that write back through a view raise.
+_collector_hists = (_core.hist.any_collector, _core.hist.any_weighted_collector)
 
 logger = logging.getLogger(__name__)
 
@@ -118,7 +126,11 @@ IntHists = TypeVar(
 FloatHists = TypeVar(
     "FloatHists", bound="Histogram[bhs.Double] | Histogram[bhs.Unlimited]"
 )
-ListHists = TypeVar("ListHists", bound="Histogram[bhs.MultiCell]")
+MultiCellHists = TypeVar("MultiCellHists", bound="Histogram[bhs.MultiCell]")
+CollectorHists = TypeVar("CollectorHists", bound="Histogram[bhs.Collector]")
+WeightedCollectorHists = TypeVar(
+    "WeightedCollectorHists", bound="Histogram[bhs.WeightedCollector]"
+)
 WeightHists = TypeVar("WeightHists", bound="Histogram[bhs.Weight]")
 MeanHists = TypeVar("MeanHists", bound="Histogram[bhs.Mean]")
 WeightedMeanHists = TypeVar("WeightedMeanHists", bound="Histogram[bhs.WeightedMean]")
@@ -573,6 +585,12 @@ class Histogram(typing.Generic[S]):
 
     @typing.overload
     def view(
+        self: Histogram[bhs.Collector] | Histogram[bhs.WeightedCollector],
+        flow: bool = False,
+    ) -> np.typing.NDArray[Any]: ...
+
+    @typing.overload
+    def view(
         self: Histogram[bhs.Int64] | Histogram[bhs.AtomicInt64],
         flow: bool = False,
     ) -> np.typing.NDArray[np.int64]: ...
@@ -869,6 +887,12 @@ class Histogram(typing.Generic[S]):
             self._hist_inplace_op(name, other._hist)
         elif isinstance(other, _histogram_types):
             self._hist_inplace_op(name, other)
+        elif isinstance(self._hist, _collector_hists):
+            # Array/scalar arithmetic goes through the (copy-only) object view, so it
+            # cannot write back into a collector histogram.
+            symbol = _INPLACE_OP_SYMBOLS.get(name, name)
+            msg = f"{self.storage_type.__name__} storage does not support the {symbol!r} operation with arrays or scalars"
+            raise NotImplementedError(msg)
         elif hasattr(other, "shape") and other.shape:
             assert not isinstance(other, float)
 
@@ -968,6 +992,15 @@ class Histogram(typing.Generic[S]):
         }:
             raise RuntimeError("Mean histograms do not support threaded filling")
 
+        if self._hist._storage_type in {
+            _core.storage.collector,
+            _core.storage.weighted_collector,
+        }:
+            # Threaded filling merges per-thread histograms, which would scramble the
+            # order of the collected values, so it is not supported.
+            msg = f"{self.storage_type.__name__} histograms do not support threaded filling"
+            raise RuntimeError(msg)
+
         # If everything is scalar, there is only a single fill; threading would
         # incorrectly repeat it, so fill directly instead.
         if (
@@ -1043,8 +1076,9 @@ class Histogram(typing.Generic[S]):
         still experimental. Do not rely on any particular rendering.
         """
         # TODO check the terminal width and adjust the presentation
-        # only use for 1D, fall back to repr for ND
-        if self._hist.rank() != 1:
+        # only use for 1D, fall back to repr for ND. Collector cells are ragged
+        # lists with no scalar text rendering, so fall back to repr there too.
+        if self._hist.rank() != 1 or isinstance(self._hist, _collector_hists):
             return repr(self)
         s = str(self._hist)
         # get rid of first line and last character
@@ -1135,6 +1169,10 @@ class Histogram(typing.Generic[S]):
         ret += f",{newline}".join(repr(ax) for ax in self.axes)
         ret += f"{sep}{storage_newline}storage={self.storage}"
         ret += ")"
+        # The collector sum is the concatenation of every collected value, which can
+        # be unbounded, so the running-sum summary is omitted for it.
+        if isinstance(self._hist, _collector_hists):
+            return ret
         outer = self.sum(flow=True)
         if outer:
             inner = self.sum(flow=False)
@@ -1343,7 +1381,22 @@ class Histogram(typing.Generic[S]):
     ) -> float: ...
 
     @typing.overload
-    def sum(self: Histogram[bhs.MultiCell], flow: bool = False) -> list[float]: ...
+    def sum(
+        self: Histogram[bhs.MultiCell],
+        flow: bool = False,
+    ) -> list[float]: ...
+
+    @typing.overload
+    def sum(
+        self: Histogram[bhs.Collector],
+        flow: bool = False,
+    ) -> Values: ...
+
+    @typing.overload
+    def sum(
+        self: Histogram[bhs.WeightedCollector],
+        flow: bool = False,
+    ) -> WeightedValues: ...
 
     @typing.overload
     def sum(self: Histogram[bhs.Weight], flow: bool = False) -> WeightedSum: ...
@@ -1385,8 +1438,18 @@ class Histogram(typing.Generic[S]):
 
     @typing.overload
     def __getitem__(
-        self: ListHists, index: IndexingExpr
-    ) -> ListHists | list[float]: ...
+        self: MultiCellHists, index: IndexingExpr
+    ) -> MultiCellHists | list[float]: ...
+
+    @typing.overload
+    def __getitem__(
+        self: CollectorHists, index: IndexingExpr
+    ) -> CollectorHists | Values: ...
+
+    @typing.overload
+    def __getitem__(
+        self: WeightedCollectorHists, index: IndexingExpr
+    ) -> WeightedCollectorHists | WeightedValues: ...
 
     @typing.overload
     def __getitem__(
@@ -1452,6 +1515,15 @@ class Histogram(typing.Generic[S]):
             reduced = self._hist
         elif not reduced:
             reduced = copy.copy(self._hist)
+
+        if (pick_each or pick_set) and isinstance(self._hist, _collector_hists):
+            # These paths build a new histogram by writing through view(flow=True),
+            # which returns copies for the ragged collector storages.
+            msg = (
+                f"{self.storage_type.__name__} storage does not support integer "
+                "picking on a subset of axes or list-based selection"
+            )
+            raise NotImplementedError(msg)
 
         if pick_each:
             tuple_slice = tuple(
@@ -1609,6 +1681,13 @@ class Histogram(typing.Generic[S]):
         self, reduced: CppHistogram, i: int, groups: list[int], new_axis: Any
     ) -> CppHistogram:
         """Handle rebinning with groups."""
+        if isinstance(reduced, _collector_hists):
+            # Group rebinning combines bins through the (copy-only) object view.
+            msg = (
+                f"{self.storage_type.__name__} storage does not support "
+                "group-based rebinning"
+            )
+            raise NotImplementedError(msg)
         axes = [reduced.axis(x) for x in range(reduced.rank())]
         reduced_view = reduced.view(flow=True)
         new_axes_indices = [axes[i].edges[0]]
@@ -1705,6 +1784,11 @@ class Histogram(typing.Generic[S]):
         is 2 larger). If you don't want this level of type safety, just use
         ``h[...] = h2.view()``.
         """
+        if isinstance(self._hist, _collector_hists):
+            # The collector views return copies, so assignments cannot be written back.
+            msg = f"Setting values is not supported for {self.storage_type.__name__} storage"
+            raise NotImplementedError(msg)
+
         indexes = self._compute_commonindex(index)
 
         # Vectorized (NumPy array) indexing scatters values through the buffer.

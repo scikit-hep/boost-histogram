@@ -3,14 +3,24 @@ from __future__ import annotations
 from ._core.accumulators import (  # pylint: disable=import-error,no-name-in-module
     Mean,
     Sum,
+    Values,
     WeightedMean,
     WeightedSum,
+    WeightedValues,
 )
 from .typing import Accumulator
 
-__all__ = ("Accumulator", "Mean", "Sum", "WeightedMean", "WeightedSum")
+__all__ = (
+    "Accumulator",
+    "Mean",
+    "Sum",
+    "Values",
+    "WeightedMean",
+    "WeightedSum",
+    "WeightedValues",
+)
 
-for cls in (Sum, Mean, WeightedSum, WeightedMean):
+for cls in (Sum, Mean, WeightedSum, WeightedMean, Values, WeightedValues):
     cls.__module__ = "boost_histogram.accumulators"
 del cls
 
