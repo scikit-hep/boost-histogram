@@ -189,6 +189,15 @@ inline auto get_sample(const py::handle& s) {
     return sample;
 }
 
+// Boost.Histogram < 1.91 reports sample types as const T&, newer versions as T
+template <class T>
+struct decayed_traits;
+
+template <bool W, class... Ts>
+struct decayed_traits<bh::detail::accumulator_traits_holder<W, Ts...>> {
+    using type = bh::detail::accumulator_traits_holder<W, std::decay_t<Ts>...>;
+};
+
 // for accumulators that accept a weight
 template <class Histogram, class VArgs>
 void fill_impl(bh::detail::accumulator_traits_holder<true>,
@@ -209,7 +218,7 @@ void fill_impl(bh::detail::accumulator_traits_holder<true>,
 
 // for accumulators that accept a weight and a double
 template <class Histogram, class VArgs>
-void fill_impl(bh::detail::accumulator_traits_holder<true, const double&>,
+void fill_impl(bh::detail::accumulator_traits_holder<true, double>,
                Histogram& h,
                const VArgs& vargs,
                const weight_t& weight,
@@ -236,7 +245,7 @@ void fill_impl(bh::detail::accumulator_traits_holder<true, const double&>,
 
 // for multi_cell
 template <class Histogram, class VArgs>
-void fill_impl(bh::detail::accumulator_traits_holder<false, const boost::span<double>&>,
+void fill_impl(bh::detail::accumulator_traits_holder<false, boost::span<double>>,
                Histogram& h,
                const VArgs& vargs,
                const weight_t& weight,
@@ -267,7 +276,9 @@ void fill_impl(bh::detail::accumulator_traits_holder<false, const boost::span<do
 template <class Histogram>
 Histogram& fill(Histogram& self, const py::args& args, py::kwargs kwargs) {
     using value_type = typename Histogram::value_type;
-    detail::fill_impl(bh::detail::accumulator_traits<value_type>{},
+    using traits     = typename detail::decayed_traits<
+        bh::detail::accumulator_traits<value_type>>::type;
+    detail::fill_impl(traits{},
                       self,
                       detail::get_vargs(bh::unsafe_access::axes(self), args),
                       detail::get_weight(kwargs),

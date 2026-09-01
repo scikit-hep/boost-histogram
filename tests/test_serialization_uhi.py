@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ctypes
+import importlib.metadata
 import importlib.resources
 import json
 import math
@@ -722,6 +723,11 @@ def test_to_uhi_matches_uhi_schema(
     """``to_uhi`` output conforms to the UHI histogram JSON schema, including the
     metadata-only (``keep_storage=False``) form used for type-only storage."""
     jsonschema = pytest.importorskip("jsonschema")
+    # Older jsonschema (pulled in where rpds-py has no wheel, e.g. Pyodide 3.15)
+    # cannot resolve the UHI schema's $ref entries
+    jsonschema_version = importlib.metadata.version("jsonschema").split(".")
+    if tuple(int(v) for v in jsonschema_version[:2]) < (4, 18):
+        pytest.skip("jsonschema>=4.18 required")
     schema = json.loads(
         importlib.resources.files("uhi.resources")
         .joinpath("histogram.schema.json")
