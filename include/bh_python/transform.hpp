@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <bh_python/guarded_object.hpp>
 #include <bh_python/pybind11.hpp>
 
 #include <boost/core/nvp.hpp>
@@ -18,22 +19,26 @@ namespace bh = boost::histogram;
 struct func_transform {
     using raw_t = double(double);
 
+    // guarded_object because axes are copied and destroyed with the GIL
+    // released (reduce, project)
     raw_t* _forward = nullptr;
     raw_t* _inverse = nullptr;
-    py::object _forward_ob; // Held for reference counting, repr, and pickling
-    py::object _inverse_ob;
-    py::object _forward_converted; // Held for reference counting if conversion makes a
-                                   // new object (ctypes does not bump the refcount)
-    py::object _inverse_converted;
-    py::object _convert_ob; // Called before computing transform if not None
-    py::str _name;          // Optional name (uses repr from objects otherwise)
+    guarded_object _forward_ob; // Held for reference counting, repr, and pickling
+    guarded_object _inverse_ob;
+    guarded_object _forward_converted; // Held for reference counting if conversion
+                                       // makes a new object (ctypes does not bump
+                                       // the refcount)
+    guarded_object _inverse_converted;
+    guarded_object _convert_ob; // Called before computing transform if not None
+    guarded_object _name;       // Optional name str (uses repr from objects otherwise)
 
     /// Convert an object into a std::function. Can handle ctypes
     /// function pointers and pybind11 C++ functions, or anything
     /// else with a defined convert function
     std::tuple<raw_t*, py::object> compute(py::object& input) {
         // Run the conversion function on the input (unless conversion is None)
-        py::object const tmp_src = _convert_ob.is_none() ? input : _convert_ob(input);
+        py::object const tmp_src
+            = _convert_ob.get().is_none() ? input : _convert_ob.get()(input);
 
         // If a CTypes object is present, just use that (numba, for example)
         py::object const src = py::getattr(tmp_src, "ctypes", tmp_src);
@@ -82,21 +87,15 @@ struct func_transform {
     }
 
     func_transform(py::object f, py::object i, py::object c, py::str n)
-        : _forward_ob(f)
-        , _inverse_ob(i)
-        , _convert_ob(std::move(c))
-        , _name(std::move(n)) {
-        std::tie(_forward, _forward_converted) = compute(f);
-        std::tie(_inverse, _inverse_converted) = compute(i);
+        : _forward_ob{f}
+        , _inverse_ob{i}
+        , _convert_ob{std::move(c)}
+        , _name{std::move(n)} {
+        std::tie(_forward, _forward_converted.ref()) = compute(f);
+        std::tie(_inverse, _inverse_converted.ref()) = compute(i);
     }
 
-    func_transform()                          = default;
-    ~func_transform()                         = default;
-    func_transform(const func_transform&)     = default;
-    func_transform(func_transform&&) noexcept = default;
-
-    func_transform& operator=(const func_transform&)     = default;
-    func_transform& operator=(func_transform&&) noexcept = default;
+    func_transform() = default;
 
     double forward(double x) const { return _forward(x); }
 
@@ -104,8 +103,9 @@ struct func_transform {
 
     bool operator==(const func_transform& other) const noexcept {
         try {
-            return _forward_ob.equal(other._forward_ob)
-                   && _inverse_ob.equal(other._inverse_ob);
+            const py::gil_scoped_acquire gil;
+            return _forward_ob.get().equal(other._forward_ob.get())
+                   && _inverse_ob.get().equal(other._inverse_ob.get());
         } catch(const py::error_already_set&) {
             return false;
         }
@@ -119,8 +119,8 @@ struct func_transform {
         ar& boost::make_nvp("name", _name);
 
         if(Archive::is_loading::value) {
-            std::tie(_forward, _forward_converted) = compute(_forward_ob);
-            std::tie(_inverse, _inverse_converted) = compute(_inverse_ob);
+            std::tie(_forward, _forward_converted.ref()) = compute(_forward_ob.ref());
+            std::tie(_inverse, _inverse_converted.ref()) = compute(_inverse_ob.ref());
         }
     }
 };
@@ -146,10 +146,10 @@ inline func_transform deep_copy<func_transform>(const func_transform& input,
                                                 py::object& memo) {
     py::module const copy = py::module::import("copy");
 
-    py::object const forward = copy.attr("deepcopy")(input._forward_ob, memo);
-    py::object const inverse = copy.attr("deepcopy")(input._inverse_ob, memo);
-    py::object const convert = copy.attr("deepcopy")(input._convert_ob, memo);
-    py::str const name       = copy.attr("deepcopy")(input._name, memo);
+    py::object const forward = copy.attr("deepcopy")(input._forward_ob.get(), memo);
+    py::object const inverse = copy.attr("deepcopy")(input._inverse_ob.get(), memo);
+    py::object const convert = copy.attr("deepcopy")(input._convert_ob.get(), memo);
+    py::str const name       = copy.attr("deepcopy")(input._name.get(), memo);
 
     return {forward, inverse, convert, name};
 }

@@ -1,0 +1,61 @@
+// Copyright 2018-2019 Henry Schreiner and Hans Dembinski
+//
+// Distributed under the 3-Clause BSD License.  See accompanying
+// file LICENSE or https://github.com/scikit-hep/boost-histogram for details.
+
+#pragma once
+
+#include <bh_python/pybind11.hpp>
+
+#include <pybind11/pytypes.h>
+
+#include <utility>
+
+/// A py::object member for C++ values that are copied and destroyed with the
+/// GIL released (axes during reduce, project, growing fill): every special
+/// member that touches reference counts attaches to the interpreter first.
+/// Moves and the adopting constructor are refcount-neutral, so GIL-free.
+class guarded_object {
+    py::object obj_;
+
+  public:
+    guarded_object() noexcept = default;
+
+    /// Adopt an existing reference; no refcount change, so no GIL needed
+    explicit guarded_object(py::object obj) noexcept
+        : obj_(std::move(obj)) {}
+
+    guarded_object(const guarded_object& other) {
+        const py::gil_scoped_acquire gil;
+        obj_ = other.obj_;
+    }
+
+    guarded_object(guarded_object&&) noexcept = default;
+
+    guarded_object& operator=(const guarded_object& other) {
+        if(this != &other) {
+            const py::gil_scoped_acquire gil;
+            obj_ = other.obj_;
+        }
+        return *this;
+    }
+
+    // swap defers the decref of the old value to other's guarded destructor
+    guarded_object& operator=(guarded_object&& other) noexcept {
+        std::swap(obj_, other.obj_);
+        return *this;
+    }
+
+    ~guarded_object() {
+        if(obj_) {
+            const py::gil_scoped_acquire gil;
+            obj_ = py::object();
+        }
+    }
+
+    /// Access the held object; hold the GIL to use or copy it
+    const py::object& get() const noexcept { return obj_; }
+
+    /// Mutable access; hold the GIL to assign through this
+    py::object& ref() noexcept { return obj_; }
+};

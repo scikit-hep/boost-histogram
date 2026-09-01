@@ -9,9 +9,6 @@
 
 #pragma once
 
-// TODO: restructure metadata_t to hold a py::dict instead of subclass it, add locks
-#define PYBIND11_NO_ASSERT_GIL_HELD_INCREF_DECREF
-
 #include <pybind11/numpy.h>
 #include <pybind11/operators.h>
 #include <pybind11/pybind11.h>

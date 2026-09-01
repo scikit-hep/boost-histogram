@@ -44,6 +44,7 @@
 
 #include <bh_python/pybind11.hpp>
 
+#include <bh_python/guarded_object.hpp>
 #include <bh_python/metadata.hpp>
 
 #include <boost/assert.hpp>
@@ -185,9 +186,9 @@ class tuple_oarchive {
         return operator<<(static_cast<const py::object&>(m));
     }
 
-    tuple_oarchive& operator<<(const metadata_t& m) {
-        return operator<<(static_cast<const py::object&>(m));
-    }
+    tuple_oarchive& operator<<(const metadata_t& m) { return operator<<(m.obj()); }
+
+    tuple_oarchive& operator<<(const guarded_object& m) { return operator<<(m.get()); }
 
     template <class T>
     tuple_oarchive& operator<<(const py::array_t<T>& a) {
@@ -296,8 +297,13 @@ class tuple_iarchive {
     }
 
     tuple_iarchive& operator>>(metadata_t& m) {
-        return operator>>(static_cast<py::object&>(m));
+        py::object obj;
+        this->operator>>(obj);
+        m = metadata_t{std::move(obj)};
+        return *this;
     }
+
+    tuple_iarchive& operator>>(guarded_object& m) { return operator>>(m.ref()); }
 
     template <class T>
     tuple_iarchive& operator>>(py::array_t<T>& a) {
