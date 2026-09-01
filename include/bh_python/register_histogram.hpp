@@ -50,11 +50,10 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
         .def("__copy__", [](const histogram_t& self) { return histogram_t(self); })
         .def("__deepcopy__",
              [](const histogram_t& self, const py::object& memo) {
-                 auto a                = std::make_unique<histogram_t>(self);
-                 py::module const copy = py::module::import("copy");
+                 auto a = std::make_unique<histogram_t>(self);
                  for(unsigned i = 0; i < a->rank(); i++) {
                      bh::unsafe_access::axis(*a, i).metadata()
-                         = copy.attr("deepcopy")(a->axis(i).metadata(), memo);
+                         = deep_copy_metadata(a->axis(i).metadata(), memo);
                  }
                  return a;
              })
@@ -255,11 +254,10 @@ auto inline register_histogram<bh::multi_cell<double>>(py::module& m,
         .def("__copy__", [](const histogram_t& self) { return histogram_t(self); })
         .def("__deepcopy__",
              [](const histogram_t& self, const py::object& memo) {
-                 auto a                = std::make_unique<histogram_t>(self);
-                 const py::module copy = py::module::import("copy");
+                 auto a = std::make_unique<histogram_t>(self);
                  for(unsigned i = 0; i < a->rank(); i++) {
                      bh::unsafe_access::axis(*a, i).metadata()
-                         = copy.attr("deepcopy")(a->axis(i).metadata(), memo);
+                         = deep_copy_metadata(a->axis(i).metadata(), memo);
                  }
                  return a;
              })

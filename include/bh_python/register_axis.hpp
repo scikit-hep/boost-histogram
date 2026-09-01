@@ -186,7 +186,7 @@ py::class_<A> register_axis(py::module& m, Args&&... args) {
         .def_property(
             "raw_metadata",
             [](const A& self) { return self.metadata(); },
-            [](A& self, const metadata_t& label) { self.metadata() = label; },
+            [](A& self, metadata_t label) { self.metadata() = std::move(label); },
             "Set the metadata")
 
         .def_property_readonly(
@@ -202,9 +202,8 @@ py::class_<A> register_axis(py::module& m, Args&&... args) {
         .def("__copy__", [](const A& self) { return A(self); })
         .def("__deepcopy__",
              [](const A& self, const py::object& memo) {
-                 auto a                = std::make_unique<A>(self);
-                 py::module const copy = py::module::import("copy");
-                 a->metadata()         = copy.attr("deepcopy")(a->metadata(), memo);
+                 auto a        = std::make_unique<A>(self);
+                 a->metadata() = deep_copy_metadata(a->metadata(), memo);
                  return a;
              })
 
