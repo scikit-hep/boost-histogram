@@ -186,9 +186,13 @@ class tuple_oarchive {
         return operator<<(static_cast<const py::object&>(m));
     }
 
-    tuple_oarchive& operator<<(const metadata_t& m) { return operator<<(m.obj()); }
+    tuple_oarchive& operator<<(const metadata_t& m) {
+        return operator<<(m.unguarded_obj());
+    }
 
-    tuple_oarchive& operator<<(const guarded_object& m) { return operator<<(m.get()); }
+    tuple_oarchive& operator<<(const guarded_object& m) {
+        return operator<<(m.unguarded_get());
+    }
 
     template <class T>
     tuple_oarchive& operator<<(const py::array_t<T>& a) {
@@ -303,7 +307,9 @@ class tuple_iarchive {
         return *this;
     }
 
-    tuple_iarchive& operator>>(guarded_object& m) { return operator>>(m.ref()); }
+    tuple_iarchive& operator>>(guarded_object& m) {
+        return operator>>(m.unguarded_ref());
+    }
 
     template <class T>
     tuple_iarchive& operator>>(py::array_t<T>& a) {

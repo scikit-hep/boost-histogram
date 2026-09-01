@@ -1,4 +1,4 @@
-// Copyright 2018-2019 Henry Schreiner and Hans Dembinski
+// Copyright 2026 Henry Schreiner and Hans Dembinski
 //
 // Distributed under the 3-Clause BSD License.  See accompanying
 // file LICENSE or https://github.com/scikit-hep/boost-histogram for details.
@@ -21,8 +21,9 @@ class guarded_object {
   public:
     guarded_object() noexcept = default;
 
-    /// Adopt an existing reference; no refcount change, so no GIL needed
-    explicit guarded_object(py::object obj) noexcept
+    /// Adopt an existing reference; rvalue-only so no copy (incref) can happen
+    /// here, which is why no GIL is needed
+    explicit guarded_object(py::object&& obj) noexcept
         : obj_(std::move(obj)) {}
 
     guarded_object(const guarded_object& other) {
@@ -40,7 +41,7 @@ class guarded_object {
         return *this;
     }
 
-    // swap defers the decref of the old value to other's guarded destructor
+    // Swap defers the decref of the old value to other's guarded destructor
     guarded_object& operator=(guarded_object&& other) noexcept {
         std::swap(obj_, other.obj_);
         return *this;
@@ -58,9 +59,9 @@ class guarded_object {
         }
     }
 
-    /// Access the held object; hold the GIL to use or copy it
-    const py::object& get() const noexcept { return obj_; }
+    /// Access the held object; the caller must hold the GIL to use or copy it
+    const py::object& unguarded_get() const noexcept { return obj_; }
 
-    /// Mutable access; hold the GIL to assign through this
-    py::object& ref() noexcept { return obj_; }
+    /// Mutable access; the caller must hold the GIL to assign through this
+    py::object& unguarded_ref() noexcept { return obj_; }
 };

@@ -36,10 +36,11 @@ struct func_transform {
     /// Convert an object into a std::function. Can handle ctypes
     /// function pointers and pybind11 C++ functions, or anything
     /// else with a defined convert function
-    std::tuple<raw_t*, py::object> compute(py::object& input) const {
+    std::tuple<raw_t*, py::object> compute(const py::object& input) const {
         // Run the conversion function on the input (unless conversion is None)
-        py::object const tmp_src
-            = _convert_ob.get().is_none() ? input : _convert_ob.get()(input);
+        py::object const tmp_src = _convert_ob.unguarded_get().is_none()
+                                       ? input
+                                       : _convert_ob.unguarded_get()(input);
 
         // If a CTypes object is present, just use that (numba, for example)
         py::object const src = py::getattr(tmp_src, "ctypes", tmp_src);
@@ -88,12 +89,14 @@ struct func_transform {
     }
 
     func_transform(py::object f, py::object i, py::object c, py::str n)
-        : _forward_ob{f}
-        , _inverse_ob{i}
+        : _forward_ob{std::move(f)}
+        , _inverse_ob{std::move(i)}
         , _convert_ob{std::move(c)}
         , _name{std::move(n)} {
-        std::tie(_forward, _forward_converted.ref()) = compute(f);
-        std::tie(_inverse, _inverse_converted.ref()) = compute(i);
+        std::tie(_forward, _forward_converted.unguarded_ref())
+            = compute(_forward_ob.unguarded_get());
+        std::tie(_inverse, _inverse_converted.unguarded_ref())
+            = compute(_inverse_ob.unguarded_get());
     }
 
     func_transform() = default;
@@ -105,8 +108,9 @@ struct func_transform {
     bool operator==(const func_transform& other) const noexcept {
         try {
             const py::gil_scoped_acquire gil;
-            return _forward_ob.get().equal(other._forward_ob.get())
-                   && _inverse_ob.get().equal(other._inverse_ob.get());
+            return _forward_ob.unguarded_get().equal(other._forward_ob.unguarded_get())
+                   && _inverse_ob.unguarded_get().equal(
+                       other._inverse_ob.unguarded_get());
         } catch(const std::exception&) {
             return false;
         }
@@ -120,8 +124,10 @@ struct func_transform {
         ar& boost::make_nvp("name", _name);
 
         if(Archive::is_loading::value) {
-            std::tie(_forward, _forward_converted.ref()) = compute(_forward_ob.ref());
-            std::tie(_inverse, _inverse_converted.ref()) = compute(_inverse_ob.ref());
+            std::tie(_forward, _forward_converted.unguarded_ref())
+                = compute(_forward_ob.unguarded_ref());
+            std::tie(_inverse, _inverse_converted.unguarded_ref())
+                = compute(_inverse_ob.unguarded_ref());
         }
     }
 };
@@ -147,10 +153,13 @@ inline func_transform deep_copy<func_transform>(const func_transform& input,
                                                 py::object& memo) {
     py::module const copy = py::module::import("copy");
 
-    py::object const forward = copy.attr("deepcopy")(input._forward_ob.get(), memo);
-    py::object const inverse = copy.attr("deepcopy")(input._inverse_ob.get(), memo);
-    py::object const convert = copy.attr("deepcopy")(input._convert_ob.get(), memo);
-    py::str const name       = copy.attr("deepcopy")(input._name.get(), memo);
+    py::object const forward
+        = copy.attr("deepcopy")(input._forward_ob.unguarded_get(), memo);
+    py::object const inverse
+        = copy.attr("deepcopy")(input._inverse_ob.unguarded_get(), memo);
+    py::object const convert
+        = copy.attr("deepcopy")(input._convert_ob.unguarded_get(), memo);
+    py::str const name = copy.attr("deepcopy")(input._name.unguarded_get(), memo);
 
     return {forward, inverse, convert, name};
 }

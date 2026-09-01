@@ -22,20 +22,20 @@ class metadata_t {
     metadata_t()
         : data_(make_dict()) {}
 
-    /// Adopt an existing reference; no refcount change, so no GIL needed
-    explicit metadata_t(py::object data) noexcept
+    /// Adopt an existing reference; rvalue-only, so no GIL needed
+    explicit metadata_t(py::object&& data) noexcept
         : data_(std::move(data)) {}
 
     /// Access the held dict; hold the GIL to use or copy it
-    const py::object& obj() const noexcept { return data_.get(); }
+    const py::object& unguarded_obj() const noexcept { return data_.unguarded_get(); }
 
     bool operator==(const metadata_t& other) const {
         const py::gil_scoped_acquire gil;
-        return obj().equal(other.obj());
+        return unguarded_obj().equal(other.unguarded_obj());
     }
     bool operator!=(const metadata_t& other) const {
         const py::gil_scoped_acquire gil;
-        return obj().not_equal(other.obj());
+        return unguarded_obj().not_equal(other.unguarded_obj());
     }
 
   private:
@@ -48,7 +48,7 @@ class metadata_t {
 /// Deepcopy the held dict, for __deepcopy__ implementations
 inline metadata_t deep_copy_metadata(const metadata_t& m, const py::object& memo) {
     py::module const copy = py::module::import("copy");
-    return metadata_t{copy.attr("deepcopy")(m.obj(), memo)};
+    return metadata_t{copy.attr("deepcopy")(m.unguarded_obj(), memo)};
 }
 
 namespace pybind11 {
@@ -72,7 +72,7 @@ struct type_caster<metadata_t> {
 
     static handle
     cast(const metadata_t& src, return_value_policy /*policy*/, handle /*parent*/) {
-        return src.obj().inc_ref();
+        return src.unguarded_obj().inc_ref();
     }
 };
 } // namespace detail

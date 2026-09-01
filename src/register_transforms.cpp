@@ -95,13 +95,13 @@ void register_transforms(py::module& mod) {
         .def("__repr__",
              [](const py::object& self) -> py::object {
                  auto& s = py::cast<func_transform&>(self);
-                 if(s._name.get().equal(py::str(""))) {
+                 if(s._name.unguarded_get().equal(py::str(""))) {
                      return py::str("{}({}, {})")
                          .format(self.attr("__class__").attr("__name__"),
-                                 s._forward_ob.get(),
-                                 s._inverse_ob.get());
+                                 s._forward_ob.unguarded_get(),
+                                 s._inverse_ob.unguarded_get());
                  }
-                 return s._name.get();
+                 return s._name.unguarded_get();
              })
 
         ;
