@@ -10,6 +10,7 @@
 
 #include <boost/core/nvp.hpp>
 #include <boost/histogram/axis/regular.hpp>
+#include <exception>
 #include <utility>
 
 #include <pybind11/functional.h>
@@ -35,7 +36,7 @@ struct func_transform {
     /// Convert an object into a std::function. Can handle ctypes
     /// function pointers and pybind11 C++ functions, or anything
     /// else with a defined convert function
-    std::tuple<raw_t*, py::object> compute(py::object& input) {
+    std::tuple<raw_t*, py::object> compute(py::object& input) const {
         // Run the conversion function on the input (unless conversion is None)
         py::object const tmp_src
             = _convert_ob.get().is_none() ? input : _convert_ob.get()(input);
@@ -106,7 +107,7 @@ struct func_transform {
             const py::gil_scoped_acquire gil;
             return _forward_ob.get().equal(other._forward_ob.get())
                    && _inverse_ob.get().equal(other._inverse_ob.get());
-        } catch(const py::error_already_set&) {
+        } catch(const std::exception&) {
             return false;
         }
     }

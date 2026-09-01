@@ -46,10 +46,15 @@ class guarded_object {
         return *this;
     }
 
+    // Acquiring the GIL can throw if no thread state can be made; leaking the
+    // reference is the only safe option then
     ~guarded_object() {
-        if(obj_) {
+        if(!obj_)
+            return;
+        try {
             const py::gil_scoped_acquire gil;
             obj_ = py::object();
+        } catch(...) { // NOLINT(bugprone-empty-catch)
         }
     }
 
