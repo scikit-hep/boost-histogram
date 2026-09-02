@@ -198,16 +198,25 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
             "flow"_a = false)
 
         .def("reduce",
-             [](const histogram_t& self, const py::args& args) {
+             [](const histogram_t& self, const py::args& args) -> histogram_t {
                  auto commands
                      = py::cast<std::vector<bh::algorithm::reduce_command>>(args);
+                 // reduce drives the same rank-0-UB indexed range; with no
+                 // commands there is nothing to do, and any axis index is
+                 // rejected before that point.
+                 if(self.rank() == 0 && commands.empty())
+                     return self;
                  const py::gil_scoped_release release;
                  return bh::algorithm::reduce(self, commands);
              })
 
         .def("project",
-             [](const histogram_t& self, const py::args& values) {
+             [](const histogram_t& self, const py::args& values) -> histogram_t {
                  auto cpp_values = py::cast<std::vector<unsigned>>(values);
+                 // Same rank-0-UB indexed range; the identity is the only
+                 // projection a rank-0 histogram has.
+                 if(self.rank() == 0 && cpp_values.empty())
+                     return self;
                  const py::gil_scoped_release release;
                  return bh::algorithm::project(self, cpp_values);
              })
@@ -410,16 +419,25 @@ auto inline register_histogram<bh::multi_cell<double>>(py::module& m,
             "flow"_a = false)
 
         .def("reduce",
-             [](const histogram_t& self, const py::args& args) {
+             [](const histogram_t& self, const py::args& args) -> histogram_t {
                  auto commands
                      = py::cast<std::vector<bh::algorithm::reduce_command>>(args);
+                 // reduce drives the same rank-0-UB indexed range; with no
+                 // commands there is nothing to do, and any axis index is
+                 // rejected before that point.
+                 if(self.rank() == 0 && commands.empty())
+                     return self;
                  const py::gil_scoped_release release;
                  return bh::algorithm::reduce(self, commands);
              })
 
         .def("project",
-             [](const histogram_t& self, const py::args& values) {
+             [](const histogram_t& self, const py::args& values) -> histogram_t {
                  auto cpp_values = py::cast<std::vector<unsigned>>(values);
+                 // Same rank-0-UB indexed range; the identity is the only
+                 // projection a rank-0 histogram has.
+                 if(self.rank() == 0 && cpp_values.empty())
+                     return self;
                  const py::gil_scoped_release release;
                  return bh::algorithm::project(self, cpp_values);
              })
