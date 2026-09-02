@@ -1309,6 +1309,26 @@ def test_rank0_sum_empty():
     assert h.sum(flow=True) == 3
 
 
+def test_rank0_project():
+    # project() drives the same rank-0-UB indexed range as sum()/empty() above,
+    # and unlike those it cannot be avoided by picking a coverage. The identity
+    # is the only valid projection of a rank-0 histogram.
+    h = bh.Histogram()
+    h.fill()
+    assert h.project().ndim == 0
+    assert h.project().sum() == 1
+
+
+def test_rank0_reduce():
+    # reduce() drives the same rank-0-UB indexed range. Nothing public reaches
+    # it on a rank-0 histogram today (__getitem__ only reduces when it has
+    # slices to apply), so exercise the binding directly.
+    h = bh.Histogram()
+    h.fill()
+    assert h._reduce().ndim == 0
+    assert h._reduce().sum() == 1
+
+
 @pytest.mark.parametrize(
     "dtype",
     [np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16, np.uint32, np.uint64],
