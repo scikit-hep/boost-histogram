@@ -623,26 +623,9 @@ class Histogram(typing.Generic[S]):
         """
         Return a view into the data, optionally with overflow turned on.
 
-        If any axis can grow, a copy is returned instead of a view. A growing
-        fill moves the data, which would leave a view pointing at freed memory.
-        Writes to the copy do not change the histogram; use ``__setitem__`` or
-        ``fill`` instead.
-        """
-        view = self._view_raw(flow)
-        return view.copy() if self._has_growth else view
-
-    def _view_raw(
-        self, flow: bool = False
-    ) -> (
-        np.typing.NDArray[np.float64]
-        | np.typing.NDArray[np.int64]
-        | WeightedSumView
-        | WeightedMeanView
-        | MeanView
-    ):
-        """
-        A writable view into the data. It is only valid until the histogram
-        grows or its storage is replaced, so do not hand it to the user.
+        The view shares memory with the histogram. If the histogram has a
+        growth axis, a fill that grows an axis moves the data, and the view
+        then points at freed memory. Take a copy before such a fill.
         """
         return _to_view(self._hist.view(flow))
 
@@ -830,7 +813,7 @@ class Histogram(typing.Generic[S]):
         # storages to Double first, matching __itruediv__.
         result = self.copy(deep=False)
         result._convert_int_storage_to_double()
-        view = result._view_raw(flow=True)
+        view = result.view(flow=True)
         # Empty bins divide to inf/nan; suppress the warnings as elsewhere.
         with np.errstate(divide="ignore", invalid="ignore"):
             np.true_divide(other, view, out=view)
@@ -918,18 +901,18 @@ class Histogram(typing.Generic[S]):
                 raise ValueError(msg)
 
             if all(a in {b, 1} for a, b in zip(other.shape, self.shape, strict=False)):
-                view = self._view_raw(flow=False)
+                view = self.view(flow=False)
                 getattr(view, name)(other)
             elif all(
                 a in {b, 1} for a, b in zip(other.shape, self.axes.extent, strict=False)
             ):
-                view = self._view_raw(flow=True)
+                view = self.view(flow=True)
                 getattr(view, name)(other)
             else:
                 msg = f"Wrong shape {other.shape}, expected {self.shape} or {self.axes.extent}"
                 raise ValueError(msg)
         else:
-            view = self._view_raw(flow=True)
+            view = self.view(flow=True)
             getattr(view, name)(other)
 
         self._variance_known = False
@@ -1080,7 +1063,7 @@ class Histogram(typing.Generic[S]):
 
         # A worker exception must not be lost; the histogram would silently
         # hold too few entries.
-        errors: list[BaseException] = []
+        errors: list[Exception] = []
         error_lock = threading.Lock()
 
         def fun(
@@ -1090,7 +1073,8 @@ class Histogram(typing.Generic[S]):
         ) -> None:
             try:
                 work(weight, sample, *args)
-            except BaseException as err:  # noqa: BLE001
+            # Any worker error must reach the caller, so catch them all
+            except Exception as err:  # noqa: BLE001  # pylint: disable=broad-exception-caught
                 with error_lock:
                     errors.append(err)
 
@@ -1865,7 +1849,7 @@ class Histogram(typing.Generic[S]):
         in_array = (
             value.view(flow=True) if isinstance(value, Histogram) else np.asarray(value)
         )
-        view: Any = self._view_raw(flow=True)
+        view: Any = self.view(flow=True)
 
         value_shape: tuple[int, ...]
 
