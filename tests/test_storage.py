@@ -683,3 +683,31 @@ def test_multi_cell():
     expected_view[:, 2:4, 0:3] = sub_array_to_set
     h[2:4, 0:3] = sub_array_to_set
     assert h.view() == approx(expected_view)
+
+
+def test_multi_cell_bad_nelem():
+    with pytest.raises(ValueError, match="nelem"):
+        bh.storage.MultiCell(-1)
+    with pytest.raises(ValueError, match="nelem"):
+        bh.storage.MultiCell(0)
+
+
+def test_multi_cell_fill_wrong_width():
+    h = bh.Histogram(bh.axis.Regular(3, 0, 1), storage=bh.storage.MultiCell(2))
+    with pytest.raises(ValueError, match="2"):
+        h.fill([0.1, 0.5], weight=[[1, 2, 3], [4, 5, 6]])
+
+
+def test_multi_cell_empty():
+    h = bh.Histogram(bh.axis.Regular(3, 0, 1), storage=bh.storage.MultiCell(2))
+    assert h.empty()
+    assert h.empty(flow=True)
+
+    h.fill([0.1], weight=[[1, 2]])
+    assert not h.empty()
+    assert not h.empty(flow=True)
+
+    h2 = bh.Histogram(bh.axis.Regular(3, 0, 1), storage=bh.storage.MultiCell(2))
+    h2.fill([-1], weight=[[1, 2]])
+    assert h2.empty()
+    assert not h2.empty(flow=True)

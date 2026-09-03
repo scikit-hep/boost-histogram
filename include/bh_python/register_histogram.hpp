@@ -20,10 +20,12 @@
 #include <boost/histogram/algorithm/reduce.hpp>
 #include <boost/histogram/algorithm/sum.hpp>
 #include <boost/histogram/histogram.hpp>
+#include <boost/histogram/indexed.hpp>
 #include <boost/histogram/ostream.hpp>
 #include <boost/histogram/unsafe_access.hpp>
 #include <boost/mp11.hpp>
 
+#include <algorithm>
 #include <future>
 #include <memory>
 #include <sstream>
@@ -376,14 +378,20 @@ auto inline register_histogram<bh::multi_cell<double>>(py::module& m,
             "empty",
             [](const histogram_t& self, bool flow) {
                 const py::gil_scoped_release release;
-                if(self.rank() == 0) {
-                    // algorithm::empty drives the same rank-0-UB indexed range;
-                    // the single MultiCell cell is empty iff it collected
-                    // nothing.
-                    return self.begin()->empty();
-                }
-                return bh::algorithm::empty(
-                    self, flow ? bh::coverage::all : bh::coverage::inner);
+                // A cell is empty when every element is zero; algorithm::empty
+                // compares against a default-constructed (zero length) cell,
+                // which never matches. rank 0 also drives the indexed range,
+                // which is UB for rank-0 histograms.
+                const auto all_zero = [](const auto& cell) {
+                    return std::all_of(
+                        cell.begin(), cell.end(), [](double x) { return x == 0; });
+                };
+                if(flow || self.rank() == 0)
+                    return std::all_of(self.begin(), self.end(), all_zero);
+                auto range = bh::indexed(self);
+                return std::all_of(range.begin(),
+                                   range.end(),
+                                   [&all_zero](const auto& x) { return all_zero(*x); });
             },
             "flow"_a = false)
 

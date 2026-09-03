@@ -10,6 +10,7 @@
 
 #include <pybind11/pytypes.h>
 
+#include <algorithm>
 #include <utility>
 
 /// Axis metadata: a Python dict, shared with the Python axis wrapper's
@@ -45,19 +46,49 @@ class metadata_t {
     /// Access the held dict; hold the GIL to use or copy it
     const py::object& unguarded_obj() const noexcept { return data_.unguarded_get(); }
 
-    bool operator==(const metadata_t& other) const {
-        const py::gil_scoped_acquire gil;
-        return unguarded_obj().equal(other.unguarded_obj());
+    // Boost compares axes in a noexcept context, so these must not throw.
+    bool operator==(const metadata_t& other) const noexcept {
+        try {
+            const py::gil_scoped_acquire gil;
+            try {
+                return unguarded_obj().equal(other.unguarded_obj());
+            } catch(...) {
+                // pybind11 fetched the Python error into the exception object
+                return item_equal(unguarded_obj(), other.unguarded_obj());
+            }
+        } catch(...) {
+            return false;
+        }
     }
-    bool operator!=(const metadata_t& other) const {
-        const py::gil_scoped_acquire gil;
-        return unguarded_obj().not_equal(other.unguarded_obj());
+    bool operator!=(const metadata_t& other) const noexcept {
+        return !operator==(other);
     }
 
   private:
     static py::object make_dict() {
         const py::gil_scoped_acquire gil;
         return py::dict();
+    }
+
+    /// Compare the dicts value by value, used when dict == dict raised. A
+    /// value whose comparison raises, or gives no truth value (a NumPy array),
+    /// is equal only when it is the same object.
+    static bool item_equal(const py::object& a, const py::object& b) {
+        const auto da = py::reinterpret_borrow<py::dict>(a);
+        const auto db = py::reinterpret_borrow<py::dict>(b);
+        if(da.size() != db.size())
+            return false;
+        return std::all_of(da.begin(), da.end(), [&db](const auto& item) {
+            if(!db.contains(item.first))
+                return false;
+            const py::object mine  = py::reinterpret_borrow<py::object>(item.second);
+            const py::object their = db[item.first];
+            try {
+                return mine.equal(their);
+            } catch(...) {
+                return mine.is(their);
+            }
+        });
     }
 
     static py::object shallow_copy_dict(const py::object& obj) {

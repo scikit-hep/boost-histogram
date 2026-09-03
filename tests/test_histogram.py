@@ -2013,3 +2013,19 @@ def test_fill_int_axis_dtypes(dtype):
     b = bh.Histogram(bh.axis.Boolean())
     b.fill(np.array([0, 1, 1], dtype=dtype))
     assert b.view() == approx(np.array([1, 2]))
+
+
+def test_compare_ndarray_metadata():
+    # Metadata that gives no plain bool from == must not abort the interpreter
+    array = np.arange(3)
+    h = bh.Histogram(bh.axis.Regular(3, 0, 1, metadata=array))
+    h_same = bh.Histogram(bh.axis.Regular(3, 0, 1, metadata=array))
+    h_other = bh.Histogram(bh.axis.Regular(3, 0, 1, metadata=np.arange(3)))
+
+    assert h == h_same
+    assert h != h_other
+    assert (h + h_same).sum() == 0
+    assert h.copy(deep=False) == h
+
+    with pytest.raises(ValueError, match="axes"):
+        h + h_other

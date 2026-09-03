@@ -24,6 +24,7 @@
 #include <cstdint>
 #include <limits>
 #include <stdexcept>
+#include <string>
 #include <type_traits>
 #include <vector>
 
@@ -294,12 +295,20 @@ void fill_impl(bh::detail::accumulator_traits_holder<false, boost::span<double>>
     if(sarray.ndim() != 2)
         throw std::invalid_argument("Sample or weight array for MultiCell must be 2D");
 
-    auto buf = sarray.request();
-    // releasing gil here is safe, we don't manipulate refcounts
-    const py::gil_scoped_release lock;
+    auto buf              = sarray.request();
     const auto buf_shape0 = static_cast<std::size_t>(buf.shape[0]);
     const auto buf_shape1 = static_cast<std::size_t>(buf.shape[1]);
-    auto* src             = static_cast<double*>(buf.ptr);
+
+    // A row that is not nelem wide would throw deep inside the fill loop
+    const auto nelem = bh::unsafe_access::storage(h).nelem();
+    if(buf_shape1 != nelem)
+        throw std::invalid_argument("Sample or weight array for MultiCell must have "
+                                    + std::to_string(nelem) + " entries per row, got "
+                                    + std::to_string(buf_shape1));
+
+    // releasing gil here is safe, we don't manipulate refcounts
+    const py::gil_scoped_release lock;
+    auto* src = static_cast<double*>(buf.ptr);
     std::vector<boost::span<double>> vec_s;
     vec_s.reserve(buf_shape0);
     for(std::size_t i = 0; i < buf_shape0; i++) {
