@@ -2029,3 +2029,89 @@ def test_compare_ndarray_metadata():
 
     with pytest.raises(ValueError, match="axes"):
         h + h_other
+
+
+@pytest.mark.parametrize(
+    "axis_type", [bh.axis.StrCategory, bh.axis.IntCategory], ids=["str", "int"]
+)
+def test_growth_axis_survives_merge(axis_type):
+    # An axis held by the user must not dangle when a merge replaces it
+    values = ["a", "b", "c"] if axis_type is bh.axis.StrCategory else [1, 2, 3]
+
+    h = bh.Histogram(axis_type([], growth=True))
+    h.fill(values[:1])
+    ax = h.axes[0]
+    assert ax.size == 1
+
+    h2 = bh.Histogram(axis_type([], growth=True))
+    h2.fill(values[1:])
+    h += h2
+
+    # The old axis is a snapshot of the merged-from state
+    assert ax.size == 1
+    assert ax.index(values[0]) == 0
+
+    assert h.axes[0].size == 3
+    assert list(h.axes[0]) == values
+
+
+def test_growth_axis_size_after_fill():
+    h = bh.Histogram(bh.axis.Regular(2, 0, 1, growth=True))
+    assert h.axes[0].size == 2
+    h.fill([0.5, 2.5])
+    assert h.axes[0].size == 6
+    assert h.axes[0].size == h.view().size
+
+
+def test_view_after_growth_is_safe():
+    # A growing fill moves the storage, so the view must be a copy
+    h = bh.Histogram(bh.axis.Integer(0, 5, growth=True))
+    v = h.view()
+    assert np.array_equal(v, np.zeros(5))
+
+    h.fill(np.arange(1000))
+
+    assert np.array_equal(v, np.zeros(5))
+    assert h.view().sum() == 1000
+    assert h.view(flow=True).size == 1000
+
+
+def test_setitem_with_growth_axis():
+    h = bh.Histogram(bh.axis.Regular(4, 0, 1, growth=True))
+    h[...] = np.arange(4)
+    assert h.view() == approx(np.arange(4))
+
+    h[1] = 10
+    assert h[1] == 10
+    assert h.view() == approx([0, 10, 2, 3])
+
+    h[np.array([0, 2])] = [5, 6]
+    assert h.view() == approx([5, 10, 6, 3])
+
+
+def test_inplace_op_with_growth_axis():
+    h = bh.Histogram(bh.axis.Regular(4, 0, 1, growth=True))
+    h.fill([0.1, 0.6])
+    h *= 2
+    assert h.sum() == 4
+    h /= 2
+    assert h.sum() == 2
+    assert h.axes[0].size == 4
+
+
+@pytest.mark.parametrize("deep", [False, True], ids=["shallow", "deep"])
+def test_copy_growth_axis_metadata_is_independent(deep):
+    h = bh.Histogram(bh.axis.Regular(4, 0, 1, growth=True, metadata="original"))
+    h2 = h.copy(deep=deep)
+    h2.axes[0].metadata = "changed"
+
+    assert h.axes[0].metadata == "original"
+    assert h2.axes[0].metadata == "changed"
+
+
+def test_growth_axis_metadata_write_through():
+    h = bh.Histogram(bh.axis.StrCategory([], growth=True))
+    h.axes[0].metadata = "label"
+    assert h.axes[0].metadata == "label"
+    h.fill(["a"])
+    assert h.axes[0].metadata == "label"

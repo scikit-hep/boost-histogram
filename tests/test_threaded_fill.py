@@ -160,3 +160,33 @@ def test_no_weighted_profile():
 #     assert_almost_equal(hist_1.view().value, hist_2.view().value)
 #     assert_almost_equal(hist_1.view().variance, hist_2.view().variance)
 #     assert_almost_equal(hist_1.view().sum_of_weights, hist_2.view().sum_of_weights)
+
+
+@pytest.mark.parametrize("threads", [2, 4])
+def test_threaded_growth_matches_serial(threads):
+    # Growth axes cannot merge across threads, so the fill is done serially
+    data = np.linspace(0, 10, 1000)
+
+    hist_1 = bh.Histogram(bh.axis.Regular(4, 0, 1, growth=True))
+    hist_1.fill(data)
+
+    hist_2 = bh.Histogram(bh.axis.Regular(4, 0, 1, growth=True))
+    hist_2.fill(data, threads=threads)
+
+    assert hist_2.sum() == hist_1.sum()
+    assert hist_2.axes[0].size == hist_1.axes[0].size
+    assert hist_2 == hist_1
+
+
+@pytest.mark.parametrize("threads", [2, 4])
+def test_threaded_category_growth(threads):
+    values = ["a", "b", "c"] * 100
+
+    hist_1 = bh.Histogram(bh.axis.StrCategory([], growth=True))
+    hist_1.fill(values)
+
+    hist_2 = bh.Histogram(bh.axis.StrCategory([], growth=True))
+    hist_2.fill(values, threads=threads)
+
+    assert hist_2.sum() == 300
+    assert list(hist_2.axes[0]) == list(hist_1.axes[0])

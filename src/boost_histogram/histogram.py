@@ -468,12 +468,15 @@ class Histogram(typing.Generic[S]):
 
         self._from_histogram_object(_hist, __dict__=dict_copy)
 
-        for ax in self.axes:
+        for i, ax in enumerate(self.axes):
             if memo is NOTHING:
-                ax._ax.raw_metadata = copy.copy(ax._ax.raw_metadata)
+                new_metadata = copy.copy(ax._ax.raw_metadata)
             else:
-                ax._ax.raw_metadata = copy.deepcopy(ax._ax.raw_metadata, memo)
-            ax.__dict__ = ax._ax.raw_metadata
+                new_metadata = copy.deepcopy(ax._ax.raw_metadata, memo)
+            # A growth axis wrapper holds a copy, so set the stored axis too.
+            self._hist._set_axis_metadata(i, new_metadata)
+            ax._ax.raw_metadata = new_metadata
+            ax.__dict__ = new_metadata
         return self
 
     def _new_hist(self, _hist: CppHistogram, memo: Any = NOTHING) -> Self:
@@ -536,6 +539,13 @@ class Histogram(typing.Generic[S]):
         """
 
         return AxesTuple(self._axis(i) for i in range(self.ndim))
+
+    @property
+    def _has_growth(self) -> bool:
+        """
+        True if any axis can grow. Growing invalidates views and axis objects.
+        """
+        return any(ax._ax.traits_growth for ax in self.axes)
 
     # Backward compat for metadata default
     def __getattr__(self, name: str) -> Any:
@@ -612,6 +622,27 @@ class Histogram(typing.Generic[S]):
     ):
         """
         Return a view into the data, optionally with overflow turned on.
+
+        If any axis can grow, a copy is returned instead of a view. A growing
+        fill moves the data, which would leave a view pointing at freed memory.
+        Writes to the copy do not change the histogram; use ``__setitem__`` or
+        ``fill`` instead.
+        """
+        view = self._view_raw(flow)
+        return view.copy() if self._has_growth else view
+
+    def _view_raw(
+        self, flow: bool = False
+    ) -> (
+        np.typing.NDArray[np.float64]
+        | np.typing.NDArray[np.int64]
+        | WeightedSumView
+        | WeightedMeanView
+        | MeanView
+    ):
+        """
+        A writable view into the data. It is only valid until the histogram
+        grows or its storage is replaced, so do not hand it to the user.
         """
         return _to_view(self._hist.view(flow))
 
@@ -799,7 +830,7 @@ class Histogram(typing.Generic[S]):
         # storages to Double first, matching __itruediv__.
         result = self.copy(deep=False)
         result._convert_int_storage_to_double()
-        view = result.view(flow=True)
+        view = result._view_raw(flow=True)
         # Empty bins divide to inf/nan; suppress the warnings as elsewhere.
         with np.errstate(divide="ignore", invalid="ignore"):
             np.true_divide(other, view, out=view)
@@ -839,7 +870,11 @@ class Histogram(typing.Generic[S]):
         """
         Convert an integer storage to Double in place (see _as_double_cpp).
         """
-        self._hist = self._as_double_cpp(self._hist)
+        new_hist = self._as_double_cpp(self._hist)
+        if new_hist is not self._hist:
+            self._hist = new_hist
+            # The axes belong to the old histogram; point them at the new one.
+            self.axes = self._generate_axes_()
 
     def _hist_inplace_op(self, name: str, other: CppHistogram) -> None:
         if self._hist._storage_type is not other._storage_type:
@@ -883,18 +918,18 @@ class Histogram(typing.Generic[S]):
                 raise ValueError(msg)
 
             if all(a in {b, 1} for a, b in zip(other.shape, self.shape, strict=False)):
-                view = self.view(flow=False)
+                view = self._view_raw(flow=False)
                 getattr(view, name)(other)
             elif all(
                 a in {b, 1} for a, b in zip(other.shape, self.axes.extent, strict=False)
             ):
-                view = self.view(flow=True)
+                view = self._view_raw(flow=True)
                 getattr(view, name)(other)
             else:
                 msg = f"Wrong shape {other.shape}, expected {self.shape} or {self.axes.extent}"
                 raise ValueError(msg)
         else:
-            view = self.view(flow=True)
+            view = self._view_raw(flow=True)
             getattr(view, name)(other)
 
         self._variance_known = False
@@ -922,7 +957,9 @@ class Histogram(typing.Generic[S]):
         threads : Optional[int]
             Fill with threads. Defaults to None, which does not activate
             threaded filling.  Using 0 will automatically pick the number of
-            available threads (usually two per core).
+            available threads (usually two per core). A histogram with a growth
+            axis is always filled serially, because the per-thread copies grow
+            to different axes, which cannot be merged.
         """
 
         if self._hist._storage_type is _core.storage.mean:
@@ -964,8 +1001,13 @@ class Histogram(typing.Generic[S]):
         if threads == 0:
             threads = cpu_count()
 
+        growth = self._has_growth
+
         if threads is None or threads == 1:
             self._hist.fill(*args_ars, weight=weight_ars, sample=sample_ars)
+            if growth:
+                # A growing fill replaces the axes.
+                self.axes = self._generate_axes_()
             return self
 
         if self._hist._storage_type in {
@@ -973,6 +1015,13 @@ class Histogram(typing.Generic[S]):
             _core.storage.weighted_mean,
         }:
             raise RuntimeError("Mean histograms do not support threaded filling")
+
+        if growth:
+            # The per-thread copies grow to different axes, and such axes do
+            # not merge, so ignore threads and fill serially.
+            self._hist.fill(*args_ars, weight=weight_ars, sample=sample_ars)
+            self.axes = self._generate_axes_()
+            return self
 
         # If everything is scalar, there is only a single fill; threading would
         # incorrectly repeat it, so fill directly instead.
@@ -1008,7 +1057,7 @@ class Histogram(typing.Generic[S]):
 
         if self._hist._storage_type is _core.storage.atomic_int64:
 
-            def fun(
+            def work(
                 weight: ArrayLike | None,
                 sample: ArrayLike | None,
                 *args: np.typing.NDArray[Any],
@@ -1018,7 +1067,7 @@ class Histogram(typing.Generic[S]):
         else:
             sum_lock = threading.Lock()
 
-            def fun(
+            def work(
                 weight: ArrayLike | None,
                 sample: ArrayLike | None,
                 *args: np.typing.NDArray[Any],
@@ -1028,6 +1077,22 @@ class Histogram(typing.Generic[S]):
                 local_hist.fill(*args, weight=weight, sample=sample)
                 with sum_lock:
                     self._hist += local_hist
+
+        # A worker exception must not be lost; the histogram would silently
+        # hold too few entries.
+        errors: list[BaseException] = []
+        error_lock = threading.Lock()
+
+        def fun(
+            weight: ArrayLike | None,
+            sample: ArrayLike | None,
+            *args: np.typing.NDArray[Any],
+        ) -> None:
+            try:
+                work(weight, sample, *args)
+            except BaseException as err:  # noqa: BLE001
+                with error_lock:
+                    errors.append(err)
 
         thread_list = [
             threading.Thread(target=fun, args=arrays)
@@ -1039,6 +1104,9 @@ class Histogram(typing.Generic[S]):
 
         for thread in thread_list:
             thread.join()
+
+        if errors:
+            raise errors[0]
 
         return self
 
@@ -1124,9 +1192,9 @@ class Histogram(typing.Generic[S]):
             self._variance_known = True
             self.metadata = state.get("metadata", None)
             for i in range(self._hist.rank()):
-                self._hist.axis(i).raw_metadata = {
-                    "metadata": self._hist.axis(i).raw_metadata
-                }
+                self._hist._set_axis_metadata(
+                    i, {"metadata": self._hist.axis(i).raw_metadata}
+                )
 
         self.axes = self._generate_axes_()
 
@@ -1797,7 +1865,7 @@ class Histogram(typing.Generic[S]):
         in_array = (
             value.view(flow=True) if isinstance(value, Histogram) else np.asarray(value)
         )
-        view: Any = self.view(flow=True)
+        view: Any = self._view_raw(flow=True)
 
         value_shape: tuple[int, ...]
 
