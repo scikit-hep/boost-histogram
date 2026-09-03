@@ -2025,6 +2025,7 @@ def test_compare_ndarray_metadata():
     assert h == h_same
     assert h != h_other
     assert (h + h_same).sum() == 0
+    assert h.copy(deep=False) == h
 
     with pytest.raises(ValueError, match="axes"):
         h + h_other

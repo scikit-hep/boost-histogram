@@ -961,6 +961,10 @@ def test_metadata_compare_no_bool():
         3, 0, 1, metadata=np.arange(3)
     )
 
+    # A copy keeps the same metadata object, so it stays equal
+    ax = bh.axis.Regular(3, 0, 1, metadata=array)
+    assert copy.copy(ax) == ax
+
 
 def test_metadata_compare_raises():
     class Bad:
