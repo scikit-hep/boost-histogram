@@ -172,6 +172,24 @@ class multi_cell {
         return *this;
     }
 
+    // Without these the buffer is deep copied on reduce, project and init
+    multi_cell(multi_cell&& other) noexcept
+        : size_{other.size_}
+        , nelem_{other.nelem_}
+        , buffer_{std::move(other.buffer_)} {
+        other.size_ = 0;
+    }
+
+    multi_cell& operator=(multi_cell&& other) noexcept {
+        if(this != &other) {
+            size_       = other.size_;
+            nelem_      = other.nelem_;
+            buffer_     = std::move(other.buffer_);
+            other.size_ = 0;
+        }
+        return *this;
+    }
+
     std::size_t size() const { return size_; }
 
     std::size_t nelem() const { return nelem_; }
