@@ -78,6 +78,24 @@ def test_axis_misconstuct():
         bh.axis.AxesTuple(inp[0])
 
 
+def test_histogram_axes_do_not_alias_metadata():
+    # Passing the same axis instance twice must not let the two histogram
+    # axes (or the original axis) share one metadata dict.
+    a = bh.axis.Regular(3, 0, 1)
+    h = bh.Histogram(a, a)
+    h.axes[0].label = "x"
+
+    assert a.metadata is None
+    assert h.axes[1].metadata is None
+
+    # The conversion constructor must give its axes their own metadata too.
+    h1 = bh.Histogram(bh.axis.Regular(2, 0, 1))
+    h2 = bh.Histogram(h1)
+    h2.axes[0].label = "y"
+
+    assert h1.axes[0].metadata is None
+
+
 def test_array_tuple_dir(h):
     # Issue #1143 (B15): __dir__ used dir() of a string literal
     listing = dir(h.axes.centers)

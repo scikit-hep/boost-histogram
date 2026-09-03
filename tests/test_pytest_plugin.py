@@ -78,7 +78,9 @@ def test_histogram_contents_differ_plain() -> None:
     h2.fill([0.05, 0.05])
     out = text(pytest_assertrepr_compare("==", h1, h2))
     assert "1 of 12 bins differ" in out
-    assert "sum (no flow): 1.0 vs 2.0" in out
+    # The summed values include flow bins (there are none filled here, but the
+    # label must say so, since lv/rv passed to _plain_contents include flow).
+    assert "sum (with flow): 1.0 vs 2.0" in out
 
 
 def test_histogram_contents_truncated() -> None:

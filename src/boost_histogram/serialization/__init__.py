@@ -89,7 +89,9 @@ def to_uhi(
         data["storage"] = _storage_to_dict(storage_obj, h.view(flow=True))
     else:
         data["storage"] = {"type": storage_type_str}
-    data["metadata"] = serialize_metadata(h.__dict__)
+    # _variance_known is internal Histogram state, not user metadata
+    public_dict = {k: v for k, v in h.__dict__.items() if k != "_variance_known"}
+    data["metadata"] = serialize_metadata(public_dict)
 
     return data
 
@@ -102,7 +104,9 @@ def from_uhi(data: dict[str, Any], /) -> histogram.Histogram[Any]:
     storage_data = data["storage"]
     storage_ = _storage_from_dict(storage_data, data.get("writer_info", {}))
     h = histogram.Histogram[Any](*axis, storage=storage_)
-    h.__dict__ = data.get("metadata", {})
+    h.__dict__ = dict(data.get("metadata", {}))
+    # Not part of the UHI schema; assume known unless the dict says otherwise
+    h.__dict__.setdefault("_variance_known", True)
 
     # Check if storage has data (if not, it's a structure-only histogram)
     # Validate required keys per storage type before deciding to skip data loading

@@ -114,7 +114,7 @@ def _plain_contents(lv: NDArray[Any], rv: NDArray[Any]) -> list[str]:
         lines.append(f"  bin {key}: {lv[tuple(idx)]} != {rv[tuple(idx)]}")
     if count > _MAX_SAMPLES:
         lines.append(f"  ... and {count - _MAX_SAMPLES} more")
-    lines.append(f"sum (no flow): {lv.sum()} vs {rv.sum()}")
+    lines.append(f"sum (with flow): {lv.sum()} vs {rv.sum()}")
     return lines
 
 
