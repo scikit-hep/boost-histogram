@@ -126,7 +126,7 @@ inline c_array_t<int> narrow_to_int(py::handle x) {
         op[i] = static_cast<int>(in[i]);
     }
 
-    return c_array_t<int>(py::reinterpret_borrow<py::object>(out));
+    return {py::reinterpret_borrow<py::object>(out)};
 }
 
 // Make sure float arrays don't get cast to integers (-.5 rounds to 0!)
