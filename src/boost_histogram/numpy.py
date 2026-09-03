@@ -28,6 +28,36 @@ def __dir__() -> list[str]:
     return list(__all__)
 
 
+def _outer_edges(a: ArrayLike, rng: tuple[float, float] | None) -> tuple[float, float]:
+    """
+    Compute the outer bin edges, following ``numpy.lib._histograms_impl._get_outer_edges``.
+    """
+    if rng is not None:
+        first_edge, last_edge = rng
+        if first_edge > last_edge:
+            raise ValueError("max must be larger than min in range parameter.")
+        if not (np.isfinite(first_edge) and np.isfinite(last_edge)):
+            raise ValueError(
+                f"supplied range of [{first_edge}, {last_edge}] is not finite"
+            )
+    elif np.size(a) == 0:
+        # No data, so no range can be found; NumPy uses 0-1 here.
+        first_edge, last_edge = 0.0, 1.0
+    else:
+        first_edge, last_edge = np.amin(a), np.amax(a)
+        if not (np.isfinite(first_edge) and np.isfinite(last_edge)):
+            raise ValueError(
+                f"autodetected range of [{first_edge}, {last_edge}] is not finite"
+            )
+
+    # Expand an empty range to avoid a division by zero
+    if first_edge == last_edge:
+        first_edge -= 0.5
+        last_edge += 0.5
+
+    return first_edge, last_edge
+
+
 def histogramdd(
     a: tuple[ArrayLike, ...],
     bins: int | tuple[int, ...] | tuple[np.typing.NDArray[Any], ...] = 10,
@@ -53,9 +83,12 @@ def histogramdd(
             "boost-histogram does not support the density keyword when returning a boost-histogram object"
         )
 
-    # Odd NumPy design here. Oh well.
+    # Odd NumPy design here. Oh well. A 1D array is N samples of one dimension,
+    # while an ND array has one sample per row.
     if isinstance(a, np.ndarray):  # type: ignore[unreachable]
-        a = a.T  # type: ignore[unreachable]
+        a = np.atleast_2d(a) if a.ndim == 1 else a.T  # type: ignore[unreachable]
+    elif len(a) > 0 and np.ndim(a[0]) == 0:
+        a = (np.asarray(a),)
 
     rank = len(a)
 
@@ -77,13 +110,9 @@ def histogramdd(
     axs: list[_axis.Axis] = []
     for n, (b, r) in enumerate(zip(bins, range, strict=True)):
         if np.issubdtype(type(b), np.integer):
-            if r is None:
-                # Nextafter may affect bin edges slightly
-                r = (np.amin(a[n]), np.amax(a[n]))  # noqa: PLW2901
-                if r[0] == r[1]:
-                    r = (r[0] - 0.5, r[1] + 0.5)  # noqa: PLW2901
+            start, stop = _outer_edges(a[n], r)
             new_ax = _axis.Regular(
-                typing.cast(int, b), r[0], r[1], underflow=False, overflow=False
+                typing.cast(int, b), start, stop, underflow=False, overflow=False
             )
             axs.append(new_ax)
         else:
@@ -122,6 +151,17 @@ def histogram2d(
 ) -> Any:
     if storage is None:
         storage = _storage.Double()
+
+    # NumPy shares a single edge array between both axes, but only if it is not
+    # one or two entries long (those are read as per-axis bin counts).
+    try:
+        n_bins = len(bins)  # type: ignore[arg-type]
+    except TypeError:
+        n_bins = 1
+    if n_bins not in {1, 2}:
+        edges = np.asarray(bins)
+        bins = (edges, edges)  # type: ignore[assignment]
+
     result = histogramdd(
         (x, y),
         bins,
