@@ -16,11 +16,14 @@ void register_algorithms(py::module& algorithm) {
             using range_t = bh::algorithm::reduce_command::range_t;
 
             if(self.range != range_t::none) {
-                const char* suffix  = self.merge > 0 ? "_and_rebin" : "";
+                // merge is always >= 1 (1 means "no extra rebin"), so only
+                // show the "_and_rebin" suffix and merge= value when a real
+                // merge factor was requested.
+                const char* suffix  = self.merge > 1 ? "_and_rebin" : "";
                 const char* c_start = self.iaxis == bh::algorithm::reduce_command::unset
                                           ? ""
                                           : "iaxis={0}, ";
-                const char* c_merge = self.merge > 0 ? ", merge={0}" : "";
+                const char* c_merge = self.merge > 1 ? ", merge={0}" : "";
 
                 py::str const start = py::str(c_start).format(self.iaxis);
                 py::str const merge = py::str(c_merge).format(self.merge);
@@ -35,9 +38,10 @@ void register_algorithms(py::module& algorithm) {
                                 merge,
                                 self.crop ? "slice_mode.crop" : "slice_mode.shrink");
                 }
-                return py::str(
-                           "reduce_command(shrink{0}({1}, lower={2}, upper={3}{4}))")
-                    .format(suffix, start, self.begin.value, self.end.value, merge);
+                const char* name = self.crop ? "crop" : "shrink";
+                return py::str("reduce_command({0}{1}({2}lower={3}, upper={4}{5}))")
+                    .format(
+                        name, suffix, start, self.begin.value, self.end.value, merge);
             }
 
             // self.range == range_t::none
