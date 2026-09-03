@@ -13,16 +13,16 @@ user-facing API on top of it.
 
 Prefer `uv run <cmd>` — it rebuilds the C++ extension as needed before running.
 
-| Task                            | Command                                            |
-| ------------------------------- | -------------------------------------------------- |
-| Install for dev                 | `uv sync` (or `pip install -ve. --group dev`)      |
-| Run tests                       | `uv run pytest`                                    |
-| Run one test                    | `uv run pytest tests/test_histogram.py::test_name` |
-| Tests in parallel, no benchmark | `uv run pytest -n auto --benchmark-disable`        |
-| Lint / format / typecheck       | `prek -a --quiet`                                  |
-| Type check only                 | `uv run mypy` (strict on `src/`, `examples/`)      |
-| Build + serve docs              | `nox -s docs -- serve`                             |
-| C++ (CMake) build + test        | `cmake --workflow default`                         |
+| Task                               | Command                                            |
+| ---------------------------------- | -------------------------------------------------- |
+| Install for dev                    | `uv sync` (or `pip install -ve. --group dev`)      |
+| Run tests                          | `uv run pytest`                                    |
+| Run one test                       | `uv run pytest tests/test_histogram.py::test_name` |
+| Tests in parallel, no benchmark    | `uv run pytest -n auto --benchmark-disable`        |
+| Lint / format / typecheck          | `prek -a --quiet`                                  |
+| Type check only                    | `prek run mypy -a` (strict on `src/`, `examples/`) |
+| Build docs (serves if interactive) | `nox -s docs`                                      |
+| C++ (CMake) build + test           | `cmake --workflow default`                         |
 
 `nox -l` lists all sessions. `prek` is used instead of `pre-commit run`.
 
