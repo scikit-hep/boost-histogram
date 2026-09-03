@@ -940,9 +940,9 @@ class Histogram(typing.Generic[S]):
         threads : Optional[int]
             Fill with threads. Defaults to None, which does not activate
             threaded filling.  Using 0 will automatically pick the number of
-            available threads (usually two per core). A histogram with a growth
-            axis is always filled serially, because the per-thread copies grow
-            to different axes, which cannot be merged.
+            available threads (usually two per core). A continuous growth axis
+            (such as a growing Regular axis) cannot be merged across threads
+            yet, so such a fill raises instead.
         """
 
         if self._hist._storage_type is _core.storage.mean:
@@ -999,13 +999,6 @@ class Histogram(typing.Generic[S]):
         }:
             raise RuntimeError("Mean histograms do not support threaded filling")
 
-        if growth:
-            # The per-thread copies grow to different axes, and such axes do
-            # not merge, so ignore threads and fill serially.
-            self._hist.fill(*args_ars, weight=weight_ars, sample=sample_ars)
-            self.axes = self._generate_axes_()
-            return self
-
         # If everything is scalar, there is only a single fill; threading would
         # incorrectly repeat it, so fill directly instead.
         if (
@@ -1014,6 +1007,8 @@ class Histogram(typing.Generic[S]):
             and (sample_ars is None or np.ndim(sample_ars) == 0)
         ):
             self._hist.fill(*args_ars, weight=weight_ars, sample=sample_ars)
+            if growth:
+                self.axes = self._generate_axes_()
             return self
 
         data: list[list[Any]] = []
@@ -1091,6 +1086,10 @@ class Histogram(typing.Generic[S]):
 
         if errors:
             raise errors[0]
+
+        if growth:
+            # The merge of the per-thread copies replaces the axes.
+            self.axes = self._generate_axes_()
 
         return self
 
