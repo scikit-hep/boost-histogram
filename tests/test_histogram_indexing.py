@@ -5,6 +5,7 @@ import pytest
 from pytest import approx
 
 import boost_histogram as bh
+from boost_histogram import _core
 
 
 def test_1D_get_bin():
@@ -818,3 +819,122 @@ def test_string_index_raises():
         h["a"]
 
     assert h[bh.loc("a")] == 2
+
+
+def test_vectorized_get_set_respects_flow_locator():
+    # A flow locator (bh.underflow/bh.overflow) mixed with an array index on
+    # another axis must select the flow bin, not wrap into the regular range.
+    h = bh.Histogram(bh.axis.Regular(4, 0, 1), bh.axis.Regular(3, 0, 1))
+    h.view(flow=True)[...] = np.arange(6 * 5).reshape(6, 5)
+
+    assert h[np.array([0]), bh.underflow] == approx([h.view(flow=True)[1, 0]])
+    assert h[np.array([0, 1]), bh.overflow] == approx(
+        [h.view(flow=True)[1, 4], h.view(flow=True)[2, 4]]
+    )
+
+    h[np.array([0]), bh.underflow] = 999
+    assert h.view(flow=True)[1, 0] == 999
+
+
+def test_vectorized_get_flow_locator_out_of_bounds_raises():
+    h = bh.Histogram(
+        bh.axis.Regular(4, 0, 1, underflow=False), bh.axis.Regular(3, 0, 1)
+    )
+    with pytest.raises(IndexError, match="no underflow bin"):
+        h[bh.underflow, np.array([0])]
+
+
+def test_underflow_locator_raises_without_underflow_bin():
+    # Issue: bh.underflow on an axis without underflow silently wrapped to
+    # the last (overflow) bin instead of raising.
+    h = bh.Histogram(
+        bh.axis.Regular(4, 0, 1, underflow=False), bh.axis.Regular(3, 0, 1)
+    )
+    h.view(flow=True)[...] = np.arange(5 * 5).reshape(5, 5)
+
+    with pytest.raises(IndexError, match="no underflow bin"):
+        h[bh.underflow, :]
+
+
+def test_loc_below_range_raises_without_underflow_bin_setitem():
+    # Issue: bh.loc(value_below_range) on an axis without underflow silently
+    # wrote to the overflow bin instead of raising.
+    h = bh.Histogram(bh.axis.Regular(4, 0, 1, underflow=False))
+
+    with pytest.raises(IndexError, match="no underflow bin"):
+        h[bh.loc(-5)] = 7
+
+    assert h.view(flow=True) == approx([0, 0, 0, 0, 0])
+
+
+def test_group_rebin_respects_slice_bounds():
+    # Issue: h[start:stop:bh.rebin(groups=...)] ignored start/stop and
+    # grouped the full axis instead of just the sliced range.
+    h = bh.Histogram(bh.axis.Regular(6, 0, 6))
+    h.view()[:] = [1, 2, 3, 4, 5, 6]
+
+    hs = h[1 : 5 : bh.rebin(groups=[2, 2])]
+    assert hs.view() == approx([2 + 3, 4 + 5])
+    assert hs.axes[0].edges == approx([1, 3, 5])
+
+
+def test_group_rebin_mismatched_sum_raises():
+    h = bh.Histogram(bh.axis.Regular(6, 0, 6))
+    h.view()[:] = [1, 2, 3, 4, 5, 6]
+
+    with pytest.raises(ValueError, match="sum of the groups"):
+        h[1 : 5 : bh.rebin(groups=[2, 3])]
+
+
+def test_group_rebin_categorical_without_axis_raises():
+    # Issue: group rebin on a category axis without axis= silently produced
+    # a nonsensical Variable axis instead of a category axis.
+    h = bh.Histogram(bh.axis.IntCategory([1, 2, 3, 4]))
+    h.view()[:] = [10, 20, 30, 40]
+
+    with pytest.raises(ValueError, match="categorical axis"):
+        h[:: bh.rebin(groups=[2, 2])]
+
+
+def test_group_rebin_categorical_with_axis():
+    h = bh.Histogram(bh.axis.IntCategory([1, 2, 3, 4]))
+    h.view()[:] = [10, 20, 30, 40]
+
+    new_axis = bh.axis.IntCategory([1, 3])
+    hs = h[:: bh.rebin(groups=[2, 2], axis=new_axis)]
+    assert hs.view() == approx([30, 70])
+    assert hs.axes[0] == new_axis
+
+
+def test_rebin_numpy_integer_factor():
+    # Issue: bh.rebin(np.int64(2)) was treated as an axis (isinstance(x, int)
+    # is False for NumPy integer scalars), not a factor.
+    r = bh.rebin(np.int64(2))
+    assert r.factor == 2
+    assert r.axis is None
+
+    h = bh.Histogram(bh.axis.Regular(6, 0, 6))
+    h.view()[:] = [1, 2, 3, 4, 5, 6]
+    hs = h[:: bh.rebin(np.int64(2))]
+    assert hs.view() == approx([3, 7, 11])
+
+
+def test_rebin_bool_is_not_a_factor():
+    with pytest.raises(TypeError, match="not a bool"):
+        bh.rebin(True)
+
+
+def test_reduce_command_repr():
+    assert (
+        repr(_core.algorithm.slice(0, 1, 3, _core.algorithm.slice_mode.crop))
+        == "reduce_command(slice(iaxis=0, begin=1, end=3, mode=slice_mode.crop))"
+    )
+    assert repr(_core.algorithm.crop(0, 1.0, 3.0)) == (
+        "reduce_command(crop(iaxis=0, lower=1.0, upper=3.0))"
+    )
+    assert repr(_core.algorithm.shrink(0, 1.0, 3.0)) == (
+        "reduce_command(shrink(iaxis=0, lower=1.0, upper=3.0))"
+    )
+    assert repr(_core.algorithm.shrink_and_rebin(0, 1.0, 3.0, 2)) == (
+        "reduce_command(shrink_and_rebin(iaxis=0, lower=1.0, upper=3.0, merge=2))"
+    )

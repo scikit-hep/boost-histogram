@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import operator
 from builtins import sum
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, TypeVar
@@ -128,10 +129,17 @@ class rebin:
         edges: Sequence[int | float] | None = None,
         axis: PlottableAxis | None = None,
     ) -> None:
+        # bool is a subclass of int, but is not a sensible rebin factor
+        if isinstance(factor_or_axis, bool):
+            raise TypeError("The factor must be an integer, not a bool")
         if isinstance(factor_or_axis, int):
             factor = factor_or_axis
         elif factor_or_axis is not None:
-            axis = factor_or_axis
+            try:
+                # Accept any other integer-like type (e.g. NumPy integers).
+                factor = operator.index(factor_or_axis)  # type: ignore[arg-type]
+            except TypeError:
+                axis = factor_or_axis
 
         total_args = sum(i is not None for i in [factor, groups, edges])
         if total_args != 1 and axis is None:
