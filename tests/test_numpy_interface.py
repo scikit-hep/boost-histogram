@@ -8,8 +8,6 @@ from pytest import approx
 
 import boost_histogram as bh
 
-np113 = tuple(int(x) for x in np.__version__.split(".")[:2]) >= (1, 13)
-
 inputs_1d = (
     [1, 2, 3, 4, 3, 4, 5, 10, 9, 11, 21, -2],
     [
@@ -31,7 +29,7 @@ inputs_1d = (
 opts = (
     {},
     {"bins": 10},
-    {"bins": "auto" if np113 else 20},
+    {"bins": "auto"},
     {"range": (0, 5), "bins": 30},
     {"range": np.array((0, 5), dtype=float), "bins": np.int32(30)},
     {"range": np.array((0, 3), dtype=np.double), "bins": np.uint32(10)},
@@ -194,7 +192,7 @@ def test_histogram_all_zeros():
 
 
 def test_histogram_all_ones():
-    x = np.array([0, 0, 0, 0, 0, 0])
+    x = np.array([1, 1, 1, 1, 1, 1])
     h1, edges = np.histogram(x)
     bh_h1, bh_edges = bh.numpy.histogram(x)
 

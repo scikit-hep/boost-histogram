@@ -24,7 +24,7 @@ def test_plottable_histogram_mean_int():
     assert h.kind == "MEAN"
 
     assert len(h.axes) == 1
-    assert h.axes[0] == h.axes[0]
+    assert h.axes[0] == bh.axis.Integer(0, 4)
 
     assert h.axes[0][0] == 0
     assert h.axes[0][1] == 1
@@ -48,7 +48,7 @@ def test_plottible_histogram_weight_reg():
     assert h.kind == "COUNT"
 
     assert len(h.axes) == 1
-    assert h.axes[0] == h.axes[0]
+    assert h.axes[0] == bh.axis.Regular(4, 0, 4)
 
     assert h.axes[0][0] == approx((0, 1))
     assert h.axes[0][1] == approx((1, 2))
@@ -76,7 +76,7 @@ def test_plottible_histogram_simple_var():
     assert h.kind == "COUNT"
 
     assert len(h.axes) == 1
-    assert h.axes[0] == h.axes[0]
+    assert h.axes[0] == bh.axis.Variable([0, 1, 2, 3, 4])
 
     assert h.axes[0][0] == approx((0, 1))
     assert h.axes[0][1] == approx((1, 2))

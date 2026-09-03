@@ -282,9 +282,12 @@ def test_uhi_wrapper():
         bh.axis.IntCategory([1, 2, 3]),
         storage=bh.storage.WeightedMean(),
     )
-    assert to_uhi(h).keys() == h._to_uhi_().keys()
+    expected_keys = {"uhi_schema", "writer_info", "axes", "storage", "metadata"}
+    assert to_uhi(h).keys() == expected_keys
+    assert h._to_uhi_().keys() == expected_keys
+
     data = h._to_uhi_()
-    assert repr(from_uhi(data)) == repr(bh.Histogram._from_uhi_(data))
+    assert repr(from_uhi(data)) == repr(bh.Histogram._from_uhi_(data)) == repr(h)
 
 
 def test_uhi_direct_conversion():
