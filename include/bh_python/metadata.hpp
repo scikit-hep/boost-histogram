@@ -49,12 +49,16 @@ class metadata_t {
     // the Python comparison raises, or its result has no truth value (a NumPy
     // array), fall back to identity: only the same dict object is equal.
     bool operator==(const metadata_t& other) const noexcept {
-        const py::gil_scoped_acquire gil;
         try {
-            return unguarded_obj().equal(other.unguarded_obj());
+            const py::gil_scoped_acquire gil;
+            try {
+                return unguarded_obj().equal(other.unguarded_obj());
+            } catch(...) {
+                // pybind11 fetched the Python error into the exception object
+                return unguarded_obj().is(other.unguarded_obj());
+            }
         } catch(...) {
-            // pybind11 fetched the Python error into the exception object
-            return unguarded_obj().is(other.unguarded_obj());
+            return false;
         }
     }
     bool operator!=(const metadata_t& other) const noexcept {

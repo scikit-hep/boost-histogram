@@ -130,7 +130,7 @@ class boolean : public bh::axis::integer<int, metadata_t, option::none_t> {
 
     // Redeclared so &boolean::value binds on boolean; pybind11 does not know
     // the base class, so a base member pointer would reject a boolean self.
-    int value(bh::axis::real_index_type i) const noexcept { return integer::value(i); }
+    int value(bh::axis::index_type i) const noexcept { return integer::value(i); }
 
     // We can't specify inclusive, since this could be sliced
 };

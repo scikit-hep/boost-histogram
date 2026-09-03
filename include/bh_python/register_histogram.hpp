@@ -388,10 +388,10 @@ auto inline register_histogram<bh::multi_cell<double>>(py::module& m,
                 };
                 if(flow || self.rank() == 0)
                     return std::all_of(self.begin(), self.end(), all_zero);
-                for(auto&& x : bh::indexed(self))
-                    if(!all_zero(*x))
-                        return false;
-                return true;
+                auto range = bh::indexed(self);
+                return std::all_of(range.begin(),
+                                   range.end(),
+                                   [&all_zero](const auto& x) { return all_zero(*x); });
             },
             "flow"_a = false)
 
