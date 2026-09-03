@@ -9,6 +9,7 @@
 
 #include <bh_python/accumulators/ostream.hpp>
 #include <bh_python/axis.hpp>
+#include <bh_python/def_eq.hpp>
 #include <bh_python/fill.hpp>
 #include <bh_python/histogram.hpp>
 #include <bh_python/make_pickle.hpp>
@@ -37,6 +38,7 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
     using value_type  = typename histogram_t::value_type;
 
     py::class_<histogram_t> hist(m, name, desc, py::buffer_protocol());
+    def_eq(hist);
 
     hist.def(py::init<const vector_axis_variant&, S>(), "axes"_a, "storage"_a = S())
 
@@ -59,23 +61,6 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
              })
 
         .def(py::self += py::self)
-
-        .def("__eq__",
-             [](const histogram_t& self, const py::object& other) {
-                 try {
-                     return self == py::cast<const histogram_t&>(other);
-                 } catch(const py::cast_error&) {
-                     return false;
-                 }
-             })
-        .def("__ne__",
-             [](const histogram_t& self, const py::object& other) {
-                 try {
-                     return self != py::cast<const histogram_t&>(other);
-                 } catch(const py::cast_error&) {
-                     return true;
-                 }
-             })
 
         .def_property_readonly_static(
             "_storage_type",
@@ -239,6 +224,7 @@ auto inline register_histogram<bh::multi_cell<double>>(py::module& m,
     using value_type  = std::vector<double>;
 
     py::class_<histogram_t> hist(m, name, desc, py::buffer_protocol());
+    def_eq(hist);
 
     hist.def(py::init<const vector_axis_variant&, S>(), "axes"_a, "storage"_a = S())
 
@@ -272,23 +258,6 @@ auto inline register_histogram<bh::multi_cell<double>>(py::module& m,
              })
 
         .def(py::self += py::self)
-
-        .def("__eq__",
-             [](const histogram_t& self, const py::object& other) {
-                 try {
-                     return self == py::cast<const histogram_t&>(other);
-                 } catch(const py::cast_error&) {
-                     return false;
-                 }
-             })
-        .def("__ne__",
-             [](const histogram_t& self, const py::object& other) {
-                 try {
-                     return self != py::cast<const histogram_t&>(other);
-                 } catch(const py::cast_error&) {
-                     return true;
-                 }
-             })
 
         .def_property_readonly_static(
             "_storage_type",

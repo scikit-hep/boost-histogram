@@ -8,32 +8,20 @@
 #include <bh_python/pybind11.hpp>
 
 #include <bh_python/accumulators/ostream.hpp>
+#include <bh_python/def_eq.hpp>
 #include <bh_python/make_pickle.hpp>
 
 #include <utility>
 
 template <class A, class... Args>
 py::class_<A> register_accumulator(py::module acc, Args&&... args) {
-    return py::class_<A>(std::move(acc), std::forward<Args>(args)...)
+    py::class_<A> cls(std::move(acc), std::forward<Args>(args)...);
+    def_eq(cls);
+
+    return cls
         .def(py::init<>())
 
         .def(py::self += py::self)
-        .def("__eq__",
-             [](const A& self, const py::object& other) {
-                 try {
-                     return self == py::cast<const A&>(other);
-                 } catch(const py::cast_error&) {
-                     return false;
-                 }
-             })
-        .def("__ne__",
-             [](const A& self, const py::object& other) {
-                 try {
-                     return self != py::cast<const A&>(other);
-                 } catch(const py::cast_error&) {
-                     return true;
-                 }
-             })
 
         .def(py::self *= double())
 
