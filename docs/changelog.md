@@ -2,6 +2,16 @@
 
 ## Version 1.8
 
+### Version 1.8.1
+
+#### Fixes
+
+- Avoid Boost indexed-range UB in rank-0 histograms and add Windows 3.14t testing by @ikrommyd in [#1175][]
+
+#### Developer changes
+
+- Hold the GIL when copying or destroying Python objects in axes by @henryiii in [#1172][]
+
 ### Version 1.8.0
 
 #### Features
@@ -115,6 +125,8 @@
 [#1164]: https://github.com/scikit-hep/boost-histogram/pull/1164
 [#1166]: https://github.com/scikit-hep/boost-histogram/pull/1166
 [#1168]: https://github.com/scikit-hep/boost-histogram/pull/1168
+[#1172]: https://github.com/scikit-hep/boost-histogram/pull/1172
+[#1175]: https://github.com/scikit-hep/boost-histogram/pull/1175
 
 ## Version 1.7
 

@@ -42,8 +42,8 @@ If you leave endpoints off (such as with ``...`` above), then you can match the 
 Operations
 ^^^^^^^^^^
 
-* ``h.rank``: The number of dimensions
-* ``h.size or len(h)``: The number of bins
+* ``h.ndim``: The number of dimensions
+* ``h.size``: The number of bins
 
 * ``+``: Add two histograms, or add a scalar or array (storages must match types currently)
 * ``*=``: Multiply by a scalar, array, or histogram (not all storages) (``hist * scalar`` and ``scalar * hist`` supported too)

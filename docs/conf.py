@@ -117,7 +117,9 @@ html_static_path = []  # _static
 
 # Simpler docs (no build required)
 
-autodoc_mock_imports = ["boost_histogram._core"]
+# boost_histogram.version is generated at build time and does not exist
+# when Sphinx imports boost_histogram from src/ directly.
+autodoc_mock_imports = ["boost_histogram._core", "boost_histogram.version"]
 
 
 def prepare(app):

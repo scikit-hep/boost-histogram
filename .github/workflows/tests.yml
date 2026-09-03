@@ -11,6 +11,9 @@ on:
 env:
   FORCE_COLOR: 3
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -20,6 +23,7 @@ jobs:
     name: Clang-Tidy
     runs-on: ubuntu-latest
     container: silkeh/clang:20
+    timeout-minutes: 30
 
     steps:
       - name: Install requirements
@@ -42,6 +46,7 @@ jobs:
   pylint:
     runs-on: ubuntu-latest
     name: PyLint
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v7
@@ -55,6 +60,7 @@ jobs:
   cmake:
     name: CMake 🐍 ${{ matrix.python-version }}
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -102,6 +108,7 @@ jobs:
   hist:
     name: Hist 🐍 ${{ matrix.python-version }}
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -126,6 +133,7 @@ jobs:
   build_wheels:
     name: ${{ matrix.only }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -176,6 +184,7 @@ jobs:
     if: always()
     needs: [clang-tidy, pylint, cmake, hist, build_wheels]
     runs-on: ubuntu-slim
+    timeout-minutes: 5
     steps:
       - uses: re-actors/alls-green@release/v1
         with:

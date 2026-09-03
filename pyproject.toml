@@ -74,7 +74,6 @@ dev = [
     "nbconvert",
     "setuptools_scm",
     "typer",
-    "uhi",
 ]
 docs = [
     "ipython",
@@ -97,7 +96,6 @@ test = [
     "cloudpickle",
     "pytest>=6.0",
     "pytest-benchmark",
-    "numpy>=1.21.3",
     "hypothesis>=6.0; sys_platform != 'ios'", # slow on iOS, can fail health check
     "pytest-xdist; sys_platform != 'ios'",  # No processes on iOS
     "jsonschema",  # validate UHI serialization against the uhi schema
@@ -139,12 +137,16 @@ __version__ = version = "$version"
 
 [tool.uv]
 pip.only-binary = ["numpy"]
-cache-keys = [{file = "include/**"}, {file = "src/**/*.cpp"}]
+cache-keys = [
+  { file = "pyproject.toml" },
+  { file = "CMakeLists.txt" },
+  { file = "include/**" },
+  { file = "src/**/*.cpp" },
+]
 
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-junit_family = "xunit2"
 addopts = [
   "-ra",
   "--strict-markers",
