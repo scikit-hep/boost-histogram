@@ -11,6 +11,9 @@
 #include <bh_python/make_pickle.hpp>
 #include <bh_python/storage.hpp>
 
+#include <cstddef>
+#include <stdexcept>
+
 /// Add helpers common to all storage types
 template <class A>
 py::class_<A> register_storage(py::module& m, const char* name, const char* desc) {
@@ -53,7 +56,13 @@ py::class_<storage::multi_cell> inline register_storage(py::module& m,
     py::class_<A> storage(m, name, desc);
     def_eq(storage);
 
-    storage.def(py::init<int>(), py::arg("k") = 0)
+    storage
+        .def(py::init([](int k) {
+                 if(k < 1)
+                     throw std::invalid_argument("MultiCell nelem must be 1 or larger");
+                 return A{static_cast<std::size_t>(k)};
+             }),
+             py::arg("k"))
         .def(make_pickle<A>())
         .def("__copy__", [](const A& self) { return A(self); })
         .def("__deepcopy__", [](const A& self, const py::object&) { return A(self); })

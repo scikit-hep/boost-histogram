@@ -941,6 +941,42 @@ class TestBoolean(Axis):
         assert a.centers == approx([0.5, 1.5])
         assert a.widths == approx([1, 1])
 
+    def test_value(self):
+        a = bh.axis.Boolean()
+        assert a.value(0) == 0
+        assert a.value(1) == 1
+        assert a.value([0, 1]) == approx([0, 1])
+
+
+def test_metadata_compare_no_bool():
+    # Metadata that does not give a plain bool from == must not abort
+    array = np.arange(3)
+    assert bh.axis.Regular(3, 0, 1, metadata=array) == bh.axis.Regular(
+        3, 0, 1, metadata=array
+    )
+    assert bh.axis.Regular(3, 0, 1, metadata=array) != bh.axis.Regular(
+        3, 0, 1, metadata=np.arange(3)
+    )
+    assert not bh.axis.Regular(3, 0, 1, metadata=np.arange(3)) == bh.axis.Regular(  # noqa: SIM201
+        3, 0, 1, metadata=np.arange(3)
+    )
+
+
+def test_metadata_compare_raises():
+    class Bad:
+        def __eq__(self, other):
+            raise RuntimeError("no compare")
+
+        __hash__ = None
+
+    bad = Bad()
+    assert bh.axis.Regular(3, 0, 1, metadata=bad) == bh.axis.Regular(
+        3, 0, 1, metadata=bad
+    )
+    assert bh.axis.Regular(3, 0, 1, metadata=bad) != bh.axis.Regular(
+        3, 0, 1, metadata=Bad()
+    )
+
 
 # Issue #1143 regression tests
 

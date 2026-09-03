@@ -45,13 +45,20 @@ class metadata_t {
     /// Access the held dict; hold the GIL to use or copy it
     const py::object& unguarded_obj() const noexcept { return data_.unguarded_get(); }
 
-    bool operator==(const metadata_t& other) const {
+    // Boost compares axes in a noexcept context, so these must not throw. If
+    // the Python comparison raises, or its result has no truth value (a NumPy
+    // array), fall back to identity: only the same dict object is equal.
+    bool operator==(const metadata_t& other) const noexcept {
         const py::gil_scoped_acquire gil;
-        return unguarded_obj().equal(other.unguarded_obj());
+        try {
+            return unguarded_obj().equal(other.unguarded_obj());
+        } catch(...) {
+            // pybind11 fetched the Python error into the exception object
+            return unguarded_obj().is(other.unguarded_obj());
+        }
     }
-    bool operator!=(const metadata_t& other) const {
-        const py::gil_scoped_acquire gil;
-        return unguarded_obj().not_equal(other.unguarded_obj());
+    bool operator!=(const metadata_t& other) const noexcept {
+        return !operator==(other);
     }
 
   private:
