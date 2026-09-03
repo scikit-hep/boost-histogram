@@ -36,12 +36,16 @@
 #include <vector>
 
 /// A growth axis is replaced or reallocated by a growing fill or merge, so a
-/// reference to it would dangle. Give a copy instead; it shares the metadata
-/// dict, but its bins are a snapshot. Other axes stay no-copy, held alive by
-/// py::keep_alive on the histogram.
+/// reference to it would dangle. Give a copy instead; its bins are a snapshot.
+/// Other axes stay no-copy, held alive by py::keep_alive on the histogram.
 template <class A>
 py::object growth_safe_axis_cast(const A& item, std::true_type /*growing*/) {
-    return py::cast(item, py::return_value_policy::copy);
+    py::object obj = py::cast(item, py::return_value_policy::copy);
+    // The copy stands in for the stored axis, so it must hold the same
+    // metadata dict, not the independent one that copying a metadata_t makes.
+    py::cast<A&>(obj).metadata()
+        = metadata_t{py::object(item.metadata().unguarded_obj())};
+    return obj;
 }
 
 template <class A>

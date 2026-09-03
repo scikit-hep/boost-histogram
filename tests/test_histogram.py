@@ -2111,3 +2111,6 @@ def test_growth_axis_metadata_write_through():
     assert h.axes[0].metadata == "label"
     h.fill(["a"])
     assert h.axes[0].metadata == "label"
+
+    # The copy of a growth axis must hold the same dict as the stored axis
+    assert h.axes[0].__dict__ is h.axes[0].__dict__
