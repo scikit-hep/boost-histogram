@@ -60,10 +60,10 @@ def _(
     /,
     data: Any,
 ) -> dict[str, Any]:
-    return {
-        "type": "int" if np.issubdtype(data.dtype, np.integer) else "double",
-        "values": data,
-    }
+    # AtomicInt64's view is always int64 and Unlimited's view is always
+    # converted to double (see make_buffer in histogram.hpp), so the type
+    # follows directly from the storage type.
+    return {"type": _storage_type_to_str(_storage), "values": data}
 
 
 @_storage_to_dict.register(storage.Weight)

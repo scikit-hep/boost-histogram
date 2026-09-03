@@ -730,9 +730,6 @@ class Histogram(typing.Generic[S]):
     def __eq__(self, other: object) -> bool:
         return hasattr(other, "_hist") and self._hist == other._hist
 
-    def __ne__(self, other: object) -> bool:
-        return (not hasattr(other, "_hist")) or self._hist != other._hist
-
     def __add__(self, other: Histogram[S] | np.typing.NDArray[Any] | float) -> Self:
         result = self.copy(deep=False)
         return result.__iadd__(other)
