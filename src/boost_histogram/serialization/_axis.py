@@ -12,8 +12,10 @@ __all__ = ["_axis_from_dict", "_axis_to_dict"]
 # written as a ``variable`` axis (with the transformed edges) for interoperability
 # and additionally tagged with the original Regular parameters + transform identity
 # under boost-histogram's writer_info, letting us restore the exact axis on read.
-# Only transforms we can reconstruct from these names are recorded here.
-_KNOWN_FUNCTION_TRANSFORMS = frozenset({"log", "sqrt"})
+# Only transforms we can reconstruct from these names are recorded here. Keyed
+# by name, but matched against the actual transform object (via __eq__), not
+# its repr - a custom Function transform can share a name with a built-in.
+_KNOWN_FUNCTION_TRANSFORMS = {"log": axis.transform.log, "sqrt": axis.transform.sqrt}
 
 
 def __dir__() -> list[str]:
@@ -27,10 +29,14 @@ def _transform_writer_info(ax: axis.Regular, /) -> dict[str, Any]:
     info: dict[str, Any]
     if isinstance(tr, axis.transform.Pow):
         info = {"transform": "pow", "power": tr.power}
-    elif repr(tr) in _KNOWN_FUNCTION_TRANSFORMS:
-        info = {"transform": repr(tr)}
     else:
-        return {}
+        name = next(
+            (n for n, known in _KNOWN_FUNCTION_TRANSFORMS.items() if tr == known),
+            None,
+        )
+        if name is None:
+            return {}
+        info = {"transform": name}
     info["bins"] = ax.size
     info["lower"] = float(ax.edges[0])
     info["upper"] = float(ax.edges[-1])

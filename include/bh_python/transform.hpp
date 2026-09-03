@@ -116,6 +116,10 @@ struct func_transform {
         }
     }
 
+    bool operator!=(const func_transform& other) const noexcept {
+        return !(*this == other);
+    }
+
     template <class Archive>
     void serialize(Archive& ar, unsigned /* version */) {
         ar& boost::make_nvp("forward", _forward_ob);

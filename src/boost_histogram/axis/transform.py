@@ -57,6 +57,15 @@ class AxisTransform:
         "Compute the inverse transform"
         return self._this.inverse(value)
 
+    def __eq__(self, other: object) -> bool:
+        # Compare by type and parameters, not by repr - two different
+        # Function transforms can have the same name (and so the same repr).
+        # Subclasses override this and __hash__ with real comparisons.
+        return NotImplemented
+
+    def __hash__(self) -> int:
+        return hash(type(self))
+
 
 @register({ca.transform.pow})
 class Pow(AxisTransform, family=boost_histogram):
@@ -80,6 +89,14 @@ class Pow(AxisTransform, family=boost_histogram):
     # This one does need to be a normal method
     def _produce(self, bins: int, start: float, stop: float) -> Any:
         return self.__class__._type(bins, start, stop, self.power)
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Pow):
+            return NotImplemented
+        return self.power == other.power
+
+    def __hash__(self) -> int:
+        return hash((Pow, self.power))
 
 
 @register({ca.transform.func_transform})
@@ -147,10 +164,22 @@ class Function(AxisTransform, family=boost_histogram):
     def _produce(self, bins: int, start: float, stop: float) -> Any:
         return self.__class__._type(bins, start, stop, self._this)
 
+    def __eq__(self, other: object) -> bool:
+        # Compares the underlying forward/inverse functions, not the name -
+        # two Function transforms with the same name are not necessarily equal.
+        if not isinstance(other, Function):
+            return NotImplemented
+        return bool(self._this == other._this)
+
+    def __hash__(self) -> int:
+        return hash(Function)
+
 
 def _internal_conversion(name: str) -> Any:
     return getattr(ca.transform, name)
 
 
-sqrt = Function("_sqrt_fn", "_sq_fn", convert=_internal_conversion, name="sqrt")
-log = Function("_log_fn", "_exp_fn", convert=_internal_conversion, name="log")
+sqrt: Function = Function(
+    "_sqrt_fn", "_sq_fn", convert=_internal_conversion, name="sqrt"
+)
+log: Function = Function("_log_fn", "_exp_fn", convert=_internal_conversion, name="log")

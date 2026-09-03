@@ -54,7 +54,7 @@ def register(
             cls._types = set()  # type: ignore[attr-defined]
             return cls
 
-        if not hasattr(cls, "_types"):
+        if "_types" not in cls.__dict__:
             cls._types = set()  # type: ignore[attr-defined]
 
         for cpp_type in cpp_types:

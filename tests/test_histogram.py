@@ -525,6 +525,19 @@ def test_empty_repr():
     assert repr(h) == hrepr
 
 
+def test_empty_mean_repr_has_no_sum_line():
+    # Mean/WeightedMean accumulators have no __bool__, so an empty sum is
+    # still truthy; the repr must not print a spurious "# Sum:" for it.
+    h = bh.Histogram(bh.axis.Regular(3, 0, 1), storage=bh.storage.Mean())
+    assert "# Sum:" not in repr(h)
+
+    h2 = bh.Histogram(bh.axis.Regular(3, 0, 1), storage=bh.storage.WeightedMean())
+    assert "# Sum:" not in repr(h2)
+
+    h.fill([0.5], sample=[1.0])
+    assert "# Sum:" in repr(h)
+
+
 def test_str():
     h1 = bh.Histogram(bh.axis.Regular(3, 0, 1))
     h1.view(True)[...] = [0, 1, 3, 2, 1]
@@ -672,6 +685,32 @@ def test_int_storage_division_promotes_to_double(storage):
     assert a is a_orig
     assert a.storage_type is bh.storage.Double
     assert a.view() == approx(expected)
+
+
+@pytest.mark.parametrize("storage", [bh.storage.Int64, bh.storage.AtomicInt64])
+def test_int_storage_mul_by_float_promotes_to_double(storage):
+    # A non-integer scalar multiply must promote like division, instead of
+    # leaking a numpy UFuncTypeError from the in-place int64 view multiply.
+    a = bh.Histogram(bh.axis.Integer(0, 3), storage=storage())
+    a[:] = (1, 2, 3)
+
+    result = a * 0.5
+    assert result.storage_type is bh.storage.Double
+    assert result.view() == approx(np.array([0.5, 1.0, 1.5]))
+    # operand is unchanged
+    assert a.storage_type is storage
+
+    # multiplying by an integer scalar keeps the int storage
+    int_result = a * 2
+    assert int_result.storage_type is storage
+    assert int_result.view() == approx(np.array([2, 4, 6]))
+
+    # in-place multiply promotes storage but keeps the same object
+    a_orig = a
+    a *= 0.5
+    assert a is a_orig
+    assert a.storage_type is bh.storage.Double
+    assert a.view() == approx(np.array([0.5, 1.0, 1.5]))
 
 
 def test_mixed_int_double_division():

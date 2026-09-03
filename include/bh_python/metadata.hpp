@@ -26,6 +26,22 @@ class metadata_t {
     explicit metadata_t(py::object&& data) noexcept
         : data_(std::move(data)) {}
 
+    /// Copying an axis must not alias its dict with the source axis, so make
+    /// a fresh shallow copy here rather than sharing guarded_object's
+    /// reference. Code that wants the identical dict (e.g. the Python
+    /// wrapper's raw_metadata getter) must go through unguarded_obj() instead
+    /// of copying a metadata_t.
+    metadata_t(const metadata_t& other)
+        : data_(shallow_copy_dict(other.data_.unguarded_get())) {}
+    metadata_t& operator=(const metadata_t& other) {
+        if(this != &other)
+            data_ = guarded_object(shallow_copy_dict(other.data_.unguarded_get()));
+        return *this;
+    }
+    metadata_t(metadata_t&&) noexcept            = default;
+    metadata_t& operator=(metadata_t&&) noexcept = default;
+    ~metadata_t()                                = default;
+
     /// Access the held dict; hold the GIL to use or copy it
     const py::object& unguarded_obj() const noexcept { return data_.unguarded_get(); }
 
@@ -42,6 +58,11 @@ class metadata_t {
     static py::object make_dict() {
         const py::gil_scoped_acquire gil;
         return py::dict();
+    }
+
+    static py::object shallow_copy_dict(const py::object& obj) {
+        const py::gil_scoped_acquire gil;
+        return py::reinterpret_steal<py::object>(PyDict_Copy(obj.ptr()));
     }
 };
 

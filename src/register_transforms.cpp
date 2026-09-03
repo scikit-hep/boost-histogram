@@ -92,6 +92,8 @@ void register_transforms(py::module& mod) {
              "inverse"_a,
              "convert"_a,
              "name"_a)
+        .def(py::self == py::self)
+        .def(py::self != py::self)
         .def("__repr__",
              [](const py::object& self) -> py::object {
                  auto& s = py::cast<func_transform&>(self);

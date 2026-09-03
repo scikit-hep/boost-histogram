@@ -505,7 +505,10 @@ class Histogram(typing.Generic[S]):
         self.__dict__ = copy.copy(other.__dict__)
         self.axes = self._generate_axes_()
         for ax in self.axes:
-            ax.__dict__.update(ax._ax.raw_metadata)
+            # Give each axis its own metadata dict, so mutating it here does
+            # not alias with the axes of `other` (or of each other).
+            ax._ax.raw_metadata = copy.copy(ax._ax.raw_metadata)
+            ax.__dict__ = ax._ax.raw_metadata
         self.__dict__.update(__dict__)
 
         # Allow custom behavior on either "from" or "to"
@@ -772,7 +775,7 @@ class Histogram(typing.Generic[S]):
     # If these fail, the underlying object throws the correct error
     def __mul__(self, other: Histogram[S] | np.typing.NDArray[Any] | float) -> Self:
         result = self.copy(deep=False)
-        return result._compute_inplace_op("__imul__", other)
+        return result.__imul__(other)
 
     def __rmul__(self, other: np.typing.NDArray[Any] | float) -> Self:
         return self * other
@@ -808,6 +811,13 @@ class Histogram(typing.Generic[S]):
         return result
 
     def __imul__(self, other: Histogram[S] | np.typing.NDArray[Any] | float) -> Self:
+        # Multiplying by a non-integer scalar/array should promote an integer
+        # storage to Double, matching __itruediv__, instead of leaking a
+        # numpy UFuncTypeError from the in-place view multiply.
+        if not isinstance(other, (Histogram, *_histogram_types)) and not np.issubdtype(
+            np.asarray(other).dtype, np.integer
+        ):
+            self._convert_int_storage_to_double()
         return self._compute_inplace_op("__imul__", other)
 
     @staticmethod
@@ -1136,7 +1146,13 @@ class Histogram(typing.Generic[S]):
         ret += f"{sep}{storage_newline}storage={self.storage}"
         ret += ")"
         outer = self.sum(flow=True)
-        if outer:
+        # Accumulators (Mean, WeightedSum, ...) have no __bool__, so they are
+        # always truthy; compare against a fresh instance to detect "empty".
+        if isinstance(outer, (int, float)):
+            non_empty = bool(outer)
+        else:
+            non_empty = outer != type(outer)()
+        if non_empty:
             inner = self.sum(flow=False)
             ret += f" # Sum: {inner}"
             if inner != outer:

@@ -248,6 +248,17 @@ class TestRegular(Axis):
         ax = bh.axis.Regular(4, 1.1, 2.2, transform=bh.axis.transform.Pow(0.5))
         assert repr(ax) == "Regular(4, 1.1, 2.2, transform=pow(0.5))"
 
+    def test_repr_large_bin_count(self):
+        # A large bin count must print as an integer, not "1e+06"
+        ax = bh.axis.Regular(1_000_000, 0, 1)
+        assert repr(ax) == "Regular(1000000, 0, 1)"
+
+    def test_copy_does_not_alias_metadata(self):
+        a = bh.axis.Regular(3, 0, 1)
+        b = copy.copy(a)
+        b.label = "x"
+        assert a.metadata is None
+
     def test_getitem(self):
         a = bh.axis.Regular(2, 1.0, 2.0)
         ref = [1.0, 1.5, 2.0]

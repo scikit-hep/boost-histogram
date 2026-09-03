@@ -185,7 +185,13 @@ py::class_<A> register_axis(py::module& m, Args&&... args) {
 
         .def_property(
             "raw_metadata",
-            [](const A& self) { return self.metadata(); },
+            // Return the actual held dict (not a metadata_t copy, which
+            // would now be an independent dict): callers rely on repeated
+            // .raw_metadata accesses returning the identical object.
+            [](const A& self) -> const py::object& {
+                const py::gil_scoped_acquire gil;
+                return self.metadata().unguarded_obj();
+            },
             [](A& self, metadata_t label) { self.metadata() = std::move(label); },
             "Set the metadata")
 
