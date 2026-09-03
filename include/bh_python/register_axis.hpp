@@ -63,6 +63,21 @@ inline decltype(auto) axis_cast<int>(py::handle x) {
 }
 } // namespace detail
 
+// we overload vectorize index for the integer axis, whose value type is int
+template <class Options>
+auto vectorize_index(int (bh::axis::integer<int, metadata_t, Options>::*pindex)(int)
+                         const BHP_NOEXCEPT_17) {
+    using A      = bh::axis::integer<int, metadata_t, Options>;
+    auto indexer = py::vectorize(pindex);
+    return [indexer](const A& self, const py::object& arg) mutable -> py::object {
+        auto array = py::array::ensure(arg);
+        // integer input is range checked; anything else keeps the NumPy cast
+        if(array && (array.dtype().kind() == 'i' || array.dtype().kind() == 'u'))
+            return indexer(&self, detail::special_cast<detail::c_array_t<int>>(array));
+        return indexer(&self, py::cast<detail::c_array_t<int>>(arg));
+    };
+}
+
 // we overload vectorize index for category axis
 template <class T, class Options>
 auto vectorize_index(int (bh::axis::category<T, metadata_t, Options>::*pindex)(const T&)

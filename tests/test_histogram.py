@@ -1969,3 +1969,47 @@ def test_fill_noncontiguous_str_category():
     h2 = bh.Histogram(bh.axis.StrCategory(cat))
     h2.fill(np.array(["a", "b", "c"])[::-1])
     assert h2.view(flow=True) == approx(expected2.view(flow=True))
+
+
+@pytest.mark.parametrize(
+    ("dtype", "value"),
+    [(np.int64, 2**32 + 3), (np.uint32, 2**31 + 3), (np.uint64, 2**32 + 3)],
+)
+def test_fill_int_axis_out_of_range(dtype, value):
+    # Regression test: wide integers were narrowed to int32 and wrapped silently
+    h = bh.Histogram(bh.axis.Integer(0, 5))
+    with pytest.raises(ValueError):
+        h.fill(np.array([value], dtype=dtype))
+    assert h.sum(flow=True) == 0
+
+    c = bh.Histogram(bh.axis.IntCategory([1, 2, 3]))
+    with pytest.raises(ValueError):
+        c.fill(np.array([value], dtype=dtype))
+    assert c.sum(flow=True) == 0
+
+
+def test_index_int_axis_out_of_range():
+    with pytest.raises(ValueError):
+        bh.axis.Integer(0, 5).index(np.array([2**32 + 3]))
+    with pytest.raises(ValueError):
+        bh.axis.IntCategory([1, 2, 3]).index(np.array([2**32 + 2]))
+
+
+def test_fill_int_axis_scalar_out_of_range():
+    h = bh.Histogram(bh.axis.Integer(0, 5))
+    with pytest.raises((ValueError, TypeError)):
+        h.fill(2**32 + 3)
+    assert h.sum(flow=True) == 0
+
+
+@pytest.mark.parametrize(
+    "dtype", [np.bool_, np.int8, np.uint8, np.int16, np.uint16, np.int32, np.int64]
+)
+def test_fill_int_axis_dtypes(dtype):
+    h = bh.Histogram(bh.axis.Integer(0, 5))
+    h.fill(np.array([0, 1, 1], dtype=dtype))
+    assert h.view() == approx(np.array([1, 2, 0, 0, 0]))
+
+    b = bh.Histogram(bh.axis.Boolean())
+    b.fill(np.array([0, 1, 1], dtype=dtype))
+    assert b.view() == approx(np.array([1, 2]))

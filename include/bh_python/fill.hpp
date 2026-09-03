@@ -21,6 +21,8 @@
 #include <boost/mp11.hpp>
 #include <boost/variant2/variant.hpp>
 
+#include <cstdint>
+#include <limits>
 #include <stdexcept>
 #include <type_traits>
 #include <vector>
@@ -97,17 +99,50 @@ inline decltype(auto) special_cast<c_array_t<std::string>>(py::handle x) {
     return py::cast<B>(x);
 }
 
+inline bool fits_in_int(std::int64_t v) {
+    return v >= static_cast<std::int64_t>(std::numeric_limits<int>::min())
+           && v <= static_cast<std::int64_t>(std::numeric_limits<int>::max());
+}
+
+inline bool fits_in_int(std::uint64_t v) {
+    return v <= static_cast<std::uint64_t>(std::numeric_limits<int>::max());
+}
+
+/// Narrow a wide or unsigned integer array to int, the value type of the integer
+/// axes. NumPy would wrap out-of-range values silently.
+template <class T>
+inline c_array_t<int> narrow_to_int(py::handle x) {
+    const py::array_t<T, py::array::c_style | py::array::forcecast> wide(
+        py::reinterpret_borrow<py::object>(x));
+    const std::vector<py::ssize_t> shape(wide.shape(), wide.shape() + wide.ndim());
+    py::array_t<int> out(shape);
+
+    const T* in = wide.data();
+    int* op     = out.mutable_data();
+    for(py::ssize_t i = 0, n = wide.size(); i < n; ++i) {
+        if(!fits_in_int(in[i]))
+            throw py::value_error(
+                "Integer axis values must fit in a 32-bit signed integer");
+        op[i] = static_cast<int>(in[i]);
+    }
+
+    return {py::reinterpret_borrow<py::object>(out)};
+}
+
 // Make sure float arrays don't get cast to integers (-.5 rounds to 0!)
 template <>
 inline decltype(auto) special_cast<c_array_t<int>>(py::handle x) {
-    auto np    = py::module::import("numpy");
-    auto dtype = py::cast<py::array>(x).dtype();
-    if(dtype.equal(np.attr("bool_")) || dtype.equal(np.attr("int8"))
-       || dtype.equal(np.attr("int16")) || dtype.equal(np.attr("int32"))
-       || dtype.equal(np.attr("int64")) || dtype.equal(np.attr("uint8"))
-       || dtype.equal(np.attr("uint16")) || dtype.equal(np.attr("uint32"))
-       || dtype.equal(np.attr("uint64")))
+    const auto dtype  = py::cast<py::array>(x).dtype();
+    const char kind   = dtype.kind();
+    const auto nbytes = dtype.itemsize();
+
+    // These always fit in an int, so let NumPy convert them
+    if(kind == 'b' || (kind == 'i' && nbytes <= 4) || (kind == 'u' && nbytes <= 2))
         return py::cast<c_array_t<int>>(x);
+    if(kind == 'i')
+        return narrow_to_int<std::int64_t>(x);
+    if(kind == 'u')
+        return narrow_to_int<std::uint64_t>(x);
     throw py::type_error("Only integer arrays supported when targeting integer axes");
 }
 
@@ -122,12 +157,14 @@ inline decltype(auto) special_cast<int>(py::handle x) {
     }
 }
 
-using arg_t = variant::variant<c_array_t<double>,
-                               double,
-                               c_array_t<int>,
+// The first alternative must stay cheap to default construct; a stack buffer of
+// these is made for every fill, and only the leading axes.size() are assigned.
+using arg_t = variant::variant<double,
+                               c_array_t<double>,
                                int,
-                               c_array_t<std::string>,
-                               std::string>;
+                               c_array_t<int>,
+                               std::string,
+                               c_array_t<std::string>>;
 
 using weight_t = variant::variant<variant::monostate, double, c_array_t<double>>;
 
