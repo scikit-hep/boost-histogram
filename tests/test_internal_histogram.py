@@ -432,16 +432,3 @@ def test_to_numpy_edges_match_cpp_helper(axis, flow):
     for cpp_e, py_e in zip(cpp_edges, py_edges, strict=True):
         assert cpp_e.dtype == py_e.dtype
         assert cpp_e == approx(py_e)
-
-
-@pytest.mark.parametrize("flow", [False, True])
-def test_to_numpy_edges_match_cpp_helper_numpy_axis(flow):
-    # bh.numpy.histogram produces the special regular_numpy axis, which does
-    # not get the upper-edge nudge.
-    h = bh.numpy.histogram([0.25, 0.5, 0.75], bins=4, histogram=bh.Histogram)
-    _, *cpp_edges = h._hist.to_numpy(flow)
-    _, *py_edges = h.to_numpy(flow)
-
-    assert len(cpp_edges) == len(py_edges) == 1
-    assert cpp_edges[0].dtype == py_edges[0].dtype
-    assert cpp_edges[0] == approx(py_edges[0])

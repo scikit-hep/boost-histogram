@@ -193,7 +193,6 @@ _category_cpp_axes = (
 _no_nudge_cpp_axes = (
     _core.axis.regular_none,
     _core.axis.regular_uflow,
-    _core.axis.regular_numpy,
 )
 
 
