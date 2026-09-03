@@ -842,6 +842,28 @@ class TestCategory(Axis):
         assert a.centers == approx([0.5, 1.5, 2.5])
         assert a.widths == approx([1, 1, 1])
 
+    def test_non_ascii(self):
+        # non-ASCII strings must round-trip through construction, indexing,
+        # and fill by list/ndarray, not just scalar fill
+        labels = ["é", "日本", "a"]
+        a = bh.axis.StrCategory(labels)
+        assert list(a) == labels
+        assert a.index("é") == 0
+        assert a.index("日本") == 1
+
+        h = bh.Histogram(a)
+        h.fill(["é", "日本", "a", "é"])
+        assert h.view() == approx([2, 1, 1])
+
+        h2 = bh.Histogram(bh.axis.StrCategory(labels))
+        h2.fill(np.array(["é", "日本", "a", "é"]))
+        assert h2.view() == approx([2, 1, 1])
+
+        h3 = bh.Histogram(bh.axis.StrCategory(labels))
+        for label in labels:
+            h3.fill(label)
+        assert h3.view() == approx([1, 1, 1])
+
 
 class TestBoolean(Axis):
     def test_init(self):

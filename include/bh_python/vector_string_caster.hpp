@@ -56,6 +56,25 @@ struct type_caster<std::vector<std::string>>
         return true;
     }
 
+    // encode one UCS-4 code point as UTF-8 and append it to s
+    static void append_utf8(std::string& s, std::uint32_t cp) {
+        if(cp < 0x80) {
+            s.push_back(static_cast<char>(cp));
+        } else if(cp < 0x800) {
+            s.push_back(static_cast<char>(0xC0 | (cp >> 6)));
+            s.push_back(static_cast<char>(0x80 | (cp & 0x3F)));
+        } else if(cp < 0x10000) {
+            s.push_back(static_cast<char>(0xE0 | (cp >> 12)));
+            s.push_back(static_cast<char>(0x80 | ((cp >> 6) & 0x3F)));
+            s.push_back(static_cast<char>(0x80 | (cp & 0x3F)));
+        } else {
+            s.push_back(static_cast<char>(0xF0 | (cp >> 18)));
+            s.push_back(static_cast<char>(0x80 | ((cp >> 12) & 0x3F)));
+            s.push_back(static_cast<char>(0x80 | ((cp >> 6) & 0x3F)));
+            s.push_back(static_cast<char>(0x80 | (cp & 0x3F)));
+        }
+    }
+
     bool load_from_array_u(const array& src) {
         const auto step
             = static_cast<std::size_t>(src.itemsize()) / sizeof(std::uint32_t);
@@ -64,16 +83,14 @@ struct type_caster<std::vector<std::string>>
         value.clear();
         value.reserve(size);
         for(std::size_t i = 0; i < size; p += step, ++i) {
-            // check that UTF-32 only contains ASCII, fail if not
+            // numpy 'U' dtype stores each character as a UCS-4 code point;
+            // encode to UTF-8, keeping the fast path for pure ASCII
             const auto n = strlen(p, step);
             std::string s;
             s.reserve(n);
-            for(std::size_t j = 0; j < n; ++j) {
-                if(p[j] >= 128)
-                    return false;
-                s.push_back(static_cast<char>(p[j]));
-            }
-            value.emplace_back(s);
+            for(std::size_t j = 0; j < n; ++j)
+                append_utf8(s, p[j]);
+            value.emplace_back(std::move(s));
         }
         return true;
     }
