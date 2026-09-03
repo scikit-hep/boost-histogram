@@ -538,7 +538,7 @@ class Histogram(typing.Generic[S]):
     # Backward compat for metadata default
     def __getattr__(self, name: str) -> Any:
         if name == "metadata":
-            msg = ".metadata was not set, returning None instead of Attribute error, boost-histogram 1.7+ will error."
+            msg = ".metadata was not set, returning None instead of Attribute error, boost-histogram 1.9+ will error."
             warnings.warn(msg, FutureWarning, stacklevel=2)
             return None
         return super().__getattribute__(name)
