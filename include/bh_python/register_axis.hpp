@@ -9,6 +9,7 @@
 
 #include <bh_python/array_like.hpp>
 #include <bh_python/axis.hpp>
+#include <bh_python/def_eq.hpp>
 #include <bh_python/fill.hpp>
 #include <bh_python/make_pickle.hpp>
 
@@ -137,24 +138,9 @@ template <class A, class... Args>
 py::class_<A> register_axis(py::module& m, Args&&... args) {
     py::class_<A> ax(m, axis::string_name<A>(), std::forward<Args>(args)...);
 
-    ax.def("__repr__", &shift_to_string<A>)
+    def_eq(ax);
 
-        .def("__eq__",
-             [](const A& self, const py::object& other) {
-                 try {
-                     return self == py::cast<const A&>(other);
-                 } catch(const py::cast_error&) {
-                     return false;
-                 }
-             })
-        .def("__ne__",
-             [](const A& self, const py::object& other) {
-                 try {
-                     return self != py::cast<const A&>(other);
-                 } catch(const py::cast_error&) {
-                     return true;
-                 }
-             })
+    ax.def("__repr__", &shift_to_string<A>)
 
         .def_property_readonly("traits_underflow",
                                [](const A& self) {

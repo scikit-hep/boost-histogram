@@ -193,7 +193,6 @@ _category_cpp_axes = (
 _no_nudge_cpp_axes = (
     _core.axis.regular_none,
     _core.axis.regular_uflow,
-    _core.axis.regular_numpy,
 )
 
 
@@ -730,9 +729,6 @@ class Histogram(typing.Generic[S]):
 
     def __eq__(self, other: object) -> bool:
         return hasattr(other, "_hist") and self._hist == other._hist
-
-    def __ne__(self, other: object) -> bool:
-        return (not hasattr(other, "_hist")) or self._hist != other._hist
 
     def __add__(self, other: Histogram[S] | np.typing.NDArray[Any] | float) -> Self:
         result = self.copy(deep=False)

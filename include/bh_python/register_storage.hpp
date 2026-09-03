@@ -7,6 +7,7 @@
 
 #include <bh_python/pybind11.hpp>
 
+#include <bh_python/def_eq.hpp>
 #include <bh_python/make_pickle.hpp>
 #include <bh_python/storage.hpp>
 
@@ -14,24 +15,9 @@
 template <class A>
 py::class_<A> register_storage(py::module& m, const char* name, const char* desc) {
     py::class_<A> storage(m, name, desc);
+    def_eq(storage);
 
     storage.def(py::init<>())
-        .def("__eq__",
-             [](const A& self, const py::object& other) {
-                 try {
-                     return self == py::cast<const A&>(other);
-                 } catch(const py::cast_error&) {
-                     return false;
-                 }
-             })
-        .def("__ne__",
-             [](const A& self, const py::object& other) {
-                 try {
-                     return self != py::cast<const A&>(other);
-                 } catch(const py::cast_error&) {
-                     return true;
-                 }
-             })
         .def(make_pickle<A>())
         .def("__copy__", [](const A& self) { return A(self); })
         .def("__deepcopy__", [](const A& self, const py::object&) { return A(self); });
@@ -47,24 +33,9 @@ py::class_<storage::unlimited> inline register_storage(py::module& m,
     using A = storage::unlimited; // match code above
 
     py::class_<A> storage(m, name, desc);
+    def_eq(storage);
 
     storage.def(py::init<>())
-        .def("__eq__",
-             [](const A& self, const py::object& other) {
-                 try {
-                     return self == py::cast<const A&>(other);
-                 } catch(const py::cast_error&) {
-                     return false;
-                 }
-             })
-        .def("__ne__",
-             [](const A& self, const py::object& other) {
-                 try {
-                     return !(self == py::cast<const A&>(other));
-                 } catch(const py::cast_error&) {
-                     return true;
-                 }
-             })
         .def(make_pickle<A>())
         .def("__copy__", [](const A& self) { return A(self); })
         .def("__deepcopy__", [](const A& self, const py::object&) { return A(self); });
@@ -80,24 +51,9 @@ py::class_<storage::multi_cell> inline register_storage(py::module& m,
     using A = storage::multi_cell; // match code above
 
     py::class_<A> storage(m, name, desc);
+    def_eq(storage);
 
     storage.def(py::init<int>(), py::arg("k") = 0)
-        .def("__eq__",
-             [](const A& self, const py::object& other) {
-                 try {
-                     return self == py::cast<const A&>(other);
-                 } catch(const py::cast_error&) {
-                     return false;
-                 }
-             })
-        .def("__ne__",
-             [](const A& self, const py::object& other) {
-                 try {
-                     return !(self == py::cast<const A&>(other));
-                 } catch(const py::cast_error&) {
-                     return true;
-                 }
-             })
         .def(make_pickle<A>())
         .def("__copy__", [](const A& self) { return A(self); })
         .def("__deepcopy__", [](const A& self, const py::object&) { return A(self); })

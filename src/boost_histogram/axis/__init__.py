@@ -184,9 +184,6 @@ class Axis:
     def __eq__(self, other: object) -> bool:
         return hasattr(other, "_ax") and self._ax == other._ax
 
-    def __ne__(self, other: object) -> bool:
-        return (not hasattr(other, "_ax")) or self._ax != other._ax
-
     @classmethod
     def _convert_cpp(cls, cpp_object: Any) -> Self:
         nice_ax: Self = cls.__new__(cls)

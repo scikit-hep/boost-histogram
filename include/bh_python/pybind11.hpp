@@ -29,7 +29,7 @@ namespace bh = boost::histogram;
 /// Static if standin: define a method if expression is true
 template <class T, class... Args>
 void def_optionally(T&& module, std::true_type, Args&&... expression) {
-    module.def(std::forward<Args...>(expression...));
+    module.def(std::forward<Args>(expression)...);
 }
 
 /// Static if standin: Do nothing if compile time expression is false

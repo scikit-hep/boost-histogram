@@ -7,6 +7,7 @@
 
 #include <bh_python/pybind11.hpp>
 
+#include <bh_python/metadata.hpp>
 #include <bh_python/regular_numpy.hpp>
 #include <bh_python/transform.hpp>
 
@@ -134,7 +135,9 @@ class boolean : public bh::axis::integer<int, metadata_t, option::none_t> {
 // using boolean = bh::axis::boolean<metadata_t>;
 BHP_SPECIALIZE_NAME(boolean)
 
-// Axis defined elsewhere
+// Not exposed to Python (nothing constructs it anymore), but kept in
+// axis_variant below: removing it would shift the "which" index that old
+// pickle files use to select an axis type, breaking their unpickling.
 BHP_SPECIALIZE_NAME(regular_numpy)
 
 #undef BHP_SPECIALIZE_NAME
@@ -226,8 +229,7 @@ py::array_t<double> edges(const A& ax, bool flow = false, bool numpy_upper = fal
 
         if(numpy_upper
            && !(std::is_same<A, axis::regular_none>::value
-                || std::is_same<A, axis::regular_uflow>::value
-                || std::is_same<A, axis::regular_numpy>::value)) {
+                || std::is_same<A, axis::regular_uflow>::value)) {
             data[ax.size() + underflow] = std::nextafter(
                 data[ax.size() + underflow], std::numeric_limits<double>::lowest());
         }
