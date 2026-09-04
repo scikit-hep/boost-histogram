@@ -4,14 +4,39 @@
 
 ### Version 1.8.1
 
+#### Changes
+
+- `MultiCell` now requires a cell count of one or more; the argument has no default by @henryiii in [#1179][]
+- Filling an integer axis with a value that does not fit in an `int` raises `ValueError` instead of wrapping around by @henryiii in [#1181][]
+- `boost_histogram.numpy` matches NumPy more closely: empty input, 1D `histogramdd` input, a single edge array in `histogram2d`, and range validation by @henryiii in [#1178][]
+
 #### Fixes
 
+- Encode UTF-8 for non-ASCII strings filled into `StrCategory` from a list or array by @henryiii in [#1177][]
+- Avoid C++ aborts in axis metadata compare, `MultiCell` fill, and `Boolean.value()`; correct `empty()` for `MultiCell` by @henryiii in [#1179][]
+- Keep growth axes valid after a fill or merge, and raise worker exceptions from a threaded fill by @henryiii in [#1182][]
+- Correct UHI indexing with flow locators, disabled flow bins, and sliced group rebin by @henryiii in [#1183][]
+- Give each axis copy its own metadata dict, and correct serialization, `register()`, integer-storage multiplication, transform equality, and repr by @henryiii in [#1184][]
 - Avoid Boost indexed-range UB in rank-0 histograms and add Windows 3.14t testing by @ikrommyd in [#1175][]
+
+#### Performance
+
+- Cheaper fill argument variant, faster dtype dispatch, and move support for `MultiCell` by @henryiii in [#1181][]
+- Release the GIL on copy, reset, compare, and in-place histogram operations by @henryiii in [#1187][]
+
+#### Documentation
+
+- Document that `view()` can be invalidated by a growing fill by @henryiii in [#1182][]
+- Restore the `Histogram` API page on Read the Docs and correct the user guide and wheel table by @henryiii in [#1180][]
 
 #### Developer changes
 
 - Hold the GIL when copying or destroying Python objects in axes by @henryiii in [#1172][]
-- Release the GIL on copy, reset, compare, and in-place histogram operations by @henryiii in [#1187][]
+- Remove the dead `regular_numpy` Python axis, factor out pybind11 helpers, and correct stub drift and weak tests by @henryiii in [#1185][]
+- Config and CI fixes: uv cache keys, workflow permissions and timeouts, and `AGENTS.md` commands by @henryiii in [#1180][]
+- Test Python 3.15 now that NumPy wheels are on PyPI by @henryiii in [#1170][]
+- Fix the scheduled wheel and weekly-update failures by @henryiii in [#1173][]
+- Bump astral-sh/setup-uv from 9.0.0 to 10.0.1 by @dependabot in [#1174][]
 
 ### Version 1.8.0
 
@@ -128,6 +153,18 @@
 [#1168]: https://github.com/scikit-hep/boost-histogram/pull/1168
 [#1172]: https://github.com/scikit-hep/boost-histogram/pull/1172
 [#1175]: https://github.com/scikit-hep/boost-histogram/pull/1175
+[#1170]: https://github.com/scikit-hep/boost-histogram/pull/1170
+[#1173]: https://github.com/scikit-hep/boost-histogram/pull/1173
+[#1174]: https://github.com/scikit-hep/boost-histogram/pull/1174
+[#1177]: https://github.com/scikit-hep/boost-histogram/pull/1177
+[#1178]: https://github.com/scikit-hep/boost-histogram/pull/1178
+[#1179]: https://github.com/scikit-hep/boost-histogram/pull/1179
+[#1180]: https://github.com/scikit-hep/boost-histogram/pull/1180
+[#1181]: https://github.com/scikit-hep/boost-histogram/pull/1181
+[#1182]: https://github.com/scikit-hep/boost-histogram/pull/1182
+[#1183]: https://github.com/scikit-hep/boost-histogram/pull/1183
+[#1184]: https://github.com/scikit-hep/boost-histogram/pull/1184
+[#1185]: https://github.com/scikit-hep/boost-histogram/pull/1185
 [#1187]: https://github.com/scikit-hep/boost-histogram/pull/1187
 
 ## Version 1.7
