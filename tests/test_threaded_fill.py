@@ -262,3 +262,14 @@ def test_inplace_op_returns_same_object():
     h1 = bh.Histogram(bh.axis.Regular(10, 0, 1))
     h2 = h1.copy()
     assert h1._hist.__iadd__(h2._hist) is h1._hist
+
+
+def test_threaded_growth_copy_race():
+    # The per-thread copy and the merge both release the GIL; a copy taken
+    # while another worker merged used to read a half-grown histogram
+    values = ["a", "b", "c"] * 3000
+
+    for _ in range(50):
+        hist = bh.Histogram(bh.axis.StrCategory([], growth=True))
+        hist.fill(values, threads=8)
+        assert hist.sum() == 9000
