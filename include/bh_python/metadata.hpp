@@ -93,6 +93,11 @@ class metadata_t {
 
     static py::object shallow_copy_dict(const py::object& obj) {
         const py::gil_scoped_acquire gil;
+        // A moved-from metadata_t holds nothing, and a pickle from 0.10 or
+        // before holds the metadata value itself instead of a dict. There is
+        // no dict to copy in either case, so share the object.
+        if(!obj || !PyDict_Check(obj.ptr()))
+            return obj;
         return py::reinterpret_steal<py::object>(PyDict_Copy(obj.ptr()));
     }
 };

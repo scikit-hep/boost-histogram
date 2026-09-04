@@ -468,12 +468,15 @@ class Histogram(typing.Generic[S]):
 
         self._from_histogram_object(_hist, __dict__=dict_copy)
 
-        for ax in self.axes:
+        for i, ax in enumerate(self.axes):
             if memo is NOTHING:
-                ax._ax.raw_metadata = copy.copy(ax._ax.raw_metadata)
+                new_metadata = copy.copy(ax._ax.raw_metadata)
             else:
-                ax._ax.raw_metadata = copy.deepcopy(ax._ax.raw_metadata, memo)
-            ax.__dict__ = ax._ax.raw_metadata
+                new_metadata = copy.deepcopy(ax._ax.raw_metadata, memo)
+            # A growth axis wrapper holds a copy, so set the stored axis too.
+            self._hist._set_axis_metadata(i, new_metadata)
+            ax._ax.raw_metadata = new_metadata
+            ax.__dict__ = new_metadata
         return self
 
     def _new_hist(self, _hist: CppHistogram, memo: Any = NOTHING) -> Self:
@@ -536,6 +539,13 @@ class Histogram(typing.Generic[S]):
         """
 
         return AxesTuple(self._axis(i) for i in range(self.ndim))
+
+    @property
+    def _has_growth(self) -> bool:
+        """
+        True if any axis can grow. Growing invalidates views and axis objects.
+        """
+        return any(ax._ax.traits_growth for ax in self.axes)
 
     # Backward compat for metadata default
     def __getattr__(self, name: str) -> Any:
@@ -612,6 +622,10 @@ class Histogram(typing.Generic[S]):
     ):
         """
         Return a view into the data, optionally with overflow turned on.
+
+        The view shares memory with the histogram. If the histogram has a
+        growth axis, a fill that grows an axis moves the data, and the view
+        then points at freed memory. Take a copy before such a fill.
         """
         return _to_view(self._hist.view(flow))
 
@@ -839,7 +853,11 @@ class Histogram(typing.Generic[S]):
         """
         Convert an integer storage to Double in place (see _as_double_cpp).
         """
-        self._hist = self._as_double_cpp(self._hist)
+        new_hist = self._as_double_cpp(self._hist)
+        if new_hist is not self._hist:
+            self._hist = new_hist
+            # The axes belong to the old histogram; point them at the new one.
+            self.axes = self._generate_axes_()
 
     def _hist_inplace_op(self, name: str, other: CppHistogram) -> None:
         if self._hist._storage_type is not other._storage_type:
@@ -922,7 +940,9 @@ class Histogram(typing.Generic[S]):
         threads : Optional[int]
             Fill with threads. Defaults to None, which does not activate
             threaded filling.  Using 0 will automatically pick the number of
-            available threads (usually two per core).
+            available threads (usually two per core). A continuous growth axis
+            (such as a growing Regular axis) cannot be merged across threads
+            yet, so such a fill raises instead.
         """
 
         if self._hist._storage_type is _core.storage.mean:
@@ -964,8 +984,13 @@ class Histogram(typing.Generic[S]):
         if threads == 0:
             threads = cpu_count()
 
+        growth = self._has_growth
+
         if threads is None or threads == 1:
             self._hist.fill(*args_ars, weight=weight_ars, sample=sample_ars)
+            if growth:
+                # A growing fill replaces the axes.
+                self.axes = self._generate_axes_()
             return self
 
         if self._hist._storage_type in {
@@ -982,6 +1007,8 @@ class Histogram(typing.Generic[S]):
             and (sample_ars is None or np.ndim(sample_ars) == 0)
         ):
             self._hist.fill(*args_ars, weight=weight_ars, sample=sample_ars)
+            if growth:
+                self.axes = self._generate_axes_()
             return self
 
         data: list[list[Any]] = []
@@ -1008,7 +1035,7 @@ class Histogram(typing.Generic[S]):
 
         if self._hist._storage_type is _core.storage.atomic_int64:
 
-            def fun(
+            def work(
                 weight: ArrayLike | None,
                 sample: ArrayLike | None,
                 *args: np.typing.NDArray[Any],
@@ -1018,7 +1045,7 @@ class Histogram(typing.Generic[S]):
         else:
             sum_lock = threading.Lock()
 
-            def fun(
+            def work(
                 weight: ArrayLike | None,
                 sample: ArrayLike | None,
                 *args: np.typing.NDArray[Any],
@@ -1028,6 +1055,23 @@ class Histogram(typing.Generic[S]):
                 local_hist.fill(*args, weight=weight, sample=sample)
                 with sum_lock:
                     self._hist += local_hist
+
+        # A worker exception must not be lost; the histogram would silently
+        # hold too few entries.
+        errors: list[Exception] = []
+        error_lock = threading.Lock()
+
+        def fun(
+            weight: ArrayLike | None,
+            sample: ArrayLike | None,
+            *args: np.typing.NDArray[Any],
+        ) -> None:
+            try:
+                work(weight, sample, *args)
+            # Any worker error must reach the caller, so catch them all
+            except Exception as err:  # noqa: BLE001  # pylint: disable=broad-exception-caught
+                with error_lock:
+                    errors.append(err)
 
         thread_list = [
             threading.Thread(target=fun, args=arrays)
@@ -1039,6 +1083,13 @@ class Histogram(typing.Generic[S]):
 
         for thread in thread_list:
             thread.join()
+
+        if errors:
+            raise errors[0]
+
+        if growth:
+            # The merge of the per-thread copies replaces the axes.
+            self.axes = self._generate_axes_()
 
         return self
 
@@ -1124,9 +1175,9 @@ class Histogram(typing.Generic[S]):
             self._variance_known = True
             self.metadata = state.get("metadata", None)
             for i in range(self._hist.rank()):
-                self._hist.axis(i).raw_metadata = {
-                    "metadata": self._hist.axis(i).raw_metadata
-                }
+                self._hist._set_axis_metadata(
+                    i, {"metadata": self._hist.axis(i).raw_metadata}
+                )
 
         self.axes = self._generate_axes_()
 

@@ -32,7 +32,31 @@
 #include <string>
 #include <thread>
 #include <tuple>
+#include <type_traits>
 #include <vector>
+
+/// A growth axis is replaced or reallocated by a growing fill or merge, so a
+/// reference to it would dangle. Give a copy instead; its bins are a snapshot.
+/// Other axes stay no-copy, held alive by py::keep_alive on the histogram.
+template <class A>
+py::object growth_safe_axis_cast(const A& item, std::true_type /*growing*/) {
+    py::object obj = py::cast(item, py::return_value_policy::copy);
+    // The copy stands in for the stored axis, so it must hold the same
+    // metadata dict, not the independent one that copying a metadata_t makes.
+    py::cast<A&>(obj).metadata()
+        = metadata_t{py::object(item.metadata().unguarded_obj())};
+    return obj;
+}
+
+template <class A>
+py::object growth_safe_axis_cast(const A& item, std::false_type /*growing*/) {
+    return py::cast(item, py::return_value_policy::reference);
+}
+
+template <class A>
+using axis_is_growing = std::integral_constant<bool,
+                                               bh::axis::traits::get_options<A>::test(
+                                                   bh::axis::option::growth)>;
 
 template <class S>
 auto register_histogram(py::module& m, const char* name, const char* desc) {
@@ -127,11 +151,9 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
                     const axis_variant& var = self.axis(ii);
                     return bh::axis::visit(
                         [](auto&& item) -> py::object {
-                            // Here we return a new, no-copy py::object that
-                            // is not yet tied to the histogram. py::keep_alive
-                            // is needed to make sure the histogram is alive as long
-                            // as the axes references are.
-                            return py::cast(item, py::return_value_policy::reference);
+                            using item_t = std::decay_t<decltype(item)>;
+                            return growth_safe_axis_cast(item,
+                                                         axis_is_growing<item_t>{});
                         },
                         var);
                 }
@@ -140,6 +162,16 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
             },
             "i"_a = 0,
             py::keep_alive<0, 1>())
+
+        // Setting metadata through axis() would only reach the copy handed out
+        // for a growth axis, so set it on the stored axis instead.
+        .def("_set_axis_metadata",
+             [](histogram_t& self, unsigned i, metadata_t data) {
+                 if(i >= self.rank())
+                     throw std::out_of_range(
+                         "The axis value must be less than the rank");
+                 bh::unsafe_access::axis(self, i).metadata() = std::move(data);
+             })
 
         .def("at",
              [](const histogram_t& self, const py::args& args) -> value_type {
@@ -324,11 +356,9 @@ auto inline register_histogram<bh::multi_cell<double>>(py::module& m,
                     const axis_variant& var = self.axis(ii);
                     return bh::axis::visit(
                         [](auto&& item) -> py::object {
-                            // Here we return a new, no-copy py::object that
-                            // is not yet tied to the histogram. py::keep_alive
-                            // is needed to make sure the histogram is alive as long
-                            // as the axes references are.
-                            return py::cast(item, py::return_value_policy::reference);
+                            using item_t = std::decay_t<decltype(item)>;
+                            return growth_safe_axis_cast(item,
+                                                         axis_is_growing<item_t>{});
                         },
                         var);
                 }
@@ -337,6 +367,16 @@ auto inline register_histogram<bh::multi_cell<double>>(py::module& m,
             },
             "i"_a = 0,
             py::keep_alive<0, 1>())
+
+        // Setting metadata through axis() would only reach the copy handed out
+        // for a growth axis, so set it on the stored axis instead.
+        .def("_set_axis_metadata",
+             [](histogram_t& self, unsigned i, metadata_t data) {
+                 if(i >= self.rank())
+                     throw std::out_of_range(
+                         "The axis value must be less than the rank");
+                 bh::unsafe_access::axis(self, i).metadata() = std::move(data);
+             })
 
         .def("at",
              [](const histogram_t& self, const py::args& args) -> value_type {

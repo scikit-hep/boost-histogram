@@ -31,6 +31,10 @@ While Histograms do conform to the Python buffer protocol, the best way to get a
    h.view().value = values
 
 
+A view shares memory with the histogram. If the histogram has a growth axis, a
+fill that grows an axis moves the data, and the view then points at freed
+memory. Take a copy of the view before such a fill.
+
 You can also used stacked arrays (N+1 dimensional) to set a histogram's contents. This is especially useful if you need to set a computed value, like variance on a Mean/WeightedMean storage, which cannot be set using the above method:
 
 .. code-block:: python3
