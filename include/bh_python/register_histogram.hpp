@@ -58,13 +58,98 @@ using axis_is_growing = std::integral_constant<bool,
                                                bh::axis::traits::get_options<A>::test(
                                                    bh::axis::option::growth)>;
 
+/// In-place operator functors. The member template is only instantiated by
+/// the std::true_type def_inplace_op, so a storage without the operator
+/// still compiles.
+struct op_iadd {
+    template <class H>
+    void operator()(H& a, const H& b) const {
+        a += b;
+    }
+};
+struct op_isub {
+    template <class H>
+    void operator()(H& a, const H& b) const {
+        a -= b;
+    }
+};
+struct op_imul {
+    template <class H>
+    void operator()(H& a, const H& b) const {
+        a *= b;
+    }
+};
+struct op_itruediv {
+    template <class H>
+    void operator()(H& a, const H& b) const {
+        a /= b;
+    }
+};
+
+/// Define an in-place histogram operator that runs without the GIL and gives
+/// back the same Python object (a registered instance is returned as is).
+template <class H, class... Extra, class Op>
+void def_inplace_op(py::class_<H, Extra...>& hist,
+                    std::true_type,
+                    const char* name,
+                    Op) {
+    hist.def(
+        name,
+        [](H& self, const H& other) -> H& {
+            const py::gil_scoped_release release;
+            Op{}(self, other);
+            return self;
+        },
+        py::is_operator(),
+        py::return_value_policy::reference);
+}
+
+template <class H, class... Extra, class Op>
+void def_inplace_op(py::class_<H, Extra...>&, std::false_type, const char*, Op) {}
+
+/// Whole-buffer operations run with the GIL released. The storage is plain
+/// C++; the axes hold metadata through guarded_object, which takes the GIL
+/// itself for the reference counting a copy or compare needs.
+template <class H, class... Extra>
+void def_buffer_ops(py::class_<H, Extra...>& hist) {
+    def_eq<py::gil_scoped_release>(hist);
+
+    hist.def("reset",
+             [](H& self) {
+                 const py::gil_scoped_release release;
+                 self.reset();
+             })
+        .def("__copy__",
+             [](const H& self) {
+                 const py::gil_scoped_release release;
+                 return H(self);
+             })
+        .def("__deepcopy__", [](const H& self, const py::object& memo) {
+            auto a = [&self] {
+                const py::gil_scoped_release release;
+                return std::make_unique<H>(self);
+            }();
+            for(unsigned i = 0; i < a->rank(); i++) {
+                bh::unsafe_access::axis(*a, i).metadata()
+                    = deep_copy_metadata(a->axis(i).metadata(), memo);
+            }
+            return a;
+        });
+
+    def_inplace_op(hist, std::true_type{}, "__iadd__", op_iadd{});
+    def_inplace_op(hist, bh::detail::has_operator_rsub<H, H>{}, "__isub__", op_isub{});
+    def_inplace_op(hist, bh::detail::has_operator_rmul<H, H>{}, "__imul__", op_imul{});
+    def_inplace_op(
+        hist, bh::detail::has_operator_rdiv<H, H>{}, "__itruediv__", op_itruediv{});
+}
+
 template <class S>
 auto register_histogram(py::module& m, const char* name, const char* desc) {
     using histogram_t = bh::histogram<vector_axis_variant, S>;
     using value_type  = typename histogram_t::value_type;
 
     py::class_<histogram_t> hist(m, name, desc, py::buffer_protocol());
-    def_eq(hist);
+    def_buffer_ops(hist);
 
     hist.def(py::init<const vector_axis_variant&, S>(), "axes"_a, "storage"_a = S())
 
@@ -73,20 +158,6 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
 
         .def("rank", &histogram_t::rank)
         .def("size", &histogram_t::size)
-        .def("reset", &histogram_t::reset)
-
-        .def("__copy__", [](const histogram_t& self) { return histogram_t(self); })
-        .def("__deepcopy__",
-             [](const histogram_t& self, const py::object& memo) {
-                 auto a = std::make_unique<histogram_t>(self);
-                 for(unsigned i = 0; i < a->rank(); i++) {
-                     bh::unsafe_access::axis(*a, i).metadata()
-                         = deep_copy_metadata(a->axis(i).metadata(), memo);
-                 }
-                 return a;
-             })
-
-        .def(py::self += py::self)
 
         .def_property_readonly_static(
             "_storage_type",
@@ -94,28 +165,7 @@ auto register_histogram(py::module& m, const char* name, const char* desc) {
                 return py::type::of<typename histogram_t::storage_type>();
             })
 
-        ;
-
-// Protection against an overzealous warning system
-// https://bugs.llvm.org/show_bug.cgi?id=43124
-#ifdef __clang__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wself-assign-overloaded"
-#endif
-    def_optionally(hist,
-                   bh::detail::has_operator_rdiv<histogram_t, histogram_t>{},
-                   py::self /= py::self);
-    def_optionally(hist,
-                   bh::detail::has_operator_rmul<histogram_t, histogram_t>{},
-                   py::self *= py::self);
-    def_optionally(hist,
-                   bh::detail::has_operator_rsub<histogram_t, histogram_t>{},
-                   py::self -= py::self);
-#ifdef __clang__
-#pragma GCC diagnostic pop
-#endif
-
-    hist.def(
+        .def(
             "to_numpy",
             [](histogram_t& h, bool flow) {
                 py::tuple tup(1 + h.rank());
@@ -258,7 +308,7 @@ auto inline register_histogram<bh::multi_cell<double>>(py::module& m,
     using value_type  = std::vector<double>;
 
     py::class_<histogram_t> hist(m, name, desc, py::buffer_protocol());
-    def_eq(hist);
+    def_buffer_ops(hist);
 
     hist.def(py::init<const vector_axis_variant&, S>(), "axes"_a, "storage"_a = S())
 
@@ -271,7 +321,6 @@ auto inline register_histogram<bh::multi_cell<double>>(py::module& m,
              [](const histogram_t& self) {
                  return bh::unsafe_access::storage(self).nelem();
              })
-        .def("reset", &histogram_t::reset)
 
         // Reset number of cells per bin after recreation of histogram because number
         // of cells can (?) not be passed to the creation of the new histogram. Set it
@@ -280,18 +329,6 @@ auto inline register_histogram<bh::multi_cell<double>>(py::module& m,
              [](histogram_t& self, const std::size_t nelem) {
                  bh::unsafe_access::storage(self).reset_nelem(nelem);
              })
-        .def("__copy__", [](const histogram_t& self) { return histogram_t(self); })
-        .def("__deepcopy__",
-             [](const histogram_t& self, const py::object& memo) {
-                 auto a = std::make_unique<histogram_t>(self);
-                 for(unsigned i = 0; i < a->rank(); i++) {
-                     bh::unsafe_access::axis(*a, i).metadata()
-                         = deep_copy_metadata(a->axis(i).metadata(), memo);
-                 }
-                 return a;
-             })
-
-        .def(py::self += py::self)
 
         .def_property_readonly_static(
             "_storage_type",
@@ -299,28 +336,7 @@ auto inline register_histogram<bh::multi_cell<double>>(py::module& m,
                 return py::type::of<typename histogram_t::storage_type>();
             })
 
-        ;
-
-// Protection against an overzealous warning system
-// https://bugs.llvm.org/show_bug.cgi?id=43124
-#ifdef __clang__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wself-assign-overloaded"
-#endif
-    def_optionally(hist,
-                   bh::detail::has_operator_rdiv<histogram_t, histogram_t>{},
-                   py::self /= py::self);
-    def_optionally(hist,
-                   bh::detail::has_operator_rmul<histogram_t, histogram_t>{},
-                   py::self *= py::self);
-    def_optionally(hist,
-                   bh::detail::has_operator_rsub<histogram_t, histogram_t>{},
-                   py::self -= py::self);
-#ifdef __clang__
-#pragma GCC diagnostic pop
-#endif
-
-    hist.def(
+        .def(
             "to_numpy",
             [](histogram_t& h, bool flow) {
                 py::tuple tup(1 + h.rank());
