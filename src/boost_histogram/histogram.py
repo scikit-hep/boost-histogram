@@ -1050,7 +1050,11 @@ class Histogram(typing.Generic[S]):
                 sample: ArrayLike | None,
                 *args: np.typing.NDArray[Any],
             ) -> None:
-                local_hist = copy.copy(self._hist)
+                # The copy and the merge both release the GIL, so a copy made
+                # while another worker merges would read a histogram that is
+                # changing. The lock keeps every access to self._hist ordered.
+                with sum_lock:
+                    local_hist = copy.copy(self._hist)
                 local_hist.reset()
                 local_hist.fill(*args, weight=weight, sample=sample)
                 with sum_lock:

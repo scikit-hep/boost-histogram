@@ -11,6 +11,7 @@
 #### Developer changes
 
 - Hold the GIL when copying or destroying Python objects in axes by @henryiii in [#1172][]
+- Release the GIL on copy, reset, compare, and in-place histogram operations by @henryiii in [#1187][]
 
 ### Version 1.8.0
 
@@ -127,6 +128,7 @@
 [#1168]: https://github.com/scikit-hep/boost-histogram/pull/1168
 [#1172]: https://github.com/scikit-hep/boost-histogram/pull/1172
 [#1175]: https://github.com/scikit-hep/boost-histogram/pull/1175
+[#1187]: https://github.com/scikit-hep/boost-histogram/pull/1187
 
 ## Version 1.7
 
