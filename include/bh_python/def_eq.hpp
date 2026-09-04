@@ -24,7 +24,7 @@ py::class_<A, Extra...>& def_eq(py::class_<A, Extra...>& cls) {
              [](const A& self, const py::object& other) {
                  try {
                      const A& other_ref = py::cast<const A&>(other);
-                     const Gil gil;
+                     [[maybe_unused]] const Gil gil;
                      return self == other_ref;
                  } catch(const py::cast_error&) {
                      return false;
@@ -33,7 +33,7 @@ py::class_<A, Extra...>& def_eq(py::class_<A, Extra...>& cls) {
         .def("__ne__", [](const A& self, const py::object& other) {
             try {
                 const A& other_ref = py::cast<const A&>(other);
-                const Gil gil;
+                [[maybe_unused]] const Gil gil;
                 return !(self == other_ref);
             } catch(const py::cast_error&) {
                 return true;
