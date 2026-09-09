@@ -397,7 +397,10 @@ class Histogram(typing.Generic[S]):
             )
             return
 
-        # Support UHI
+        # Support UHI, either a dict or an object providing one
+        if len(axes) == 1 and hasattr(axes[0], "_to_uhi_"):
+            axes = (axes[0]._to_uhi_(),)
+
         if len(axes) == 1 and isinstance(axes[0], dict) and "uhi_schema" in axes[0]:
             if storage is not None:
                 raise TypeError(storage_err_msg)
