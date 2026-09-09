@@ -324,6 +324,23 @@ def test_uhi_direct_conversion():
     assert h == h2
 
 
+def test_uhi_protocol_object_conversion():
+    class Wrapper:
+        def __init__(self, hist):
+            self._hist = hist
+
+        def _to_uhi_(self):
+            return to_uhi(self._hist)
+
+    h = bh.Histogram(
+        bh.axis.Regular(3, 0, 1),
+        storage=bh.storage.Int64(),
+    )
+    h.fill([0.1, 0.2, 0.9])
+    h2 = bh.Histogram(Wrapper(h))
+    assert h == h2
+
+
 def test_to_uhi_does_not_leak_variance_known() -> None:
     h = bh.Histogram(bh.axis.Regular(3, 0, 1))
     data = to_uhi(h)
