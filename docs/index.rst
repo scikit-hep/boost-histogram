@@ -1,7 +1,6 @@
-.. boost-histogram documentation master file, created by
-   sphinx-quickstart on Tue Apr 23 12:12:27 2019.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root ``toctree`` directive.
+.. meta::
+   :description: boost-histogram is a Python package for fast, multi-dimensional
+      histograms, with Python bindings for the Boost.Histogram C++ library.
 
 .. image:: _images/BoostHistogramPythonLogo.png
   :width: 70%
