@@ -50,6 +50,7 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
     "sphinx_copybutton",
+    "sphinx_llm.txt",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -75,6 +76,15 @@ intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
 }
+
+# -- Options for LLM-friendly output -----------------------------------------
+
+# The default is the full README, which is too long for the summary block
+llms_txt_description = (
+    "Python bindings for Boost.Histogram, a fast multi-dimensional histogram"
+    " library, with a NumPy-like API and Unified Histogram Interface support."
+)
+
 
 # -- Options for Notebook input ----------------------------------------------
 
@@ -136,6 +146,11 @@ def prepare(app):
 
 
 def clean_up(app, exception):
+    # sphinx-llm spawns a second build sharing this source dir; only the main
+    # build removes the copied-in files
+    if app.tags.has("sphinx_llm_markdown"):
+        return
+
     inner_nb = DIR / "notebooks"
     for notebook in inner_nb.glob("*.ipynb"):
         notebook.unlink()

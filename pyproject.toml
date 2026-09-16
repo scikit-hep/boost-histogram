@@ -83,6 +83,7 @@ docs = [
     "sphinx-book-theme>=0.0.33",
     "sphinx>=4.0",
     "sphinx_copybutton",
+    "sphinx-llm",
 ]
 examples = [
     "matplotlib",
