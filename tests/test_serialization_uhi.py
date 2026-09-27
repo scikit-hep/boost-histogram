@@ -802,11 +802,10 @@ def test_to_uhi_matches_uhi_schema(
     jsonschema_version = importlib.metadata.version("jsonschema").split(".")
     if tuple(int(v) for v in jsonschema_version[:2]) < (4, 18):
         pytest.skip("jsonschema>=4.18 required")
-    schema = json.loads(
-        importlib.resources.files("uhi.resources")
-        .joinpath("histogram.schema.json")
-        .read_text()
-    )
+    resources = importlib.resources.files("uhi.resources")
+    schema = json.loads(resources.joinpath("histogram.schema.json").read_text())
+    # uhi 1.2 moved the named-mapping file format to histograms.schema.json
+    single_hist_schema = resources.joinpath("histograms.schema.json").is_file()
 
     h = bh.Histogram(
         bh.axis.Regular(3, 0, 1),
@@ -820,5 +819,4 @@ def test_to_uhi_matches_uhi_schema(
 
     data = _json_round_trip(to_uhi(h, keep_storage=keep_storage))
 
-    # The schema describes a mapping of named histograms.
-    jsonschema.validate({"hist": data}, schema)
+    jsonschema.validate(data if single_hist_schema else {"hist": data}, schema)
