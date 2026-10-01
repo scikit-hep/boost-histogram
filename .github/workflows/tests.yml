@@ -84,7 +84,7 @@ jobs:
 
       - uses: rui314/setup-mold@v1
 
-      - uses: astral-sh/setup-uv@v10.0.1
+      - uses: astral-sh/setup-uv@v10.2.0
 
       - uses: hendrikmuhs/ccache-action@v1.2
         with:
@@ -123,7 +123,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
 
-      - uses: astral-sh/setup-uv@v10.0.1
+      - uses: astral-sh/setup-uv@v10.2.0
 
       - name: Run Hist tests
         run: uvx nox -s hist
@@ -163,7 +163,7 @@ jobs:
           submodules: true
           fetch-depth: 0
 
-      - uses: astral-sh/setup-uv@v10.0.1
+      - uses: astral-sh/setup-uv@v10.2.0
 
       - uses: pypa/cibuildwheel@v4.3
         with:
