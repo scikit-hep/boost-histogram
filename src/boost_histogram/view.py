@@ -111,6 +111,23 @@ class View(np.ndarray[Any, Any]):
                 )
             ]
         )
+        if (
+            isinstance(self, (MeanView, WeightedMeanView))
+            and method == "__call__"
+            and ufunc in {np.add, np.multiply, np.divide}
+            and "where" in kwargs
+        ):
+            # Apply mean arithmetic only to selected bins, including when out
+            # aliases an input. This also avoids evaluating masked divisors.
+            mask = np.zeros(result.shape, dtype=np.bool_)
+            np.copyto(mask, True, where=kwargs.pop("where"))
+            selected = [np.broadcast_to(raw, result.shape)[mask] for raw in raw_inputs]
+            masked_result = np.empty(np.count_nonzero(mask), dtype=self.dtype)
+            self.__array_ufunc__(
+                ufunc, method, *selected, out=(masked_result,), **kwargs
+            )
+            np.asarray(result)[mask] = masked_result
+            return result.view(self.__class__)
         match method, ufunc, raw_inputs:
             # Unary + and -
             case "__call__", (np.negative | np.positive), [raw_input]:
