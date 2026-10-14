@@ -126,9 +126,13 @@ def histogramdd(
     hist = cls(*axs, storage=storage).fill(*a, weight=weights, threads=threads)
 
     if density:
-        areas = reduce(mul, hist.axes.widths)
+        edges = hist.to_numpy()[1:]
+        # Normalize using the returned edges, before the final bin was widened
+        # to include its right endpoint.
+        widths = np.meshgrid(*(np.diff(e) for e in edges), sparse=True, indexing="ij")
+        areas = reduce(mul, widths)
         density_val = hist.values() / np.sum(hist.values()) / areas
-        return (density_val, hist.to_numpy()[1:])
+        return (density_val, edges)
 
     # Note: this is view=True since users have to ask explicitly for special
     # storages, so view=False would throw away part of what they are asking
