@@ -2095,6 +2095,23 @@ def test_inplace_op_with_growth_axis():
     assert h.axes[0].size == 4
 
 
+def test_weighted_mean_variance_is_independent_of_weight_scale():
+    rng = np.random.default_rng(0)
+    y = rng.normal(size=50)
+    w = rng.uniform(0.5, 1.5, 50)
+
+    variances = []
+    expected_variances = []
+    for scale in [1, 1e-3, 1e-6]:
+        h = bh.Histogram(bh.axis.Regular(1, 0, 1), storage=bh.storage.WeightedMean())
+        h.fill(np.full(50, 0.5), sample=y, weight=scale * w)
+        variances.append(h.variances()[0])
+        expected_variances.append(h.view()[0].variance / h.counts()[0])
+
+    assert variances == approx(expected_variances)
+    assert variances == approx([variances[0]] * len(variances))
+
+
 @pytest.mark.parametrize("deep", [False, True], ids=["shallow", "deep"])
 def test_copy_growth_axis_metadata_is_independent(deep):
     h = bh.Histogram(bh.axis.Regular(4, 0, 1, growth=True, metadata="original"))

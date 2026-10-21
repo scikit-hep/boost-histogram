@@ -2116,7 +2116,7 @@ class Histogram(typing.Generic[S]):
             valid = view.sum_of_weights**2 > view.sum_of_weights_squared
             return np.divide(  # type: ignore[no-any-return]
                 view.variance,
-                view.sum_of_weights,
+                self.counts(flow),
                 out=np.full(view.sum_of_weights.shape, np.nan),
                 where=valid,
             )
