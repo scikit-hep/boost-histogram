@@ -1,9 +1,8 @@
 from collections.abc import Iterable, Iterator
-from typing import Any
+from typing import Any, Self
 
 import numpy as np
 from numpy.typing import ArrayLike
-from typing_extensions import Self
 
 from . import transform
 

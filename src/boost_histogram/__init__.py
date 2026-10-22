@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import sys
-
 try:
     from . import _core  # noqa: F401
 except ImportError as err:
@@ -10,13 +8,8 @@ except ImportError as err:
 
     new_msg = "Did you forget to compile boost-histogram? Use CMake or scikit-build-core to build, see the readme."
 
-    if sys.version_info >= (3, 11):
-        err.add_note(new_msg)
-        raise
-
-    total_msg = f"{err}\n{new_msg}"
-    new_exception = type(err)(total_msg, name=err.name, path=err.path)
-    raise new_exception from err
+    err.add_note(new_msg)
+    raise
 
 from . import accumulators, axis, numpy, storage
 from .histogram import Histogram, IndexingExpr, Kind

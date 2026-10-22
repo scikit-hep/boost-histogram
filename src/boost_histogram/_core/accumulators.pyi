@@ -1,7 +1,6 @@
-from typing import Any, overload
+from typing import Any, Self, overload
 
 from numpy.typing import ArrayLike
-from typing_extensions import Self
 
 class _BaseAccumulator:
     def __eq__(self, other: object) -> bool: ...

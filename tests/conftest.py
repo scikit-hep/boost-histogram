@@ -2,14 +2,9 @@ from __future__ import annotations
 
 import contextlib
 import importlib.metadata
-import sys
 import sysconfig
+import tomllib
 from pathlib import Path
-
-if sys.version_info < (3, 11):
-    import tomli as tomllib
-else:
-    import tomllib
 
 import pytest
 from packaging.requirements import Requirement

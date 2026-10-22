@@ -1,8 +1,7 @@
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Self
 
 import numpy as np
 from numpy.typing import ArrayLike
-from typing_extensions import Self
 
 from . import accumulators, axis, storage
 from .axis import transform

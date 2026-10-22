@@ -7,7 +7,7 @@ name = "boost-histogram"
 dynamic = ["version"]
 description = "The Boost::Histogram Python wrapper."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 authors = [
     { name = "Hans Dembinski", email = "hans.dembinski@gmail.com" },
     { name = "Henry Schreiner", email = "hschrein@cern.ch" },
@@ -32,7 +32,6 @@ classifiers = [
     "Programming Language :: C++",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -170,7 +169,7 @@ required_plugins = ["pytest-benchmark"]
 log_level = "DEBUG"
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.11"
 files = ["src", "examples"]
 strict = true
 enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
@@ -193,7 +192,6 @@ test-command = "python -m pytest -n auto --benchmark-disable tests"
 test-sources = ["pyproject.toml", "tests"]
 test-environment.CI = "1"  # Hypothesis needs this on GraalPy
 test-skip = [
-  "cp310-win_arm64",
   "cp31*-musllinux_*", # Threading test crashes
   "cp315t-win32",  # pytest crashes with an access violation on 3.15.0rc1
   "gp31*",  # No numpy wheels yet
@@ -230,7 +228,7 @@ environment.UV_INDEX_STRATEGY = "unsafe-best-match"
 test-command = "pytest --benchmark-disable tests"
 
 [tool.pylint]
-py-version = "3.10"
+py-version = "3.11"
 ignore-patterns = ['.*\.pyi']
 ignore = "version.py"
 extension-pkg-allow-list = ["boost_histogram._core"]
@@ -277,7 +275,6 @@ extend-select = [
   "PT",          # flake8-pytest-style
   "PTH",         # flake8-use-pathlib
   "PYI",         # flake8-pyi
-  "TID251",      # flake8-tidy-imports.banned-api
   "RET",         # flake8-return
   "RUF",         # Ruff-specific
   "SIM",         # flake8-simplify
@@ -292,13 +289,8 @@ ignore = [
   "PT011",          # pytest.raises too broad
   "PYI034",         # We are returning Self, just generic
 ]
-typing-modules = ["boost_histogram._compat.typing"]
 isort.required-imports = ["from __future__ import annotations"]
 exclude = ["extern/*"]
-
-[tool.ruff.lint.flake8-tidy-imports.banned-api]
-"typing.Self".msg = "Use boost_histogram._compat.typing.Self instead."
-"typing_extensions.Self".msg = "Use boost_histogram._compat.typing.Self instead."
 
 [tool.ruff.lint.mccabe]
 max-complexity = 13
@@ -309,8 +301,7 @@ max-complexity = 13
 "scripts/*" = ["T20"]
 "tests/*" = ["T20"]
 "notebooks/*" = ["T20"]
-"*.pyi" = ["F401", "TID251"]
+"*.pyi" = ["F401"]
 "docs/conf.py" = ["ARG001"]
 "src/boost_histogram/test.py" = ["PT"]
 "**.ipynb" = ["I002", "E731"]
-"src/boost_histogram/_compat/**.py" = ["TID251"]
