@@ -50,6 +50,7 @@ def hist(session: nox.Session) -> None:
         "mypy",
         "--disable-error-code=override",
         "--disable-error-code=unused-ignore",
+        "--python-version=3.11",
     )
 
 
