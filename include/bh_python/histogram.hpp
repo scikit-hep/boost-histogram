@@ -77,7 +77,7 @@ template <class A, class T>
 py::buffer_info make_buffer(bh::histogram<A, bh::dense_storage<T>>& h, bool flow) {
     const auto& axes = bh::unsafe_access::axes(h);
     auto& storage    = bh::unsafe_access::storage(h);
-    return detail::make_buffer_impl(axes, flow, &storage[0]);
+    return detail::make_buffer_impl(axes, flow, storage.data());
 }
 
 /// Specialization for unlimited_buffer
