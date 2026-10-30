@@ -198,7 +198,7 @@ test-skip = [
   "cp31*-musllinux_*", # Threading test crashes
   "cp315t-win32",  # pytest crashes with an access violation on 3.15.0rc1
   "gp31*",  # No numpy wheels yet
-  "pp312-*",  # No numpy wheels for PyPy 8 yet
+  "pp*",  # No numpy wheels for PyPy 8 yet
   "*-ios_*",  # Fails on CI with no device found
 ]
 enable = ["pypy", "graalpy"]
