@@ -95,7 +95,7 @@ examples = [
 ]
 test = [
     "cloudpickle",
-    "pytest >=6.0, <9.2",  # pytest-benchmark#321; spaces make cibuildwheel quote it for cmd.exe
+    "pytest>=6.0,<9.2",  # pytest-benchmark#321
     "pytest-benchmark",
     "hypothesis>=6.0; sys_platform != 'ios'", # slow on iOS, can fail health check
     "pytest-xdist; sys_platform != 'ios'",  # No processes on iOS
@@ -197,7 +197,8 @@ test-skip = [
   "cp310-win_arm64",
   "cp31*-musllinux_*", # Threading test crashes
   "cp315t-win32",  # pytest crashes with an access violation on 3.15.0rc1
-  "gp312_*",  # No numpy wheels yet
+  "gp31*",  # No numpy wheels yet
+  "pp312-*",  # No numpy wheels for PyPy 8 yet
   "*-ios_*",  # Fails on CI with no device found
 ]
 enable = ["pypy", "graalpy"]

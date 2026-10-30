@@ -167,7 +167,7 @@ jobs:
 
       - uses: astral-sh/setup-uv@v10.0.1
 
-      - uses: pypa/cibuildwheel@v4.2
+      - uses: pypa/cibuildwheel@v4.3
         with:
           only: "${{ matrix.only }}"
 
