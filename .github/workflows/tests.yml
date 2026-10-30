@@ -71,7 +71,7 @@ jobs:
           - python-version: "3.14"
           - python-version: "3.14t"
           - python-version: "3.15"
-          - python-version: "pypy3.11"
+          - python-version: "pypy3.11-v7.3.x"
 
     steps:
       - uses: actions/checkout@v7
@@ -97,7 +97,7 @@ jobs:
         run: uv pip install --system --python=python --group github
 
       - name: Configure
-        run: cmake --preset default ${{ matrix.cmake-extras }}
+        run: cmake --preset default -DPython_EXECUTABLE="$(command -v python)" ${{ matrix.cmake-extras }}
 
       - name: Build
         run: cmake --build --preset default
