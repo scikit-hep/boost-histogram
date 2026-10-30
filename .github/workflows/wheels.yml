@@ -66,7 +66,7 @@ jobs:
 
           - os: windows-latest
             arch: auto64
-            build: "{p,g}p*"
+            build: "gp*"
 
           - os: windows-latest
             arch: auto32

@@ -193,21 +193,21 @@ when you run the above command on a supported platform. Wheels are produced usin
 [cibuildwheel](https://cibuildwheel.readthedocs.io/en/stable/); all common
 platforms have wheels provided in boost-histogram:
 
-| System    | Arch   | Python versions                                  | PyPy versions | GraalPy versions |
-| --------- | ------ | ------------------------------------------------ | ------------- | ---------------- |
-| manylinux | 64-bit | 3.10, 3.11, 3.12, 3.13, 3.14, 3.14t, 3.15, 3.15t | 3.11, 3.12    | 25.0, 25.3       |
-| manylinux | ARM64  | 3.10, 3.11, 3.12, 3.13, 3.14, 3.14t, 3.15, 3.15t | 3.11, 3.12    | 25.0, 25.3       |
-| musllinux | 64-bit | 3.10, 3.11, 3.12, 3.13, 3.14, 3.14t, 3.15, 3.15t |               |                  |
-| musllinux | ARM64  | 3.10, 3.11, 3.12, 3.13, 3.14, 3.14t, 3.15, 3.15t |               |                  |
-| macOS     | 64-bit | 3.10, 3.11, 3.12, 3.13, 3.14, 3.14t, 3.15, 3.15t | 3.11, 3.12    | 25.0             |
-| macOS     | Arm64  | 3.10, 3.11, 3.12, 3.13, 3.14, 3.14t, 3.15, 3.15t | 3.11, 3.12    | 25.0, 25.3       |
-| Windows   | 32-bit | 3.10, 3.11, 3.12, 3.13, 3.14, 3.14t, 3.15, 3.15t |               |                  |
-| Windows   | 64-bit | 3.10, 3.11, 3.12, 3.13, 3.14, 3.14t, 3.15, 3.15t | 3.11, 3.12    | 25.0, 25.3       |
-| Windows   | ARM64  | 3.10, 3.11, 3.12, 3.13, 3.14, 3.14t, 3.15, 3.15t |               |                  |
-| iOS       | Device | 3.13, 3.14, 3.15                                 |               |                  |
-| iOS       | AS Sim | 3.13, 3.14, 3.15                                 |               |                  |
-| iOS       | Intel  | 3.13, 3.14, 3.15                                 |               |                  |
-| Pyodide   | wasm32 | 3.13, 3.14, 3.15                                 |               |                  |
+| System    | Arch   | Python versions                                  | GraalPy versions |
+| --------- | ------ | ------------------------------------------------ | ---------------- |
+| manylinux | 64-bit | 3.10, 3.11, 3.12, 3.13, 3.14, 3.14t, 3.15, 3.15t | 25.0, 25.3       |
+| manylinux | ARM64  | 3.10, 3.11, 3.12, 3.13, 3.14, 3.14t, 3.15, 3.15t | 25.0, 25.3       |
+| musllinux | 64-bit | 3.10, 3.11, 3.12, 3.13, 3.14, 3.14t, 3.15, 3.15t |                  |
+| musllinux | ARM64  | 3.10, 3.11, 3.12, 3.13, 3.14, 3.14t, 3.15, 3.15t |                  |
+| macOS     | 64-bit | 3.10, 3.11, 3.12, 3.13, 3.14, 3.14t, 3.15, 3.15t | 25.0             |
+| macOS     | Arm64  | 3.10, 3.11, 3.12, 3.13, 3.14, 3.14t, 3.15, 3.15t | 25.0, 25.3       |
+| Windows   | 32-bit | 3.10, 3.11, 3.12, 3.13, 3.14, 3.14t, 3.15, 3.15t |                  |
+| Windows   | 64-bit | 3.10, 3.11, 3.12, 3.13, 3.14, 3.14t, 3.15, 3.15t | 25.0, 25.3       |
+| Windows   | ARM64  | 3.10, 3.11, 3.12, 3.13, 3.14, 3.14t, 3.15, 3.15t |                  |
+| iOS       | Device | 3.13, 3.14, 3.15                                 |                  |
+| iOS       | AS Sim | 3.13, 3.14, 3.15                                 |                  |
+| iOS       | Intel  | 3.13, 3.14, 3.15                                 |                  |
+| Pyodide   | wasm32 | 3.13, 3.14, 3.15                                 |                  |
 
 PowerPC, IBM-Z, and RISC-V wheels are not provided but are available on request.
 
