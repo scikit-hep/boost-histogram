@@ -81,7 +81,6 @@ When adding a new axis/storage/accumulator wrapper, follow this pattern: registe
 ## Conventions
 
 - `from __future__ import annotations` is required at the top of every Python file (ruff-enforced).
-- Use `boost_histogram._compat.typing.Self`, not `typing.Self`/`typing_extensions.Self` (banned-api).
 - mypy runs in strict mode on `src/` and `examples/`; tests are exempt from untyped-def rules.
 - Version is dynamic from git tags via `setuptools_scm`, generated at build time into
   `boost_histogram/version.py` (do not commit/edit it).

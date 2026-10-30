@@ -6,14 +6,13 @@ import copy
 import operator
 from builtins import sum
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, Self, TypeVar
 
 import numpy as np
 
 if TYPE_CHECKING:
     from uhi.typing.plottable import PlottableAxis
 
-from ._compat.typing import Self
 from .typing import AxisLike
 
 __all__ = ("Locator", "Slicer", "at", "loc", "overflow", "rebin", "sum", "underflow")

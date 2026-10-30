@@ -8,6 +8,7 @@ from typing import (
     Any,
     ClassVar,
     Literal,
+    Self,
     TypedDict,
 )
 
@@ -15,7 +16,6 @@ import numpy as np  # pylint: disable=unused-import
 
 import boost_histogram
 
-from .._compat.typing import Self
 from .._core import axis as ca
 from .._utils import cast, register
 from . import transform

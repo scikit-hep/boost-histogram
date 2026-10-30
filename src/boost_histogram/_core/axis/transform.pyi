@@ -1,7 +1,5 @@
 from collections.abc import Callable
-from typing import Any
-
-from typing_extensions import Self
+from typing import Any, Self
 
 def _log_fn(arg0: float) -> float: ...
 def _exp_fn(arg0: float) -> float: ...

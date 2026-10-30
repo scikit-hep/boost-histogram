@@ -15,6 +15,7 @@ from typing import (
     ClassVar,
     Literal,
     NewType,
+    Self,
     SupportsIndex,
     TypeAlias,
     TypeVar,
@@ -27,7 +28,6 @@ from boost_histogram import _core
 
 from . import serialization
 from . import storage as bhs
-from ._compat.typing import Self
 from ._utils import cast, register
 from .axis import AxesTuple, Axis, Variable
 from .storage import Double, Storage
@@ -47,12 +47,9 @@ if TYPE_CHECKING:
     )
 
 
-# This is a StrEnum as defined in Python 3.11
-class Kind(str, enum.Enum):
+class Kind(enum.StrEnum):
     COUNT = "COUNT"
     MEAN = "MEAN"
-
-    __str__ = str.__str__
 
 
 __all__ = [
