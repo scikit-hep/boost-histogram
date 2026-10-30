@@ -256,12 +256,14 @@ def _combine_group_contents(
     Add bin ``j`` (along view dimension ``i``) of ``reduced_view`` into bin
     ``jj`` of ``new_view``, in-place. Used for rebinning with groups.
     """
-    pos = [slice(None)] * (i)
+    pos = (slice(None),) * i
+    new_idx: tuple[slice | int | EllipsisType, ...] = (*pos, jj, ...)
+    old_idx: tuple[slice | int | EllipsisType, ...] = (*pos, j, ...)
     if new_view.dtype.names:
         for field in new_view.dtype.names:
-            new_view[(*pos, jj, ...)][field] += reduced_view[(*pos, j, ...)][field]  # type: ignore[arg-type]
+            new_view[new_idx][field] += reduced_view[old_idx][field]
     else:
-        new_view[(*pos, jj, ...)] += reduced_view[(*pos, j, ...)]  # type: ignore[arg-type]
+        new_view[new_idx] += reduced_view[old_idx]
 
 
 H = TypeVar("H", bound="Histogram[Any]")
