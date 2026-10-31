@@ -16,7 +16,7 @@ import numpy as np
 
 from . import axis as _axis
 from . import storage as _storage
-from .histogram import Histogram
+from .histogram import Histogram, _numpy_compatible_edges
 
 __all__ = ("histogram", "histogram2d", "histogramdd")
 
@@ -108,6 +108,8 @@ def histogramdd(
         raise ValueError("range argument must have one entry per dimension")
 
     axs: list[_axis.Axis] = []
+    # Edges as given by the user; None for Regular axes
+    user_edges: list[np.typing.NDArray[Any] | None] = []
     for n, (b, r) in enumerate(zip(bins, range, strict=True)):
         if np.issubdtype(type(b), np.integer):
             start, stop = _outer_edges(a[n], r)
@@ -115,29 +117,36 @@ def histogramdd(
                 typing.cast(int, b), start, stop, underflow=False, overflow=False
             )
             axs.append(new_ax)
+            user_edges.append(None)
         else:
-            # Always copy; the input edges must not be modified in-place below
-            barr: np.typing.NDArray[Any] = np.array(b, dtype=np.double)
-            # This does have a .max member, not sure why pylint doesn't like it
-            # pylint: disable-next=no-member
-            barr[-1] = np.nextafter(barr[-1], np.finfo("d").max)
+            orig: np.typing.NDArray[Any] = np.array(b, dtype=np.double)
+            barr = orig.copy()
+            # Include the last edge in the last bin, as NumPy does
+            with np.errstate(over="ignore"):
+                barr[-1] = np.nextafter(barr[-1], np.inf)
             axs.append(_axis.Variable(barr))
+            user_edges.append(orig)
 
     hist = cls(*axs, storage=storage).fill(*a, weight=weights, threads=threads)
 
+    if histogram is not None:
+        return hist
+
+    # The axis edges are one ulp wider at the end, so use the user edges
+    edges = [
+        _numpy_compatible_edges(hist._hist.axis(i), False) if e is None else e
+        for i, e in enumerate(user_edges)
+    ]
+
     if density:
-        edges = hist.to_numpy()[1:]
-        # Normalize using the returned edges, before the final bin was widened
-        # to include its right endpoint.
-        widths = np.meshgrid(*(np.diff(e) for e in edges), sparse=True, indexing="ij")
-        areas = reduce(mul, widths)
-        density_val = hist.values() / np.sum(hist.values()) / areas
-        return (density_val, edges)
+        values = hist.values()
+        areas = reduce(mul, np.ix_(*(np.diff(e) for e in edges)))
+        return (values / np.sum(values) / areas, edges)
 
     # Note: this is view=True since users have to ask explicitly for special
     # storages, so view=False would throw away part of what they are asking
     # for. Users can use a histogram return type if they need view=False.
-    return hist if histogram is not None else hist.to_numpy(view=True, dd=True)
+    return hist.view(), edges
 
 
 def histogram2d(
