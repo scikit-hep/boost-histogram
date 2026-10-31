@@ -2112,10 +2112,12 @@ class Histogram(typing.Generic[S]):
             return view if self._variance_known else None
 
         if hasattr(view, "sum_of_weights"):
+            # Divide by the effective number of entries (see counts()), not the
+            # sum of weights, so the result does not depend on the weight scale.
             valid = view.sum_of_weights**2 > view.sum_of_weights_squared
             return np.divide(  # type: ignore[no-any-return]
-                view.variance,
-                view.sum_of_weights,
+                view.variance * view.sum_of_weights_squared,
+                view.sum_of_weights**2,
                 out=np.full(view.sum_of_weights.shape, np.nan),
                 where=valid,
             )
