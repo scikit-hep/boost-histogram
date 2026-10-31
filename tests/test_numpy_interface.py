@@ -375,3 +375,71 @@ def test_histogram_values_on_edges(lo, hi, n):
 
     assert e1.tolist() == e2.tolist()
     assert h1.tolist() == h2.tolist()
+
+
+@pytest.mark.parametrize("ndim", [1, 2, 3])
+@pytest.mark.parametrize("weighted", [False, True])
+@pytest.mark.parametrize("offset", [1e16, -1e16, 0.0])
+def test_density_uses_returned_bin_widths(ndim, weighted, offset):
+    edges = offset + np.array([0.0, 2.0, 4.0])
+    sample = edges.copy()
+    weights = np.array([1.0, 2.0, 3.0]) if weighted else None
+    bins = tuple(edges.copy() for _ in range(ndim))
+    expected, expected_edges = np.histogramdd(
+        np.column_stack([sample] * ndim), bins=bins, weights=weights, density=True
+    )
+    actual, actual_edges = bh.numpy.histogramdd(
+        tuple(sample.copy() for _ in range(ndim)),
+        bins=bins,
+        weights=weights,
+        density=True,
+    )
+    np.testing.assert_array_equal(actual_edges, expected_edges)
+    np.testing.assert_allclose(actual, expected, rtol=1e-15, atol=0)
+    volume = np.ones_like(actual)
+    for i, e in enumerate(actual_edges):
+        shape = [1] * ndim
+        shape[i] = len(e) - 1
+        volume *= np.diff(e).reshape(shape)
+    assert np.sum(actual * volume) == pytest.approx(1.0)
+
+
+@pytest.mark.parametrize("entry", ["histogram", "histogram2d"])
+def test_density_high_offset_entry_points(entry):
+    edges = np.array([1e16, 1e16 + 2, 1e16 + 4])
+    args = (edges,) if entry == "histogram" else (edges, edges)
+    expected = getattr(np, entry)(*args, bins=edges, density=True)
+    actual = getattr(bh.numpy, entry)(*args, bins=edges, density=True)
+    np.testing.assert_allclose(actual[0], expected[0], rtol=1e-15, atol=0)
+    for e, a in zip(expected[1:], actual[1:], strict=True):
+        np.testing.assert_array_equal(a, e)
+
+
+@pytest.mark.parametrize("density", [False, True])
+@pytest.mark.parametrize("last", [np.finfo("d").max, np.inf])
+def test_histogram_extreme_last_edge(density, last):
+    bins = np.array([0.0, 1.0, last])
+    sample = np.array([0.5, 1.0, np.finfo("d").max])
+    expected, expected_edges = np.histogram(sample, bins=bins, density=density)
+    actual, actual_edges = bh.numpy.histogram(sample, bins=bins, density=density)
+    np.testing.assert_array_equal(actual_edges, expected_edges)
+    np.testing.assert_allclose(actual, expected, rtol=1e-15, atol=0)
+
+
+@pytest.mark.parametrize("density", [False, True])
+def test_histogramdd_mixed_bins_high_offset(density):
+    rng = np.random.default_rng(42)
+    sample = 1e16 + rng.integers(0, 64, size=(100, 2)).astype(float)
+    bins = (3, 1e16 + np.array([0.0, 16.0, 48.0, 64.0]))
+    # Regular edges match linspace only when they are exact
+    rng_ = ((1e16, 1e16 + 96), None)
+    expected, expected_edges = np.histogramdd(
+        sample, bins=bins, range=rng_, density=density
+    )
+    actual, actual_edges = bh.numpy.histogramdd(
+        tuple(sample.T), bins=bins, range=rng_, density=density
+    )
+    assert isinstance(actual_edges, list)
+    for a, e in zip(actual_edges, expected_edges, strict=True):
+        np.testing.assert_array_equal(a, e)
+    np.testing.assert_allclose(actual, expected, rtol=1e-15, atol=0)
