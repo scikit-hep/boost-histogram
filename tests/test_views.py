@@ -577,3 +577,63 @@ def test_view_cumsum():
     c_view = np.cumsum(view)
     assert c_view.value == approx(np.cumsum(view.value))
     assert c_view.variance == approx(np.cumsum(view.variance))
+
+
+@pytest.mark.parametrize("storage", [bh.storage.Mean, bh.storage.WeightedMean])
+@pytest.mark.parametrize("operation", [np.add, np.multiply, np.divide])
+@pytest.mark.parametrize("where", [True, False, [True, False], [[True], [False]]])
+@pytest.mark.parametrize("inplace", [False, True])
+def test_mean_view_ufunc_where(storage, operation, where, inplace):
+    axes = (bh.axis.Regular(2, 0, 2), bh.axis.Regular(2, 0, 2))
+    h1 = bh.Histogram(*axes, storage=storage())
+    h2 = bh.Histogram(*axes, storage=storage())
+    coordinates = (
+        [0.5, 0.5, 0.5, 0.5, 1.5, 1.5, 1.5, 1.5],
+        [0.5, 0.5, 1.5, 1.5, 0.5, 0.5, 1.5, 1.5],
+    )
+    h1.fill(*coordinates, sample=np.arange(8, dtype=float))
+    h2.fill(*coordinates, sample=np.arange(8, dtype=float) + 2)
+    left, right = h1.view(), h2.view()
+    other = right if operation is np.add else np.array([2.0, 3.0])
+    full = np.asarray(operation(left, other)).copy()
+    output = left if inplace else right.copy()
+    expected = np.asarray(output).copy()
+    mask = np.broadcast_to(where, output.shape)
+    expected[mask] = full[mask]
+    returned = operation(left, other, out=output, where=where)
+    assert isinstance(returned, type(left))
+    for field in expected.dtype.names:
+        np.testing.assert_array_equal(output[field], expected[field])
+
+
+@pytest.mark.parametrize("storage", [bh.storage.Mean, bh.storage.WeightedMean])
+def test_mean_view_masked_zero_divisor(storage):
+    h = bh.Histogram(bh.axis.Regular(2, 0, 2), storage=storage())
+    h.fill([0.5, 0.5, 1.5, 1.5], sample=[1.0, 3.0, 4.0, 6.0])
+    view = h.view()
+    original = np.asarray(view).copy()
+    expected = np.asarray(view / 2).copy()
+    with np.errstate(divide="raise", invalid="raise"):
+        np.divide(view, [2.0, 0.0], out=view, where=[True, False])
+    np.testing.assert_array_equal(np.asarray(view)[0], expected[0])
+    np.testing.assert_array_equal(np.asarray(view)[1], original[1])
+
+
+@pytest.mark.parametrize("storage", [bh.storage.Mean, bh.storage.WeightedMean])
+@pytest.mark.parametrize("where", [True, False])
+def test_mean_view_scalar_where(storage, where):
+    h = bh.Histogram(bh.axis.Regular(1, 0, 1), storage=storage())
+    h.fill([0.5, 0.5], sample=[1.0, 3.0])
+    view = h.view().reshape(())
+    expected = np.asarray(view * 2 if where else view).copy()
+    np.multiply(view, 2, out=view, where=where)
+    np.testing.assert_array_equal(np.asarray(view), expected)
+
+
+@pytest.mark.parametrize("storage", [bh.storage.Mean, bh.storage.WeightedMean])
+def test_mean_view_masked_unsupported_ufunc(storage):
+    h = bh.Histogram(bh.axis.Regular(2, 0, 2), storage=storage())
+    h.fill([0.5, 1.5], sample=[1.0, 3.0])
+    view = h.view()
+    with pytest.raises(TypeError):
+        np.floor_divide(view, 2, out=view, where=[True, False])
