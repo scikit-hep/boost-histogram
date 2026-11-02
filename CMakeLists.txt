@@ -92,6 +92,11 @@ target_include_directories(
 # Support older Windows from newer MSVC
 target_compile_options(_core PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/d2FH4->)
 
+# GCC defaults to -ftrapping-math, which blocks if-conversion of the axis index
+# computation and leaves the fill loop scalar and branchy (about 4x slower on
+# regular axes). Nothing here relies on floating-point exceptions.
+target_compile_options(_core PRIVATE $<$<CXX_COMPILER_ID:GNU>:-fno-trapping-math>)
+
 # Better error messages
 target_compile_definitions(_core PRIVATE PYBIND11_DETAILED_ERROR_MESSAGES)
 
