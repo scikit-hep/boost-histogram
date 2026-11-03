@@ -287,6 +287,47 @@ def test_UHI_variance_counts():
     assert not math.isnan(h.variances()[0])
 
 
+@pytest.mark.parametrize("scale", [1, 1e-3, 1e-6, 1e3])
+def test_weighted_mean_variances_weight_scale(scale):
+    rng = np.random.default_rng(42)
+    samples = rng.normal(size=50)
+    weights = rng.uniform(0.5, 1.5, size=50)
+
+    h = bh.Histogram(bh.axis.Regular(1, 0, 1), storage=bh.storage.WeightedMean())
+    h.fill(np.full(50, 0.5), sample=samples, weight=scale * weights)
+
+    # Variance of the weighted mean: the reliability-weighted sample variance
+    # divided by the effective number of entries
+    sum_w = weights.sum()
+    sum_w2 = (weights**2).sum()
+    mean = np.average(samples, weights=weights)
+    sample_variance = (weights * (samples - mean) ** 2).sum() / (sum_w - sum_w2 / sum_w)
+    n_eff = sum_w**2 / sum_w2
+
+    assert h.variances()[0] == approx(sample_variance / n_eff)
+
+
+def test_weighted_mean_variances_unit_weights_match_mean():
+    rng = np.random.default_rng(42)
+    values = rng.uniform(0, 3, size=40)
+    samples = rng.normal(size=40)
+
+    # The last bin gets one entry and the bin before it none, so both are NaN
+    values = np.append(values, 4.5)
+    samples = np.append(samples, 1.0)
+
+    axis = bh.axis.Regular(5, 0, 5)
+    h_mean = bh.Histogram(axis, storage=bh.storage.Mean())
+    h_mean.fill(values, sample=samples)
+    h_weighted = bh.Histogram(axis, storage=bh.storage.WeightedMean())
+    h_weighted.fill(values, sample=samples, weight=np.ones_like(values))
+
+    np.testing.assert_allclose(
+        h_weighted.variances(), h_mean.variances(), equal_nan=True
+    )
+    assert np.isnan(h_mean.variances()[-2:]).all()
+
+
 @pytest.mark.parametrize(
     "storage",
     [
