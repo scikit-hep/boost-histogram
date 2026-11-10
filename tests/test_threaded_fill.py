@@ -191,6 +191,17 @@ def test_threaded_category_growth(threads):
     assert hist_2 == hist_1
 
 
+def test_failed_threaded_growth_fill_keeps_axes_in_sync():
+    hist = bh.Histogram(
+        bh.axis.StrCategory([], growth=True), storage=bh.storage.Weight()
+    )
+
+    with pytest.raises(ValueError, match="spans must have compatible lengths"):
+        hist.fill(["a", "b", "c", "d"], weight=[1, 2, 3, 4, 5], threads=2)
+
+    assert hist.axes.size == hist.view().shape
+
+
 @pytest.mark.parametrize("threads", [2, 4])
 def test_threaded_int_category_growth(threads):
     values = np.array([1, 2, 3] * 100)
