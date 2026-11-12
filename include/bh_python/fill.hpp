@@ -245,23 +245,15 @@ inline auto get_weight_impl(py::handle w, std::true_type) {
 
     const bool scalar = is_value<double>(w);
     if(scalar && !py::isinstance<py::array>(w)) {
-        py::object integer;
-        if(PyLong_Check(w.ptr())) {
-            integer = py::reinterpret_borrow<py::object>(w);
-        } else if(!PyFloat_Check(w.ptr())
-                  && py::isinstance(w, py::module_::import("numpy").attr("integer"))) {
-            integer = py::reinterpret_steal<py::object>(PyNumber_Index(w.ptr()));
-            if(!integer)
-                throw py::error_already_set();
-        }
-        if(integer) {
-            int overflow     = 0;
-            const auto value = PyLong_AsLongLongAndOverflow(integer.ptr(), &overflow);
-            if(PyErr_Occurred())
-                throw py::error_already_set();
-            if(overflow == 0) {
-                weight = static_cast<std::int64_t>(value);
+        if(py::isinstance<py::int_>(w)
+           || (!py::isinstance<py::float_>(w)
+               && py::isinstance(w, py::module_::import("numpy").attr("integer")))) {
+            try {
+                weight = py::int_(py::reinterpret_borrow<py::object>(w))
+                             .cast<std::int64_t>();
                 return weight;
+            } catch(const py::cast_error&) {
+                // Outside the int64 range; fall back to double below.
             }
         }
         // Numeric objects can also export unrelated arrays through __array__.
