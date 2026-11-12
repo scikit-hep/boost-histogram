@@ -13,6 +13,7 @@
 #include <bh_python/vector_string_caster.hpp>
 
 #include <boost/core/ignore_unused.hpp>
+#include <boost/histogram/accumulators/count.hpp>
 #include <boost/histogram/detail/accumulator_traits.hpp>
 #include <boost/histogram/detail/axes.hpp>
 #include <boost/histogram/sample.hpp>
@@ -168,6 +169,11 @@ using arg_t = variant::variant<double,
                                c_array_t<std::string>>;
 
 using weight_t = variant::variant<variant::monostate, double, c_array_t<double>>;
+using integer_weight_t = variant::variant<variant::monostate,
+                                          double,
+                                          c_array_t<double>,
+                                          std::int64_t,
+                                          c_array_t<std::int64_t>>;
 
 // a sample is either a scalar (broadcast) or a 1D array
 using sample_t = variant::variant<double, c_array_t<double>>;
@@ -199,10 +205,9 @@ inline auto get_vargs(const vector_axis_variant& axes, const py::args& args) {
     return vargs;
 }
 
-inline auto get_weight(py::kwargs& kwargs) {
+inline auto get_weight_impl(py::handle w, std::false_type) {
     // default constructed as monostate to indicate absence of weight
-    variant::variant<variant::monostate, double, c_array_t<double>> weight;
-    auto w = optional_arg(kwargs, "weight");
+    weight_t weight;
     if(!w.is_none()) {
         if(is_value<double>(w))
             weight = py::cast<double>(w);
@@ -210,6 +215,81 @@ inline auto get_weight(py::kwargs& kwargs) {
             weight = py::cast<c_array_t<double>>(w);
     }
     return weight;
+}
+
+inline bool fits_integer_weights(const py::array& array) {
+    const auto dtype  = array.dtype();
+    const auto kind   = dtype.kind();
+    const auto nbytes = dtype.itemsize();
+    if(kind == 'b' || (kind == 'i' && nbytes <= 8))
+        return true;
+    if(kind != 'u')
+        return false;
+    if(nbytes < 8)
+        return true;
+    if(nbytes != 8)
+        return false;
+    const c_array_t<std::uint64_t> wide(array);
+    for(std::size_t i = 0; i < wide.size(); ++i) {
+        if(wide.data()[i]
+           > static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::max()))
+            return false;
+    }
+    return true;
+}
+
+inline auto get_weight_impl(py::handle w, std::true_type) {
+    integer_weight_t weight;
+    if(w.is_none())
+        return weight;
+
+    const bool scalar = is_value<double>(w);
+    if(scalar && !py::isinstance<py::array>(w)) {
+        if(py::isinstance<py::int_>(w)
+           || (!py::isinstance<py::float_>(w)
+               && py::isinstance(w, py::module_::import("numpy").attr("integer")))) {
+            try {
+                weight = py::int_(py::reinterpret_borrow<py::object>(w))
+                             .cast<std::int64_t>();
+                return weight;
+            } catch(const py::cast_error&) {
+                // Outside the int64 range; fall back to double below.
+            }
+        }
+        // Numeric objects can also export unrelated arrays through __array__.
+        // Preserve their scalar conversion instead of inspecting that export.
+        weight = py::cast<double>(w);
+        return weight;
+    }
+
+    const auto array = py::array::ensure(w);
+    if(array && fits_integer_weights(array)) {
+        auto exact = py::cast<c_array_t<std::int64_t>>(array);
+        if(scalar && exact.ndim() == 0 && exact.size() == 1)
+            weight = *exact.data();
+        else
+            weight = std::move(exact);
+        return weight;
+    }
+
+    // Floating inputs, and integers outside the signed storage range, retain
+    // their existing conversion. This does not define new overflow semantics.
+    if(scalar)
+        weight = py::cast<double>(w);
+    else
+        weight = py::cast<c_array_t<double>>(w);
+    return weight;
+}
+
+template <class ValueType>
+auto get_weight(py::kwargs& kwargs) {
+    using exact_integer = std::integral_constant<
+        bool,
+        std::is_same<ValueType, std::int64_t>::value
+            || std::is_same<ValueType,
+                            bh::accumulators::count<std::int64_t, true>>::value>;
+    auto w = optional_arg(kwargs, "weight");
+    return get_weight_impl(w, exact_integer{});
 }
 
 inline auto get_sample(const py::handle& s) {
@@ -237,11 +317,11 @@ struct decayed_traits<bh::detail::accumulator_traits_holder<W, Ts...>> {
 };
 
 // for accumulators that accept a weight
-template <class Histogram, class VArgs>
+template <class Histogram, class VArgs, class Weight>
 void fill_impl(bh::detail::accumulator_traits_holder<true>,
                Histogram& h,
                const VArgs& vargs,
-               const weight_t& weight,
+               const Weight& weight,
                py::kwargs& kwargs) {
     none_only_arg(kwargs, "sample");
     finalize_args(kwargs);
@@ -255,11 +335,11 @@ void fill_impl(bh::detail::accumulator_traits_holder<true>,
 }
 
 // for accumulators that accept a weight and a double
-template <class Histogram, class VArgs>
+template <class Histogram, class VArgs, class Weight>
 void fill_impl(bh::detail::accumulator_traits_holder<true, double>,
                Histogram& h,
                const VArgs& vargs,
-               const weight_t& weight,
+               const Weight& weight,
                py::kwargs& kwargs) {
     auto s = required_arg(kwargs, "sample");
     finalize_args(kwargs);
@@ -282,11 +362,11 @@ void fill_impl(bh::detail::accumulator_traits_holder<true, double>,
 }
 
 // for multi_cell
-template <class Histogram, class VArgs>
+template <class Histogram, class VArgs, class Weight>
 void fill_impl(bh::detail::accumulator_traits_holder<false, boost::span<double>>,
                Histogram& h,
                const VArgs& vargs,
-               const weight_t& weight,
+               const Weight& weight,
                py::kwargs& kwargs) {
     boost::ignore_unused(weight);
     auto s = required_arg(kwargs, "sample");
@@ -327,7 +407,7 @@ Histogram& fill(Histogram& self, const py::args& args, py::kwargs kwargs) {
     detail::fill_impl(traits{},
                       self,
                       detail::get_vargs(bh::unsafe_access::axes(self), args),
-                      detail::get_weight(kwargs),
+                      detail::get_weight<value_type>(kwargs),
                       kwargs);
     return self;
 }
