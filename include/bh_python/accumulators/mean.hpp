@@ -35,7 +35,7 @@ struct mean {
          const value_type& variance) noexcept
         : count(n)
         , value(mean)
-        , _sum_of_deltas_squared(variance * (n - 1)) {}
+        , _sum_of_deltas_squared(n > 1 ? variance * (n - 1) : 0) {}
 
     mean(const value_type& sum,
          const value_type& mean,

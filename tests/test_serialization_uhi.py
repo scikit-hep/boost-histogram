@@ -301,6 +301,24 @@ def test_round_trip_weighted_mean() -> None:
     assert np.asarray(h) == pytest.approx(h2)
 
 
+@pytest.mark.parametrize(
+    "storage_type",
+    [
+        pytest.param(bh.storage.Mean(), id="mean"),
+        pytest.param(bh.storage.WeightedMean(), id="weighted_mean"),
+    ],
+)
+def test_round_trip_mean_undefined_variance(storage_type: bh.storage.Storage) -> None:
+    h = bh.Histogram(bh.axis.Regular(3, 0, 3), storage=storage_type)
+    h.fill([0.5, 1.5, 1.5], sample=[1, 2, 4])
+
+    h2 = from_uhi(to_uhi(h))
+    assert h2 == h
+
+    h2.fill(0.5, sample=3)
+    assert h2[0].variance == pytest.approx(2)
+
+
 def test_uhi_wrapper():
     h = bh.Histogram(
         bh.axis.IntCategory([1, 2, 3]),
