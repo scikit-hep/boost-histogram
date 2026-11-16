@@ -755,6 +755,16 @@ def test_vectorized_get_flow_offset():
     idx = np.array([0, 4])
     assert h[idx] == approx(np.array([h[0], h[4]]))
 
+    # Negative array indices count from the end, like scalar indices,
+    # instead of landing in the underflow bin
+    assert h[np.array([-1, -5])] == approx(np.array([h[-1], h[-5]]))
+    h[np.array([-1])] = 99
+    assert h[4] == 99
+    assert h.view(flow=True)[0] == 0
+
+    with pytest.raises(IndexError, match="out of range"):
+        h[np.array([5])]
+
 
 def test_vectorized_get_accumulator_storage():
     h = bh.Histogram(bh.axis.Regular(5, 0, 5), storage=bh.storage.Weight())

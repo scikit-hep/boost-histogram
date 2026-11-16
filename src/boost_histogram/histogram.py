@@ -1330,7 +1330,19 @@ class Histogram(typing.Generic[S]):
         for i, ind in enumerate(indexes):
             offset = 1 if self.axes[i].traits.underflow else 0
             if isinstance(ind, np.ndarray):
-                view_index.append(ind + offset)
+                # Resolve negative and out-of-range values like scalar
+                # indexing on the flow=False view before shifting onto the
+                # flow=True view, so they cannot silently select flow bins.
+                if not np.issubdtype(ind.dtype, np.integer):
+                    msg = (
+                        f"Vectorized indexing on axis {i} requires an integer "
+                        f"array, not {ind.dtype}"
+                    )
+                    raise IndexError(msg)
+                size = self._hist.axis(i).size
+                if ind.size and (ind.min() < -size or ind.max() >= size):
+                    raise IndexError("histogram index is out of range")
+                view_index.append(ind.astype(np.intp, copy=False) % size + offset)
             elif isinstance(ind, slice):
                 if ind.step is not None or not all(
                     s is None or isinstance(s, int) for s in (ind.start, ind.stop)
