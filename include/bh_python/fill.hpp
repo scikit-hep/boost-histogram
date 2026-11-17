@@ -251,14 +251,15 @@ inline auto get_weight_impl(py::handle w, std::true_type) {
             try {
                 weight = py::int_(py::reinterpret_borrow<py::object>(w))
                              .cast<std::int64_t>();
-                return weight;
             } catch(const py::cast_error&) {
-                // Outside the int64 range; fall back to double below.
+                // Outside the int64 range
+                weight = py::cast<double>(w);
             }
+        } else {
+            // Numeric objects can also export unrelated arrays through __array__.
+            // Preserve their scalar conversion instead of inspecting that export.
+            weight = py::cast<double>(w);
         }
-        // Numeric objects can also export unrelated arrays through __array__.
-        // Preserve their scalar conversion instead of inspecting that export.
-        weight = py::cast<double>(w);
         return weight;
     }
 
