@@ -1090,12 +1090,12 @@ class Histogram(typing.Generic[S]):
         for thread in thread_list:
             thread.join()
 
+        if growth:
+            # Workers can grow the axes before another worker's error is raised.
+            self.axes = self._generate_axes_()
+
         if errors:
             raise errors[0]
-
-        if growth:
-            # The merge of the per-thread copies replaces the axes.
-            self.axes = self._generate_axes_()
 
         return self
 
