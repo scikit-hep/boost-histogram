@@ -168,3 +168,62 @@ def test_multicell_storage():
     h = bh.Histogram(bh.axis.Integer(0, 1), storage=bh.storage.MultiCell(2))
     h.fill([0, 0], weight=[[1, 2], [3, 4]])
     np.testing.assert_array_equal(h[0], [4, 6])
+
+
+@pytest.mark.parametrize("storage", STORAGES)
+@pytest.mark.parametrize("value", [WIDE, -WIDE, MINIMUM, MAXIMUM])
+@pytest.mark.parametrize("zero_dim", [False, True])
+def test_object_integer_weights(storage, value, zero_dim):
+    weights = np.array(value if zero_dim else [value, np.int64(3)], dtype=object)
+    h = bh.Histogram(bh.axis.Integer(0, 2), storage=storage())
+    h.fill(0 if zero_dim else [0, 1], weight=weights)
+    assert h[0] == value
+
+
+@pytest.mark.parametrize("storage", STORAGES)
+def test_object_float_weights_use_double(storage):
+    h = bh.Histogram(bh.axis.Integer(0, 2), storage=storage())
+    h.fill([0, 1], weight=np.array([2, 1.5], dtype=object))
+    np.testing.assert_array_equal(h.view(), [2, 1])
+
+
+@pytest.mark.parametrize("storage", STORAGES)
+@pytest.mark.parametrize(
+    "weight",
+    [
+        MAXIMUM + 1,
+        MINIMUM - 1,
+        1 << 64,
+        np.uint64(MAXIMUM + 1),
+        np.array(MAXIMUM + 1, dtype=np.uint64),
+        np.array([MAXIMUM + 1], dtype=np.uint64),
+        [MAXIMUM + 1],
+        [1 << 64],
+        np.array([1 << 64], dtype=object),
+    ],
+)
+def test_integer_weight_overflow(storage, weight):
+    h = bh.Histogram(bh.axis.Integer(0, 1), storage=storage())
+    with pytest.raises(OverflowError):
+        h.fill(0, weight=weight)
+    assert h[0] == 0
+
+
+@pytest.mark.parametrize(
+    "form",
+    [int, lambda v: [v], lambda v: np.array([v], dtype=object)],
+    ids=["scalar", "list", "object"],
+)
+def test_unlimited_integer_weight(form):
+    # Views convert to double, so check that the cell sums exactly
+    h = bh.Histogram(bh.axis.Integer(0, 1), storage=bh.storage.Unlimited())
+    for value in [1 << 53, 1, 1]:
+        h.fill(0, weight=form(value))
+    assert h[0] == (1 << 53) + 2
+
+
+@pytest.mark.parametrize("weight", [1 << 64, [1 << 64], np.uint64(1 << 63)])
+def test_unlimited_wide_weight_uses_double(weight):
+    h = bh.Histogram(bh.axis.Integer(0, 1), storage=bh.storage.Unlimited())
+    h.fill(0, weight=weight)
+    assert h[0] == float(np.asarray(weight).ravel()[0])

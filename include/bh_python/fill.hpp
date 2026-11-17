@@ -17,6 +17,7 @@
 #include <boost/histogram/detail/accumulator_traits.hpp>
 #include <boost/histogram/detail/axes.hpp>
 #include <boost/histogram/sample.hpp>
+#include <boost/histogram/unlimited_storage.hpp>
 #include <boost/histogram/unsafe_access.hpp>
 #include <boost/histogram/weight.hpp>
 #include <boost/mp11.hpp>
@@ -217,80 +218,140 @@ inline auto get_weight_impl(py::handle w, std::false_type) {
     return weight;
 }
 
-inline bool fits_integer_weights(const py::array& array) {
+template <class T>
+struct is_integer_count : std::is_integral<T> {};
+
+template <class T, bool ThreadSafe>
+struct is_integer_count<bh::accumulators::count<T, ThreadSafe>> : std::is_integral<T> {
+};
+
+// Storages with integer cells take int64 weights; out-of-range integers raise.
+// Unlimited also takes them, but grows to double for values outside int64.
+template <bool Strict>
+struct integer_weights {};
+
+template <class Storage>
+struct weight_mode {
+    using type
+        = std::conditional_t<is_integer_count<typename Storage::value_type>::value,
+                             integer_weights<true>,
+                             std::false_type>;
+};
+
+template <class Allocator>
+struct weight_mode<bh::unlimited_storage<Allocator>> {
+    using type = integer_weights<false>;
+};
+
+inline const py::object& numpy_integer() {
+    PYBIND11_CONSTINIT static py::gil_safe_call_once_and_store<py::object> storage;
+    return storage
+        .call_once_and_store_result(
+            [] { return py::module_::import("numpy").attr("integer"); })
+        .get_stored();
+}
+
+inline bool is_integer_object(py::handle h) {
+    return py::isinstance<py::int_>(h)
+           || (!py::isinstance<py::float_>(h) && py::isinstance(h, numpy_integer()));
+}
+
+[[noreturn]] inline void throw_weight_overflow() {
+    throw std::overflow_error("integer weight does not fit in int64");
+}
+
+// False if out of range; h must be a Python or NumPy integer
+template <bool Strict>
+bool to_int64(py::handle h, std::int64_t& out) {
+    int overflow      = 0;
+    const long long v = PyLong_AsLongLongAndOverflow(h.ptr(), &overflow);
+    if(v == -1 && PyErr_Occurred())
+        throw py::error_already_set();
+    if(overflow != 0 && Strict)
+        throw_weight_overflow();
+    out = v;
+    return overflow == 0;
+}
+
+// False if the weights need the double path
+template <bool Strict>
+bool to_int64_array(const py::array& array, c_array_t<std::int64_t>& out) {
     const auto dtype  = array.dtype();
     const auto kind   = dtype.kind();
     const auto nbytes = dtype.itemsize();
-    if(kind == 'b' || (kind == 'i' && nbytes <= 8))
+    if(kind == 'b' || (kind == 'i' && nbytes <= 8) || (kind == 'u' && nbytes < 8)) {
+        out = py::cast<c_array_t<std::int64_t>>(array);
         return true;
-    if(kind != 'u')
-        return false;
-    if(nbytes < 8)
-        return true;
-    if(nbytes != 8)
-        return false;
-    const c_array_t<std::uint64_t> wide(array);
-    for(std::size_t i = 0; i < wide.size(); ++i) {
-        if(wide.data()[i]
-           > static_cast<std::uint64_t>(std::numeric_limits<std::int64_t>::max()))
-            return false;
     }
-    return true;
+    if(kind == 'u' && nbytes == 8) {
+        // Values above the int64 maximum wrap to negative
+        out = py::cast<c_array_t<std::int64_t>>(array);
+        for(std::size_t i = 0; i < out.size(); ++i) {
+            if(out.data()[i] < 0) {
+                if(Strict)
+                    throw_weight_overflow();
+                return false;
+            }
+        }
+        return true;
+    }
+    if(kind == 'O') {
+        const auto items = py::cast<py::sequence>(array.attr("ravel")());
+        c_array_t<std::int64_t> result(
+            std::vector<py::ssize_t>(array.shape(), array.shape() + array.ndim()));
+        auto* data = result.mutable_data();
+        for(std::size_t i = 0; i < result.size(); ++i) {
+            const py::object item = items[i];
+            if(!is_integer_object(item) || !to_int64<Strict>(item, data[i]))
+                return false;
+        }
+        out = std::move(result);
+        return true;
+    }
+    return false;
 }
 
-inline auto get_weight_impl(py::handle w, std::true_type) {
+template <bool Strict>
+auto get_weight_impl(py::handle w, integer_weights<Strict>) {
     integer_weight_t weight;
     if(w.is_none())
         return weight;
 
     const bool scalar = is_value<double>(w);
     if(scalar && !py::isinstance<py::array>(w)) {
-        if(py::isinstance<py::int_>(w)
-           || (!py::isinstance<py::float_>(w)
-               && py::isinstance(w, py::module_::import("numpy").attr("integer")))) {
-            try {
-                weight = py::int_(py::reinterpret_borrow<py::object>(w))
-                             .cast<std::int64_t>();
-            } catch(const py::cast_error&) {
-                // Outside the int64 range
-                weight = py::cast<double>(w);
-            }
-        } else {
-            // Numeric objects can also export unrelated arrays through __array__.
-            // Preserve their scalar conversion instead of inspecting that export.
+        std::int64_t value = 0;
+        // Do not use __array__ here: it can export an unrelated array
+        if(is_integer_object(w) && to_int64<Strict>(w, value))
+            weight = value;
+        else
             weight = py::cast<double>(w);
-        }
         return weight;
     }
 
     const auto array = py::array::ensure(w);
-    if(array && fits_integer_weights(array)) {
-        auto exact = py::cast<c_array_t<std::int64_t>>(array);
-        if(scalar && exact.ndim() == 0 && exact.size() == 1)
-            weight = *exact.data();
-        else
-            weight = std::move(exact);
+    if(!array) {
+        weight = py::cast<c_array_t<double>>(w);
         return weight;
     }
 
-    // Floating inputs, and integers outside the signed storage range, retain
-    // their existing conversion. This does not define new overflow semantics.
-    if(scalar)
-        weight = py::cast<double>(w);
-    else
-        weight = py::cast<c_array_t<double>>(w);
+    c_array_t<std::int64_t> exact;
+    if(to_int64_array<Strict>(array, exact)) {
+        if(scalar)
+            weight = *exact.data();
+        else
+            weight = std::move(exact);
+    } else if(scalar) {
+        weight = py::cast<double>(array);
+    } else {
+        weight = py::cast<c_array_t<double>>(array);
+    }
     return weight;
 }
 
-template <class ValueType>
+template <class Storage>
 auto get_weight(py::kwargs& kwargs) {
-    using exact_integer = std::integral_constant<
-        bool,
-        std::is_same<ValueType, std::int64_t>::value
-            || std::is_same<ValueType,
-                            bh::accumulators::count<std::int64_t, true>>::value>;
     auto w = optional_arg(kwargs, "weight");
-    return get_weight_impl(w, exact_integer{});
+    return get_weight_impl(w, typename weight_mode<Storage>::type{});
 }
 
 inline auto get_sample(const py::handle& s) {
@@ -408,7 +469,7 @@ Histogram& fill(Histogram& self, const py::args& args, py::kwargs kwargs) {
     detail::fill_impl(traits{},
                       self,
                       detail::get_vargs(bh::unsafe_access::axes(self), args),
-                      detail::get_weight<value_type>(kwargs),
+                      detail::get_weight<typename Histogram::storage_type>(kwargs),
                       kwargs);
     return self;
 }
