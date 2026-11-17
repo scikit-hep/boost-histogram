@@ -78,7 +78,7 @@ def test_mean_to_dict() -> None:
     assert data["storage"]["type"] == "mean"
     assert data["storage"]["counts"] == pytest.approx(np.zeros(4))
     assert data["storage"]["values"] == pytest.approx(np.zeros(4))
-    assert data["storage"]["variances"] == pytest.approx(np.zeros(4))
+    assert np.isnan(data["storage"]["variances"]).all()
 
 
 def test_weighted_mean_to_dict() -> None:
@@ -299,6 +299,54 @@ def test_round_trip_weighted_mean() -> None:
 
     assert pytest.approx(np.array(h.axes[0])) == np.array(h2.axes[0])
     assert np.asarray(h) == pytest.approx(h2)
+
+
+@pytest.mark.parametrize(
+    "storage_type",
+    [
+        pytest.param(bh.storage.Mean(), id="mean"),
+        pytest.param(bh.storage.WeightedMean(), id="weighted_mean"),
+    ],
+)
+def test_round_trip_mean_undefined_variance(storage_type: bh.storage.Storage) -> None:
+    h = bh.Histogram(bh.axis.Regular(3, 0, 3), storage=storage_type)
+    h.fill([0.5, 1.5, 1.5], sample=[1, 2, 4])
+
+    h2 = from_uhi(to_uhi(h))
+    assert h2 == h
+
+    h2.fill(0.5, sample=3)
+    assert h2[0].variance == pytest.approx(2)
+
+
+@pytest.mark.parametrize(
+    ("storage_type", "weight", "deltas_field"),
+    [
+        pytest.param(
+            bh.storage.Mean(), [0.5, 0.5], "_sum_of_deltas_squared", id="mean"
+        ),
+        pytest.param(
+            bh.storage.WeightedMean(),
+            [2, -1],
+            "_sum_of_weighted_deltas_squared",
+            id="weighted_mean",
+        ),
+    ],
+)
+def test_round_trip_mean_lossy(
+    storage_type: bh.storage.Storage, weight: list[float], deltas_field: str
+) -> None:
+    # UHI stores only the variance, so deltas are lost where it is undefined
+    h = bh.Histogram(bh.axis.Regular(1, 0, 1), storage=storage_type)
+    h.fill([0.5, 0.5], sample=[1, 3], weight=weight)
+    assert h.view()[deltas_field][0] != 0
+
+    data = to_uhi(h)
+    assert np.isnan(data["storage"]["variances"]).all()
+
+    h2 = from_uhi(data)
+    assert h2.view().value == pytest.approx(h.view().value)
+    assert h2.view(flow=True)[deltas_field] == pytest.approx([0, 0, 0])
 
 
 def test_uhi_wrapper():

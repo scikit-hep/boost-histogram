@@ -479,9 +479,12 @@ class WeightedMeanView(_MeanArithmetic, View):
     @property
     def variance(self) -> np.typing.NDArray[Any]:
         with np.errstate(divide="ignore", invalid="ignore"):
-            return self["_sum_of_weighted_deltas_squared"] / (  # type: ignore[no-any-return]
+            denom = (
                 self["sum_of_weights"]
                 - self["sum_of_weights_squared"] / self["sum_of_weights"]
+            )
+            return np.where(
+                denom > 0, self["_sum_of_weighted_deltas_squared"] / denom, np.nan
             )
 
 
@@ -502,7 +505,11 @@ class MeanView(_MeanArithmetic, View):
     @property
     def variance(self) -> np.typing.NDArray[Any]:
         with np.errstate(divide="ignore", invalid="ignore"):
-            return self["_sum_of_deltas_squared"] / (self["count"] - 1)  # type: ignore[no-any-return]
+            return np.where(
+                self["count"] > 1,
+                self["_sum_of_deltas_squared"] / (self["count"] - 1),
+                np.nan,
+            )
 
 
 def _to_view(

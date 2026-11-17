@@ -126,8 +126,34 @@ def from_uhi(data: dict[str, Any], /) -> histogram.Histogram[Any]:
         raw_data = raw_data.reshape(view_shape + raw_data.shape[-1:])
     else:
         raw_data = np.reshape(raw_data, view_shape)
-    h[...] = raw_data
+    if storage_type in {"mean", "weighted_mean"}:
+        _set_mean_data(h.view(flow=True), raw_data)
+    else:
+        h[...] = raw_data
     return h
+
+
+def _set_mean_data(view: Any, raw_data: np.typing.NDArray[Any], /) -> None:
+    """
+    Fill a mean view from the UHI columns. Deltas are set to 0 where the
+    variance is not finite, since it is undefined there.
+    """
+    *weights, values, variances = np.moveaxis(raw_data, -1, 0)
+    if len(weights) == 1:
+        (count,) = weights
+        view["count"] = count
+        denom = count - 1
+        deltas_field = "_sum_of_deltas_squared"
+    else:
+        sum_w, sum_w2 = weights
+        view["sum_of_weights"] = sum_w
+        view["sum_of_weights_squared"] = sum_w2
+        with np.errstate(divide="ignore", invalid="ignore"):
+            denom = sum_w - sum_w2 / sum_w
+        deltas_field = "_sum_of_weighted_deltas_squared"
+    view["value"] = values
+    with np.errstate(invalid="ignore"):
+        view[deltas_field] = np.where(np.isfinite(variances), variances * denom, 0)
 
 
 T = TypeVar("T", bound="dict[str, Any]")
