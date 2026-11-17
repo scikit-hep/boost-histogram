@@ -1226,17 +1226,29 @@ class Histogram(typing.Generic[S]):
         if callable(index):
             return index(self.axes[axis])
 
-        # NumPy integer arrays pass through untouched; they trigger vectorized
-        # gather/scatter in __getitem__/__setitem__ rather than per-element access.
+        # Arrays get the same range check and wrap as scalars; they trigger
+        # vectorized gather/scatter in __getitem__/__setitem__.
         if isinstance(index, np.ndarray):
-            return index
+            if not np.issubdtype(index.dtype, np.integer):
+                msg = (
+                    f"Vectorized indexing on axis {axis} requires an integer "
+                    f"array, not {index.dtype}"
+                )
+                raise IndexError(msg)
+            size: int = self._hist.axis(axis).size
+            if index.size and (index.min() < -size or index.max() >= size):
+                msg = f"histogram index is out of range on axis {axis}"
+                raise IndexError(msg)
+            arr = index.astype(np.intp)
+            np.add(arr, size, out=arr, where=arr < 0)
+            return arr
 
         if isinstance(index, float):
             raise TypeError(f"Index {index} must be an integer, not float")
 
         if isinstance(index, SupportsIndex):
             idx = int(index)
-            size: int = self._hist.axis(axis).size
+            size = self._hist.axis(axis).size
             if not -size <= idx < size:
                 raise IndexError("histogram index is out of range")
             return idx % size
@@ -1330,7 +1342,9 @@ class Histogram(typing.Generic[S]):
         for i, ind in enumerate(indexes):
             offset = 1 if self.axes[i].traits.underflow else 0
             if isinstance(ind, np.ndarray):
-                view_index.append(ind + offset)
+                # Already wrapped to 0..size-1 by _compute_uhi_index (a copy)
+                np.add(ind, offset, out=ind)
+                view_index.append(ind)
             elif isinstance(ind, slice):
                 if ind.step is not None or not all(
                     s is None or isinstance(s, int) for s in (ind.start, ind.stop)

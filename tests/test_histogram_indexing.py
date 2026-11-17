@@ -755,6 +755,53 @@ def test_vectorized_get_flow_offset():
     idx = np.array([0, 4])
     assert h[idx] == approx(np.array([h[0], h[4]]))
 
+    # Negative array indices count from the end, like scalar indices,
+    # instead of landing in the underflow bin
+    assert h[np.array([-1, -5])] == approx(np.array([h[-1], h[-5]]))
+    h[np.array([-1])] = 99
+    assert h[4] == 99
+    assert h.view(flow=True)[0] == 0
+
+    with pytest.raises(IndexError, match="out of range"):
+        h[np.array([5])]
+
+
+@pytest.mark.parametrize("bad", [np.array([5]), np.array([-6]), np.array([0, 5])])
+def test_vectorized_out_of_range(bad):
+    h = bh.Histogram(bh.axis.Regular(4, 0, 4), bh.axis.Regular(5, 0, 5))
+    view = h.view(flow=True).copy()
+
+    with pytest.raises(IndexError, match="axis 1"):
+        h[np.array([0]), bad]
+    with pytest.raises(IndexError, match="axis 1"):
+        h[np.array([0]), bad] = 1
+    with pytest.raises(IndexError, match="axis 1"):
+        h[0, bad] = 1
+    assert h.view(flow=True) == approx(view)
+
+
+def test_vectorized_negative_set_second_axis():
+    h = bh.Histogram(bh.axis.Regular(4, 0, 4), bh.axis.Regular(5, 0, 5))
+    h[np.array([1]), np.array([-1])] = 3
+    assert h[1, 4] == 3
+    assert h.view(flow=True)[:, 0].sum() == 0
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [
+        np.array([True, False, True, False, True]),
+        np.array([0.0, 1.0]),
+        np.array([0, 1], dtype=object),
+    ],
+)
+def test_vectorized_rejects_non_integer_arrays(bad):
+    h = bh.Histogram(bh.axis.Regular(5, 0, 5))
+    with pytest.raises(IndexError, match="integer array"):
+        h[bad]
+    with pytest.raises(IndexError, match="integer array"):
+        h[bad] = 1
+
 
 def test_vectorized_get_accumulator_storage():
     h = bh.Histogram(bh.axis.Regular(5, 0, 5), storage=bh.storage.Weight())
