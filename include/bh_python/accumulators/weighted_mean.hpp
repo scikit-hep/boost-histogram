@@ -38,11 +38,9 @@ struct weighted_mean {
                   const value_type& variance)
         : sum_of_weights(wsum)
         , sum_of_weights_squared(wsum2)
-        , value(mean) {
-        const value_type denom
-            = sum_of_weights - (sum_of_weights_squared / sum_of_weights);
-        if(denom > 0)
-            _sum_of_weighted_deltas_squared = variance * denom;
+        , value(mean)
+        , _sum_of_weighted_deltas_squared(
+              variance * (sum_of_weights - (sum_of_weights_squared / sum_of_weights))) {
     }
 
     weighted_mean(const value_type& wsum,

@@ -637,3 +637,21 @@ def test_mean_view_masked_unsupported_ufunc(storage):
     view = h.view()
     with pytest.raises(TypeError):
         np.floor_divide(view, 2, out=view, where=[True, False])
+
+
+def test_mean_view_undefined_variance():
+    h = bh.Histogram(bh.axis.Integer(0, 3), storage=bh.storage.Mean())
+    h.fill([0, 1, 1], sample=[1, 2, 4], weight=[1, 0.3, 0.3])
+    v = h.view(flow=True)
+    expected = np.array([h[bh.tag.at(i)].variance for i in range(-1, 4)])
+    assert np.isnan(v.variance).tolist() == np.isnan(expected).tolist()
+    assert np.isnan(v.variance).sum() == 5
+
+
+def test_weighted_mean_view_undefined_variance():
+    h = bh.Histogram(bh.axis.Integer(0, 3), storage=bh.storage.WeightedMean())
+    h.fill([0, 1, 1, 2, 2], sample=[1, 1, 3, 1, 3], weight=[1, 2, -1, 1, 1])
+    v = h.view(flow=True)
+    expected = np.array([h[bh.tag.at(i)].variance for i in range(-1, 4)])
+    assert np.isnan(v.variance).tolist() == np.isnan(expected).tolist()
+    assert v.variance[3] == approx(expected[3])
